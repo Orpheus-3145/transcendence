@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "pretty": true, // Pretty error messages
+  "strict": true, // Inherit all strict settings from tsconfig.json
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}

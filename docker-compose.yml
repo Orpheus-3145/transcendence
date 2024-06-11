@@ -1,0 +1,61 @@
+version: '3.8'
+
+networks:
+  transendence:
+
+volumes:
+  upload-volume:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./uploads
+      o: bind
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    volumes:
+      - ./src/postgresql/data/:/var/lib/postgresql/data
+      - ./src/posgresql/db_structure.sql:/docker-entrypoint-initdb.d/db_structure.sql
+    networks:
+      - transendence
+    ports:
+      - "${P_POSTGRES}:${P_POSTGRES}"
+    environment:
+      - POSTGRES_USER: ${POSTGRES_USER}
+      - POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - POSTGRES_DB: ${POSTGRES_DB}
+
+  nestjs:
+    build: "./back-nestjs"
+    depends_on:
+      - postgres
+    container_name: nestjs
+    restart: unless-stopped
+    volumes:
+      - ./src/back-nestjs/:/app
+      - upload-volume:/app/image_dir
+    networks:
+      - transendence
+    ports:
+      - "${P_NESTJS}:${P_NESTJS}"
+    env_file:
+      - .env
+
+  react:
+    build: "./back-react"
+    depends_on:
+      - nestjs
+    container_name: react
+    restart: unless-stopped
+    volumes:
+      - ./src/front-react/:/app
+      - upload-volume:/app/upload_dir
+    networks:
+      - transendence
+    ports:
+      - "${P_REACT}:${P_REACT}"
+    env_file:
+      - .env

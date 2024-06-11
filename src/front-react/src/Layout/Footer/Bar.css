@@ -1,0 +1,35 @@
+.footer {
+  /* padding: 20px; */
+  background: linear-gradient(to top, #333, #777);
+  color: white;
+}
+
+.developer-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.footer-logo {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.logo-image {
+  width: 80px; /* Adjust the width as needed */
+  height: auto;
+}
+
+@media (max-width: 1200px) {
+  .developer-cards {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .developer-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+}

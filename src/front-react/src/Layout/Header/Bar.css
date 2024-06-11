@@ -1,0 +1,117 @@
+.bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 4vh;
+  width: 100%;
+  padding: 0 5%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.bar-left,
+.bar-center,
+.bar-right {
+  display: flex;
+  align-items: center;
+  height: 100%; /* Ensure child elements take full height of the bar */
+}
+
+.bar-left {
+  flex: 1;
+  justify-content: flex-start;
+  margin-left: -5%; /* Align the left part to the left edge of the screen */
+}
+
+.bar-center {
+  flex: 2;
+  justify-content: center;
+  font-size: 90%; /* Reduce the size of the centered text by 10% */
+}
+
+.bar-right {
+  flex: 1;
+  justify-content: flex-end;
+  margin-right: -5%; /* Align the right part to the right edge of the screen */
+}
+
+.menu-button,
+.profile-button {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.search-bar {
+  margin-left: 10px;
+  padding: 5px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  transition: all 0.3s ease; /* Smooth transition for focus effect */
+  width: 50px; /* Initial width */
+  max-width: calc(100% - 200px); /* Ensure it doesn't expand too much */
+  min-width: 100px; /* Minimum width for 10 characters */
+}
+
+.search-bar:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); /* Glowing effect */
+  width: 200px; /* Expanded width */
+  max-width: calc(100% - 200px); /* Ensure it doesn't expand too much */
+  min-width: 100px; /* Minimum width for 10 characters */
+}
+
+@keyframes glow {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(194, 194, 194, 0.5), 0 0 10px rgba(71, 71, 71, 0.5);
+    opacity: 1;
+  }
+  50% {
+    text-shadow: none;
+    opacity: 0.7;
+  }
+}
+
+.bar-center h1 {
+  animation: glow 5s infinite;
+}
+
+/* Menu styles */
+.menu {
+  position: fixed;
+  top: 40px; /* Adjust based on the height of your header */
+  left: 0;
+  width: 0; /* Initial width to be hidden */
+  height: 100%;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0 4px 4px 0;
+  overflow: hidden;
+  transition: width 0.1s ease;
+  z-index: 1000; /* Ensure the menu is above other content */
+}
+
+.menu.open {
+  width: 10%; /* Expand to cover 10% of the screen when open */
+}
+
+.menu-row-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.menu-row {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #ddd;
+}
+
+.menu-row:hover {
+  background-color: #f0f0f0;
+}
