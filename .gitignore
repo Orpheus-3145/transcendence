@@ -1,2 +1,2 @@
-./src/front-react/node_modules/
-./src/back-nestjs/node_modules/
+/src/front-react/node_modules/
+/src/back-nestjs/node_modules/
