@@ -1,48 +1,57 @@
 import React from 'react';
 import './Bar.css';
-import Column from './Menu/Column';
-import SearchBar from './Search/Bar';
-import Profile from './Navigation/Profile';
+import SearchBar from './Navigation/Search/Bar';
+import { Button as MenuButton } from './Navigation/Menu/Button';
+import { Button as NotificationButton } from './Navigation/Notification/Button';
+import { Button as ProfileButton } from './Navigation/Profile/Button';
+import { Button as LoginButton } from './Navigation/Login/Button';
 
-interface BarProps {
+
+interface MenuProps {
   menuState: { on: boolean; select: string | null };
   setMenuState: React.Dispatch<React.SetStateAction<{ on: boolean; select: string | null }>>;
 }
 
-export const Bar: React.FC<BarProps> = ({ menuState, setMenuState }) => {
-  const toggleMenu = () => {
-    setMenuState(prevState => ({ ...prevState, on: !prevState.on }));
-  };
+interface NotifyProps {
+  notifyState: { on: boolean; select: string | null };
+  setNotifyState: React.Dispatch<React.SetStateAction<{ on: boolean; select: string | null }>>;
+}
 
-  const handleInputChange = () => {
-    const searchBar = document.querySelector('.search-bar') as HTMLInputElement;
-    if (searchBar) {
-      const barCenter = document.querySelector('.bar-center') as HTMLElement;
-      const maxRight = barCenter.offsetLeft - 20; // 20px padding from the centered text
-      const minWidth = 100; // Minimum width for 10 characters
-      const maxWidth = 500; // Ensure it doesn't expand too much
-      const textLength = searchBar.value.length;
-      const newWidth = Math.max(minWidth, Math.min(minWidth + textLength * 10, maxRight));
+type Props = MenuProps & NotifyProps;
 
-      searchBar.style.width = `${Math.min(newWidth, maxWidth)}px`;
-    }
-  };
+export const Bar: React.FC<Props> = ({ menuState, setMenuState, notifyState, setNotifyState }) => {
+
+  const isLoggedIn = null;
+  const user = {name: null, photo: null};
 
   return (
-    <header className="bar">
-      <div className="bar-left">
-        <button className="menu-button" onClick={toggleMenu}>Menu</button>
-        <SearchBar onFocus={handleInputChange} onInput={handleInputChange} />
+  <div>
+    <div className="header">
+      {/* Background - Particle efect - Neural Network */}
+      <h1>Transendence</h1>
+      <p>Resize to see the effect</p>
+    </div>
+
+    <div className="topnav">
+      <div className="left">
+        <MenuButton menuState={menuState} setMenuState={setMenuState} />
+        <SearchBar />
       </div>
-      <div className="bar-center">
-        {/* Supposed to be the name of the page */}
-        <h1>Center Text</h1>
+      <div className="center">
+        {/* Icon */}
       </div>
-      <div className="bar-right">
-        <Profile />
+      <div className="right">
+        {isLoggedIn && user ? (
+          <>
+            <NotificationButton notifyState={notifyState} setNotifyState={setNotifyState} />
+            <ProfileButton />
+          </>
+        ) : (
+          <LoginButton />
+        )}
       </div>
-      <Column menuState={menuState} setMenuState={setMenuState} />
-    </header>
+    </div>
+  </div>
   );
 };
 

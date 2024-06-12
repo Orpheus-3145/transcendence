@@ -22,13 +22,14 @@ const MainAppComponent: React.FC = () => {
   // Both can be createContext used with useContext
   const [menuState, setMenuState] = useState<BarState>({ on: false, select: null });
   const [chatState, setChatState] = useState<BarState>({ on: false, select: null });
+  const [notifyState, setNotifyState] = useState<BarState>({ on: false, select: null });
 
   return (
     <React.Fragment>
       <BrowserRouter>
         {/* UserProvider */}
           <div className="mainAppComponent">
-            <Header menuState={menuState} setMenuState={setMenuState} />
+            <Header menuState={menuState} setMenuState={setMenuState} notifyState={notifyState} setNotifyState={setNotifyState} />
             <Main />
             <Footer />
             <Chat chatState={chatState} setChatState={setChatState} />
