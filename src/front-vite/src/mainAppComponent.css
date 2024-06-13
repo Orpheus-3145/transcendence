@@ -5,10 +5,8 @@
 body, .mainAppComponent {
   background: #575757;
   font-family: 'Roboto', Arial, Helvetica, sans-serif;
-  font-size: 16px;
   color: #f0f0f0;
   margin: 0;
-  padding: 10px;
   box-sizing: border-box;
 }
 
