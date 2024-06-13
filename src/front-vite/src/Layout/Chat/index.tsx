@@ -2,7 +2,6 @@ import React from 'react';
 import Bubble from './Bubble/Bubble';
 import Menu from './Menu/Menu';
 import Box from './Box/Box';
-import './index.css';
 
 export const Chat: React.FC<{ chatState: { on: boolean; select: string | null }; setChatState: React.Dispatch<React.SetStateAction<{ on: boolean; select: string | null }>> }> = ({ chatState, setChatState }) => {
   const handleBubbleClick = () => {

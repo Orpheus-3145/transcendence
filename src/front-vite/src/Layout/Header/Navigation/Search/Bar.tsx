@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import './Bar.css'; // Import CSS for the search bar
 
 const SearchBar: React.FC = () => {
   const searchBarRef = useRef<HTMLInputElement>(null);

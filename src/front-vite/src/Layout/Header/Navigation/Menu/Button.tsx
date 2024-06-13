@@ -1,5 +1,4 @@
 import React from 'react';
-import './Button.css';
 import Column from './Box/Column';
 
 interface MenuProps {

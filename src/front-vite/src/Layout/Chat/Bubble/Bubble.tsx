@@ -1,5 +1,4 @@
 import React from 'react';
-import './Bubble.css';
 
 interface BubbleProps {
   onClick: () => void;

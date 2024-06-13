@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 // import { useAuth } from '../../AuthContext';
-import './Button.css'; // Import CSS for the profile button
 
 export const Button: React.FC = () => {
   // const { isLoggedIn, user } = useAuth();

@@ -1,5 +1,4 @@
 import React from 'react';
-import './DeveloperCard.css';
 
 interface DeveloperCardProps {
   photo: string;

@@ -1,5 +1,4 @@
 import React from 'react';
-import './index.css'; // Assuming you will create a CSS file for styling
 
 export const Home: React.FC = () => {
   return (

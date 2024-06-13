@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import './Column.css';
 import Row from './Row';
 
 interface ColumnProps {

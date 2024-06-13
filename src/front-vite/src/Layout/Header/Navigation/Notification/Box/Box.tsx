@@ -1,5 +1,4 @@
 import React from 'react';
-import './Box.css'; // Import CSS for the profile button
 
 interface NotifyProps {
     notifyState: { on: boolean; select: string | null };

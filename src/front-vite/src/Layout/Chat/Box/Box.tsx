@@ -1,5 +1,4 @@
 import React from 'react';
-import './Box.css';
 
 interface BoxProps {
   chatWith: string;

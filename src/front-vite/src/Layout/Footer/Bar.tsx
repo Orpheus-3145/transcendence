@@ -1,6 +1,5 @@
 import React from 'react';
 import DeveloperCard from './DeveloperCard';
-import './Bar.css';
 
 const developers = [
   { photo: '/path/to/photo1.jpg', name: 'Developer 1', role: 'Frontend' },

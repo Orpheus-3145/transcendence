@@ -1,5 +1,4 @@
 import React from 'react';
-import './Bar.css';
 import SearchBar from './Navigation/Search/Bar';
 import { Button as MenuButton } from './Navigation/Menu/Button';
 import { Button as NotificationButton } from './Navigation/Notification/Button';
