@@ -24,9 +24,7 @@ export const Button: React.FC<NotifyProps> = ({notifyState, setNotifyState}) => 
         <>
           <button className="menu-button" onClick={toggleNotify}>Notify</button>
           {notifyState.on && (
-            <Box>
-              {/* Get non-Answered notifications */}
-            </Box>
+            <Box notifyState={notifyState} setNotifyState={setNotifyState} />
           )}
         </>
       )}

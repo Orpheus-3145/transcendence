@@ -1,6 +1,14 @@
+# react:
+#	react-router-dom
+#	mui - material, icons, @emotion/react, @emotion/styled 
+#	roboto - Default fount from google
+# nestjs:
+#	@nestjs/typeorm
+#	@nestjs/config
+
 init:
-	cd ./src/front-react && npm install react-router-dom @types/react-router-dom
-	cd ./src/backend-nestjs && npm install @nestjs/typeorm typeorm pg @nestjs/config
+	cd ./src/front-vite && npm install
+	cd ./src/backend-nestjs && npm install
 
 build:
 	docker-compose build

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Home from './Home/index';
-import ErrorPage from './Error/index';
+import Home from '../../Pages/Home/index';
+import ErrorPage from '../../Pages/Error/index';
 
 export const Main: React.FC = () => {
   return (

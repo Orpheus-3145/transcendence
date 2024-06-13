@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./src/back-nestjs/:/app
-      - upload-volume:/app/image_dir
+      - upload-volume:/app/uploads
     networks:
       - transendence
     ports:
@@ -52,7 +52,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./src/front-react/:/app
-      - upload-volume:/app/upload_dir
+      - upload-volume:/app/uploads
     networks:
       - transendence
     ports:

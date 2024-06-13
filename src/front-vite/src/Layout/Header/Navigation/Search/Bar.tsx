@@ -10,8 +10,8 @@ const SearchBar: React.FC = () => {
       className="search-bar"
       placeholder="Search..."
       ref={searchBarRef}
-      onFocus={onFocus}
-      onInput={onInput}
+      // onFocus={onFocus}
+      // onInput={onInput}
     />
   );
 };
