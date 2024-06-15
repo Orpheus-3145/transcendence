@@ -1,56 +1,80 @@
 import React from 'react';
 import SearchBar from './Navigation/Search/Bar';
-import { Button as MenuButton } from './Navigation/Menu/Button';
-import { Button as NotificationButton } from './Navigation/Notification/Button';
+import { MenuDrawer as MenuButton } from './Navigation/Menu/MenuDrawer';
+import { NotifyDrawer as NotificationButton } from './Navigation/Notification/NotifyDrawer';
 import { Button as ProfileButton } from './Navigation/Profile/Button';
 import { Button as LoginButton } from './Navigation/Login/Button';
+import { AppBar, Box, Toolbar, Typography } from '@mui/material';
+import { styled, alpha, lighten } from '@mui/material/styles';
 
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  backgroundColor: lighten(theme.palette.primary.main, 0.1),
+}));
 
-interface MenuProps {
-  menuState: { on: boolean; select: string | null };
-  setMenuState: React.Dispatch<React.SetStateAction<{ on: boolean; select: string | null }>>;
-}
+const StyledTypography = styled(Typography)(({ theme }) => ({
+  flexGrow: 1,
+  fontSize: 'relative-size',
+  textAlign: 'center',
+  fontWeight: 'bold',
+  margin: '0 0.625em',
+  '& > span': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.05),
+    color: theme.palette.common.white,
+    padding: '0.25em 0.5em',
+    display: 'inline-block',
+    transition: 'border-radius 0.5s ease-in-out, text-shadow 0.5s ease-in-out, box-shadow 0.5s ease-in-out',
+  },
+  '&:hover > span': {
+    borderRadius: '1em',
+    textShadow: '0 0 0.5em rgba(255, 255, 255, 1)',
+    boxShadow: 'inset 0em 0em 0.9em rgba(0, 0, 0, 0.5)',
+  },
+}));
 
-interface NotifyProps {
-  notifyState: { on: boolean; select: string | null };
-  setNotifyState: React.Dispatch<React.SetStateAction<{ on: boolean; select: string | null }>>;
-}
+const StyledBox = styled(Box)`
+  // padding: 0.05em;
+`;
 
-type Props = MenuProps & NotifyProps;
+export const Bar: React.FC = () => {
+  const placeholderUser = {
+    username: 'testuser',
+    isAuthenticated: false,
+  };
 
-export const Bar: React.FC<Props> = ({ menuState, setMenuState, notifyState, setNotifyState }) => {
-
-  const isLoggedIn = null;
-  const user = {name: null, photo: null};
+  placeholderUser.isAuthenticated = true;
 
   return (
-  <div>
-    <div className="header">
-      {/* Background - Particle efect - Neural Network */}
-      <h1>Transendence</h1>
-      <p>Resize to see the effect</p>
-    </div>
-
-    <div className="topnav">
-      <div className="left">
-        <MenuButton menuState={menuState} setMenuState={setMenuState} />
-        <SearchBar />
-      </div>
-      <div className="center">
-        {/* Icon */}
-      </div>
-      <div className="right">
-        {isLoggedIn && user ? (
-          <>
-            <NotificationButton notifyState={notifyState} setNotifyState={setNotifyState} />
-            <ProfileButton />
-          </>
-        ) : (
-          <LoginButton />
-        )}
-      </div>
-    </div>
-  </div>
+    <Box sx={{ flexGrow: 1, padding: '0.05em'}}>
+      <StyledAppBar position={'fixed'}>
+        <Toolbar>
+          <StyledBox>
+            <MenuButton user={placeholderUser} />
+          </StyledBox>
+          <StyledBox sx={{ maxWidth: '50%' }}>
+            <SearchBar />
+          </StyledBox>
+          <StyledTypography variant="h6">
+            <span>Transcendence</span>
+          </StyledTypography>
+          {placeholderUser.username && placeholderUser.isAuthenticated ? (
+            <>
+              <StyledBox>
+                <StyledBox>
+                  <NotificationButton user={placeholderUser} />
+                </StyledBox>
+                <StyledBox>
+                  <ProfileButton user={placeholderUser} />
+                </StyledBox>
+              </StyledBox>
+            </>
+          ) : (
+            <StyledBox>
+              <LoginButton />
+            </StyledBox>
+          )}
+        </Toolbar>
+      </StyledAppBar>
+    </Box>
   );
 };
 

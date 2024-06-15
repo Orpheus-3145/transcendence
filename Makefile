@@ -1,7 +1,8 @@
 # react:
 #	react-router-dom
-#	mui - material, icons, @emotion/react, @emotion/styled 
+#	mui - material, icons, @emotion/react, @emotion/styled
 #	roboto - Default fount from google
+#	tsparticles react-tsparticles
 # nestjs:
 #	@nestjs/typeorm
 #	@nestjs/config

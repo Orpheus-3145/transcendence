@@ -1,7 +1,6 @@
 /* Import a font from Google Fonts if desired */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-/* Apply global styles */
 body, .mainAppComponent {
   background: #575757;
   font-family: 'Roboto', Arial, Helvetica, sans-serif;
@@ -9,5 +8,3 @@ body, .mainAppComponent {
   margin: 0;
   box-sizing: border-box;
 }
-
-/* Additional global styles if needed */
