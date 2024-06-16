@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import {
   IconButton,
   Divider,
@@ -10,25 +10,25 @@ import {
 import { useTheme } from '@mui/material/styles';
 
 export const SearchBar: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
+  // const [searchQuery, setSearchQuery] = useState('');
+  // const navigate = useNavigate();
   const theme = useTheme();
 
   // handle the logic in the following order:
   // username
   // chatname
   // pagename
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/search/${searchQuery}`);
-    }
-  };
+  // const handleSearch = () => {
+  //   if (searchQuery.trim()) {
+  //     navigate(`/search/${searchQuery}`);
+  //   }
+  // };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      handleSearch();
-    }
-  };
+  // const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (event.key === 'Enter') {
+  //     handleSearch();
+  //   }
+  // };
 
   return (
     <Box display={'flex'} justifyContent={'flex-start'} alignItems="center">

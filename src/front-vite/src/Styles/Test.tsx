@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, BoxProps, lighten } from '@mui/material';
+import { Box, BoxProps } from '@mui/material';
 
 export const Item: React.FC<React.PropsWithChildren<BoxProps>> = (props) => {
     const { sx, children, ...other } = props;

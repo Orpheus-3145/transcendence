@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   IconButton,
-  Button,
   Box,
   Drawer as MuiDrawer,
   List,
@@ -23,17 +22,6 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
-
-const StyledIconButton = styled(IconButton)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.1)`,
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  transition: 'border-radius 0.3s ease',
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.light, 0.2),
-    borderRadius: '2em',
-  },
-}));
 
 const StyledIconWrapper = styled('div')(({ theme }) => ({
   boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.05)`,

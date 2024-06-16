@@ -1,7 +1,6 @@
 import React from 'react';
 import { Stack, Avatar, Typography, Box, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { GitHub } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 
 const developers = [
   { photo: 'https://cdn.intra.42.fr/users/d79fb7299db9e1dca736792ac5f0276a/itopchu.jpg', name: 'Ibrahim Topchu', role: 'Frontend', git: 'https://www.github.com/itopchu' },
@@ -10,7 +9,6 @@ const developers = [
 ];
 
 export const Bar: React.FC = () => {
-  const navigate = useNavigate();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
