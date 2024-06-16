@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   IconButton,
+  Button,
   Box,
   Drawer as MuiDrawer,
   List,
@@ -148,17 +149,9 @@ export const MenuDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
 
   return (
     <>
-      <StyledIconButton
-        size="medium"
-        edge="start"
-        color="inherit"
-        aria-label="menu"
-        onClick={toggleDrawer(true)}
-      >
-        <StyledIconWrapper>
+      <IconButton onClick={() => {setIsOpen(true)}}>
           <ReorderRoundedIcon sx={{ color: theme.palette.common.white }} />
-        </StyledIconWrapper>
-      </StyledIconButton>
+      </IconButton>
       <Drawer open={isOpen} onClose={toggleDrawer(false)}>
         {DrawerList}
       </Drawer>

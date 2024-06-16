@@ -4,19 +4,16 @@ import { MenuDrawer as MenuButton } from './Navigation/Menu/MenuDrawer';
 import { NotifyDrawer as NotificationButton } from './Navigation/Notification/NotifyDrawer';
 import { Button as ProfileButton } from './Navigation/Profile/Button';
 import { Button as LoginButton } from './Navigation/Login/Button';
-import { AppBar, Box, Toolbar, Typography } from '@mui/material';
-import { styled, alpha, lighten } from '@mui/material/styles';
+import { AppBar, Box, Stack, Typography } from '@mui/material';
+import { styled, alpha } from '@mui/material/styles';
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  backgroundColor: lighten(theme.palette.primary.main, 0.1),
-}));
+import { Item } from '../../Styles/Test';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
   flexGrow: 1,
   fontSize: 'relative-size',
   textAlign: 'center',
   fontWeight: 'bold',
-  margin: '0 0.625em',
   '& > span': {
     backgroundColor: alpha(theme.palette.primary.main, 0.05),
     color: theme.palette.common.white,
@@ -31,10 +28,6 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
   },
 }));
 
-const StyledBox = styled(Box)`
-  // padding: 0.05em;
-`;
-
 export const Bar: React.FC = () => {
   const placeholderUser = {
     username: 'testuser',
@@ -44,38 +37,49 @@ export const Bar: React.FC = () => {
   placeholderUser.isAuthenticated = true;
 
   return (
-    <Box sx={{ flexGrow: 1, padding: '0.05em'}}>
-      <StyledAppBar position={'fixed'}>
-        <Toolbar>
-          <StyledBox>
-            <MenuButton user={placeholderUser} />
-          </StyledBox>
-          <StyledBox sx={{ maxWidth: '50%' }}>
-            <SearchBar />
-          </StyledBox>
-          <StyledTypography variant="h6">
-            <span>Transcendence</span>
-          </StyledTypography>
-          {placeholderUser.username && placeholderUser.isAuthenticated ? (
-            <>
-              <StyledBox>
-                <StyledBox>
+    <AppBar position='fixed' sx={{ height: '48px' }}>
+      <Box paddingX={1} paddingY={0.5}>
+        <Stack
+          direction='row' flexGrow={'1'} spacing={4}
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Stack direction='row' spacing={1}>
+            <Item>
+              <MenuButton user={placeholderUser} />
+            </Item>
+            <Item>
+              <SearchBar />
+            </Item>
+          </Stack>
+          <Typography alignSelf={'center'} sx={{
+            fontSize: 'relative-size',
+            textAlign: 'center',
+            fontWeight: 'bold',
+            color: (theme) => theme.palette.common.white,
+          }}
+          >
+            <span>Transcendences</span>
+          </Typography>
+          <Stack direction='row' spacing={1} >
+            {placeholderUser.username && placeholderUser.isAuthenticated ? (
+              <>
+                <Item>
                   <NotificationButton user={placeholderUser} />
-                </StyledBox>
-                <StyledBox>
+                </Item>
+                <Item>
                   <ProfileButton user={placeholderUser} />
-                </StyledBox>
-              </StyledBox>
-            </>
-          ) : (
-            <StyledBox>
-              <LoginButton />
-            </StyledBox>
-          )}
-        </Toolbar>
-      </StyledAppBar>
-    </Box>
-  );
+                </Item>
+              </>
+            ) : (<Item><LoginButton /></Item>)
+            }
+          </Stack>
+        </Stack>
+      </Box>
+    </AppBar>
+  )
 };
 
 export default Bar;

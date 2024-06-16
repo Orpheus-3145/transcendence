@@ -1,0 +1,31 @@
+import React from 'react';
+import { Box, BoxProps, lighten } from '@mui/material';
+
+export const Item: React.FC<React.PropsWithChildren<BoxProps>> = (props) => {
+    const { sx, children, ...other } = props;
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexGrow: '1',
+          justifyContent: 'center',
+          color: (theme) => (theme.palette.mode === 'dark' ? 'grey.300' : 'grey.800'),
+          borderRadius: '1em',
+          fontSize: '0.875rem',
+          fontWeight: '700',
+          height: "100%",
+          bgcolor: (theme) => (theme.palette.primary.dark),
+          transition: 'box-shadow 0.3s',
+          '&:hover': {
+            boxShadow: 'inset 0 0 1em rgba(0, 0, 50, 0.5)',
+          },
+          ...sx,
+        }}
+        {...other}
+      >
+        {children}
+      </Box>
+    );
+}
+
+export default Item;

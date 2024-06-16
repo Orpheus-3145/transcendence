@@ -20,16 +20,16 @@ import {
   Clear as DeclineIcon
 } from '@mui/icons-material';
 
-const StyledIconButton = styled(IconButton)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.1)`,
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  transition: 'border-radius 0.3s ease',
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.light, 0.2),
-    borderRadius: '2em',
-  },
-}));
+// const StyledIconButton = styled(IconButton)(({ theme }) => ({
+//   borderRadius: theme.shape.borderRadius,
+//   boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.1)`,
+//   backgroundColor: alpha(theme.palette.primary.main, 0.1),
+//   transition: 'border-radius 0.3s ease',
+//   '&:hover': {
+//     backgroundColor: alpha(theme.palette.primary.light, 0.2),
+//     borderRadius: '2em',
+//   },
+// }));
 
 const StyledIconWrapper = styled('div')(({ theme }) => ({
   boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.05)`,
@@ -102,9 +102,7 @@ export const NotifyDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
         {Object.keys(generalPaths).map((text) => (
           <ListItem key={text} disablePadding>
             <Box width="100%" p={1} mb={2} borderRadius={1} bgcolor={alpha(theme.palette.primary.light, 0.1)}>
-              <ListItemIcon>
-                <StyledIconWrapper>{generalPaths[text].icon}</StyledIconWrapper>
-              </ListItemIcon>
+              <ListItemIcon> {generalPaths[text].icon} </ListItemIcon>
               <ListItemText primary={`"${user.username}" wants to ${text}`} />
               <Box display="flex" justifyContent="space-between" mt={1}>
                 <Button
@@ -132,17 +130,9 @@ export const NotifyDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
 
   return (
     <>
-      <StyledIconButton
-        size="medium"
-        edge="start"
-        color="inherit"
-        aria-label="menu"
-        onClick={toggleDrawer(true)}
-      >
-        <StyledIconWrapper>
+      <IconButton onClick={toggleDrawer(true)}>
           <NotificationsIcon sx={{ color: theme.palette.common.white }} />
-        </StyledIconWrapper>
-      </StyledIconButton>
+      </IconButton>
       <Drawer anchor='right' open={isOpen} onClose={toggleDrawer(false)}>
         {DrawerList}
       </Drawer>
