@@ -25,7 +25,7 @@ import {
 
 const StyledIconWrapper = styled('div')(({ theme }) => ({
   boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.05)`,
-  color: theme.palette.common.white,
+  color: theme.palette.secondary.main,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -38,28 +38,29 @@ const StyledIconWrapper = styled('div')(({ theme }) => ({
 
 const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.05)`,
-  backgroundColor: alpha(theme.palette.primary.light, 0.01),
-  color: theme.palette.common.white,
+  backgroundColor: alpha(theme.palette.background.default, 0.5),
+  color: theme.palette.secondary.main,
   transition: 'border-radius 0.2s ease',
+  marginTop: theme.spacing(0.5),
   '&:hover': {
     boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.1)`,
-    backgroundColor: alpha(theme.palette.primary.light, 0.9),
+    backgroundColor: alpha(theme.palette.background.default, 0.9),
     borderRadius: '2em',
   },
 }));
 
 const DrawerContainer = styled(Box)(({ theme }) => ({
   width: 250,
-  backgroundColor: alpha(theme.palette.primary.dark, 0.05),
+  backgroundColor: alpha(theme.palette.background.default, 0.05),
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.light, 0.1),
+    backgroundColor: alpha(theme.palette.background.default, 0.1),
   },
   height: '100%',
 }));
 
 const Drawer = styled(MuiDrawer)(({ theme }) => ({
   '& .MuiPaper-root': {
-    backgroundColor: darken(theme.palette.primary.main, 0.3),
+    backgroundColor: darken(theme.palette.background.default, 0.3),
   },
 }));
 
@@ -138,7 +139,7 @@ export const MenuDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
   return (
     <>
       <IconButton onClick={() => {setIsOpen(true)}}>
-          <ReorderRoundedIcon sx={{ color: theme.palette.common.white }} />
+          <ReorderRoundedIcon sx={{ color: theme.palette.secondary.main }} />
       </IconButton>
       <Drawer open={isOpen} onClose={toggleDrawer(false)}>
         {DrawerList}

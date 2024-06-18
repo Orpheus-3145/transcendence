@@ -33,11 +33,11 @@ export const SearchBar: React.FC = () => {
   return (
     <Box display={'flex'} justifyContent={'flex-start'} alignItems="center">
       <IconButton >
-        <SearchIcon sx={{ color: theme.palette.common.white }} />
+        <SearchIcon sx={{ color: theme.palette.secondary.main }} />
       </IconButton>
-      <Divider orientation="vertical" sx={{backgroundColor: theme.palette.common.white, width: '0.01em', height: '50%'}} />
+      <Divider orientation="vertical" sx={{backgroundColor: theme.palette.secondary.main, width: '0.01em', height: '50%'}} />
       <InputBase placeholder="Search..." inputProps={{ 'aria-label': 'search...' }}
-       sx={{ color: theme.palette.common.white, flexGrow: 1, marginX: '0.3em' }}
+       sx={{ color: theme.palette.secondary.main, flexGrow: 1, marginX: '0.3em' }}
        />
     </Box>
   );

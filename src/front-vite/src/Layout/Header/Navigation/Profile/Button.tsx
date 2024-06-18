@@ -20,7 +20,7 @@ export const Button: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
 
   return (
       <IconButton onClick={handleClick}>
-          <AccountBoxIcon sx={{ color: theme.palette.common.white }} />
+          <AccountBoxIcon sx={{ color: theme.palette.secondary.main }} />
       </IconButton>
   );
 };

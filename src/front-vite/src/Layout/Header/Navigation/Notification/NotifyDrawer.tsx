@@ -22,16 +22,16 @@ import {
 
 const DrawerContainer = styled(Box)(({ theme }) => ({
   width: 250,
-  backgroundColor: alpha(theme.palette.primary.dark, 0.05),
+  backgroundColor: alpha(theme.palette.background.default, 0.05),
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.light, 0.1),
+    backgroundColor: alpha(theme.palette.background.default, 0.1),
   },
   height: '100%',
 }));
 
 const Drawer = styled(MuiDrawer)(({ theme }) => ({
   '& .MuiPaper-root': {
-    backgroundColor: darken(theme.palette.primary.main, 0.3),
+    backgroundColor: darken(theme.palette.background.default, 0.3),
   },
 }));
 
@@ -77,7 +77,7 @@ export const NotifyDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
       <List>
         {Object.keys(generalPaths).map((text) => (
           <ListItem key={text} disablePadding>
-            <Box width="100%" p={1} mb={2} borderRadius={1} bgcolor={alpha(theme.palette.primary.light, 0.1)}>
+            <Box width="100%" p={1} mb={2} borderRadius={1} bgcolor={alpha(theme.palette.background.default, 0.1)}>
               <ListItemIcon> {generalPaths[text].icon} </ListItemIcon>
               <ListItemText primary={`"${user.username}" wants to ${text}`} />
               <Box display="flex" justifyContent="space-between" mt={1}>
@@ -107,7 +107,7 @@ export const NotifyDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
   return (
     <>
       <IconButton onClick={toggleDrawer(true)}>
-          <NotificationsIcon sx={{ color: theme.palette.common.white }} />
+          <NotificationsIcon sx={{ color: theme.palette.secondary.main }} />
       </IconButton>
       <Drawer anchor='right' open={isOpen} onClose={toggleDrawer(false)}>
         {DrawerList}

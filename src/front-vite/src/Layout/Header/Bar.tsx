@@ -5,7 +5,6 @@ import { NotifyDrawer as NotificationButton } from './Navigation/Notification/No
 import { Button as ProfileButton } from './Navigation/Profile/Button';
 import { Button as LoginButton } from './Navigation/Login/Button';
 import { AppBar, Box, Stack, Typography } from '@mui/material';
-
 import { Item } from '../../Styles/Test';
 
 export const Bar: React.FC = () => {
@@ -17,7 +16,7 @@ export const Bar: React.FC = () => {
   placeholderUser.isAuthenticated = true;
 
   return (
-    <AppBar position='fixed' sx={{ height: '48px' }}>
+    <AppBar position='fixed' sx={{ height: '48px' }} color='secondary'>
       <Box paddingX={1} paddingY={0.5}>
         <Stack
           direction='row' flexGrow={'1'} spacing={4}
@@ -38,7 +37,7 @@ export const Bar: React.FC = () => {
             fontSize: 'relative-size',
             textAlign: 'center',
             fontWeight: 'bold',
-            color: (theme) => theme.palette.common.white,
+            color: (theme) => theme.palette.text.primary,
           }}
           >
             <span>Transcendences</span>

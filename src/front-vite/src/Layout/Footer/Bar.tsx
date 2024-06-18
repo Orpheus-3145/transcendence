@@ -13,7 +13,7 @@ export const Bar: React.FC = () => {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <Box component="footer" padding={'2%'} bgcolor={(theme) => theme.palette.primary.main} overflow="hidden">
+    <Box component="footer" padding={'2%'} bgcolor={(theme) => theme.palette.background.default} overflow="hidden">
       <Stack 
         direction={isSmallScreen ? 'column' : 'row'} 
         spacing={4} 
@@ -28,7 +28,7 @@ export const Bar: React.FC = () => {
             alignItems="center"
             spacing={2}
             padding={2}
-            bgcolor={(theme) => theme.palette.primary.dark}
+            bgcolor={(theme) => theme.palette.primary.main}
             borderRadius={2}
             boxShadow={3}
             sx={{
