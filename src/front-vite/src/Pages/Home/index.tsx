@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Container, Typography, List, ListItem, ListItemText, CssBaseline, Paper, useTheme } from '@mui/material';
 
-const Section = ({ children, elevation }) => {
+interface SectionProps {
+  children: ReactNode;
+  elevation: number;
+}
+
+const Section: React.FC<SectionProps> = ({ children, elevation }) => {
   const theme = useTheme();
   return (
-    <Paper elevation={elevation} style={{ backgroundColor: theme.palette.primary.main, padding: theme.spacing(3), marginBottom: theme.spacing(2) }}>
+    <Paper
+      elevation={elevation}
+      style={{
+        backgroundColor: theme.palette.primary.main,
+        padding: theme.spacing(3),
+        marginBottom: theme.spacing(2),
+      }}
+    >
       {children}
     </Paper>
   );
