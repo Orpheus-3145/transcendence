@@ -13,7 +13,7 @@ export const Bar: React.FC = () => {
     isAuthenticated: false,
   };
 
-  placeholderUser.isAuthenticated = true;
+  placeholderUser.isAuthenticated = false;
 
   return (
     <AppBar position='fixed' sx={{ height: '48px' }} color='secondary'>
@@ -33,7 +33,7 @@ export const Bar: React.FC = () => {
               <SearchBar />
             </Item>
           </Stack>
-          <Typography alignSelf={'center'} sx={{
+          {/* <Typography alignSelf={'center'} sx={{
             fontSize: 'relative-size',
             textAlign: 'center',
             fontWeight: 'bold',
@@ -41,7 +41,7 @@ export const Bar: React.FC = () => {
           }}
           >
             <span>Transcendences</span>
-          </Typography>
+          </Typography> */}
           <Stack direction='row' spacing={1} >
             {placeholderUser.username && placeholderUser.isAuthenticated ? (
               <>

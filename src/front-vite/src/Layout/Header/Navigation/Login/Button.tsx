@@ -4,7 +4,6 @@ import { Login as LoginIcon } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 
-
 export const Button: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -14,7 +13,7 @@ export const Button: React.FC = () => {
   };
 
   return (
-    <IconButton color="inherit" edge="end" onClick={handleClick}>
+    <IconButton onClick={handleClick}>
       <LoginIcon sx={{ color: theme.palette.secondary.main }} />
     </IconButton>
   );

@@ -97,7 +97,7 @@ export const MenuDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
 
   const onlinePaths: Record<string, PathItem> = {
     Profile: { path: `/profile/${user.username}`, icon: <AccountCircleIcon /> },
-    Settings: { path: '/settings', icon: <SettingsIcon /> },
+    Settings: { path: '/profile/settings', icon: <SettingsIcon /> },
     Logout: { path: '/logout', icon: <LogoutIcon /> },
   };
 
