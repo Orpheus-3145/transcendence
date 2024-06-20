@@ -13,7 +13,7 @@ export const Bar: React.FC = () => {
     isAuthenticated: false,
   };
 
-  placeholderUser.isAuthenticated = false;
+  placeholderUser.isAuthenticated = true;
 
   return (
     <AppBar position='fixed' sx={{ height: '48px' }} color='secondary'>

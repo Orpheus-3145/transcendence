@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, BoxProps } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 export const Item: React.FC<React.PropsWithChildren<BoxProps>> = (props) => {
     const { sx, children, ...other } = props;
@@ -18,7 +19,7 @@ export const Item: React.FC<React.PropsWithChildren<BoxProps>> = (props) => {
           bgcolor: (theme) => (theme.palette.background.default),
           transition: 'box-shadow 0.3s',
           '&:hover': {
-            boxShadow: 'inset 0 0 1em rgba(0, 0, 50, 0.5)',
+            boxShadow: theme => `inset 0 0 1em ${alpha(theme.palette.secondary.main, 0.5)}`,
           },
           ...sx,
         }}
