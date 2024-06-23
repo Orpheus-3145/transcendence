@@ -234,17 +234,18 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ chatProps, setChatPro
               },
             }}
           >
-            <Stack
-              padding={'0.5em'}
-              height={'3.3em'}
-              justifyContent={'center'}
-              marginY={'0.3em'}
-              direction={'row'}
-              spacing={1}
-              bgcolor={(theme) => theme.palette.action.hover}
+            <IconButton
               onClick={() => console.log("Add a user")}
               sx={{
-                transition: 'border-radius 0.4s ease',
+                justifyContent: 'center',
+                marginY: '0.3em',
+                padding: '0.3em',
+                height: '1.3em',
+                spacing: 1,
+                color: (theme) => theme.palette.secondary.main,
+                bgcolor: (theme) => theme.palette.primary.main,
+                borderRadius: '0em',
+                transition: 'border-radius 0.4s ease, background-color 0.4s ease',
                 '&:hover': {
                   cursor: 'pointer',
                   bgcolor: (theme) => theme.palette.action.hover,
@@ -252,26 +253,14 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ chatProps, setChatPro
                 },
               }}
             >
-              <IconButton
-                sx={{
-                  color: (theme) => theme.palette.secondary.main,
-                  bgcolor: (theme) => theme.palette.primary.main,
-                  height: 26,
-                  width: 26,
-                }}
-              >
-                <AddIcon />
-              </IconButton>
+              <AddIcon/>
               <Typography
-                sx={{
-                  alignSelf: 'center', // Ensure vertical alignment in the stack
-                }}
-                color={(theme) => theme.palette.secondary.main}
-                fontSize={'1em'}
+                alignSelf={'center'}
+                fontSize={'0.7em'}
               >
                 Add a friend
               </Typography>
-            </Stack>
+            </IconButton>
             {chatProps.selected?.settings?.users?.map((user, index) => (
               user.role !== UserRoles.Owner ? (
                 <Stack
