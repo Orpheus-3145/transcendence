@@ -17,8 +17,8 @@ const HistoryBox = styled(Box)(({ theme }) => ({
 }));
 
 const MainContainer = styled(Container)(({ theme }) => ({
-  paddingLeft: '10em',
-  paddingRight: '10em',
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(2),
 }));
 
 const Home: React.FC = () => {

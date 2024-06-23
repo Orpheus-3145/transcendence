@@ -10,21 +10,35 @@ export enum ChatStatus {
 
 export interface ChatMessage {
   message: React.ReactElement<typeof Typography>;
-  user: React.ReactElement<typeof Typography>;
+  user: string;
   userPP: React.ReactElement;
   timestamp: React.ReactElement;
+}
+
+export enum UserRoles {
+  Administrator = 'Administrator',
+  Guest = 'Guest',
+  Owner = 'Owner',
+}
+
+export interface UserProps {
+  name: string;
+  role: string;
+  email: string;
+  password: string;
+  icon: React.ReactElement;
 }
 
 export interface ChatSettings {
   icon: React.ReactElement;
   type: 'public' | 'private' | 'password';
   password: string | null;
-  users: string[];
+  users: UserProps[];
   owner: string;
 }
 
 export interface ChatRoom {
-  name: React.ReactElement<typeof Typography>;
+  name: string;
   icon: React.ReactElement;
   messages: ChatMessage[];
   settings: ChatSettings;

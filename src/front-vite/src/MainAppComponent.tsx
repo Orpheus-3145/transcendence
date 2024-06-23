@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { Bar as Header } from './Layout/Header/Bar';
-import { Bar as Footer } from './Layout/Footer/Bar';
+import { Bar as Header } from './Layout/Header/HeaderBar';
+import { Bar as Footer } from './Layout/Footer/FooterBar';
 import Chat from './Layout/Chat/index';
 import Main from './Layout/Main/index';
 import './mainAppComponent.css'

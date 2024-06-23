@@ -1,9 +1,9 @@
 import React from 'react';
 import { ChatProps, ChatStatus, ChatRoom } from './InterfaceChat';
-import { Box, Stack, IconButton, InputBase, Button, ListItemText } from '@mui/material';
+import { Box, Stack, IconButton, InputBase, Button, ListItemText, Avatar } from '@mui/material';
 import { useTheme } from '@emotion/react';
 import { Chat as ChatIcon, Settings as SettingsIcon, Send as SendIcon, Cancel as CancelIcon } from '@mui/icons-material';
-
+import { useNavigate } from 'react-router-dom';
 interface ContentChatProps {
   chatProps: ChatProps;
   setChatProps: React.Dispatch<React.SetStateAction<ChatProps>>;
@@ -14,40 +14,48 @@ const ContentChat: React.FC<ContentChatProps> = ({ chatProps, setChatProps }) =>
     setChatProps({ ...chatProps, chatStatus: status, selected: selection });
   };
   const theme = useTheme();
+  const navigate = useNavigate();
   return (
     <Box
-      padding="0.2em"
       sx={{
         position: 'fixed',
         border: '1px solid #abc',
         bottom: 16,
         right: 16,
         width: 300,
-        height: 'auto',
         bgcolor: (theme) => theme.palette.background.default,
         borderRadius: '1em',
-        overflow: 'auto'
+        maxHeight: '70vh',
+        minHeight: '30vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
       }}
-    >      <Stack direction={'column'} justifyContent={'flex-end'}>
+    >
+      <Stack direction={'column'} sx={{ flexGrow: 1, maxHeight: '100%' }}>
         <Stack
           direction={'row'}
           sx={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
             borderTopLeftRadius: '1em',
             borderTopRightRadius: '1em',
             color: (theme) => theme.palette.secondary.main,
             justifyContent: 'space-between',
+            alignItems: 'center',
             paddingX: '0.9em',
             paddingY: '0.1em',
             bgcolor: (theme) => theme.palette.background.default,
-            flexGrow: 1,
+            height: '40px',
           }}
         >
           <Stack direction={'row'} alignItems={'center'} spacing={1}>
-            <ChatIcon />
+            {chatProps.selected?.icon || <ChatIcon />}
             <ListItemText primary={chatProps.selected?.name || 'Chat Name'} />
           </Stack>
           <Stack direction={'row'}>
-            <IconButton onClick={() => { toggleChatStatus(ChatStatus.Settings, chatProps.selected)}} sx={{
+            <IconButton onClick={() => { toggleChatStatus(ChatStatus.Settings, chatProps.selected) }} sx={{
               color: (theme) => theme.palette.secondary.main,
               '&:hover': {
                 color: 'orange'
@@ -65,33 +73,80 @@ const ContentChat: React.FC<ContentChatProps> = ({ chatProps, setChatProps }) =>
             </IconButton>
           </Stack>
         </Stack>
-        <Stack
-          minHeight="15em"
-          direction="column"
-          padding="0.5em"
-          spacing={1}
-          bgcolor={(theme) => theme.palette.background.default}
-          border={2}
-          borderColor={(theme) => theme.palette.divider}
-        >          {chatProps.selected?.messages.map((message) => (
-          <Stack direction={'row'} spacing={1} alignItems={'center'}>
-            <ListItemText primary={message.user} />
-            <ListItemText primary={message.message} />
-            <ListItemText primary={message.timestamp} />
+        <Stack direction={'column'} sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: 'calc(50vh - 80px)' }}>
+          <Stack
+            direction="column"
+            padding="0.5em"
+            spacing={1}
+            bgcolor={(theme) => theme.palette.background.default}
+            border={2}
+            borderColor={(theme) => theme.palette.divider}
+            sx={{ maxHeight: 'calc(70vh - 130px)',
+              overflowY: 'auto',
+              '&': {
+                scrollbarWidth: 'thin',
+                scrollbarColor: (theme) => `${theme.palette.primary.dark} transparent`,
+              },
+              '&:hover': {
+                  scrollbarColor: (theme) => `${theme.palette.secondary.dark} transparent`,
+              },
+            }}
+          >
+            {chatProps.selected?.messages.map((message) => (
+              <Stack direction="row" spacing={1} key={message.id}>
+                <Stack onClick={()=> (navigate(`/profile/${message.user}`))}>
+                  <Avatar  sx={{cursor: 'pointer'}} >
+                    {message.userPP}
+                  </Avatar>
+                </Stack>
+                <Stack
+                  direction="column"
+                  spacing={0.5}
+                  padding="0.5em"
+                  bgcolor={(theme) => theme.palette.primary.main}
+                  borderRadius="0.3em"
+                  sx={{ width: '70%' }}
+                >
+                  <ListItemText primary={message.user} />
+                  <Stack direction="column" sx={{ wordWrap: 'break-word'}}>
+                    <ListItemText
+                      primary={message.message}
+                      primaryTypographyProps={{
+                        sx: { wordWrap: 'break-word' }
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'flex-end',
+                        fontSize: '0.5rem',
+                        color: 'gray',
+                        mt: 0.5
+                      }}
+                    >
+                      {message.timestamp}
+                    </Box>
+                  </Stack>
+                </Stack>
+              </Stack>
+            ))}
           </Stack>
-        ))}
         </Stack>
         <Stack
-          direction="row"
-          justifyContent="space-between"
-          padding="0.1em"
-          paddingX="0.5em"
-          alignItems="center"
-          spacing={1}
+          direction={'row'}
           sx={{
+            marginY: '0.3em',
+            marginX: '0.4em',
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 1,
             bgcolor: (theme) => theme.palette.background.default,
             borderBottomLeftRadius: '1em',
             borderBottomRightRadius: '1em',
+            height: '50px',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
           <InputBase
@@ -99,7 +154,7 @@ const ContentChat: React.FC<ContentChatProps> = ({ chatProps, setChatProps }) =>
               flexGrow: 1,
               color: (theme) => theme.palette.secondary.main,
               border: '1px solid #ced4da',
-              padding: '0.5em',
+              padding: '0.4em',
               borderRadius: '5em',
               borderColor: (theme) => theme.palette.divider,
               '&:hover': {
@@ -116,15 +171,11 @@ const ContentChat: React.FC<ContentChatProps> = ({ chatProps, setChatProps }) =>
             variant="contained"
             color="secondary"
             sx={{
+              marginLeft: '0.5em',
               borderRadius: '0.8em',
-              minWidth: '40px',
-              minHeight: '40px',
               width: '40px',
-              height: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: 0,
+              minWidth: '40px',
+              height: '40px',
             }}
           >
             <SendIcon />

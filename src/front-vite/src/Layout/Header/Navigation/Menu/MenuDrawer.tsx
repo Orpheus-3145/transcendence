@@ -20,7 +20,8 @@ import {
   Login as LoginIcon,
   AccountCircle as AccountCircleIcon,
   Settings as SettingsIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Tag as TagIcon
 } from '@mui/icons-material';
 
 const StyledIconWrapper = styled('div')(({ theme }) => ({
@@ -89,6 +90,7 @@ export const MenuDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
   const generalPaths: Record<string, PathItem> = {
     Home: { path: '/', icon: <HomeIcon /> },
     Game: { path: '/game', icon: <GameIcon /> },
+    Channels: { path: '/channels', icon: <TagIcon />},
   };
 
   const offlinePaths: Record<string, PathItem> = {

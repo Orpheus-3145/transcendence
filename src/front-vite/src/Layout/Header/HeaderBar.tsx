@@ -1,10 +1,10 @@
 import React from 'react';
-import SearchBar from './Navigation/Search/Bar';
+import SearchBar from './Navigation/Search/SearchBar';
 import { MenuDrawer as MenuButton } from './Navigation/Menu/MenuDrawer';
 import { NotifyDrawer as NotificationButton } from './Navigation/Notification/NotifyDrawer';
-import { Button as ProfileButton } from './Navigation/Profile/Button';
-import { Button as LoginButton } from './Navigation/Login/Button';
-import { AppBar, Box, Stack, Typography } from '@mui/material';
+import { Button as ProfileButton } from './Navigation/Profile/ProfileButton';
+import { Button as LoginButton } from './Navigation/Login/LoginButton';
+import { AppBar, Box, Stack } from '@mui/material';
 import { Item } from '../../Styles/Test';
 
 export const Bar: React.FC = () => {
@@ -33,15 +33,6 @@ export const Bar: React.FC = () => {
               <SearchBar />
             </Item>
           </Stack>
-          {/* <Typography alignSelf={'center'} sx={{
-            fontSize: 'relative-size',
-            textAlign: 'center',
-            fontWeight: 'bold',
-            color: (theme) => theme.palette.text.primary,
-          }}
-          >
-            <span>Transcendences</span>
-          </Typography> */}
           <Stack direction='row' spacing={1} >
             {placeholderUser.username && placeholderUser.isAuthenticated ? (
               <>

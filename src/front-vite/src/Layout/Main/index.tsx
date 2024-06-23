@@ -6,6 +6,7 @@ import ErrorPage from '../../Pages/Error/index';
 import UserSettings from '../../Pages/UserSettings/index';
 import ProfilePage from '../../Pages/Profile';
 import LoginPage from '../../Pages/Login/index';
+import ChannelsPage from '../../Pages/Channels/index';
 
 export const Main: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ export const Main: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/game" element={<Game />} />
+        <Route path="/channels" element={<ChannelsPage />} />
         <Route path="/profile/settings" element={<UserSettings />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
         <Route path="*" element={<ErrorPage />} />

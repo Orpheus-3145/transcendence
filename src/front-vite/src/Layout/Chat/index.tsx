@@ -7,15 +7,21 @@ import ContentDrawer from './ContentDrawer';
 import ContentChat from './ContentChat';
 import ContentSettings from './ContentSettings';
 
+interface ChatRoom {
+  id: number;
+  name: string;
+  avatar: string;
+}
+
 export const Chat: React.FC = () => {
   const [chatProps, setChatProps] = useState<ChatProps>({
     chatRooms: [
       {
-        name: <Typography>ChatName1</Typography>,
+        name: 'ChatName1',
         icon: <ChatIcon />,
         messages: [
           {
-            message: <Typography>Hello</Typography>,
+            message: <Typography>asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd</Typography>,
             user: <Typography>User1</Typography>,
             userPP: <Typography>User1PP</Typography>,
             timestamp: <Typography>10:00</Typography>,
@@ -31,33 +37,104 @@ export const Chat: React.FC = () => {
           icon: <ChatIcon />,
           type: 'public',
           password: null,
-          users: ['User1', 'User2'],
+          users: [
+            {
+              name: 'User1',
+              role: 'Guest',
+              email: 'user1@example.com',
+              password: 'password1',
+              icon: <Typography>User1Icon</Typography>,
+            },
+            {
+              name: 'User2',
+              role: 'Owner',
+              email: 'user2@example.com',
+              password: 'password2',
+              icon: <Typography>User2Icon</Typography>,
+            },
+            {
+              name: 'User367890',
+              role: 'Administrator',
+              email: 'user3@example.com',
+              password: 'password3',
+              icon: <Typography>User3Icon</Typography>,
+            },
+            {
+              name: 'User4',
+              role: 'Guest',
+              email: 'user4@example.com',
+              password: 'password4',
+              icon: <Typography>User4Icon</Typography>,
+            },
+            {
+              name: 'User4',
+              role: 'Guest',
+              email: 'user4@example.com',
+              password: 'password4',
+              icon: <Typography>User4Icon</Typography>,
+            },
+            {
+              name: 'User4',
+              role: 'Guest',
+              email: 'user4@example.com',
+              password: 'password4',
+              icon: <Typography>User4Icon</Typography>,
+            },
+            {
+              name: 'User4',
+              role: 'Guest',
+              email: 'user4@example.com',
+              password: 'password4',
+              icon: <Typography>User4Icon</Typography>,
+            },
+          ],
           owner: 'OwnerName',
         },
       },
       {
-        name: <Typography>ChatName2</Typography>,
+        name: 'ChatName2',
         icon: <ChatIcon />,
         messages: [
-          {
-            message: <Typography>Hey</Typography>,
-            user: <Typography>User3</Typography>,
-            userPP: <Typography>User3PP</Typography>,
-            timestamp: <Typography>11:00</Typography>,
-          },
-          {
-            message: <Typography>Hi there</Typography>,
-            user: <Typography>User4</Typography>,
-            userPP: <Typography>User4PP</Typography>,
-            timestamp: <Typography>11:01</Typography>,
-          },
+          // Messages for ChatName2
         ],
         settings: {
           icon: <ChatIcon />,
           type: 'private',
+          password: 'chat2password',
+          users: [
+            // Users for ChatName2
+          ],
+          owner: 'OwnerName2',
+        },
+      },
+      {
+        name: 'ChatName3',
+        icon: <ChatIcon />,
+        messages: [
+          // Messages for ChatName3
+        ],
+        settings: {
+          icon: <ChatIcon />,
+          type: 'password',
+          password: 'chat3password',
+          users: [
+            // Users for ChatName3
+          ],
+          owner: 'OwnerName3',
+        },
+      },
+      {
+        name: 'ChatName4',
+        icon: <ChatIcon />,
+        messages: [
+        ],
+        settings: {
+          icon: <ChatIcon />,
+          type: 'public',
           password: null,
-          users: ['User3', 'User4'],
-          owner: 'AnotherOwnerName',
+          users: [
+          ],
+          owner: 'OwnerName4',
         },
       },
     ],
@@ -66,10 +143,17 @@ export const Chat: React.FC = () => {
     searchPrompt: null,
   });
 
+  // parameters - will be added later
+  function VerifyUser(): boolean {
+    return (true);
+  }
+
+  function GetChatRooms(): ChatRoom[] {
+
+  }
+
   const renderChatContent = () => {
     switch (chatProps.chatStatus) {
-      case ChatStatus.Bubble:
-        return <ContentBubble chatProps={chatProps} setChatProps={setChatProps} />;
       case ChatStatus.Drawer:
         return <ContentDrawer chatProps={chatProps} setChatProps={setChatProps} />;
       case ChatStatus.Chatbox:
@@ -77,12 +161,16 @@ export const Chat: React.FC = () => {
       case ChatStatus.Settings:
         return <ContentSettings chatProps={chatProps} setChatProps={setChatProps} />;
       default:
-        return null;
+        return <ContentBubble chatProps={chatProps} setChatProps={setChatProps} />;
     }
   };
-
+  // return (
+  //   {chatStatus === ChatStatus.Bubble && (<ChatBubble chatProps={chatProps} setChatProps={setChatProps} />)}
+  //   {chatStatus === ChatStatus.Drawer && (<ChatDrawer chatProps={chatProps} setChatProps={setChatProps} />)}
+  //   {chatStatus === ChatStatus.Chatbox && (<ChatBox chatProps={chatProps} setChatProps={setChatProps} />)}
+  // );
   return (
-    <div>
+    <div >
       {renderChatContent()}
     </div>
   );
