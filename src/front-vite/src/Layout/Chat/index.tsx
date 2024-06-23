@@ -95,14 +95,12 @@ export const Chat: React.FC = () => {
         name: 'ChatName2',
         icon: <ChatIcon />,
         messages: [
-          // Messages for ChatName2
         ],
         settings: {
           icon: <ChatIcon />,
           type: 'private',
           password: 'chat2password',
           users: [
-            // Users for ChatName2
           ],
           owner: 'OwnerName2',
         },
@@ -111,14 +109,12 @@ export const Chat: React.FC = () => {
         name: 'ChatName3',
         icon: <ChatIcon />,
         messages: [
-          // Messages for ChatName3
         ],
         settings: {
           icon: <ChatIcon />,
           type: 'password',
           password: 'chat3password',
           users: [
-            // Users for ChatName3
           ],
           owner: 'OwnerName3',
         },
