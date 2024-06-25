@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, CssBaseline, Container, useTheme } from '@mui/material';
+import { Box, Typography, Button, Container, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
 
 const ErrorContainer = styled(Box)(({ theme }) => ({
@@ -30,22 +30,19 @@ const ErrorPage: React.FC = () => {
   }
 
   return (
-    <>
-      <CssBaseline />
-      <Container>
-        <ErrorContainer>
-          <Typography variant="h1" component="h1" gutterBottom>
-            404
-          </Typography>
-          <Typography variant="body1" gutterBottom>
-            Oops! The page you're looking for doesn't exist.
-          </Typography>
-          <HomeLink variant="outlined" onClick={handleHomeClick}>
-            Go back to Home
-          </HomeLink>
-        </ErrorContainer>
-      </Container>
-    </>
+    <Container>
+      <ErrorContainer>
+        <Typography variant="h1" component="h1" gutterBottom>
+          404
+        </Typography>
+        <Typography variant="body1" gutterBottom>
+          Oops! The page you're looking for doesn't exist.
+        </Typography>
+        <HomeLink variant="outlined" onClick={handleHomeClick}>
+          Go back to Home
+        </HomeLink>
+      </ErrorContainer>
+    </Container>
   );
 };
 

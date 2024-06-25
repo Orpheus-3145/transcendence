@@ -139,14 +139,14 @@ export const MenuDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
   );
 
   return (
-    <>
+    <Box>
       <IconButton onClick={() => {setIsOpen(true)}}>
           <ReorderRoundedIcon sx={{ color: theme.palette.secondary.main }} />
       </IconButton>
       <Drawer open={isOpen} onClose={toggleDrawer(false)}>
         {DrawerList}
       </Drawer>
-    </>
+    </Box>
   );
 };
 

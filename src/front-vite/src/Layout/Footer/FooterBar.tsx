@@ -48,11 +48,11 @@ export const Bar: React.FC = () => {
           overflow: 'auto',
         }}
       >
-        {team.map((developer) => (
+        {team.map((developer, index) => (
           <Stack
             borderRadius={'1.5em'}
             bgcolor={theme.palette.primary.main}
-            key={developer.name}
+            key={index}
             direction={'column'}
             justifyContent="space-between"
             alignItems="center"

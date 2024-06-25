@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, CssBaseline, Container, useTheme } from '@mui/material';
+import { Box, Typography, Button, Container, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
 
 const ErrorContainer = styled(Box)(({ theme }) => ({
@@ -30,22 +30,19 @@ const ChannelsPage: React.FC = () => {
   }
 
   return (
-    <>
-      <CssBaseline />
-      <Container>
-        <ErrorContainer>
-          <Typography variant="h3" component="h3" gutterBottom>
-            Channels Page is under construction.
-          </Typography>
-          <Typography variant="body1" gutterBottom>
-            404
-          </Typography>
-          <HomeLink variant="outlined" onClick={handleHomeClick}>
-            Go back to Home
-          </HomeLink>
-        </ErrorContainer>
-      </Container>
-    </>
+    <Container>
+      <ErrorContainer>
+        <Typography variant="h3" component="h3" gutterBottom>
+          Channels Page is under construction.
+        </Typography>
+        <Typography variant="body1" gutterBottom>
+          404
+        </Typography>
+        <HomeLink variant="outlined" onClick={handleHomeClick}>
+          Go back to Home
+        </HomeLink>
+      </ErrorContainer>
+    </Container>
   );
 };
 

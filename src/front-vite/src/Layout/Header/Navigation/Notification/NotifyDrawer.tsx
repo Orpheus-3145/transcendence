@@ -105,14 +105,14 @@ export const NotifyDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
   );
 
   return (
-    <>
+    <Box>
       <IconButton onClick={toggleDrawer(true)}>
-          <NotificationsIcon sx={{ color: theme.palette.secondary.main }} />
+        <NotificationsIcon sx={{ color: theme.palette.secondary.main }} />
       </IconButton>
       <Drawer anchor='right' open={isOpen} onClose={toggleDrawer(false)}>
         {DrawerList}
       </Drawer>
-    </>
+    </Box>
   );
 };
 

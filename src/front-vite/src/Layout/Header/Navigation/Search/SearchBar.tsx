@@ -36,7 +36,7 @@ export const SearchBar: React.FC = () => {
         <SearchIcon sx={{ color: theme.palette.secondary.main }} />
       </IconButton>
       <Divider orientation="vertical" sx={{backgroundColor: theme.palette.secondary.main, width: '0.01em', height: '50%'}} />
-      <InputBase placeholder="Search..." inputProps={{ 'aria-label': 'search...' }}
+      <InputBase name='HeaderSearchBar' placeholder="Search..." inputProps={{ 'aria-label': 'search...' }}
        sx={{ color: theme.palette.secondary.main, flexGrow: 1, marginX: '0.3em' }}
        />
     </Box>
