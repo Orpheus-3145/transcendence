@@ -1,32 +1,14 @@
-# react:
-#	react-router-dom
-#	mui - material, icons, @emotion/react, @emotion/styled
-#	roboto - Default fount from google
-#	tsparticles react-tsparticles
-# nestjs:
-#	@nestjs/typeorm
-#	@nestjs/config
-
-init:
-	cd ./src/front-vite && npm install
-	cd ./src/backend-nestjs && npm install
-
-build:
-	docker-compose build
-
-up:
-	docker-compose up
+all:
+	docker-compose up --build
 
 down:
-	docker-compose down
+	@docker-compose -f docker-compose.yml down
 
-dbclean: down
-	docker volume prune -f
+clean fclean:
+	docker stop $$(docker ps -qa) > /dev/null 2>&1; \
+	docker rm $$(docker ps -qa) > /dev/null 2>&1; \
+	docker rmi -f $$(docker images -qa) > /dev/null 2>&1; \
+	docker volume rm $$(docker volume ls -q) > /dev/null 2>&1; \
+	docker network rm $$(docker network ls -q) > /dev/null 2>&1; \
 
-clean: dbclean
-	rm -rf ## NEED TO SET FIRST ##
-
-fclean: clean
-	docker system prune -af
-
-.PHONY: build up down dblean clean fclean
+.PHONY: all down clean fclean

@@ -14,14 +14,16 @@ const HistoryBox = styled(Box)(({ theme }) => ({
   color: theme.palette.text.primary,
   padding: theme.spacing(2),
   marginTop: theme.spacing(2),
+  borderRadius: '1em',
 }));
 
 const MainContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(3),
   marginBottom: theme.spacing(2),
+  backgroundColor: theme.palette.primary.dark,
 }));
 
-const Home: React.FC = () => {
+const Game: React.FC = () => {
   const theme = useTheme();
 
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -84,7 +86,7 @@ const Home: React.FC = () => {
               textAlign: 'justify',
               color: theme.palette.secondary.main,
               bgcolor: theme.palette.primary.main,
-              borderBottomLeftRadius: '1em',
+              borderBottomLeftRadius: '1em',  
               borderBottomRightRadius: '1em',
               borderTopRightRadius: '1em',
             }}
@@ -168,7 +170,7 @@ const Home: React.FC = () => {
             }}
           >
             <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
-              The development of Pong was significant as it was one of the first video games to gain widespread popularity in both arcade and home console formats. It led to the creation of a new industry of arcade video games, video game arcades, and home video game consoles. The success of Pong not only solidified Atari's position in the video game industry but also led to the development of many other video games and systems.
+              The development of Pong was significant as it was one of the first video games to gain widespread popularity in both arcade and Game console formats. It led to the creation of a new industry of arcade video games, video game arcades, and home video game consoles. The success of Pong not only solidified Atari's position in the video game industry but also led to the development of many other video games and systems.
             </Box>
           </Typography>
         </HistoryBox>
@@ -177,4 +179,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default Game;

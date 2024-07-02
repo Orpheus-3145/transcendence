@@ -1,61 +1,69 @@
-version: '3.8'
+services:
 
-networks:
-  transendence:
+  database:
+    image: postgres:16-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    expose:
+      - ${PORT_POSTGRES}
+    ports:
+      - "${PORT_POSTGRES}:${PORT_POSTGRES}" # Optional: expose for debugging.
+    networks:
+      - internal
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      COMPOSE_HTTP_TIMEOUT: ${COMPOSE_HTTP_TIMEOUT}
+
+  backend:
+    build:
+      context: ./src/back-nestjs
+      args:
+        PORT: ${PORT_BACKEND}
+    volumes:
+      - ./src/back-nestjs:/app
+      - /app/node_modules
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - database
+    environment:
+      PORT: ${PORT_BACKEND}
+    ports:
+      - "${PORT_BACKEND}:${PORT_BACKEND}" # Optional: expose for debugging.
+    expose:
+      - "${PORT_BACKEND}"
+    networks:
+      - internal
+
+  frontend:
+    build:
+      context: ./src/front-vite
+      args:
+        PORT: ${PORT_FRONTEND}
+    volumes:
+      - ./src/front-vite:/app
+      - /app/node_modules
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    environment:
+      PORT: ${PORT_FRONTEND}
+    ports:
+      - "${PORT_FRONTEND}:${PORT_FRONTEND}"
+    expose:
+      - "${PORT_FRONTEND}"
+    networks:
+      - internal
 
 volumes:
-  upload-volume:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./uploads
-      o: bind
+  pgdata:
 
-services:
-  postgres:
-    image: postgres:latest
-    container_name: postgres
-    restart: unless-stopped
-    volumes:
-      - ./src/postgresql/data/:/var/lib/postgresql/data
-      - ./src/posgresql/db_structure.sql:/docker-entrypoint-initdb.d/db_structure.sql
-    networks:
-      - transendence
-    ports:
-      - "${P_POSTGRES}:${P_POSTGRES}"
-    environment:
-      - POSTGRES_USER: ${POSTGRES_USER}
-      - POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      - POSTGRES_DB: ${POSTGRES_DB}
-
-  nestjs:
-    build: "./back-nestjs"
-    depends_on:
-      - postgres
-    container_name: nestjs
-    restart: unless-stopped
-    volumes:
-      - ./src/back-nestjs/:/app
-      - upload-volume:/app/uploads
-    networks:
-      - transendence
-    ports:
-      - "${P_NESTJS}:${P_NESTJS}"
-    env_file:
-      - .env
-
-  react:
-    build: "./back-react"
-    depends_on:
-      - nestjs
-    container_name: react
-    restart: unless-stopped
-    volumes:
-      - ./src/front-react/:/app
-      - upload-volume:/app/uploads
-    networks:
-      - transendence
-    ports:
-      - "${P_REACT}:${P_REACT}"
-    env_file:
-      - .env
+networks:
+  internal:
+    driver: bridge

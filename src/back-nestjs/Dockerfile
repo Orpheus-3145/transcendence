@@ -1,11 +1,15 @@
-FROM node:lts
+FROM node:19
+
+ARG PORT
+
+EXPOSE $PORT
 
 WORKDIR /app
 
 COPY package*.json ./
 
-COPY . .
+RUN npm install
 
-RUN npm install && npm run build
+COPY . .
 
 CMD ["npm", "run", "start:dev"]

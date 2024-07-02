@@ -8,7 +8,8 @@ const MainContainer = styled(Container)(({ theme }) => ({
 }));
 
 const ContentBox = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.background.default,
+  backgroundColor: theme.palette.primary.dark,
+  borderRadius: '1em',
   color: theme.palette.text.primary,
   padding: theme.spacing(2),
   marginTop: theme.spacing(2),

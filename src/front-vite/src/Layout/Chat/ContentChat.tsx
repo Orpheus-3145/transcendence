@@ -1,9 +1,10 @@
 import React from 'react';
 import { ChatProps, ChatStatus, ChatRoom } from './InterfaceChat';
 import { Box, Stack, IconButton, InputBase, Button, ListItemText, Avatar } from '@mui/material';
-import { useTheme } from '@emotion/react';
+// import { useTheme } from '@emotion/react';
 import { Chat as ChatIcon, Settings as SettingsIcon, Send as SendIcon, Cancel as CancelIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+
 interface ContentChatProps {
   chatProps: ChatProps;
   setChatProps: React.Dispatch<React.SetStateAction<ChatProps>>;
@@ -13,7 +14,7 @@ const ContentChat: React.FC<ContentChatProps> = ({ chatProps, setChatProps }) =>
   const toggleChatStatus = (status: ChatStatus, selection: ChatRoom | null) => {
     setChatProps({ ...chatProps, chatStatus: status, selected: selection });
   };
-  const theme = useTheme();
+  // const theme = useTheme();
   const navigate = useNavigate();
   return (
     <Box
@@ -47,7 +48,7 @@ const ContentChat: React.FC<ContentChatProps> = ({ chatProps, setChatProps }) =>
             paddingX: '0.9em',
             paddingY: '0.1em',
             bgcolor: (theme) => theme.palette.background.default,
-            height: '40px',
+            height: '48px',
           }}
         >
           <Stack direction={'row'} alignItems={'center'} spacing={1}>
@@ -73,7 +74,7 @@ const ContentChat: React.FC<ContentChatProps> = ({ chatProps, setChatProps }) =>
             </IconButton>
           </Stack>
         </Stack>
-        <Stack direction={'column'} sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: 'calc(50vh - 80px)' }}>
+        <Stack direction={'column'} sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: '50vh' }}>
           <Stack
             direction="column"
             padding="0.5em"
@@ -92,8 +93,8 @@ const ContentChat: React.FC<ContentChatProps> = ({ chatProps, setChatProps }) =>
               },
             }}
           >
-            {chatProps.selected?.messages.map((message) => (
-              <Stack direction="row" spacing={1} key={message.id}>
+            {chatProps.selected?.messages.map((message, idx) => (
+              <Stack direction="row" spacing={1} key={idx}>
                 <Stack onClick={()=> (navigate(`/profile/${message.user}`))}>
                   <Avatar  sx={{cursor: 'pointer'}} >
                     {message.userPP}

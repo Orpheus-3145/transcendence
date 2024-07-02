@@ -1,0 +1,12 @@
+node_modules/
+.git/
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+dist/
+.cache/
+coverage/
+logs/
+temp/

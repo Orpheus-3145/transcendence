@@ -7,7 +7,7 @@ const SettingsContainer = styled(Container)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: theme.shape.borderRadius,
   marginTop: theme.spacing(4),
-  boxShadow: theme.shadows[3],
+  // boxShadow: theme.shadows[3],
 }));
 
 const SettingsSection = styled(Box)(({ theme }) => ({

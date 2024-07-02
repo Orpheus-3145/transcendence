@@ -1,55 +1,33 @@
+import * as dotenv from 'dotenv';
 import { NestFactory } from '@nestjs/core';
-import { EntryModule } from './entry.module';
-import * as fs from 'fs'; // Filesystem
+import { EntryModule } from './entry.module'; // Assuming EntryModule is in the same directory
 
 async function bootstrap() {
-
   let app;
 
-  const httpsOptions = {
-    key: fs.readFileSync('/certs/key.pem'),
-    cert: fs.readFileSync('/certs/cert.pem'),
-  };
+  dotenv.config();
 
   try {
-    app = await NestFactory.create(EntryModule, {httpsOptions});
+    app = await NestFactory.create(EntryModule);
   } catch (error) {
     const errorMessage = (error as Error).message || 'Unknown error';
     console.error('Failed to create Transendence. Exiting the process.', errorMessage);
     process.exit(1);
   }
 
+  // Enable CORS with dynamic origin based on environment variables
   app.enableCors({
-    origin: process.env.ORIGIN_NAME || 'http://localhost:3001',
+    origin: process.env.ORIGIN_URL_BACK || 'http://localhost:4000',
     credentials: true,
   });
 
-  /*
-    session, configs:
-      cookie:
-      secret
-      resave
-      saveUninitialized
-  */
+  // Use PORT_BACKEND environment variable, default to 4000 if not set
+  const port = process.env.PORT_BACKEND || 4000;
+  await app.listen(port, () => {
+    console.log(`NestJS origin: ${process.env.ORIGIN_URL_BACK}, listens on:${port}`);
+  });
 
-  const port = process.env.P_NESTJS ? parseInt(process.env.P_NESTJS, 10) : 3000;
-  try {
-    await app.listen(port);
-  } catch (error) {
-    const errorMessage = (error as Error).message || 'Unknown error';
-    console.error(`Failed to start Transendence on port ${port}. Exiting the process.`, errorMessage);
-    process.exit(1);
-  }
-
-  /*
-    passport:
-      init
-      session
-  */
-
-  await app.listen(port);
-  /*
-    initilize general chat room service
-  */
+  
 }
+
 bootstrap();

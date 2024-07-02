@@ -21,7 +21,7 @@ import {
   Chat as ChatIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
-import { useTheme } from '@emotion/react';
+// import { useTheme } from '@emotion/react';
 import { useNavigate } from 'react-router-dom';
 
 interface ContentSettingsProps {
@@ -36,11 +36,16 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ chatProps, setChatPro
   const [selectedType, setSelectedType] = useState(chatProps.selected?.settings.type);
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
-  const handleChange = (event) => {
-    setSelectedType(event.target.value);
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newValue: string = event.target.value;
+    if (newValue === "public" || newValue === "private" || newValue === "password" || newValue === undefined) {
+      setSelectedType(newValue as "public" | "private" | "password" | undefined);
+    } else {
+      console.error("Invalid type selected");
+    }
   };
 
-  const theme = useTheme();
+  // const theme = useTheme();
   return (
     <Box
       padding="0.2em"
