@@ -11,4 +11,7 @@ clean fclean:
 	docker volume rm $$(docker volume ls -q) > /dev/null 2>&1; \
 	docker network rm $$(docker network ls -q) > /dev/null 2>&1; \
 
+check:
+	npx depcheck
+
 .PHONY: all down clean fclean

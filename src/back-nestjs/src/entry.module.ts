@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-// import { TypeOrmModule } from '@nestjs/typeorm';
-import {HelloController} from './hello.controller';
-/* ConfigModule.forRoot({ isGlobal: true })
-    ConfigModule is available everwhere
-    env file available
-    ConfigService becomes injactable into any 'service module controller' with ConfigService
-*/
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HelloController } from './testHello/hello.controller';
+import { HelloService } from './testHello/hello.service';
+import { ormConfig } from './orm/orm.config';
 
 /*
   Upload handling options:
@@ -16,7 +13,6 @@ import {HelloController} from './hello.controller';
 */
 
 // Passport
-// typeorm
 
 // User, Auth, Chat
 // Game, Gateway - Complex
@@ -24,8 +20,13 @@ import {HelloController} from './hello.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: ormConfig,
+      inject: [ConfigService],
+    }),
   ],
   controllers: [HelloController],
-  providers: [],
+  providers: [HelloService],
 })
 export class EntryModule {}

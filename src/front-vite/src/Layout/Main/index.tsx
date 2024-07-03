@@ -13,6 +13,7 @@ export const Main: React.FC = () => {
     <main>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/game" element={<Game />} />
         <Route path="/channels" element={<ChannelsPage />} />

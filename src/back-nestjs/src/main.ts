@@ -1,33 +1,22 @@
-import * as dotenv from 'dotenv';
 import { NestFactory } from '@nestjs/core';
-import { EntryModule } from './entry.module'; // Assuming EntryModule is in the same directory
+import { EntryModule } from './entry.module';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  let app;
+  const app = await NestFactory.create(EntryModule);
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PORT_BACKEND', 4000);
 
-  dotenv.config();
-
-  try {
-    app = await NestFactory.create(EntryModule);
-  } catch (error) {
-    const errorMessage = (error as Error).message || 'Unknown error';
-    console.error('Failed to create Transendence. Exiting the process.', errorMessage);
-    process.exit(1);
-  }
-
-  // Enable CORS with dynamic origin based on environment variables
+  // Required for using same host for the services
   app.enableCors({
-    origin: process.env.ORIGIN_URL_BACK || 'http://localhost:4000',
+    origin: configService.get('ORIGIN_URL_FRONT') || 'http://localhost:3000',
     credentials: true,
   });
 
-  // Use PORT_BACKEND environment variable, default to 4000 if not set
-  const port = process.env.PORT_BACKEND || 4000;
-  await app.listen(port, () => {
-    console.log(`NestJS origin: ${process.env.ORIGIN_URL_BACK}, listens on:${port}`);
+  await app.listen(port).catch(() => {
+    console.log(`listen to ${port} failed`);
+    process.exit(1);
   });
-
-  
 }
 
 bootstrap();

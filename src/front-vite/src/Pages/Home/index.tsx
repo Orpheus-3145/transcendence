@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, Box, Container, Typography, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
 
@@ -120,10 +120,32 @@ const pong = [
 ];
 
 const Home: React.FC = () => {
+
+  const [data, setData] = useState<{ message?: string }>({});
+
+  useEffect(() => {
+    fetch('http://localhost.codam.nl:4000/')
+      .then(response => {
+        console.log('Raw response:', response);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text();
+      })
+      .then(text => {
+        console.log('Received text:', text);
+        setData({ message: text });
+      })
+      .catch(error => console.error('Fetch error:', error));
+  }, []);
+
   const theme = useTheme();
   return (
     <MainContainer>
       <ContentBox>
+        <Typography>
+          {data.message ? data.message : 'Loading...'}
+        </Typography>
         <SectionTitle width="16ch">ft_transcendence</SectionTitle>
         <SectionContent>
           <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
