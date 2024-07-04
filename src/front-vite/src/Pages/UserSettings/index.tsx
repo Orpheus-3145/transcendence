@@ -54,17 +54,6 @@ const UserSettings: React.FC = () => {
         <Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
           Security
         </Typography>
-        <TextField
-          fullWidth
-          label="Password"
-          type="password"
-          variant="outlined"
-          margin="normal"
-          InputLabelProps={{ style: { color: theme.palette.text.secondary } }}
-          InputProps={{
-            style: { color: theme.palette.text.primary },
-          }}
-        />
         <FormControlLabel
           control={<Switch color="primary" />}
           label="Two-Factor Authentication"
@@ -72,23 +61,6 @@ const UserSettings: React.FC = () => {
           style={{ marginLeft: 0 }}
         />
       </SettingsSection>
-
-      <SettingsSection>
-        <Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
-          Friends
-        </Typography>
-        <TextField
-          fullWidth
-          label="Add Friend"
-          variant="outlined"
-          margin="normal"
-          InputLabelProps={{ style: { color: theme.palette.text.secondary } }}
-          InputProps={{
-            style: { color: theme.palette.text.primary },
-          }}
-        />
-      </SettingsSection>
-
       <SettingsSection>
         <Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
           Status
@@ -104,22 +76,6 @@ const UserSettings: React.FC = () => {
           }}
         />
       </SettingsSection>
-
-      <SettingsSection>
-        <Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
-          Statistics
-        </Typography>
-        <Typography variant="body2" style={{ color: theme.palette.text.secondary }}>
-          Matches Played: 10
-        </Typography>
-        <Typography variant="body2" style={{ color: theme.palette.text.secondary }}>
-          Matches Won: 7
-        </Typography>
-        <Typography variant="body2" style={{ color: theme.palette.text.secondary }}>
-          Matches Lost: 3
-        </Typography>
-      </SettingsSection>
-
       <Button variant="contained" color="primary">
         Save Changes
       </Button>
