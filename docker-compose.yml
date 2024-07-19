@@ -24,7 +24,7 @@ services:
         PORT: ${PORT_BACKEND}
     volumes:
       - ./src/back-nestjs:/app
-      - /app/node_modules
+      - nestjs_modules:/app/node_modules
     restart: unless-stopped
     env_file:
       - .env
@@ -46,7 +46,7 @@ services:
         PORT: ${PORT_FRONTEND}
     volumes:
       - ./src/front-vite:/app
-      - /app/node_modules
+      - react_modules:/app/node_modules
     restart: unless-stopped
     env_file:
       - .env
@@ -63,6 +63,8 @@ services:
 
 volumes:
   pgdata:
+  react_modules:
+  nestjs_modules:
 
 networks:
   internal:

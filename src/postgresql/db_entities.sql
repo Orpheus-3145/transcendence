@@ -52,7 +52,7 @@ CREATE TABLE
 		role ENUM ('owner', 'admin', 'member') DEFAULT 'member',
 	);
 
-=CREATE TABLE
+CREATE TABLE
 	IF NOT EXISTS Messages (
 		msg_id SERIAL PRIMARY KEY,
 		FOREIGN KEY (sender_id) REFERENCES Users (user_id),

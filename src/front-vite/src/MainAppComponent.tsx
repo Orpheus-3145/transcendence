@@ -7,6 +7,7 @@ import Main from './Layout/Main/index';
 import './mainAppComponent.css'
 import { Box, Divider } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { UserProvider } from './Providers/UserContext/User';
 // BrowserRouter, Routes, Route
 
 // Server-Sent Events (SSE) useful for notifications
@@ -31,17 +32,17 @@ const MainAppComponent: React.FC = () => {
   return (
     <React.Fragment>
       <BrowserRouter>
-        {/* UserProvider */}
-        <Box bgcolor={theme.palette.background.default} >
-            <Box marginY={'48px'}>
-              <Header />
-              <Main />
-            </Box>
-            <Divider orientation="horizontal" sx={{backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%'}}/>
-            <Footer />
-            <Chat />
-        </Box>
-        {/* UserProvider */}
+        <UserProvider>
+          <Box bgcolor={theme.palette.background.default} >
+              <Box marginY={'48px'}>
+                <Header />
+                <Main />
+              </Box>
+              <Divider orientation="horizontal" sx={{backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%'}}/>
+              <Footer />
+              <Chat />
+          </Box>
+        </UserProvider>
       </BrowserRouter>
     </React.Fragment>
   );

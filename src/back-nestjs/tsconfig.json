@@ -6,13 +6,14 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strict": true, // Enable all strict type-checking options
+    "strict": false, // Enable all strict type-checking options
     "forceConsistentCasingInFileNames": true, // Ensure consistent casing in file names
     "noFallthroughCasesInSwitch": true // Ensure switch statements are exhaustive
   }

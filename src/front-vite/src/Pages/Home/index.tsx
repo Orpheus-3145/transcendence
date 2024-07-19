@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Stack, Box, Container, Typography, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
+import axios from 'axios';
+import { useCookies } from 'react-cookie';
 
 const MainContainer = styled(Container)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -120,31 +122,25 @@ const pong = [
 ];
 
 const Home: React.FC = () => {
+  const [data, setData] = useState<string | null>(null);
 
-  const [data, setData] = useState<{ message?: string }>({});
-
-  useEffect(() => {
-    fetch('http://localhost.codam.nl:4000/')
-      .then(response => {
-        console.log('Raw response:', response);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.text();
-      })
-      .then(text => {
-        console.log('Received text:', text);
-        setData({ message: text });
-      })
-      .catch(error => console.error('Fetch error:', error));
-  }, []);
+  const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost:4000/';
+  
+  const fetchData = async () => {
+    const response = await axios.get(BACKEND_URL, { withCredentials: true });
+    setData(response.data);
+  };
+  fetchData();
 
   const theme = useTheme();
   return (
     <MainContainer>
       <ContentBox>
         <Typography>
-          {data.message ? data.message : 'Loading...'}
+          {import.meta.env.ORIGIN_URL_BACK}
+        </Typography>
+        <Typography>
+          {data ? data : 'Loading...'}
         </Typography>
         <SectionTitle width="16ch">ft_transcendence</SectionTitle>
         <SectionContent>

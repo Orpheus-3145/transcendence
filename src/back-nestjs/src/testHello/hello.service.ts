@@ -1,10 +1,9 @@
-// Step 1: Create HelloService (hello.service.ts)
 import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
 
 @Injectable()
 export class HelloService {
   async getData(): Promise<string> {
-    // Fetch data here (e.g., from a database or external API)
-    return 'Hello, World from Service!';
+    return `Hello, World from Service! Data:`;
   }
 }

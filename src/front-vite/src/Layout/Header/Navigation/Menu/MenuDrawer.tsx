@@ -23,6 +23,7 @@ import {
   Logout as LogoutIcon,
   Tag as TagIcon
 } from '@mui/icons-material';
+import { useUser } from '../../../../Providers/UserContext/User';
 
 const StyledIconWrapper = styled('div')(({ theme }) => ({
   boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.05)`,
@@ -70,15 +71,11 @@ interface PathItem {
   icon: React.ReactElement;
 }
 
-interface PlaceholderUser {
-  username: string | null;
-  isAuthenticated: boolean;
-}
-
-export const MenuDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
+export const MenuDrawer: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
+  const { user } = useUser();
 
   const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
     if (event.type === 'keydown' && ((event as React.KeyboardEvent).key === 'Tab' || (event as React.KeyboardEvent).key === 'Shift')) {
@@ -93,12 +90,8 @@ export const MenuDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
     Channels: { path: '/channels', icon: <TagIcon />},
   };
 
-  const offlinePaths: Record<string, PathItem> = {
-    Login: { path: '/login', icon: <LoginIcon /> },
-  };
-
   const onlinePaths: Record<string, PathItem> = {
-    Profile: { path: `/profile/${user.username}`, icon: <AccountCircleIcon /> },
+    Profile: { path: `/profile/${user.id}`, icon: <AccountCircleIcon /> },
     Settings: { path: '/profile/settings', icon: <SettingsIcon /> },
     Logout: { path: '/logout', icon: <LogoutIcon /> },
   };
@@ -124,11 +117,11 @@ export const MenuDrawer: React.FC<{ user: PlaceholderUser }> = ({ user }) => {
       </List>
       <Divider />
       <List>
-        {(user.isAuthenticated ? Object.keys(onlinePaths) : Object.keys(offlinePaths)).map((text) => (
+        {(Object.keys(onlinePaths)).map((text) => (
           <ListItem key={text} disablePadding>
-            <StyledListItemButton onClick={handleNavigation((user.isAuthenticated ? onlinePaths : offlinePaths)[text].path)}>
+            <StyledListItemButton onClick={handleNavigation((onlinePaths)[text].path)}>
               <ListItemIcon>
-                <StyledIconWrapper>{(user.isAuthenticated ? onlinePaths : offlinePaths)[text].icon}</StyledIconWrapper>
+                <StyledIconWrapper>{( onlinePaths )[text].icon}</StyledIconWrapper>
               </ListItemIcon>
               <ListItemText primary={text} />
             </StyledListItemButton>
