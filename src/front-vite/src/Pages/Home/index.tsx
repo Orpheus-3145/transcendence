@@ -4,11 +4,6 @@ import { styled } from '@mui/system';
 import axios from 'axios';
 import { useCookies } from 'react-cookie';
 
-const MainContainer = styled(Container)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(2),
-}));
-
 const ContentBox = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.primary.dark,
   borderRadius: '1em',
@@ -122,25 +117,13 @@ const pong = [
 ];
 
 const Home: React.FC = () => {
-  const [data, setData] = useState<string | null>(null);
-
-  const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost:4000/';
-  
-  const fetchData = async () => {
-    const response = await axios.get(BACKEND_URL, { withCredentials: true });
-    setData(response.data);
-  };
-  fetchData();
 
   const theme = useTheme();
   return (
-    <MainContainer>
+    <Container>
       <ContentBox>
         <Typography>
           {import.meta.env.ORIGIN_URL_BACK}
-        </Typography>
-        <Typography>
-          {data ? data : 'Loading...'}
         </Typography>
         <SectionTitle width="16ch">ft_transcendence</SectionTitle>
         <SectionContent>
@@ -243,7 +226,7 @@ const Home: React.FC = () => {
           <ListContent items={security} />
         </SectionContent>
       </ContentBox>
-    </MainContainer>
+    </Container>
   );
 };
 

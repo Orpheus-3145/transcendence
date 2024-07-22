@@ -132,7 +132,7 @@ export const MenuDrawer: React.FC = () => {
   );
 
   return (
-    <Box>
+    <Box alignContent={'center'}>
       <IconButton onClick={() => {setIsOpen(true)}}>
           <ReorderRoundedIcon sx={{ color: theme.palette.secondary.main }} />
       </IconButton>

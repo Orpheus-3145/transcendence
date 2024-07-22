@@ -1,13 +1,24 @@
 import axios from 'axios';
+import { error } from 'console';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export type User = {
-  id: string;
-  name?: string;
-  intraName?: string;
+export enum UserStatus {
+  Online = 'online',
+  Offline = 'offline',
+  InGame = 'ingame',
+}
+
+export interface User {
+  id: number;
+  nameNick?: string | null;
+  nameFirst?: string;
+  nameLast?: string;
   email?: string;
-};
+  image?: string | null;
+  greeting?: string;
+  status?: UserStatus;
+}
 
 interface UserContextType {
   user: User;
@@ -16,29 +27,24 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const defaultUser: User = {
-  id: '0',
-};
-
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User>(defaultUser);
+  const [user, setUser] = useState<User>({ id: 0 });
   const navigate = useNavigate();
 
   const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost.codam.nl:4000';
   useEffect(() => {
     const validate = async () => {
       try {
-        const response = await axios.get<{ id: string }>(BACKEND_URL + '/auth/validate', { withCredentials: true });
-        const newUser = response.data.id;
-        console.log(newUser);
-        setUser(prevUser => ({ ...prevUser, id: newUser }));
+        const response = await axios.get(BACKEND_URL + '/auth/validate', { withCredentials: true });
+        const userDTO = response.data.user;
+        setUser(userDTO);
       } catch (error) {
-        setUser(defaultUser)
         navigate('/login');
+        setUser({ id: 0 });
       }
     };
     validate();
-  }, [navigate]);
+  }, [user.id]);
 
   return (
     <UserContext.Provider value={{ user, setUser }}>

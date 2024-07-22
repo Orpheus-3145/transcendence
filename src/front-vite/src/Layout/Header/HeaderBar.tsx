@@ -1,47 +1,67 @@
 import React from 'react';
-import SearchBar from './Navigation/Search/SearchBar';
-import { MenuDrawer as MenuButton } from './Navigation/Menu/MenuDrawer';
-import { Button as ProfileButton } from './Navigation/Profile/ProfileButton';
-import { AppBar, Box, Stack } from '@mui/material';
-import { Item } from '../../Styles/Test';
+import { MenuDrawer } from './Navigation/Menu/MenuDrawer';
+import { Box, IconButton, Stack } from '@mui/material';
 import { useUser } from '../../Providers/UserContext/User';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 
 export const Bar: React.FC = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
+  const theme = useTheme();
 
   return (
-    user && user.id !== '0' ? (
-      <AppBar position="fixed" sx={{ height: '48px' }} color="secondary">
-        <Box paddingX={1} paddingY={0.5}>
-          <Stack
-            direction="row" flexGrow={1} spacing={4}
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Stack direction="row" spacing={1}>
-              <Item>
-                <MenuButton/>
-              </Item>
-              <Item>
-                <SearchBar />
-              </Item>
-            </Stack>
-            <Stack direction="row" spacing={1}>
-              <>
-                {/* <Item>
-                  <NotificationButton />
-                </Item> */}
-                <Item>
-                  <ProfileButton />
-                </Item>
-              </>
-            </Stack>
-          </Stack>
-        </Box>
-      </AppBar>
-    ) : null
+    <Box
+      alignContent={'center'}
+    >
+      <Stack
+        bgcolor={theme.palette.primary.dark}
+        justifyContent={'space-between'}
+        alignContent={'center'}
+        position={'fixed'}
+        paddingY={'0.1em'}
+        paddingX={'0.5em'}
+        direction={'row'}
+        width={'100%'}
+        height={'3em'}
+        borderBottom={`0.1em outset ${theme.palette.divider}`}
+      >
+        <MenuDrawer />
+        <IconButton
+          onClick={() => { navigate(`/profile/${user.id}`) }}
+          sx={{
+            p: 0,
+            border: '1px solid transparent',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            '&:hover': {
+              '& img': {
+                transform: 'scale(1.2)',
+                transition: 'transform 0.3s ease',
+              },
+            },
+            '& img': {
+              width: '100%',
+              height: '100%',
+              transition: 'transform 0.3s ease',
+            },
+          }}
+        >
+          {user && user.image ? (
+            <img
+              src={user.image}
+              alt="User"
+              style={{
+                display: 'block',
+              }}
+            />
+          ) : (
+            <AccountBoxIcon sx={{ color: theme.palette.secondary.main }} />
+          )}
+        </IconButton>
+      </Stack>
+    </Box>
   );
 };
 

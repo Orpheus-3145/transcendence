@@ -1,50 +1,29 @@
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
 import { Bar as Header } from './Layout/Header/HeaderBar';
 import { Bar as Footer } from './Layout/Footer/FooterBar';
-import Chat from './Layout/Chat/index';
 import Main from './Layout/Main/index';
-import './mainAppComponent.css'
-import { Box, Divider } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { UserProvider } from './Providers/UserContext/User';
-// BrowserRouter, Routes, Route
-
-// Server-Sent Events (SSE) useful for notifications
-//  WebSockets useful for chat and game services
-
-import { ThemeOptions } from '@mui/material/styles';
-
-export const themeOptions: ThemeOptions = {
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#3f51b5',
-    },
-    secondary: {
-      main: '#f50057',
-    },
-  },
-};
+import { Box, Container, CssBaseline, Divider } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { themeOptions } from './Styles/themeOptions';
+import { useUser } from './Providers/UserContext/User';
+import './mainAppComponent.css';
 
 const MainAppComponent: React.FC = () => {
-  const theme = useTheme();
+  const theme = createTheme(themeOptions);
+  const { user } = useUser();
+
   return (
-    <React.Fragment>
-      <BrowserRouter>
-        <UserProvider>
-          <Box bgcolor={theme.palette.background.default} >
-              <Box marginY={'48px'}>
-                <Header />
-                <Main />
-              </Box>
-              <Divider orientation="horizontal" sx={{backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%'}}/>
-              <Footer />
-              <Chat />
-          </Box>
-        </UserProvider>
-      </BrowserRouter>
-    </React.Fragment>
+    <ThemeProvider theme={theme}>
+      {user.id !== 0 && <Header />}
+      <CssBaseline />
+      <Container maxWidth="xl">
+        <Box marginTop={user.id === 0 ? '0em' : '4em'}>
+          <Main />
+        </Box>
+      </Container>
+      <Divider orientation="horizontal" sx={{ backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%' }} />
+      <Footer />
+    </ThemeProvider>
   );
 }
 

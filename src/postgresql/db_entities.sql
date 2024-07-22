@@ -11,7 +11,6 @@ CREATE TABLE
 		intra_name VARCHAR(50),
 		intra_surname VARCHAR(50),
 		intra_email VARCHAR(50),
-		intra_table VARCHAR(50),
 	);
 
 CREATE TABLE

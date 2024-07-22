@@ -5,17 +5,24 @@ import { darken, alpha } from '@mui/material/styles';
 import {
     AccountCircle as AccountCircleIcon,
     EmojiEvents as Cup,
-    // Grade as Star,
     PersonAdd as AddIcon,
     Block as BlockIcon,
     VideogameAsset as GameIcon,
     Message as MessageIcon,
     PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
+import { useUser } from '../../Providers/UserContext/User';
+import { useLocation } from 'react-router-dom';
+
+
 
 const ProfilePage: React.FC = () => {
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+    const { user } = useUser();
+    const location = useLocation();
+    const pathSegments = location.pathname.split('/');
+    const lastSegment = pathSegments[pathSegments.length - 1]
 
     let friendLine = () => {
         return (
