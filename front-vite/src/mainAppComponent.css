@@ -1,0 +1,7 @@
+/* Import a font from Google Fonts if desired */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body, .mainAppComponent {
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+  margin: 0;
+}

@@ -1,0 +1,48 @@
+Latest stable version is **mandatory** for every service/library
+Must be compatible with Google Chrome and one additional browser
+No unhandled errors
+
+## Docker-compose
+   1. Run only with `docker-compose up --build`
+   2. Rootless mode
+   3. Use Docker in rootless mode for security reasons.
+### Sideways:
+   -Docker runtime files must be located in /goinfre or /sgoinfre.
+   -Can’t use so called “bind-mount volumes” between the host and the container if non-root UIDs are used in the container.
+   -Depending on the project, your situation and the context, several fallbacks exist:
+      -Docker in a VM
+      -Rebuild you container after your changes
+      -craft your own docker image with root as unique UID.
+
+## Nestjs && React
+   1. Must be a single-page application with *Back & Forward* buttons of the browser
+   2. User Acoount
+      - User must login with OAuth of 42
+         - A strong password hashing algorithm
+      - Can choose a unique name.
+      - Can upload an avatar.
+      - Can use Two-factor authentication.
+      - Can make friends.
+      - Can see user status.
+      - Statistics display on profile.
+    3. Chat
+      - Can create channels either public, private or password protected.
+      - Can message to others.
+      - Can block others.
+      - Channel owner:
+         - Can set/remove passwords.
+         - Can set/remove administrators.
+         - Administrators can kick, ban or mute other users, except owner.
+      - Can invite to game.
+      - Can access others profiles.
+    4. Game
+      - Online Pong game.
+      - Matchmaking queue.
+      - Faithful to the original Pong
+      - Customization options (Can prefer original 1972 Pong)
+      - Responsive
+
+## PostgreSQL
+   1. Passwords must be hashed.
+   2. SQL injection must be protected.
+   3. Forms and user input must be server-side validated
