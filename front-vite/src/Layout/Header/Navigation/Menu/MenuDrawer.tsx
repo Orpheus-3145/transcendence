@@ -33,8 +33,8 @@ const StyledIconWrapper = styled('div')(({ theme }) => ({
   justifyContent: 'center',
   transition: 'border-radius 0.3s ease',
   '&:hover': {
-    boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.3)`,
-    borderRadius: '2em',
+  boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.3)`,
+  borderRadius: '2em',
   },
 }));
 
@@ -45,9 +45,9 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   transition: 'border-radius 0.2s ease',
   marginTop: theme.spacing(0.5),
   '&:hover': {
-    boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.1)`,
-    backgroundColor: alpha(theme.palette.background.default, 0.9),
-    borderRadius: '2em',
+  boxShadow: `0px ${theme.spacing(0.5)} ${theme.spacing(0.75)} rgba(0, 0, 0, 0.1)`,
+  backgroundColor: alpha(theme.palette.background.default, 0.9),
+  borderRadius: '2em',
   },
 }));
 
@@ -55,14 +55,14 @@ const DrawerContainer = styled(Box)(({ theme }) => ({
   width: 250,
   backgroundColor: alpha(theme.palette.background.default, 0.05),
   '&:hover': {
-    backgroundColor: alpha(theme.palette.background.default, 0.1),
+  backgroundColor: alpha(theme.palette.background.default, 0.1),
   },
   height: '100%',
 }));
 
 const Drawer = styled(MuiDrawer)(({ theme }) => ({
   '& .MuiPaper-root': {
-    backgroundColor: darken(theme.palette.background.default, 0.3),
+  backgroundColor: darken(theme.palette.background.default, 0.3),
   },
 }));
 
@@ -78,68 +78,68 @@ export const MenuDrawer: React.FC = () => {
   const { user } = useUser();
 
   const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-    if (event.type === 'keydown' && ((event as React.KeyboardEvent).key === 'Tab' || (event as React.KeyboardEvent).key === 'Shift')) {
-      return;
-    }
-    setIsOpen(open);
+  if (event.type === 'keydown' && ((event as React.KeyboardEvent).key === 'Tab' || (event as React.KeyboardEvent).key === 'Shift')) {
+    return;
+  }
+  setIsOpen(open);
   };
 
   const generalPaths: Record<string, PathItem> = {
-    Home: { path: '/', icon: <HomeIcon /> },
-    Game: { path: '/game', icon: <GameIcon /> },
-    Channels: { path: '/channels', icon: <TagIcon />},
+  Home: { path: '/', icon: <HomeIcon /> },
+  Game: { path: '/game', icon: <GameIcon /> },
+  Channels: { path: '/channels', icon: <TagIcon />},
   };
 
   const onlinePaths: Record<string, PathItem> = {
-    Profile: { path: `/profile/${user.id}`, icon: <AccountCircleIcon /> },
-    Settings: { path: '/profile/settings', icon: <SettingsIcon /> },
-    Logout: { path: '/logout', icon: <LogoutIcon /> },
+  Profile: { path: `/profile/${user.id}`, icon: <AccountCircleIcon /> },
+  Settings: { path: '/profile/settings', icon: <SettingsIcon /> },
+  Logout: { path: '/logout', icon: <LogoutIcon /> },
   };
 
   const handleNavigation = (path: string) => () => {
-    navigate(path);
-    setIsOpen(false);
+  navigate(path);
+  setIsOpen(false);
   };
 
   const DrawerList = (
-    <DrawerContainer role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
-      <List>
-        {Object.keys(generalPaths).map((text) => (
-          <ListItem key={text} disablePadding>
-            <StyledListItemButton onClick={handleNavigation(generalPaths[text].path)}>
-              <ListItemIcon>
-                <StyledIconWrapper>{generalPaths[text].icon}</StyledIconWrapper>
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </StyledListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {(Object.keys(onlinePaths)).map((text) => (
-          <ListItem key={text} disablePadding>
-            <StyledListItemButton onClick={handleNavigation((onlinePaths)[text].path)}>
-              <ListItemIcon>
-                <StyledIconWrapper>{( onlinePaths )[text].icon}</StyledIconWrapper>
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </StyledListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </DrawerContainer>
+  <DrawerContainer role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+    <List>
+    {Object.keys(generalPaths).map((text) => (
+      <ListItem key={text} disablePadding>
+      <StyledListItemButton onClick={handleNavigation(generalPaths[text].path)}>
+        <ListItemIcon>
+        <StyledIconWrapper>{generalPaths[text].icon}</StyledIconWrapper>
+        </ListItemIcon>
+        <ListItemText primary={text} />
+      </StyledListItemButton>
+      </ListItem>
+    ))}
+    </List>
+    <Divider />
+    <List>
+    {(Object.keys(onlinePaths)).map((text) => (
+      <ListItem key={text} disablePadding>
+      <StyledListItemButton onClick={handleNavigation((onlinePaths)[text].path)}>
+        <ListItemIcon>
+        <StyledIconWrapper>{( onlinePaths )[text].icon}</StyledIconWrapper>
+        </ListItemIcon>
+        <ListItemText primary={text} />
+      </StyledListItemButton>
+      </ListItem>
+    ))}
+    </List>
+  </DrawerContainer>
   );
 
   return (
-    <Box alignContent={'center'}>
-      <IconButton onClick={() => {setIsOpen(true)}}>
-          <ReorderRoundedIcon sx={{ color: theme.palette.secondary.main }} />
-      </IconButton>
-      <Drawer open={isOpen} onClose={toggleDrawer(false)}>
-        {DrawerList}
-      </Drawer>
-    </Box>
+  <Box alignContent={'center'}>
+    <IconButton onClick={() => {setIsOpen(true)}}>
+      <ReorderRoundedIcon sx={{ color: theme.palette.secondary.main }} />
+    </IconButton>
+    <Drawer open={isOpen} onClose={toggleDrawer(false)}>
+    {DrawerList}
+    </Drawer>
+  </Box>
   );
 };
 

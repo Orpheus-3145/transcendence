@@ -1,10 +1,10 @@
 import { Scene } from 'phaser';
 
-export default class Settings extends Scene
+export default class Results extends Scene
 {
   constructor ()
   {
-    super({ key: 'Settings' });
+    super({ key: 'Results' });
   }
 
   preload()

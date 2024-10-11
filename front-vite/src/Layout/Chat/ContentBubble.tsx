@@ -10,17 +10,17 @@ interface ContentBubbleProps {
 
 export const ContentBubble: React.FC<ContentBubbleProps> = ({ chatProps, setChatProps }) => {
   const toggleChatStatus = (status: ChatStatus, selection: ChatRoom | null) => {
-    setChatProps({ ...chatProps, chatStatus: status, selected: selection});
+  setChatProps({ ...chatProps, chatStatus: status, selected: selection});
   };
   return (
-    <Box sx={{ position: 'fixed', bottom: 16, right: 16 }}>
-      <Fab
-        color="secondary"
-        aria-label="chat"
-        onClick={() => { toggleChatStatus(ChatStatus.Drawer, null) }}>
-        <ChatIcon />
-      </Fab>
-    </Box>
+  <Box sx={{ position: 'fixed', bottom: 16, right: 16 }}>
+    <Fab
+    color="secondary"
+    aria-label="chat"
+    onClick={() => { toggleChatStatus(ChatStatus.Drawer, null) }}>
+    <ChatIcon />
+    </Fab>
+  </Box>
   );
 };
 

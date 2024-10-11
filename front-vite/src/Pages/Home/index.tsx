@@ -20,19 +20,19 @@ type SectionTitleProps = {
 const SectionTitle: React.FC<SectionTitleProps> = ({ children, width }) => {
   const theme = useTheme();
   return (
-    <Typography
-      variant='h4'
-      sx={{
-        textAlign: 'center',
-        width,
-        color: theme.palette.secondary.main,
-        bgcolor: theme.palette.primary.main,
-        borderTopLeftRadius: '0.5em',
-        borderTopRightRadius: '0.5em',
-      }}
-    >
-      {children}
-    </Typography>
+  <Typography
+    variant='h4'
+    sx={{
+    textAlign: 'center',
+    width,
+    color: theme.palette.secondary.main,
+    bgcolor: theme.palette.primary.main,
+    borderTopLeftRadius: '0.5em',
+    borderTopRightRadius: '0.5em',
+    }}
+  >
+    {children}
+  </Typography>
   );
 };
 
@@ -43,24 +43,24 @@ type SectionContentProps = {
 const SectionContent: React.FC<SectionContentProps> = ({ children }) => {
   const theme = useTheme();
   return (
-    <Typography
-      component={'div'}
-      sx={{
-        marginBottom: '1em',
-        fontVariant: 'body1',
-        padding: '0.5em',
-        textAlign: 'justify',
-        color: theme.palette.secondary.main,
-        bgcolor: theme.palette.primary.main,
-        borderBottomLeftRadius: '1em',
-        borderBottomRightRadius: '1em',
-        borderTopRightRadius: '1em',
-      }}
-    >
-      <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
-        {children}
-      </Box>
-    </Typography>
+  <Typography
+    component={'div'}
+    sx={{
+    marginBottom: '1em',
+    fontVariant: 'body1',
+    padding: '0.5em',
+    textAlign: 'justify',
+    color: theme.palette.secondary.main,
+    bgcolor: theme.palette.primary.main,
+    borderBottomLeftRadius: '1em',
+    borderBottomRightRadius: '1em',
+    borderTopRightRadius: '1em',
+    }}
+  >
+    <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
+    {children}
+    </Box>
+  </Typography>
   );
 };
 
@@ -70,11 +70,11 @@ type ListContentProps = {
 
 const ListContent: React.FC<ListContentProps> = ({ items }) => (
   <Box>
-    {items.map((item, index) => (
-      <Box key={index} component="div" sx={{ marginBottom: index !== items.length - 1 ? '0.5em' : '0' }}>
-        {item}
-      </Box>
-    ))}
+  {items.map((item, index) => (
+    <Box key={index} component="div" sx={{ marginBottom: index !== items.length - 1 ? '0.5em' : '0' }}>
+    {item}
+    </Box>
+  ))}
   </Box>
 );
 
@@ -120,113 +120,113 @@ const Home: React.FC = () => {
 
   const theme = useTheme();
   return (
-    <Container>
-      <ContentBox>
-        <Typography>
-          {import.meta.env.ORIGIN_URL_BACK}
-        </Typography>
-        <SectionTitle width="16ch">ft_transcendence</SectionTitle>
-        <SectionContent>
-          <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
-            A modern web application to play Pong online with real-time multiplayer capabilities.
-          </Box>
-        </SectionContent>
+  <Container>
+    <ContentBox>
+    <Typography>
+      {import.meta.env.ORIGIN_URL_BACK}
+    </Typography>
+    <SectionTitle width="16ch">ft_transcendence</SectionTitle>
+    <SectionContent>
+      <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
+      A modern web application to play Pong online with real-time multiplayer capabilities.
+      </Box>
+    </SectionContent>
 
-        <SectionTitle width="15ch">Project Overview</SectionTitle>
-        <SectionContent>
-          <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
-            A web development project centered on creating a single-page application (SPA) that allows users to play the classic game Pong against each other. The project emphasizes modern web development practices, utilizing NestJS for the backend, a TypeScript framework for the frontend, and PostgreSQL for the database. The application will feature a user-friendly interface, real-time multiplayer capabilities, a chat system, and robust security measures.
-          </Box>
-        </SectionContent>
+    <SectionTitle width="15ch">Project Overview</SectionTitle>
+    <SectionContent>
+      <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
+      A web development project centered on creating a single-page application (SPA) that allows users to play the classic game Pong against each other. The project emphasizes modern web development practices, utilizing NestJS for the backend, a TypeScript framework for the frontend, and PostgreSQL for the database. The application will feature a user-friendly interface, real-time multiplayer capabilities, a chat system, and robust security measures.
+      </Box>
+    </SectionContent>
 
-        <SectionTitle width="10ch">Objectives</SectionTitle>
-        <SectionContent>
-          <ListContent items={objectives} />
-        </SectionContent>
+    <SectionTitle width="10ch">Objectives</SectionTitle>
+    <SectionContent>
+      <ListContent items={objectives} />
+    </SectionContent>
 
-        <SectionTitle width="13ch">Technical Requirements</SectionTitle>
-        <SectionContent>
-          <ListContent items={requirements} />
-        </SectionContent>
+    <SectionTitle width="13ch">Technical Requirements</SectionTitle>
+    <SectionContent>
+      <ListContent items={requirements} />
+    </SectionContent>
 
-        <SectionTitle width="13ch">Core Features</SectionTitle>
-        <Stack
-          spacing={'0.5em'}
-          sx={{
-            direction: 'column',
-            display: 'flex',
-            marginBottom: '1em',
-            fontVariant: 'body1',
-            padding: '0.5em',
-            textAlign: 'justify',
-            color: 'secondary.main',
-            bgcolor: 'primary.main',
-            borderBottomLeftRadius: '1em',
-            borderBottomRightRadius: '1em',
-            borderTopRightRadius: '1em',
-          }}
+    <SectionTitle width="13ch">Core Features</SectionTitle>
+    <Stack
+      spacing={'0.5em'}
+      sx={{
+      direction: 'column',
+      display: 'flex',
+      marginBottom: '1em',
+      fontVariant: 'body1',
+      padding: '0.5em',
+      textAlign: 'justify',
+      color: 'secondary.main',
+      bgcolor: 'primary.main',
+      borderBottomLeftRadius: '1em',
+      borderBottomRightRadius: '1em',
+      borderTopRightRadius: '1em',
+      }}
+    >
+      <Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
+      <Typography
+        variant='h5'
+        sx={{
+        textAlign: 'center',
+        color: theme.palette.background.default,
+        bgcolor: theme.palette.secondary.main,
+        borderTopLeftRadius: '0.5em',
+        borderTopRightRadius: '0.5em',
+        }}
+      >
+        User Account Management
+      </Typography>
+      <Box borderRadius={'1em'} bgcolor={'background.default'} padding={'1em'} color={'secondary.main'}>
+        <ListContent items={requirements} />
+      </Box>
+      </Box>
+      <Stack direction={'row'}>
+      <Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
+        <Typography
+        variant='h5'
+        sx={{
+          textAlign: 'center',
+          color: theme.palette.background.default,
+          bgcolor: theme.palette.secondary.main,
+          borderTopLeftRadius: '0.5em',
+          borderTopRightRadius: '0.5em',
+        }}
         >
-          <Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
-            <Typography
-              variant='h5'
-              sx={{
-                textAlign: 'center',
-                color: theme.palette.background.default,
-                bgcolor: theme.palette.secondary.main,
-                borderTopLeftRadius: '0.5em',
-                borderTopRightRadius: '0.5em',
-              }}
-            >
-              User Account Management
-            </Typography>
-            <Box borderRadius={'1em'} bgcolor={'background.default'} padding={'1em'} color={'secondary.main'}>
-              <ListContent items={requirements} />
-            </Box>
-          </Box>
-          <Stack direction={'row'}>
-            <Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
-              <Typography
-                variant='h5'
-                sx={{
-                  textAlign: 'center',
-                  color: theme.palette.background.default,
-                  bgcolor: theme.palette.secondary.main,
-                  borderTopLeftRadius: '0.5em',
-                  borderTopRightRadius: '0.5em',
-                }}
-              >
-                Chat System
-              </Typography>
-              <Box borderRadius={'1em'} bgcolor={'background.default'} padding={'1em'} color={'secondary.main'}>
-                <ListContent items={chat} />
-              </Box>
-            </Box>
-            <Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
-              <Typography
-                variant='h5'
-                sx={{
-                  textAlign: 'center',
-                  color: theme.palette.background.default,
-                  bgcolor: theme.palette.secondary.main,
-                  borderTopLeftRadius: '0.5em',
-                  borderTopRightRadius: '0.5em',
-                }}
-              >
-                Pong Game
-              </Typography>
-              <Box borderRadius={'1em'} bgcolor={'background.default'} padding={'1em'} color={'secondary.main'}>
-                <ListContent items={pong} />
-              </Box>
-            </Box>
-          </Stack>
-        </Stack>
+        Chat System
+        </Typography>
+        <Box borderRadius={'1em'} bgcolor={'background.default'} padding={'1em'} color={'secondary.main'}>
+        <ListContent items={chat} />
+        </Box>
+      </Box>
+      <Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
+        <Typography
+        variant='h5'
+        sx={{
+          textAlign: 'center',
+          color: theme.palette.background.default,
+          bgcolor: theme.palette.secondary.main,
+          borderTopLeftRadius: '0.5em',
+          borderTopRightRadius: '0.5em',
+        }}
+        >
+        Pong Game
+        </Typography>
+        <Box borderRadius={'1em'} bgcolor={'background.default'} padding={'1em'} color={'secondary.main'}>
+        <ListContent items={pong} />
+        </Box>
+      </Box>
+      </Stack>
+    </Stack>
 
-        <SectionTitle width="13ch">Security Considerations</SectionTitle>
-        <SectionContent>
-          <ListContent items={security} />
-        </SectionContent>
-      </ContentBox>
-    </Container>
+    <SectionTitle width="13ch">Security Considerations</SectionTitle>
+    <SectionContent>
+      <ListContent items={security} />
+    </SectionContent>
+    </ContentBox>
+  </Container>
   );
 };
 

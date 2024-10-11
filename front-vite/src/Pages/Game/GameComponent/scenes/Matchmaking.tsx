@@ -1,10 +1,10 @@
 import { Scene } from 'phaser';
 
-export default class Settings extends Scene
+export default class Matchmaking extends Scene
 {
   constructor ()
   {
-    super({ key: 'Settings' });
+    super({ key: 'Matchmaking' });
   }
 
   preload()
@@ -12,10 +12,6 @@ export default class Settings extends Scene
   }
 
   create ()
-  {
-  }
-
-  changeScene ()
   {
   }
 }
