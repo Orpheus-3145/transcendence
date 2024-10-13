@@ -13,17 +13,17 @@ const MainAppComponent: React.FC = () => {
   const { user } = useUser();
 
   return (
-    <ThemeProvider theme={theme}>
-      {user.id !== 0 && <Header />}
-      <CssBaseline />
-      <Container maxWidth="xl">
-        <Box marginTop={user.id === 0 ? '0em' : '4em'}>
-          <Main />
-        </Box>
-      </Container>
-      <Divider orientation="horizontal" sx={{ backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%' }} />
-      <Footer />
-    </ThemeProvider>
+  <ThemeProvider theme={theme}>
+    {user.id !== 0 && <Header />}
+    <CssBaseline />
+    <Container maxWidth="xl">
+    <Box marginTop={user.id === 0 ? '0em' : '4em'}>
+      <Main />
+    </Box>
+    </Container>
+    <Divider orientation="horizontal" sx={{ backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%' }} />
+    <Footer />
+  </ThemeProvider>
   );
 }
 

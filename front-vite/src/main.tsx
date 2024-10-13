@@ -6,10 +6,10 @@ import { BrowserRouter } from 'react-router-dom';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <UserProvider>
-        <MainAppComponent />
-      </UserProvider>
-    </BrowserRouter>
+  <BrowserRouter>
+    <UserProvider>
+    <MainAppComponent />
+    </UserProvider>
+  </BrowserRouter>
   </React.StrictMode>,
 );

@@ -26,23 +26,23 @@ const ErrorPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleHomeClick = () => {
-    navigate('/');
+  navigate('/');
   }
 
   return (
-    <Container>
-      <ErrorContainer>
-        <Typography variant="h1" component="h1" gutterBottom>
-          404
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          Oops! The page you're looking for doesn't exist.
-        </Typography>
-        <HomeLink variant="outlined" onClick={handleHomeClick}>
-          Go back to Home
-        </HomeLink>
-      </ErrorContainer>
-    </Container>
+  <Container>
+    <ErrorContainer>
+    <Typography variant="h1" component="h1" gutterBottom>
+      404
+    </Typography>
+    <Typography variant="body1" gutterBottom>
+      Oops! The page you're looking for doesn't exist.
+    </Typography>
+    <HomeLink variant="outlined" onClick={handleHomeClick}>
+      Go back to Home
+    </HomeLink>
+    </ErrorContainer>
+  </Container>
   );
 };
 

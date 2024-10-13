@@ -14,26 +14,26 @@ export const Main: React.FC = () => {
   const { user } = useUser();
 
   const authenticatedRoutes = (
-    <>
-      <Route path="/" element={<Home />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/logout" element={<LogoutPage />} />
-      <Route path="/game" element={<Game />} />
-      <Route path="/channels" element={<ChannelsPage />} />
-      <Route path="/profile/settings" element={<UserSettings />} />
-      <Route path="/profile/:username" element={<ProfilePage />} />
-    </>
+  <>
+    <Route path="/" element={<Home />} />
+    <Route path="/home" element={<Home />} />
+    <Route path="/logout" element={<LogoutPage />} />
+    <Route path="/game" element={<Game />} />
+    <Route path="/channels" element={<ChannelsPage />} />
+    <Route path="/profile/settings" element={<UserSettings />} />
+    <Route path="/profile/:username" element={<ProfilePage />} />
+  </>
   );
 
   const unauthenticatedRoutes = (
-    <Route path="/login" element={<LoginPage />} />
+  <Route path="/login" element={<LoginPage />} />
   );
 
   return (
-    <Routes>
-      {user.id === 0 ? unauthenticatedRoutes : authenticatedRoutes}
-      <Route path="*" element={<ErrorPage />} />
-    </Routes>
+  <Routes>
+    {user.id === 0 ? unauthenticatedRoutes : authenticatedRoutes}
+    <Route path="*" element={<ErrorPage />} />
+  </Routes>
   );
 };
 

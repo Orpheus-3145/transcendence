@@ -9,16 +9,16 @@ const LogoutPage: React.FC = () => {
   const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost:4000';
   
   useEffect(() => {
-    async function logout() {
-      try {
-        const response = await axios.get(BACKEND_URL + '/auth/logout', { withCredentials: true });
-        setUser({ id: 0 });
-        navigate(response.data.redirectTo);
-      } catch (error) {
-        console.error('Error logging out:', error);
-      }
+  async function logout() {
+    try {
+    const response = await axios.get(BACKEND_URL + '/auth/logout', { withCredentials: true });
+    setUser({ id: 0 });
+    navigate(response.data.redirectTo);
+    } catch (error) {
+    console.error('Error logging out:', error);
     }
-    logout();
+  }
+  logout();
   }, []);
 
   return (<div></div>)

@@ -1,24 +1,24 @@
 import { Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../GameData'
 
-export default class Settings extends Scene
+export default class Matchmaking extends Scene
 {
   background: Phaser.GameObjects.Image = null!;
 
   constructor () {
-
-    super({ key: 'Settings' });
+    
+    super({ key: 'Matchmaking' });
   }
 
   preload() {
-    
+
   }
 
   create () {
 
     this.background = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'background');
     this.background.setDisplaySize(this.scale.width, this.scale.height);
-    this.add.text(400, 150, 'GAME SETTINGS', {
+    this.add.text(400, 150, 'Waiting for playerz ...', {
       fontSize: '32px',
       align: 'center',
       color: '#fff',
