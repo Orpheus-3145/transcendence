@@ -6,13 +6,10 @@ import MainMenu from './scenes/MainMenu';
 import Matchmaking from './scenes/Matchmaking';
 import Results from './scenes/Results';
 import Settings from './scenes/Settings';
-import { FemaleSharp } from '@mui/icons-material';
+import Error from './scenes/Error';
 
-interface GameComponentProps {
-	background_color: string;
-}
 
-const GameComponent:React.FC<GameComponentProps> = (props) => {
+const GameComponent:React.FC = () => {
 	const gameRef = useRef<Phaser.Game | null>(null);
 	useEffect(() => {
 		if (gameRef.current === null) {
@@ -21,13 +18,14 @@ const GameComponent:React.FC<GameComponentProps> = (props) => {
 				width: GAME_WIDTH,
 				height: GAME_HEIGHT,
 				parent: GAME_ID_DOM,
-				backgroundColor: props.background_color,
+				backgroundColor: 0xe0e0e0,
 				scene: [
 					MainMenu,
 					Game,
 					Matchmaking,
 					Settings,
 					Results,
+					Error,
 				],
 				physics: {
 						default: 'arcade',

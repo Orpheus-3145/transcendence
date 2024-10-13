@@ -52,7 +52,7 @@ const Game: React.FC = () => {
       </Typography>
     </Box>
     <GameBox>
-      <GameComponent background_color={theme.palette.primary.main}/>
+      <GameComponent/>
     </GameBox>
     <HistoryBox>
       <Typography

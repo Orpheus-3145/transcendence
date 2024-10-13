@@ -2,20 +2,16 @@ import { Scene } from 'phaser';
 
 export default class Results extends Scene
 {
-  constructor ()
-  {
+  constructor () {
+    
     super({ key: 'Results' });
   }
 
-  preload()
-  {
+  preload() {
+
   }
 
-  create ()
-  {
-  }
+  create () {
 
-  changeScene ()
-  {
   }
 }
