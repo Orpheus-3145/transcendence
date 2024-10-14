@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, GAME_ID_DOM } from './GameData'
+import { GAME } from './GameData'
 import Game from './scenes/Game';
 import MainMenu from './scenes/MainMenu';
 import Matchmaking from './scenes/Matchmaking';
@@ -15,9 +15,9 @@ const GameComponent:React.FC = () => {
 		if (gameRef.current === null) {
 			const config: Phaser.Types.Core.GameConfig = {
 				type: Phaser.AUTO,
-				width: GAME_WIDTH,
-				height: GAME_HEIGHT,
-				parent: GAME_ID_DOM,
+				width: GAME.width,
+				height: GAME.height,
+				parent: GAME.id_div,
 				backgroundColor: 0xe0e0e0,
 				scene: [
 					MainMenu,
@@ -46,7 +46,7 @@ const GameComponent:React.FC = () => {
 			}
 		};
 	}, []);
-	return <div id={GAME_ID_DOM} />
+	return <div id={GAME.id_div} />
 };
 
 export default GameComponent;

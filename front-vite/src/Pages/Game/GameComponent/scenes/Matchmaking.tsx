@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../GameData'
+import { GAME } from '../GameData'
 
 export default class Matchmaking extends Scene
 {
@@ -16,7 +16,7 @@ export default class Matchmaking extends Scene
 
   create () {
 
-    this.background = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'background');
+    this.background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
     this.background.setDisplaySize(this.scale.width, this.scale.height);
     this.add.text(400, 150, 'Waiting for playerz ...', {
       fontSize: '32px',
@@ -24,7 +24,7 @@ export default class Matchmaking extends Scene
       color: '#fff',
     });
 
-		const goHomeButton = this.add.text(GAME_WIDTH - 150, GAME_HEIGHT - 100, 'Home', {
+		const goHomeButton = this.add.text(GAME.width - 150, GAME.height - 100, 'Home', {
 			fontSize: '32px',
 			align: 'center',
 			color: '#fff',

@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../GameData'
+import { GAME } from '../GameData'
 
 export default class MainMenu extends Scene
 {
@@ -14,7 +14,7 @@ export default class MainMenu extends Scene
 	}
 
 	create () {
-		this.background = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'background');
+		this.background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this.background.setDisplaySize(this.scale.width, this.scale.height);
 
 		const singlePlayerButton = this.add.text(400, 100, 'Play [single player]', {
