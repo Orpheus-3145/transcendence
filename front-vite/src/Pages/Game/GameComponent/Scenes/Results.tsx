@@ -1,7 +1,5 @@
-import { Scene } from 'phaser';
+class Results extends Phaser.Scene {
 
-export default class Results extends Scene
-{
   constructor () {
     
     super({ key: 'Results' });
@@ -14,4 +12,6 @@ export default class Results extends Scene
   create () {
 
   }
-}
+};
+
+export default Results;

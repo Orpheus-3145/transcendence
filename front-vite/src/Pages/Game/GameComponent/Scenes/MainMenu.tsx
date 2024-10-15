@@ -1,19 +1,21 @@
-import { Scene } from 'phaser';
 import { GAME } from '../GameData'
 
-export default class MainMenu extends Scene
-{
+class MainMenu extends Phaser.Scene {
+	
 	background: Phaser.GameObjects.Image = null!;
 	
 	constructor () {
+
 		super({ key: 'MainMenu' });
 	}
 
 	preload() {
+
 		this.load.image('background', '/assets/texture/background.png')
 	}
 
 	create () {
+
 		this.background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this.background.setDisplaySize(this.scale.width, this.scale.height);
 
@@ -67,4 +69,6 @@ export default class MainMenu extends Scene
 		
 	}
 
-}
+};
+
+export default MainMenu;

@@ -1,7 +1,5 @@
-import { Scene } from 'phaser';
-
-export default class Error extends Scene
-{
+class Error extends Phaser.Scene {
+  
   errorData: { trace: string } = { trace: ''};
 
   constructor () {
@@ -28,4 +26,6 @@ export default class Error extends Scene
 
     // do something else, either kill the game, reload, ...
   }
-}
+};
+
+export default Error;

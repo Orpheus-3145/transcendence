@@ -1,8 +1,7 @@
-import { Scene } from 'phaser';
 import { GAME } from '../GameData'
 
-export default class Matchmaking extends Scene
-{
+class Matchmaking extends Phaser.Scene {
+
   background: Phaser.GameObjects.Image = null!;
 
   constructor () {
@@ -39,4 +38,6 @@ export default class Matchmaking extends Scene
 			this.scene.start('MainMenu');
 		});
   }
-}
+};
+
+export default Matchmaking;
