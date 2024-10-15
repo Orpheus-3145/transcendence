@@ -1,13 +1,15 @@
 // import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 import { GAME, GAME_BALL, GAME_BAR } from '../GameData'
+import Ball from '../GameObjects/Ball'
+import Bar from '../GameObjects/Bar'
 
 export default class Game extends Scene
 {
 	// private background: Phaser.GameObjects.Image = null!;
-	private leftBar!: Phaser.Physics.Arcade.Body;
-	private rightBar!: Phaser.Physics.Arcade.Body;
-	private ball!: Phaser.Physics.Arcade.Body;
+	private leftBar!: Bar;
+	private rightBar!: Bar; 
+	private ball!: Ball
 	private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 	private keyW!: Phaser.Input.Keyboard.Key;
 	private keyS!: Phaser.Input.Keyboard.Key;
@@ -28,11 +30,11 @@ export default class Game extends Scene
 
 	resetBallAndBars() {
 
-		const random_x = Phaser.Math.FloatBetween( Math.sqrt(3) / 2, 1 );		// between [rad(3)/2, 1] = [cos(+-30), cos(0)]
-		const random_y = Phaser.Math.FloatBetween( -0.5, 0.5 );							// between [-1/2, 1/2] = [sin(-30), sin(30)]
-		const random_direction = Math.random() < 0.5 ? -1 : 1;							// random between -1 and 1
-		this.ball.reset(GAME.width / 2, GAME.height / 2);										// set in the center of the map
-		this.ball.setVelocity( GAME_BALL.start_speed * random_x * random_direction, GAME_BALL.start_speed * random_y);
+		// const random_x = Phaser.Math.FloatBetween( Math.sqrt(3) / 2, 1 );		// between [rad(3)/2, 1] = [cos(+-30), cos(0)]
+		// const random_y = Phaser.Math.FloatBetween( -0.5, 0.5 );							// between [-1/2, 1/2] = [sin(-30), sin(30)]
+		// const random_direction = Math.random() < 0.5 ? -1 : 1;							// random between -1 and 1
+		// // this.ball.reset(GAME.width / 2, GAME.height / 2);										// set in the center of the map
+		// this.ball.setVelocity( GAME_BALL.start_speed * random_x * random_direction, GAME_BALL.start_speed * random_y);
 		
 		this.leftBar.reset(GAME_BAR.width / 2 * -1, GAME.height / 2);							// left bar
 		this.rightBar.reset(GAME.width - GAME_BAR.width / 2, GAME.height / 2);		// right bar
@@ -49,15 +51,18 @@ export default class Game extends Scene
 	}
 
 	preload() {
-
+		
+		const gameObject : Phaser.GameObjects.GameObject = new Phaser.GameObjects.Arc(this, GAME.width / 2, GAME.height / 2, GAME_BALL.radius, 0, 360, false);
+		this.ball = new Ball(this, gameObject, {x: GAME.width / 2, y: GAME.height / 2})
+		// gameObject = new Phaser.GameObjects.Image(this, args.x, args.y, GAME_BALL.texture);
 	}
 
 	create() {
 
-		const shapeBall = this.add.circle(0, 0, GAME_BALL.radius, 0xff0000);
-		this.ball = this.physics.add.existing(shapeBall).body as Phaser.Physics.Arcade.Body;
-		this.ball.setBounce(1);
-		this.ball.setCollideWorldBounds(true);
+		// const shapeBall = this.add.circle(0, 0, GAME_BALL.radius, 0xff0000);
+		// this.ball = this.physics.add.existing(shapeBall).body as Phaser.Physics.Arcade.Body;
+		// this.ball.setBounce(1);
+		// this.ball.setCollideWorldBounds(true);
 		
 		const leftSide = this.physics.add.body(1, 1, 1, GAME.height * 2)
 		leftSide.setImmovable();
@@ -76,14 +81,12 @@ export default class Game extends Scene
 		const shapeBar1 = this.add.rectangle(0, 0, GAME_BAR.width, GAME_BAR.height, 0xff0000);
 		this.leftBar = this.physics.add.existing(shapeBar1).body as Phaser.Physics.Arcade.Body;
 		this.physics.add.collider(this.leftBar, this.ball);
-		this.leftBar.setBounce(1);
 		this.leftBar.setImmovable();
 		this.leftBar.setCollideWorldBounds(true);
 
 		const shapeBar2 = this.add.rectangle(0, 0, GAME_BAR.width, GAME_BAR.height, 0xff0000);
 		this.rightBar = this.physics.add.existing(shapeBar2).body as Phaser.Physics.Arcade.Body;
 		this.physics.add.collider(this.rightBar, this.ball);
-		this.rightBar.setBounce(1);
 		this.rightBar.setImmovable();
 		this.rightBar.setCollideWorldBounds(true);
 		
@@ -101,16 +104,16 @@ export default class Game extends Scene
 		if ( this.cursors.up.isDown || this.keyW.isDown ) {
 			
 			if (this.leftBar.y > 0) 
-				this.leftBar.y -= 10;
+				this.leftBar.y -= GAME_BAR.speed;
 			if (this.rightBar.y > 0)
-				this.rightBar.y -= 10;
+				this.rightBar.y -= GAME_BAR.speed;
 		}
 		else if ( this.cursors.down.isDown || this.keyS.isDown ) {
 			
 			if ((this.leftBar.y + this.leftBar.height) < GAME.height)
-				this.leftBar.y += 10;
+				this.leftBar.y += GAME_BAR.speed;
 			if ((this.rightBar.y + this.rightBar.height) < GAME.height)
-				this.rightBar.y += 10;
+				this.rightBar.y += GAME_BAR.speed;
 		}
 		else if ( this.keyEsc.isDown ) {
 			

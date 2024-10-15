@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { GAME } from './GameData'
-import Game from './scenes/Game';
-import MainMenu from './scenes/MainMenu';
-import Matchmaking from './scenes/Matchmaking';
-import Results from './scenes/Results';
-import Settings from './scenes/Settings';
-import Error from './scenes/Error';
+import Game from './Scenes/Game';
+import MainMenu from './Scenes/MainMenu';
+import Matchmaking from './Scenes/Matchmaking';
+import Results from './Scenes/Results';
+import Settings from './Scenes/Settings';
+import Error from './Scenes/Error';
 
 
 const GameComponent:React.FC = () => {

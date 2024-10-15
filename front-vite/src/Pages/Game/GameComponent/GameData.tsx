@@ -6,10 +6,13 @@ export const GAME = {
 
 export const GAME_BALL = {
   start_speed: 500,
-  radius: 25,
+  radius: 12.5,
+  texture: '',
 }
 
 export const GAME_BAR = {
   width: 25,
-  height: 250,
+  height: GAME.height / 6,
+  speed: 15,
+  texture: '',
 }
