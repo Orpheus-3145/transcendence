@@ -1,4 +1,4 @@
-import { GAME_BALL } from '../GameData'
+import { GAME_BALL } from '../Game.data'
 import Game from '../Scenes/Game'
 
 class Ball extends Phaser.Physics.Arcade.Body {

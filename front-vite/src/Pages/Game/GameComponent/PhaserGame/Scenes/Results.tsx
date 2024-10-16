@@ -1,18 +1,19 @@
-import { GAME } from '../GameData'
+import { GAME } from '../Game.data'
 
-class Matchmaking extends Phaser.Scene {
+class Results extends Phaser.Scene {
 
-	// background texture
-	private background!: Phaser.GameObjects.Image;
+  // id of the winner of the game
+  private _idWinner: string = '';
 
   constructor () {
     
-    super({ key: 'Matchmaking' });
+    super({ key: 'Results' });
   }
 
-	// shots when scene.start('Matchmaking') is called
-  init(): void {
+  // fired then scene.start('Results') is called, sets the id
+  init( data: {idWinner: string} ): void {
 
+    this._idWinner = data.idWinner;
   }
 
 	// loading graphic assets, fired after init()
@@ -20,17 +21,14 @@ class Matchmaking extends Phaser.Scene {
 
   }
 
-	// run after preload(), creation of the elements of the menu
+	// run after preload(), shows a basic info of the error
   create (): void {
 
-    this.background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
-    this.background.setDisplaySize(this.scale.width, this.scale.height);
-    
-    this.add.text(400, 150, 'Waiting for playerz ...', {
-      fontSize: '32px',
-      align: 'center',
-      color: '#fff',
-    });
+    this.add.text(GAME.width / 2, 40, `Player: ${this._idWinner} won!`, {
+			fontSize: '50px',
+			align: 'center',
+			color: '#0f0',
+		}).setOrigin(0.5, 0.5);
 
     // button for going home
 		const goHomeButton = this.add.text(GAME.width - 150, GAME.height - 100, 'Home', {
@@ -48,8 +46,8 @@ class Matchmaking extends Phaser.Scene {
 
   // run every frame update
   update(): void {
-
+    
   }
 };
 
-export default Matchmaking;
+export default Results;

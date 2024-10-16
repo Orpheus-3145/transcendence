@@ -1,4 +1,4 @@
-import { GAME, GAME_BALL, GAME_BAR } from '../GameData'
+import { GAME, GAME_BALL, GAME_BAR } from '../Game.data'
 import Ball from '../GameObjects/Ball'
 import PlayerBar from '../GameObjects/PlayerBar'
 import Field from '../GameObjects/Field'

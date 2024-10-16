@@ -1,4 +1,4 @@
-import { GAME_BAR, GAME } from '../GameData'
+import { GAME_BAR, GAME } from '../Game.data'
 import Game from '../Scenes/Game'
 
 class PlayerBar extends Phaser.Physics.Arcade.Body {

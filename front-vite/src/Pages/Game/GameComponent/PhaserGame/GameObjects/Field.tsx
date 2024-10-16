@@ -1,4 +1,4 @@
-import { GAME } from '../GameData'
+import { GAME } from '../Game.data'
 import Game from '../Scenes/Game'
 
 class Field{

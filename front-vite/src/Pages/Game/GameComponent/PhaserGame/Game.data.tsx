@@ -6,8 +6,7 @@
 export const GAME = {
   width: 1152,
   height: 648,
-  idDiv: 'game-container',
-  maxScore: 510,
+  maxScore: 1,
 };
 
 // data about the ball

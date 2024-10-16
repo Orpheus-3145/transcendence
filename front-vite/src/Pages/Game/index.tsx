@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import { Container, Stack, Box, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { styled } from '@mui/system';
-import GameComponent from './GameComponent/GameComponent'
+import GameComponent from './GameComponent'
 
 const GameBox = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
