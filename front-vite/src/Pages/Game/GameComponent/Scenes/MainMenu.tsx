@@ -2,70 +2,77 @@ import { GAME } from '../GameData'
 
 class MainMenu extends Phaser.Scene {
 	
-	background: Phaser.GameObjects.Image = null!;
+	// backgound texture
+	private background!: Phaser.GameObjects.Image;
 	
 	constructor () {
 
 		super({ key: 'MainMenu' });
 	}
 
-	preload() {
+	// preloading operations, fired when 
+	// scene.start('MainMenu') is called,
+	init (): void {
+
+	}
+	
+	// loading graphic assets, fired after init()
+	preload(): void {
 
 		this.load.image('background', '/assets/texture/background.png')
 	}
 
-	create () {
+	// run after preload(), creation of the elements of the menu
+	create (): void {
 
 		this.background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this.background.setDisplaySize(this.scale.width, this.scale.height);
 
+		// single player mode button
 		const singlePlayerButton = this.add.text(400, 100, 'Play [single player]', {
 			fontSize: '32px',
 			align: 'center',
 			color: '#fff',
 		}).setInteractive();
-		singlePlayerButton.on('pointerover', () => {
-			singlePlayerButton.setStyle({ fill: '#ff0' }); // Change color on hover
-		});
-		singlePlayerButton.on('pointerout', () => {
-			singlePlayerButton.setStyle({ fill: '#fff' }); // Change color back when not hovered
-		});
-		singlePlayerButton.on('pointerup', () => { // Handle click events
-			this.scene.start('Game'); // Start the main game scene
-		});
 
+		// Change color on hover
+		singlePlayerButton.on('pointerover', () => singlePlayerButton.setStyle({ fill: '#ff0' }));
+		// Change color back when not hovered
+		singlePlayerButton.on('pointerout', () => singlePlayerButton.setStyle({ fill: '#fff' }));
+		 // Start the main game
+		singlePlayerButton.on('pointerup', () => this.scene.start('Game', {idLeft: 'id1', idRight: 'id2'}));
+
+		// multi player mode button
 		const multiPlayerButton = this.add.text(400, 150, 'Play [multi player]', {
 			fontSize: '32px',
 			align: 'center',
 			color: '#fff',
 		}).setInteractive();
-		multiPlayerButton.on('pointerover', () => {
-			multiPlayerButton.setStyle({ fill: '#ff0' }); // Change color on hover
-		});
-		multiPlayerButton.on('pointerout', () => {
-			multiPlayerButton.setStyle({ fill: '#fff' }); // Change color back when not hovered
-		});
-		multiPlayerButton.on('pointerup', () => { // Handle click events
-			this.scene.start('Matchmaking'); // Start the main game scene
-		});
 
+		// Change color on hover
+		multiPlayerButton.on('pointerover', () => multiPlayerButton.setStyle({ fill: '#ff0' }));
+		// Change color back when not hovered
+		multiPlayerButton.on('pointerout', () => multiPlayerButton.setStyle({ fill: '#fff' }));
+		 // Start the main game
+		multiPlayerButton.on('pointerup', () => this.scene.start('Matchmaking'));
+
+		// settings button
 		const settingButton = this.add.text(400, 200, 'Settings', {
 			fontSize: '32px',
 			align: 'center',
 			color: '#fff',
 		}).setInteractive();
-		settingButton.on('pointerover', () => {
-			settingButton.setStyle({ fill: '#ff0' }); // Change color on hover
-		});
-		settingButton.on('pointerout', () => {
-			settingButton.setStyle({ fill: '#fff' }); // Change color back when not hovered
-		});
-		settingButton.on('pointerup', () => { // Handle click events
-			this.scene.start('Settings'); // Start the main game scene
-		});
+
+		// Change color on hover
+		settingButton.on('pointerover', () => settingButton.setStyle({ fill: '#ff0' }));
+		// Change color back when not hovered
+		settingButton.on('pointerout', () => settingButton.setStyle({ fill: '#fff' }));
+		// goes to settings
+		settingButton.on('pointerup', () => this.scene.start('Settings'));
 	}
 
-	update() {
+	// run every frame update
+	update(): void {
 		
 	}
 
