@@ -2,31 +2,33 @@ import { GAME } from '../Game.data'
 
 class MainMenu extends Phaser.Scene {
 	
-	// backgound texture
-	private background!: Phaser.GameObjects.Image;
+	// background texture
+	private _background!: Phaser.GameObjects.Image;
 	
 	constructor () {
 
 		super({ key: 'MainMenu' });
-	}
 
+	}
+	
 	// preloading operations, fired when 
 	// scene.start('MainMenu') is called,
 	init (): void {
-
+		
 	}
 	
 	// loading graphic assets, fired after init()
 	preload(): void {
-
-		this.load.image('background', '/assets/texture/background.png')
+		
+		this.load.image('background', GAME.background)
 	}
 
 	// run after preload(), creation of the elements of the menu
 	create (): void {
 
-		this.background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
-		this.background.setDisplaySize(this.scale.width, this.scale.height);
+		// sets the background
+		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
+		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
 		// single player mode button
 		const singlePlayerButton = this.add.text(400, 100, 'Play [single player]', {

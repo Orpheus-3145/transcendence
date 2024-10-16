@@ -3,12 +3,12 @@ import { GAME } from '../Game.data'
 class Matchmaking extends Phaser.Scene {
 
 	// background texture
-	private background!: Phaser.GameObjects.Image;
+	private _background!: Phaser.GameObjects.Image;
 
-  constructor () {
-    
-    super({ key: 'Matchmaking' });
-  }
+	constructor () {
+
+		super({ key: 'Matchmaking' });
+	}
 
 	// shots when scene.start('Matchmaking') is called
   init(): void {
@@ -23,8 +23,9 @@ class Matchmaking extends Phaser.Scene {
 	// run after preload(), creation of the elements of the menu
   create (): void {
 
-    this.background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
-    this.background.setDisplaySize(this.scale.width, this.scale.height);
+		// sets the background
+		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
+		this._background.setDisplaySize(this.scale.width, this.scale.height);
     
     this.add.text(400, 150, 'Waiting for playerz ...', {
       fontSize: '32px',

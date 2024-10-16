@@ -1,13 +1,18 @@
 import Phaser from 'phaser';
+import { GAME } from './Game.data'
+
 import Game from './Scenes/Game';
 import MainMenu from './Scenes/MainMenu';
 import Matchmaking from './Scenes/Matchmaking';
 import Results from './Scenes/Results';
 import Settings from './Scenes/Settings';
 import Error from './Scenes/Error';
-import { GAME } from './Game.data'
 
+// creates an instance of the game inside the
+// React container
+// @param idDiv: id of the parent DOM object
 function createGame( idDiv: string ): Phaser.Game {
+
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: GAME.width,
@@ -24,10 +29,6 @@ function createGame( idDiv: string ): Phaser.Game {
     ],
     physics: {
         default: 'arcade',
-        arcade: {
-            gravity: { x: 0, y: 0 },
-            debug: false,
-        },
     },
   };
   

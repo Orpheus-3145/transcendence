@@ -1,12 +1,13 @@
 // generic data about the game
 // @param width: width of the game
 // @param height: height of the game
-// @param idDiv: ref of DOM element that contains the game
 // @param maxScore: max goals before end of the game
+// @param background: image 
 export const GAME = {
   width: 1152,
   height: 648,
-  maxScore: 1,
+  maxScore: 10,
+  background: './assets/texture/background.png',
 };
 
 // data about the ball

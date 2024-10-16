@@ -11,6 +11,9 @@ class Game extends Phaser.Scene {
 	private _rightBar!: PlayerBar; 
 	private _field!: Field;
 
+	// background image
+	private _background!: Phaser.GameObjects.Image;
+
 	// key listeners
 	private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 	private _keyW!: Phaser.Input.Keyboard.Key;
@@ -24,6 +27,7 @@ class Game extends Phaser.Scene {
 	constructor () {
 
 		super({ key: 'Game' });
+
 	}
 
 	// fired when scene.start('Game') is called, 
@@ -48,6 +52,10 @@ class Game extends Phaser.Scene {
 
 	// run after preload(), creation of the elements of the game
 	create(): void {
+	
+		// sets the background
+		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
+		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
 		// ball object
 		const shapeBall: Phaser.GameObjects.Arc = this.add.circle(GAME.width / 2, GAME.height / 2, GAME_BALL.radius, 0xff0000);

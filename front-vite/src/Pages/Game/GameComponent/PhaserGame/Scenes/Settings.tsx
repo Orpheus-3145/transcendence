@@ -3,12 +3,13 @@ import { GAME } from '../Game.data'
 class Settings extends Phaser.Scene {
   
   // background texture
-  background: Phaser.GameObjects.Image = null!;
+  private _background!: Phaser.GameObjects.Image;
 
-  constructor () {
+	constructor () {
 
-    super({ key: 'Settings' });
-  }
+		super({ key: 'Settings' });
+	
+	}
 
 	// shots when scene.start('Matchmaking') is called
   init(): void {
@@ -23,8 +24,9 @@ class Settings extends Phaser.Scene {
 	// run after preload(), shows a basic info of the error
   create (): void {
 
-    this.background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
-    this.background.setDisplaySize(this.scale.width, this.scale.height);
+		// sets the background
+		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
+		this._background.setDisplaySize(this.scale.width, this.scale.height);
     
     this.add.text(400, 150, 'GAME SETTINGS', {
       fontSize: '32px',
