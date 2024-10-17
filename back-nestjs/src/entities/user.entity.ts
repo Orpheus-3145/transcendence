@@ -18,6 +18,10 @@ export class User {
   @Length(0, 20)
   nameNick: string | null;
   
+  @Column({ nullable: true, length: 20 })
+  @IsAscii()
+  nameIntra: string | null;
+
   @Column({ nullable: false })
   nameFirst: string;
   

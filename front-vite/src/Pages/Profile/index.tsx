@@ -1,18 +1,22 @@
 import React from 'react';
 import { Avatar, Box, Button, Stack, Typography, useTheme, Divider, Grid, IconButton, Container } from '@mui/material';
+import {Input} from '@mui/material'
 import { useMediaQuery } from '@mui/material';
 import { darken, alpha } from '@mui/material/styles';
 import {
     AccountCircle as AccountCircleIcon,
     EmojiEvents as Cup,
     PersonAdd as AddIcon,
+    Add as Add,
     Block as BlockIcon,
     VideogameAsset as GameIcon,
     Message as MessageIcon,
     PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
+import EditIcon from '@mui/icons-material/Edit';
 import { useUser } from '../../Providers/UserContext/User';
 import { useLocation } from 'react-router-dom';
+import {userServ} from 'UsersService';
 
 
 
@@ -34,22 +38,62 @@ const ProfilePage: React.FC = () => {
                     alignItems: 'center',
                 }}
             >
-                <Stack direction={'row'} spacing={2} alignContent='center' alignItems={'center'} marginY={theme.spacing(.5)}>
+                <Stack direction={'row'} 
+                    spacing={2} 
+                    alignContent='center' 
+                    alignItems={'center'} 
+                    marginY={theme.spacing(.5)}
+                >
                     <AccountCircleIcon />
                     <Typography sx={{ '&:hover': { color: theme.palette.secondary.dark } }}>
                         UserName
                     </Typography>
                 </Stack>
-                <Stack direction={'row'} spacing={2} alignContent='center' alignItems={'center'} marginY={theme.spacing(.5)}>
-                    <Stack onClick={(event) => { event.stopPropagation(); }}
-                        sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.error.dark } }}
-                    >
-                        <PersonOffIcon />
-                    </Stack>
+                <Stack direction={'row'} 
+                    alignContent='center' 
+                    alignItems={'center'} 
+                    marginY={theme.spacing(.5)}
+                >
+                    <Grid container gap={1} justifyContent={'center'} alignContent={'center'} flexGrow={1}></Grid>
+                    <Grid item>
+                        <IconButton 
+                            onClick={() => {RemoveFriend}}
+                            sx={{
+                                color: theme.palette.secondary.light, 
+                                cursor: 'pointer', 
+                                '&:hover': { 
+                                    color: theme.palette.error.dark 
+                                },
+                            }}
+                        >
+                            <PersonOffIcon />
+                        </IconButton>
+                    </Grid>
+                    <Grid item>
+                        <IconButton 
+                            onClick={() => {BlockFriend}}
+                            sx={{color: theme.palette.secondary.light, 
+                                cursor: 'pointer', 
+                                '&:hover': { 
+                                    color: theme.palette.error.dark 
+                                },
+                            }}
+                        >
+                            <BlockIcon />
+                        </IconButton>
+                    </Grid>
                 </Stack>
             </Stack>
         );
     };
+
+    let RemoveFriend = () => {
+        console.log("User: " + user.nameNick + " wants to remove this person!");
+    } //still need to make it work
+
+    let BlockFriend = () => {
+        console.log("User: " + user.nameNick + " wants to block this person!");
+    } //still need to make it work
 
     let friendCategory = () => {
         return (
@@ -81,16 +125,6 @@ const ProfilePage: React.FC = () => {
                     },
                 }}
             >
-                {friendLine()}
-                {friendLine()}
-                {friendLine()}
-                {friendLine()}
-                {friendLine()}
-                {friendLine()}
-                {friendLine()}
-                {friendLine()}
-                {friendLine()}
-                {friendLine()}
                 {friendLine()}
             </Stack>
         );
@@ -203,7 +237,7 @@ const ProfilePage: React.FC = () => {
                 }}
             >
                 <Stack gap={1} direction="column" width="100%">
-                    {Array.from({ length: 40 }).map((_, index) => (
+                    {Array.from({ length: 2 }).map((_, index) => (
                         <React.Fragment key={index}>
                             {gameLine()}
                         </React.Fragment>
@@ -213,10 +247,9 @@ const ProfilePage: React.FC = () => {
         );
     };
 
-    let userInfo = () => {
+    let userInfo = (user:any) => {
         return (
             <Stack
-                direction={isSmallScreen ? 'column' : 'row'}
                 justifyContent={'space-between'}
                 margin={'1em'}
                 bgcolor={theme.palette.primary.dark}
@@ -224,125 +257,293 @@ const ProfilePage: React.FC = () => {
                 <Stack
                     direction={'row'}
                     padding={'1em'}
-                    gap={1}
+                    gap={10}
                     bgcolor={alpha(theme.palette.background.default, 0.5)}
                 >
-                    <Stack
-                        gap={1}
-                        direction={'column'}
-                        justifyContent={'center'}
-                        padding={'1em'}
-                    >
-                        <Avatar
+                    <Stack>
+                        {GetProfilePic(user)}
+                        <Grid container 
+                            gap={1} 
                             sx={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                display: 'flex',
-                                width: '100%',
-                                height: 'auto',
-                                minWidth: '115px',
-                                minHeight: '115px',
-                                maxHeight: '200px',
-                                maxWidth: '200px',
-                                bgcolor: theme.palette.success.main,
-                            }}
-                            src={user.image}
-                        >
-                            <AccountCircleIcon sx={{ width: '100%', height: 'auto' }} />
-                        </Avatar>
-                        <Stack direction={'column'}
-                            sx={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '100%',
+                                position: 'relative',
+                                top: '20px',
+                                left: '90px',
+                                margin: '0 auto',
                             }}
                         >
-                            <Grid container justifyContent={'center'} alignContent={'center'} flexGrow={1}>
-                                <Grid item>
-                                    <IconButton
-                                        sx={{
-                                            '&:hover': {
-                                                color: theme.palette.primary.light,
-                                            },
-                                        }}
-                                    >
-                                        <AddIcon />
-                                    </IconButton>
-                                </Grid>
-                                <Grid item>
-                                    <IconButton
-                                        sx={{
-                                            '&:hover': {
-                                                color: theme.palette.error.main,
-                                            },
-                                        }}
-                                    >
-                                        <BlockIcon />
-                                    </IconButton>
-                                </Grid>
-                                <Grid item>
-                                    <IconButton
-                                        sx={{
-                                            '&:hover': {
-                                                color: '#BF77F6',
-                                            },
-                                        }}
-                                    >
-                                        <GameIcon />
-                                    </IconButton>
-                                </Grid>
-                                <Grid item>
-                                    <IconButton
-                                        sx={{
-                                            '&:hover': {
-                                                color: theme.palette.secondary.main,
-                                            },
-                                        }}
-                                    >
-                                        <MessageIcon />
-                                    </IconButton>
-                                </Grid>
+                            <Grid item>
+                                {SetChangePfpButton(user)}
                             </Grid>
+                            <Grid item>
+                                {GetUserStatus(user)}
+                            </Grid>
+                        </Grid>
+                        <Stack>
+                            {GetNickName(user)}
+                            {ButtonsProfileGrid(user)}
+                            {OtherInfo(user)}
                         </Stack>
                     </Stack>
-                    <Stack
-                        direction={'column'}
-                        justifyContent={'center'}
-                        gap={1}
-                        padding={'1em'}
-                    >
-                        <Typography style={{ wordBreak: 'break-word' }}>
-                            <b>Username</b>
-                        </Typography>
-                        <Typography style={{ wordBreak: 'break-word' }}>
-                            <b>Nickname</b>
-                        </Typography>
-                        <Typography style={{ wordBreak: 'break-word' }}>
-                            <b>Greeting</b>
-                        </Typography>
-                    </Stack>
-                </Stack>
-                <Stack
-                    justifyContent={'center'}
-                    direction={isSmallScreen ? 'row' : 'column'}
-                    padding={'1em'}
-                    gap={2}
-                    bgcolor={alpha(theme.palette.background.default, 0.5)}
-                >
-                    <Typography>
-                        <b>Phone Number:</b>
-                        <br />
-                        <b>9485498984894948</b>
-                    </Typography>
-                    <Typography>
-                        <b>Email:</b>
-                        <br />
-                        <b>testeremail@outlook.com</b>
-                    </Typography>
                 </Stack>
             </Stack>
         );
     };
+
+    let SetChangePfpButton = (user:any) =>
+    {
+        return (
+                <IconButton
+                >
+                    <EditIcon />
+                </IconButton>         
+        );
+    }
+
+    let OtherInfo = (user:any) =>
+    {
+        return (
+            <Stack
+                direction={'column'}
+                justifyContent={'center'}
+                padding={'1em'}
+                sx={{
+                    width: '100%',
+                    height: '10px',
+                    position: 'relative',
+                    top: '-300px',
+                    left: '700px',   
+                }}
+            >
+                <Typography>
+                    <b>Intra name: </b>
+                    <br />
+                    {user.nameIntra}
+                    <br />
+                    <br />
+                    <b>Email: </b>
+                    {user.email}
+                    <br />
+                </Typography>
+            </Stack>
+        );
+    }
+
+    let ButtonsProfileGrid = (user:any) =>
+    {
+        return (
+            <Stack
+                sx={{
+                    position: 'relative',
+                    left: '250px',
+                    top: '-200px',
+                }}
+            >
+                <Grid container gap={1} justifyContent={'center'} alignContent={'center'} flexGrow={1}>
+                    <Grid item>
+                        <IconButton
+                            onClick={() => EditNickName()}
+                            sx={{
+                                    '&:hover': {
+                                        color: '#09af07',
+                                    },
+                            }}
+                        >
+                            <EditIcon />
+                        </IconButton>
+                    </Grid>
+                    <Grid item>
+                        <IconButton
+                            onClick={() => AddingFriend()}
+                            sx={{
+                                '&:hover': {
+                                    color: theme.palette.primary.light,
+                                },
+                            }}
+                        >
+                            <AddIcon />
+                        </IconButton>
+                    </Grid>
+                    <Grid item>
+                        <IconButton
+                            onClick={() => InviteToGame()}
+                            sx={{
+                                '&:hover': {
+                                    color: '#BF77F6',
+                                },
+                            }}
+                        >
+                            <GameIcon />
+                        </IconButton>
+                    </Grid>
+                    <Grid item>
+                        <IconButton
+                            onClick={() => SendMessage()}
+                            sx={{
+                                '&:hover': {
+                                    color: theme.palette.secondary.main,
+                                },
+                            }}
+                        >
+                            <MessageIcon />
+                        </IconButton>
+                    </Grid>
+                </Grid>
+            </Stack>
+        );
+    }
+
+    let GetNickName = (user:any) => 
+    {
+        return (
+            <Stack
+            sx={{
+                width: '100%',
+                height: '100px',
+                position: 'relative',
+                left: '300px',
+                top: '-200px',
+            }}
+            >
+                <Typography variant={'h3'}>
+                    {user.nameNick}
+                </Typography>
+            </Stack>
+        );
+    }
+
+    let GetProfilePic = (user:any) =>
+    {
+        return (
+            <Stack
+                sx={{
+                    position: 'relative',
+                    top: '10px',
+                    left: '30px',
+                }}
+            >
+                <Avatar
+                    sx={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        display: 'flex',
+                        width: '100%',
+                        height: 'auto',
+                        minWidth: '115px',
+                        minHeight: '115px',
+                        maxHeight: '200px',
+                        maxWidth: '200px',
+                        bgcolor: theme.palette.success.main,
+                    }}
+                    src={user.image}
+                >
+                    <AccountCircleIcon sx={{ width: '100%', height: 'auto' }} />
+                </Avatar>
+            </Stack>
+        );
+    }
+
+    const handleKeyDown = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const key = event.key;
+
+        if (key == 'Enter')
+        {
+            if (event.target.value.length > 2)
+                setName(event.target.value);
+            else
+                console.log("Invalid, it needs to contain atleast 3 characters!")
+        }
+    }
+
+    let setName = (name:string) => {
+        console.log("User: " + user.nameNick + " wants to change nickname to: " + name);
+    } //still need to make it work
+
+    let EditNickName = () => {
+        console.log("User: " + user.nameNick + " wants to edit nickname!");
+    } //still need to make it work
+
+    let AddingFriend = () => {
+        console.log("User: " + user.nameNick + " wants to add person to friendslist!");
+    } //still need to make it work
+
+    let InviteToGame = () => {
+        console.log("User: " + user.nameNick + " wants to invite this person to a game!");
+    } //still need to make it work
+
+    let SendMessage = () => {
+        console.log("User: " + user.nameNick + " wants to send a message to this person!");
+    } //still need to make it work
+
+    let GetUserStatus = (user:any) =>
+    {
+        user.status = 'offline';
+        if (user.status == 'offline')
+            return (
+                <Stack
+                >
+                    <Box
+                    sx={{
+                        width: 40,
+                        height: 40,
+                        backgroundColor: '#df310e',
+                        borderRadius: '50%',
+                        position: 'relative',
+                    }}
+                    >
+                    </Box>
+                </Stack>
+            );
+        if (user.status == 'idle')
+            return (
+                <Stack
+                >
+                    <Box
+                     sx={{
+                        width: 40,
+                        height: 40,
+                        backgroundColor: '#cfdf0e',
+                        borderRadius: '50%',
+                        position: 'relative',
+                    }}
+                     >
+                    </Box>
+                </Stack>
+            );
+        else if (user.status == 'online')
+            return (
+                <Stack
+                >
+                    <Box
+                    sx={{
+                        width: 40,
+                        height: 40,
+                        backgroundColor: '#0fc00c',
+                        borderRadius: '50%',
+                        position: 'relative',
+                    }}
+                    >
+                    </Box>
+                </Stack>
+            );
+        else if (user.status == 'ingame')
+        {
+            return (
+                <Stack
+                >
+                    <Box
+                    sx={{
+                        width: 40,
+                        height: 40,
+                        backgroundColor: '#0dddc4',
+                        borderRadius: '50%',
+                        position: 'relative',
+                    }}
+                    >
+                    </Box>
+                </Stack>
+            );
+        }
+    }
 
     let friendsBox = () => {
         return (
@@ -373,7 +574,6 @@ const ProfilePage: React.FC = () => {
                     }}
                 >
                     {friendCategory()}
-                    {friendCategory()}
                 </Stack>
             </Stack>
         );
@@ -382,7 +582,7 @@ const ProfilePage: React.FC = () => {
     let pageWrapper = () => {
         return (
             <Container sx={{ padding: theme.spacing(3) }}>
-                {userInfo()}
+                {userInfo(user)}
                 <Stack
                     direction={isSmallScreen ? 'column' : 'row'}
                     bgcolor={theme.palette.primary.dark}

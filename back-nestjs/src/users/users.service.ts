@@ -5,6 +5,7 @@ import { User } from '../entities/user.entity';
 import { UserStatus, UserDTO } from '../dto/user.dto'
 import { AccessTokenDTO } from '../dto/auth.dto';
 
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -17,6 +18,7 @@ export class UsersService {
     user.accessToken = access.access_token;
     user.intraId = userMe.id;
     user.nameNick = userMe.login;
+    user.nameIntra = userMe.login;
     user.nameFirst = userMe.first_name;
     user.nameLast = userMe.last_name;
     user.email = userMe.email;
@@ -32,7 +34,9 @@ export class UsersService {
       throw error;
     }
   }
+
   async findOne(intraId: number): Promise<User | null> {
     return this.usersRepository.findOne({ where: { intraId } });
   }
+
 }

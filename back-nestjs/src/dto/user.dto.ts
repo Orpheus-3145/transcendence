@@ -12,6 +12,7 @@ export class UserDTO {
   constructor(user: User) {
     this.id = user.id;
     this.nameNick = user.nameNick;
+    this.nameIntra = user.nameNick;
     this.nameFirst = user.nameFirst;
     this.nameLast = user.nameLast;
     this.email = user.email;
@@ -31,6 +32,9 @@ export class UserDTO {
 
   @IsString()
   nameLast: string;
+
+  @IsString()
+  nameIntra: string;
 
   @IsEmail()
   email: string;

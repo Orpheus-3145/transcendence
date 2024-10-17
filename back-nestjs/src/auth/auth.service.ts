@@ -87,6 +87,7 @@ export class AuthService {
       return (null);
     
     const userMe = await this.getUserMe(access.access_token);
+    
     if (userMe === null)
       return (null);
     
