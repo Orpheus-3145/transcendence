@@ -7,11 +7,13 @@ export enum UserStatus {
   Online = 'online',
   Offline = 'offline',
   InGame = 'ingame',
+  Idle = 'idle',
 }
 
 export interface User {
   id: number;
   nameNick?: string | null;
+  nameIntra?: string;
   nameFirst?: string;
   nameLast?: string;
   email?: string;
