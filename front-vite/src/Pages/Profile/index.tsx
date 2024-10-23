@@ -17,7 +17,6 @@ import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import EditIcon from '@mui/icons-material/Edit';
 import { useUser } from '../../Providers/UserContext/User';
 import { useLocation } from 'react-router-dom';
-import {userServ} from 'UsersService';
 import { useRef, useState } from 'react';
 
 
@@ -113,7 +112,7 @@ const ProfilePage: React.FC = () => {
 		console.log("User: " + user.nameNick + " wants to block this person!");
 	} //still need to make it work
 
-	let strings: string[] = ["apple", "banana", "cherry"];
+	let strings: string[] = ["apple", "hallo", "cherry"];
 
 	let friendCategory = () => {
 		return (
@@ -321,7 +320,7 @@ const ProfilePage: React.FC = () => {
 				margin={'1em'}
 				bgcolor={theme.palette.primary.dark}
 				sx={{
-					maxWidth: '1100px',
+					maxWidth: '1200px',
 					maxHeight: '300px',
 				}}
 			>
@@ -336,35 +335,35 @@ const ProfilePage: React.FC = () => {
 	};
 
 	let GetProfilePic = (user:any) =>
-		{
-			return (
-				<Stack
+	{
+		return (
+			<Stack
+				sx={{
+					position: 'relative',
+					top: '40px',
+					left: '50px',
+				}}
+			>
+				<Avatar
 					sx={{
-						position: 'relative',
-						top: '40px',
-						left: '50px',
+						alignItems: 'center',
+						justifyContent: 'center',
+						display: 'flex',
+						width: '100%',
+						height: 'auto',
+						minWidth: '115px',
+						minHeight: '115px',
+						maxHeight: '200px',
+						maxWidth: '200px',
+						bgcolor: theme.palette.success.main,
 					}}
+					src={user.image}
 				>
-					<Avatar
-						sx={{
-							alignItems: 'center',
-							justifyContent: 'center',
-							display: 'flex',
-							width: '100%',
-							height: 'auto',
-							minWidth: '115px',
-							minHeight: '115px',
-							maxHeight: '200px',
-							maxWidth: '200px',
-							bgcolor: theme.palette.success.main,
-						}}
-						src={user.image}
-					>
-						<AccountCircleIcon sx={{ width: '100%', height: 'auto' }} />
-					</Avatar>
-				</Stack>
-			);
-		}
+					<AccountCircleIcon sx={{ width: '100%', height: 'auto' }} />
+				</Avatar>
+			</Stack>
+		);
+	}
 
 	let GetUserStatus = (user:any) =>
 	{
@@ -406,7 +405,7 @@ const ProfilePage: React.FC = () => {
 		  const files = event.target.files;
 		  if (files && files.length > 0) {
 			setSelectedFile(files[0]);
-			user.image = files[0];
+			user.image = selectedFile;
 		  }
 		}
 
@@ -443,6 +442,14 @@ const ProfilePage: React.FC = () => {
 
 	let GetNickName = (user:any) => 
 		{
+			let size = '4rem';
+			if (user.nameNick.length > 10)
+				size = '3rem';
+			if (user.nameNick.length > 20)
+				size = '2rem';
+			if (user.nameNick.lenght > 25)
+				size = '1rem';
+
 			return (
 				<Stack
 					sx={{
@@ -452,7 +459,7 @@ const ProfilePage: React.FC = () => {
 						alignItems: 'center',
 						position: 'relative',
 						top: '-230px',
-						left: '-5px',
+						left: '-15px',
 					}}
 				>
 					<Typography variant={'h2'}
@@ -460,6 +467,12 @@ const ProfilePage: React.FC = () => {
 							fontFamily: 'Georgia, serif',
 							fontWeight: 'bold',
 							fontStyle: 'italic',
+							fontSize: size,
+							lineHeight: '5rem',
+							height: '5rem',
+							overflow: 'hidden',
+							whiteSpace: 'nowrap',
+							transition: 'font-size 0.3s ease',
 						}}    
 					>
 						{user.nameNick}
@@ -508,7 +521,7 @@ const ProfilePage: React.FC = () => {
 					{
 						name: 'offset',
 						options: {
-						offset: [-114, -161],
+						offset: [-135, -171],
 						},
 					},
 				],
@@ -519,7 +532,7 @@ const ProfilePage: React.FC = () => {
 					onClick={NicknameButtonClick}
 					sx={{
 							top: '-170px',
-							left: '420px',
+							left: '440px',
 							width: '40px',
 							'&:hover': {
 								color: '#09af07',
@@ -536,7 +549,7 @@ const ProfilePage: React.FC = () => {
 					placeholder="Type new nickname..."
 					sx={{
 						top: '-130px',
-						left: '390px',
+						left: '410px',
 					}}
 					/>
 				)}
@@ -552,7 +565,7 @@ const ProfilePage: React.FC = () => {
 				onClick={() => AddingFriend(user)}
 						sx={{
 							top: '-210px',
-							left: '470px',
+							left: '490px',
 							width: '40px',
 							'&:hover': {
 								color: '#0c31df',
@@ -577,7 +590,7 @@ const ProfilePage: React.FC = () => {
 				onClick={() => InviteToGame(user)}
 				sx={{
 					top: '-250px',
-					left: '520px',
+					left: '540px',
 					width: '40px',
 					'&:hover': {
 						color: '#BF77F6',
@@ -602,7 +615,7 @@ const ProfilePage: React.FC = () => {
 					onClick={() => SendMessage(user)}
 					sx={{
 						top: '-290px',
-						left: '570px',
+						left: '590px',
 						width: '40px',
 						'&:hover': {
 							color: '#f4bf13',
@@ -631,7 +644,7 @@ const ProfilePage: React.FC = () => {
 					height: '10px',
 					position: 'relative',
 					top: '-400px',
-					left: '800px',   
+					left: '830px',   
 				}}
 			>
 				<Typography>
