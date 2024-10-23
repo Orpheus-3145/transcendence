@@ -46,3 +46,4 @@ No unhandled errors
    1. Passwords must be hashed.
    2. SQL injection must be protected.
    3. Forms and user input must be server-side validated
+ 
