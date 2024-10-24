@@ -13,7 +13,7 @@ export default class GameController {
 
   @Get('engine')
   async run_game(@Res() res: Response) {
-    return this.gameService.gameSimulation(code, res);
+    return ;
   }
   
   @Get('currentPlayers')
