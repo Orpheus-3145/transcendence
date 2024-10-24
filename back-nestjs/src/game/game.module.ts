@@ -3,12 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import GameController from './game.controller';
 import GameService from './game.service';
-
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  controllers: [GameController],
-  providers: [GameService, Type],
   exports: [GameService],
-  imports: [TypeOrmModule],
+  controllers: [GameController],
+  providers: [GameService],
+  imports: [UsersModule, TypeOrmModule],
 })
-export default class GameModule {};
+export default class GameModule {}

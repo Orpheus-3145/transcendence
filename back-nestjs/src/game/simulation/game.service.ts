@@ -7,17 +7,10 @@ import { AccessTokenDTO } from '../dto/auth.dto';
 import { UserDTO } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
-import { User } from '../entities/user.entity';
-
 
 @Injectable()
 export class GameService {
   constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
     private configService: ConfigService,
     private userService: UserService,
 	private ball: int, // vector
@@ -28,15 +21,7 @@ export class GameService {
 	
   ) { }
 
-  async getPlayers(): Promise<number> {
-    
-    var count = 1;
 
-    // do some async reading on this.usersRepository
-
-    return count;
-  }
-};
 	/* Logic
 	   - Check what key is being pressed/ direction by the players
 	   - Based on that move the position of the paddle
