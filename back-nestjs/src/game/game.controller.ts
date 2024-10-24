@@ -12,6 +12,6 @@ export class GameController {
 
   @Get('engine')
   async run_game(@Res() res: Response) {
-    return this.gameService.run_game(code, res);
+    return this.gameService.gameSimulation(code, res);
   }
 }
