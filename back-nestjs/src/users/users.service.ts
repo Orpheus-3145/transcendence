@@ -7,6 +7,8 @@ import { AccessTokenDTO } from '../dto/auth.dto';
 
 @Injectable()
 export class UsersService {
+  private currentActiveUsers: Array<User> = [];
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -32,7 +34,15 @@ export class UsersService {
       throw error;
     }
   }
+
   async findOne(intraId: number): Promise<User | null> {
+
     return this.usersRepository.findOne({ where: { intraId } });
   }
+
+  addToList(newUser: User) {
+    
+    this.currentActiveUsers.push(newUser);
+  }
+
 }

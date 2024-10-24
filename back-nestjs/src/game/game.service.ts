@@ -1,21 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Request, Response } from 'express';
-import { sign, verify, JwtPayload } from 'jsonwebtoken';
-import { UsersService as UserService } from '../users/users.service';
-import { AccessTokenDTO } from '../dto/auth.dto';
-import { UserDTO } from '../dto/user.dto';
-import { User } from '../entities/user.entity';
 
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { UsersService as UserService } from '../users/users.service';
 
 
 @Injectable()
 export default class GameService {
   constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
     private configService: ConfigService,
     private userService: UserService,
 	// private ball: number, // vector
@@ -24,16 +15,7 @@ export default class GameService {
 	// private bot: boolean, // bot will automatically move towards the position of the ball
 	// private roomId: number, // different game rooms can exist
 	// 
-  ) { }
-
-  async getPlayers(): Promise<number> {
-    
-    var count = 1;
-
-    // do some async reading on this.usersRepository
-
-    return count;
-  };
+  ) {};
 
 	/* Logic
 	   - Check what key is being pressed/ direction by the players
@@ -61,6 +43,7 @@ export default class GameService {
 		//Else, recentre game position and increment ponumber for player
   };
 
-
-
+	async showPlayerz(): Promise<> {
+		
+	}
 };
