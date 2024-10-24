@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AuthController } from './auth/auth.controller';
 import { UsersController } from './users/users.controller';
 import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
+import GameModule from './game/game.module';
 
 @Module({
   controllers: [AuthController, UsersController],
@@ -23,9 +25,10 @@ import { User } from './entities/user.entity';
         database: configService.get('POSTGRES_DB'),
         entities: [User], // List your entities here
         synchronize: true,
+        logging: true,
       })
     }),
+    GameModule,
   ],
 })
-
-export default class EntryModule { }
+export default class AppModule {};
