@@ -3,6 +3,8 @@ import Ball from '../GameObjects/Ball'
 import PlayerBar from '../GameObjects/PlayerBar'
 import Field from '../GameObjects/Field'
 
+const socket = io('http://localhost:3000');
+
 class Game extends Phaser.Scene {
 
 	// game objects
@@ -79,21 +81,51 @@ class Game extends Phaser.Scene {
 	// run every frame update, receives key inputs
 	// for moving the bars or close the game
 	update(): void {
+		
+		// if ( this._cursors.up.isDown || this._keyW.isDown ) {
+		// 	
+		// 	this._leftBar.moveUp();
+		// 	this._rightBar.moveUp();
+		// }
+		// else if ( this._cursors.down.isDown || this._keyS.isDown ) {
+		// 	
+		// 	this._leftBar.moveDown();
+		// 	this._rightBar.moveDown();
+		// }
+		// else if ( this._keyEsc.isDown ) {
+		// 	
+		// 	this.scene.start('MainMenu');
+		// }
+		let direction = '';
+		if (this._cursors.up.isDown || this._keyW.isDown) {
+        	direction = 'up';  // Player moves up
+    	}
+		else if (this._cursors.down.isDown || this._keyS.isDown) {
+			direction = 'down';  // Player moves DOWN
+		}
 
-		if ( this._cursors.up.isDown || this._keyW.isDown ) {
-			
-			this._leftBar.moveUp();
-			this._rightBar.moveUp();
-		}
-		else if ( this._cursors.down.isDown || this._keyS.isDown ) {
-			
-			this._leftBar.moveDown();
-			this._rightBar.moveDown();
-		}
-		else if ( this._keyEsc.isDown ) {
-			
-			this.scene.start('MainMenu');
-		}
+    	// Send the direction to the backend only if there's a movement
+    	if (direction) {
+        	socket.emit('playerMove', {
+            	playerId: this._idLeft, // Assuming this is the left player's movement. You can adjust based on actual player ID.
+            	direction: direction
+        	});
+    	}
+
+    	// Listen for updates from the backend for the paddle positions
+    	socket.on('updatePaddlePosition', (data: { playerId: string, newY: number }) => {
+        	if (data.playerId === this._idLeft) {
+            	this._leftBar.y = data.newY;  // Update the left paddle position
+        	}
+			else if (data.playerId === this._idRight) {
+            	this._rightBar.y = data.newY;  // Update the right paddle position
+        	}
+    	});
+
+    // Optional: Handle the escape key to exit the game
+    	if (this._keyEsc.isDown) {
+        	this.scene.start('MainMenu');
+    	}
 	}
 
 	// run when the game starts and on every new point

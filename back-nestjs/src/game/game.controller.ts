@@ -12,7 +12,7 @@ export default class GameController {
   ) { }
 
   @Get('engine')
-  async run_game(@Res() res: Response) {
+  async gameSimulation(@Res() res: Response) {
     return ;
   }
   
