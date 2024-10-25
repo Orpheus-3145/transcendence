@@ -18,7 +18,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useUser } from '../../Providers/UserContext/User';
 import { useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
-
+import { UsersService as UserService, UsersService } from '../../../../back-nestjs/src/users/users.service';
 
 
 const ProfilePage: React.FC = () => {
@@ -28,6 +28,13 @@ const ProfilePage: React.FC = () => {
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
+	const [showInputMessage, setShowInputMessage] = useState(false);
+	const [inputMessage, setInputMessage] = useState('');
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [changed, setChanged] = useState(false);
+	const [showInput, setShowInput] = useState(false);
+	const [inputValue, setInputValue] = useState('');
 
 	let friendLine = (name:string) => {
 		return (
@@ -91,7 +98,7 @@ const ProfilePage: React.FC = () => {
 								sx={{color: theme.palette.secondary.light, 
 									cursor: 'pointer', 
 									'&:hover': { 
-										color: theme.palette.error.dark
+										color: theme.palette.error.dark,
 									},
 								}}
 							>
@@ -279,7 +286,8 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let gameContainer = () => {
+	let gameContainer = () => 
+	{
 		return (
 			<Box
 				sx={{
@@ -300,7 +308,8 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let GameBox = () => {
+	let GameBox = () => 
+	{
 		return (
 			<Stack
 			width={'100%'}
@@ -313,25 +322,49 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let userInfo = (user:any) => {
-		return (
-			<Stack
-				justifyContent={'space-between'}
-				margin={'1em'}
-				bgcolor={theme.palette.primary.dark}
-				sx={{
-					maxWidth: '1200px',
-					maxHeight: '300px',
-				}}
-			>
-				{GetProfilePic(user)}
-				{SetChangePfpButton(user)}
-				{GetUserStatus(user)}
-				{GetNickName(user)}
-				{ButtonsProfileGrid(user)}
-				{OtherInfo(user)}
-			</Stack>
-		);
+	let userInfo = (user:any, isUser: boolean) => 
+	{
+		if (isUser == true)
+		{
+			return (
+				<Stack
+					justifyContent={'space-between'}
+					margin={'1em'}
+					bgcolor={theme.palette.primary.dark}
+					sx={{
+						maxWidth: '1200px',
+						maxHeight: '300px',
+					}}
+				>
+					{GetProfilePic(user)}
+					{SetChangePfpButton(user)}
+					{GetUserStatus(user, isUser)}
+					{GetNickName(user, isUser)}
+					{ButtonsProfileGrid(user, isUser)}
+					{OtherInfo(user, isUser)}
+				</Stack>
+			);
+		}
+		else
+		{
+			return (
+				<Stack
+					justifyContent={'space-between'}
+					margin={'1em'}
+					bgcolor={theme.palette.primary.dark}
+					sx={{
+						maxWidth: '1200px',
+						maxHeight: '300px',
+					}}
+				>
+					{GetProfilePic(user)}
+					{GetUserStatus(user, isUser)}
+					{GetNickName(user,isUser)}
+					{ButtonsProfileGrid(user, isUser)}
+					{OtherInfo(user, isUser)}
+				</Stack>
+			);
+		}
 	};
 
 	let GetProfilePic = (user:any) =>
@@ -365,11 +398,11 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let GetUserStatus = (user:any) =>
+	let GetUserStatus = (user:any, isUser: boolean) =>
 	{
-		user.status = 'offline';
+		user.status = 'online';
 		
-		let color;
+		let color, top;
 		if (user.status == 'offline')
 			color = '#df310e';
 		else if (user.status == 'idle')
@@ -379,6 +412,11 @@ const ProfilePage: React.FC = () => {
 		else if (user.status == 'ingame')
 			color = '#0dddc4';
 
+		if (isUser == true)
+			top = '-60px';
+		else
+			top = '0px';
+		
 		return (
 			<Stack>
 				<Box
@@ -388,7 +426,7 @@ const ProfilePage: React.FC = () => {
 					backgroundColor: color,
 					borderRadius: '50%',
 					position: 'relative',
-					top: '-60px',
+					top: top,
 					left: '190px',
 				}}
 				>
@@ -397,22 +435,19 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-		const fileInputRef = useRef<HTMLInputElement | null>(null); // Ref for the file input
-		const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to hold the selected file
-		const [changed, setChanged] = useState(false);
-
-		const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		  const files = event.target.files;
-		  if (files && files.length > 0) {
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => 
+	{
+		const files = event.target.files;
+		if (files && files.length > 0) {
 			setSelectedFile(files[0]);
 			user.image = selectedFile;
-		  }
 		}
+	}
 
-		const IsChanged = () =>
-		{
-			setChanged((prev) => !prev);
-		}
+	const IsChanged = () =>
+	{
+		setChanged((prev) => !prev);
+	}
 
 	let SetChangePfpButton = (user:any) =>
 	{
@@ -440,8 +475,9 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let GetNickName = (user:any) => 
+	let GetNickName = (user:any, isUser:boolean) => 
 		{
+			let top;
 			let size = '4rem';
 			if (user.nameNick.length > 10)
 				size = '3rem';
@@ -449,6 +485,11 @@ const ProfilePage: React.FC = () => {
 				size = '2rem';
 			if (user.nameNick.lenght > 25)
 				size = '1rem';
+
+			if (isUser == true)
+				top = '-210px';
+			else
+				top = '-150px'
 
 			return (
 				<Stack
@@ -458,7 +499,7 @@ const ProfilePage: React.FC = () => {
 						justifyContent: 'center',
 						alignItems: 'center',
 						position: 'relative',
-						top: '-230px',
+						top: top,
 						left: '-15px',
 					}}
 				>
@@ -481,34 +522,46 @@ const ProfilePage: React.FC = () => {
 			);
 		}
 
-	let ButtonsProfileGrid = (user:any) =>
+	let ButtonsProfileGrid = (user:any, isUser: boolean) =>
 	{
-		return (
-			<Stack>
-				{EditNickName(user)}
-				{AddingFriendIcon(user)}
-				{InviteToGameIcon(user)}
-				{SendMessageIcon(user)}
-			</Stack>
-		);
-	}
+		if (isUser == true)
+		{
+			return (
+				<Stack>
+					{EditNickName(user)}
+				</Stack>
+			);
 
-	const [showInput, setShowInput] = useState(false);
-	const [inputValue, setInputValue] = useState('');
-	const [nickname, setNickname] = useState(user.nameNick);
+		}
+		else
+		{
+			return (
+				<Stack>
+					{AddingFriendIcon(user)}
+					{InviteToGameIcon(user)}
+					{SendMessageIcon(user)}
+				</Stack>
+			);		
+		}
+	}
   
-	const NicknameButtonClick = () => {
+	const CheckChange = () => {
+		if (showInputMessage)
+		{
+			setShowInputMessage(false);
+		}
 		setShowInput((prev) => !prev);
 	};
 
-	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyDownNickname = (event: React.KeyboardEvent<HTMLInputElement>) => {
 	  	const key = event.key;
 		if (key === 'Enter') 
 		{
 			if (inputValue.length > 0)
 			{
-				setNickname(inputValue);
 				user.nameNick = inputValue;
+				setInputValue("");
+				setShowInput(false);
 			}
 		}
 	}
@@ -521,7 +574,7 @@ const ProfilePage: React.FC = () => {
 					{
 						name: 'offset',
 						options: {
-						offset: [-135, -171],
+						offset: [-48, -191],
 						},
 					},
 				],
@@ -529,27 +582,28 @@ const ProfilePage: React.FC = () => {
 			>
 				<IconButton
 					variant="contained"
-					onClick={NicknameButtonClick}
+					onClick={CheckChange}
 					sx={{
-							top: '-170px',
-							left: '440px',
-							width: '40px',
+							fontSize: '30px',
+							top: '-190px',
+							left: '500px',
+							width: '50px',
 							'&:hover': {
 								color: '#09af07',
 							},
 					}}
 				>
-					<EditIcon />
+					<EditIcon fontSize="inherit"/>
 				</IconButton>
 				{showInput && (
 					<Input
 					value={inputValue}
 					onChange={(e) => setInputValue(e.target.value)}
-					onKeyDown={handleKeyDown}
+					onKeyDown={handleKeyDownNickname}
 					placeholder="Type new nickname..."
 					sx={{
-						top: '-130px',
-						left: '410px',
+						top: '-140px',
+						left: '380px',
 					}}
 					/>
 				)}
@@ -560,21 +614,22 @@ const ProfilePage: React.FC = () => {
 	let AddingFriendIcon = (user:any) => {
 		return (
 			<Tooltip title="Add Friend!" arrow>
-			<IconButton
-				variant="contained"
-				onClick={() => AddingFriend(user)}
-						sx={{
-							top: '-210px',
-							left: '490px',
-							width: '40px',
-							'&:hover': {
-								color: '#0c31df',
-							},
-						}}
-			>
-				<AddIcon />
-			</IconButton>
-		</Tooltip>
+				<IconButton
+					variant="contained"
+					onClick={() => AddingFriend(user)}
+							sx={{
+								fontSize: '30px',
+								top: '-130px',
+								left: '420px',
+								width: '50px',
+								'&:hover': {
+									color: '#0c31df',
+								},
+							}}
+				>
+					<AddIcon fontSize="inherit"/>
+				</IconButton>
+			</Tooltip>
 		);
 	}
 
@@ -589,15 +644,16 @@ const ProfilePage: React.FC = () => {
 				variant="contained"
 				onClick={() => InviteToGame(user)}
 				sx={{
-					top: '-250px',
-					left: '540px',
-					width: '40px',
+					fontSize: '30px',
+					top: '-175px',
+					left: '500px',
+					width: '50px',
 					'&:hover': {
 						color: '#BF77F6',
 					},
 				}}
 			>
-				<GameIcon />
+				<GameIcon fontSize="inherit"/>
 			</IconButton>
 		</Tooltip>
 		);
@@ -607,33 +663,85 @@ const ProfilePage: React.FC = () => {
 		console.log("User: " + user.nameNick + " wants to invite this person to a game!");
 	} //still need to make it work
 
+	
+	const CheckChangeMessage = () => {
+		if (showInput)
+		{
+			setShowInput(false);
+		}
+		setShowInputMessage((prev) => !prev);
+	};
+
+	const handleKeyDownMessage = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		const key = event.key;
+	  	if (key === 'Enter') 
+	  	{
+			if (inputMessage.length > 0)
+			{
+				SendMessage(inputMessage)
+				setInputMessage('');
+				setShowInputMessage(false);
+			}
+	 	}
+  	}
+
 	let SendMessageIcon = (user:any) => {
 		return (
-			<Tooltip title="Send a Message!" arrow>
+			<Tooltip title="Send a Message!" arrow
+				PopperProps={{
+					modifiers: [
+					{
+						name: 'offset',
+						options: {
+						offset: [110, -220],
+						},
+					},
+				],
+				}}
+			>
 				<IconButton
 					variant="contained"
-					onClick={() => SendMessage(user)}
+					onClick={CheckChangeMessage}
 					sx={{
-						top: '-290px',
-						left: '590px',
-						width: '40px',
+						fontSize: '30px',
+						top: '-220px',
+						left: '580px',
+						width: '50px',
 						'&:hover': {
 							color: '#f4bf13',
 						},
 					}}
 				>
-					<MessageIcon />
+					<MessageIcon fontSize="inherit"/>
 				</IconButton>
+				{showInputMessage && (
+					<Input
+						value={inputMessage}
+						onChange={(e) => setInputMessage(e.target.value)}
+						onKeyDown={handleKeyDownMessage}
+						placeholder="Type a message to send..."
+						sx={{
+							top: '-170px',
+							left: '380px',
+						}}
+					/>
+				)}		
 			</Tooltip>
 		);
 	}
 
-	let SendMessage = (user:any) => {
-		console.log("User: " + user.nameNick + " wants to send a message to this person!");
+	let SendMessage = (message:string) => {
+		console.log("User wants to send: '" + message + "' to this person!");
 	} //still need to make it work
 
-	let OtherInfo = (user:any) =>
+	let OtherInfo = (user:any, isUser:boolean) =>
 	{
+		let top;
+		if (isUser == true)
+			top = '-300px';
+		else
+			top = '-320px';
+
 		return (
 			<Stack
 				direction={'column'}
@@ -643,8 +751,8 @@ const ProfilePage: React.FC = () => {
 					width: '100%',
 					height: '10px',
 					position: 'relative',
-					top: '-400px',
-					left: '830px',   
+					top: top,
+					left: '830px',
 				}}
 			>
 				<Typography>
@@ -662,25 +770,71 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let pageWrapper = () => {
+	let pageWrapperUser = () => {
 		return (
 			<Container sx={{ padding: theme.spacing(3) }}>
-				{userInfo(user)}
 				<Stack
-					direction={isSmallScreen ? 'column' : 'row'}
-					bgcolor={theme.palette.primary.dark}
-					margin={'1em'}
-					minHeight={'60vh'}
+						maxWidth={'100%'}
+						overflow={'hidden'}
 				>
-					{friendsBox()}
-					{GameBox()}
+					{userInfo(user, true)}
+					<Stack
+						direction={isSmallScreen ? 'column' : 'row'}
+						bgcolor={theme.palette.primary.dark}
+						margin={'1em'}
+						minHeight={'60vh'}
+					>
+						{friendsBox()}
+						{GameBox()}
+					</Stack>
 				</Stack>
 			</Container>
 		);
 	};
 
+	let pageWrapperOther = () => {
+		//need to make it so that the i can get the other pesrsons info
+		user.intraId = lastSegment;
+		user.nameNick = "dhussain";
+		user.nameIntra = "notdhussain";
+		user.nameFirst = "ya";
+		user.nameLast = "no";
+		user.email = "yano@student.codam.nl";
+		user.image = 'default_profile_photo.png';
+		user.greeting = 'Hello, I have just landed!';
+		user.status = 'online';
+		/////
+
+		return (
+			<Container sx={{ padding: theme.spacing(3) }}>
+				<Stack
+						maxWidth={'100%'}
+						overflow={'hidden'}
+				>
+					{userInfo(user, false)}
+					<Stack
+						direction={isSmallScreen ? 'column' : 'row'}
+						bgcolor={theme.palette.primary.dark}
+						margin={'1em'}
+						minHeight={'60vh'}
+					>
+						{friendsBox()}
+						{GameBox()}
+					</Stack>
+				</Stack>
+			</Container>
+		);
+	};
+
+	let whichPage = () =>
+	{
+		if (lastSegment == user.id)
+			return (pageWrapperUser());
+		return (pageWrapperOther());	
+	}
+
 	return (
-		pageWrapper()
+		whichPage()
 	);
 };
 
