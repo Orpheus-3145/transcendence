@@ -8,15 +8,17 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
-  ) { }
+  ) {}
 
   @Get('login')
   async login(@Query('code') code: string, @Res() res: Response) {
+    console.log('login called');
     return this.authService.login(code, res);
   }
 
   @Get('validate')
   async validate(@Req() req: Request, @Res() res: Response) {
+    console.log('validate called');
     return this.authService.validate(req, res);
   }
 

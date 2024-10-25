@@ -25,7 +25,7 @@ import GameModule from './game/game.module';
         database: configService.get('POSTGRES_DB'),
         entities: [User], // List your entities here
         synchronize: true,
-        logging: true,
+        // logging: true,
       })
     }),
     GameModule,

@@ -122,9 +122,6 @@ const Home: React.FC = () => {
   return (
   <Container>
     <ContentBox>
-    <Typography>
-      {import.meta.env.ORIGIN_URL_BACK}
-    </Typography>
     <SectionTitle width="16ch">ft_transcendence</SectionTitle>
     <SectionContent>
       <Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>

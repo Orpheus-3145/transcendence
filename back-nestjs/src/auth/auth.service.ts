@@ -12,7 +12,7 @@ export class AuthService {
   constructor(
     private configService: ConfigService,
     private userService: UserService,
-  ) { }
+  ) {}
 
   handleRedir(res: Response, clear: boolean, redir?: string, mess?: string) {
     if (clear)
@@ -81,7 +81,7 @@ export class AuthService {
       res.redirect(process.env.ORIGIN_URL_FRONT + '/login');
       return (null);
     }
-    
+
     const access = await this.getUserAccessToken(code);
     if (access === null)
       return (null);

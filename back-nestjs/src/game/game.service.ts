@@ -42,8 +42,4 @@ export default class GameService {
 		// If touches paddle, flip the direction to the opposite
 		//Else, recentre game position and increment ponumber for player
   };
-
-	async showPlayerz(): Promise<> {
-		
-	}
 };
