@@ -8,7 +8,6 @@ import { AccessTokenDTO } from '../dto/auth.dto';
 @Injectable()
 export class UsersService {
 
-  private currentWaitingPlayers: Array<User> = [];
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,

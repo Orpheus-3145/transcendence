@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RouterModule } from '@nestjs/core';
 
 import { AuthController } from './auth/auth.controller';
 import { UsersController } from './users/users.controller';
 import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
+
 import GameModule from './game/game.module';
 
 @Module({
@@ -13,6 +15,7 @@ import GameModule from './game/game.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
+    GameModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -26,9 +29,8 @@ import GameModule from './game/game.module';
         entities: [User], // List your entities here
         synchronize: true,
         // logging: true,
-      })
+      }),
     }),
-    GameModule,
   ],
 })
 export default class AppModule {};

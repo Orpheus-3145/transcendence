@@ -81,6 +81,7 @@ export class AuthService {
       res.redirect(process.env.ORIGIN_URL_FRONT + '/login');
       return (null);
     }
+    console.log("starting");
 
     const access = await this.getUserAccessToken(code);
     if (access === null)
@@ -93,7 +94,6 @@ export class AuthService {
     const signedToken = sign({ intraId: userMe.id }, this.configService.get<string>('SECRET_KEY'));
 
     res.cookie('auth_token', signedToken, { httpOnly: true, maxAge: 10 * 365 * 24 * 60 * 60 * 1000 });
-    
     try {
       const userDTOreturn = await this.userService.createUser(access, userMe);
       res.redirect(process.env.ORIGIN_URL_FRONT + '/');
@@ -127,7 +127,6 @@ export class AuthService {
     } catch (error) {
       return this.failResponse(res, responseData, 'Token validation error.', '/login');
     }
-
     // Check decoded type
     if (typeof decoded !== 'object' || isNaN(Number(decoded.intraId)))
       return this.failResponse(res, responseData, 'Invalid token payload.', '/login');

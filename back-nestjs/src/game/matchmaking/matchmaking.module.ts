@@ -7,7 +7,6 @@ import { UsersModule } from '../../users/users.module';
 
 
 @Module({
-  // exports: [MatchmakingService],
   controllers: [MatchmakingController],
   providers: [MatchmakingService],
   imports: [UsersModule, TypeOrmModule],

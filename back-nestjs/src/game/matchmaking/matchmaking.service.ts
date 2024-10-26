@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../../entities/user.entity';
+// import { UserDTO } from 'src/dto/user.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,17 +8,27 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export default class MatchmakingService {
+  private waitingPlayersIP: Set<string> = new Set<string>();
+
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>
-  ) {}
+    private usersRepository: Repository<User>,
+  ) {};
 
-  async getPlayers(): Promise<number> {
+  readyForGame(): boolean {
     
-    var count = 1;
+    return this.waitingPlayersIP.size == 2;
+  };
 
-    // do some async reading on this.usersRepository
+  addPlayer( playerIP: string ) {
+    console.log(`new IP waiting to play: ${playerIP}`);
 
-    return count;
+    this.waitingPlayersIP.add(playerIP);
+  };
+
+  removePlayer( playerIP: string ) {
+    console.log(`removing: ${playerIP}`);
+
+    this.waitingPlayersIP.delete(playerIP);
   };
 };
