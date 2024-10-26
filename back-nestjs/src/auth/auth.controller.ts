@@ -12,6 +12,7 @@ export class AuthController {
 
   @Get('login')
   async login(@Query('code') code: string, @Res() res: Response) {
+    console.log(code);
     return this.authService.login(code, res);
   }
 

@@ -81,7 +81,6 @@ export class AuthService {
       res.redirect(process.env.ORIGIN_URL_FRONT + '/login');
       return (null);
     }
-    console.log("starting");
 
     const access = await this.getUserAccessToken(code);
     if (access === null)
