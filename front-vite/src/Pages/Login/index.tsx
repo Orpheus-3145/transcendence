@@ -1,23 +1,13 @@
 import React from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import { Box, Stack, Button, useTheme, Typography } from '@mui/material';
 
 const LoginPage: React.FC = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
 
   async function goAuth() {
-    // window.location.href = import.meta.env.VITE_AUTH_URL;
-    try {
-      const token = '1c599be6a3ce7540b2a6f0baa5079dddae4b59faf8bf08bbdd79b79ab18f597c';
-      await axios.get(`http://localhost:4000/auth/login?code=${token}`, { withCredentials: true });
-      window.location.href = '/';
-      // navigate('/');
-      } catch (error) {
-        navigate('/login');
-      };
-    };
+    window.location.href = import.meta.env.VITE_AUTH_URL;
+  };
 
   return (
   <Box

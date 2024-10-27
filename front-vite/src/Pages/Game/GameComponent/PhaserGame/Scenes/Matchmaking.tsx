@@ -1,42 +1,30 @@
+import { Socket } from 'dgram';
 import { GAME } from '../Game.data'
-import axios from 'axios';
+import { io } from 'socket.io-client';
 
 class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
-	private _backendURL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost.codam.nl:4000';
-	private _startGameListener!: EventSource;
+	private _wsBackendURL: string = 'http://localhost:4001/matchmaking';		//import.meta.env.ORIGIN_URL_BACK ||
+	private _socketIO!: Socket;
 
 	constructor () {
 
 		super({ key: 'Matchmaking' });
 	}
 
-	async checkPlayers() {
-		try {
-			const fetchedData = await axios.get(this._backendURL + '/game/matchmaking/getPlayers', { withCredentials: true });
-			console.log(fetchedData.data);
-		} catch (error) {};
-	}
-
-	async addPlayer() {
-
-		try {
-			await axios.get(this._backendURL + '/game/matchmaking/addPlayer', { withCredentials: true });
-		} catch (error) {};
-	}
-
-	async removePlayer() {
-
-		try {
-			await axios.get(this._backendURL + '/game/matchmaking/removePlayer', { withCredentials: true });
-		} catch (error) {};
-	}
-
 	// shots when scene.start('Matchmaking') is called
   init() {
 
-		this.addPlayer();
+		this._socketIO = io(this._wsBackendURL, {
+			withCredentials: true, // Include cookies, if necessary
+		});
+
+		this._socketIO.on('message', () => {
+				console.log('Ready to play!');
+				this.scene.start('Game');
+		});
+		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
   }
 
 	// loading graphic assets, fired after init()
@@ -49,17 +37,6 @@ class Matchmaking extends Phaser.Scene {
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
     
-		this._startGameListener = new EventSource(this._backendURL + '/game/matchmaking');
-    this._startGameListener.onmessage = (event) => {
-			
-			this._startGameListener.close();
-			this.scene.start('Game');
-    };
-    this._startGameListener.onerror = (event) => {
-      console.error('Errore nella connessione SSE:', event);
-      this._startGameListener.close(); // Chiudi la connessione in caso di errore
-    };
-
 		this.add.text(400, 150, 'Waiting for playerz ...', {
       fontSize: '32px',
       align: 'center',
@@ -76,10 +53,7 @@ class Matchmaking extends Phaser.Scene {
 		// Change color back when not hovered
 		goHomeButton.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }));
 		 // Start the main game
-		goHomeButton.on('pointerup', () => {
-			this.removePlayer();
-			this.scene.start('MainMenu');
-		});
+		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
   }
 
   // run every frame update

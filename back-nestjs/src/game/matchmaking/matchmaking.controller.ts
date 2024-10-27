@@ -1,45 +1,51 @@
-import { Controller, Get, Req, Res } from '@nestjs/common';
-import { Request, Response } from 'express';
-// import { UserDTO } from 'src/dto/user.dto';
+// import { Controller, Get, Req, Res, Sse } from '@nestjs/common';
+// import { Request, Response } from 'express';
+// // import { UserDTO } from 'src/dto/user.dto';
 
-import MatchmakingService from './matchmaking.service';
+// // import MatchmakingService from './matchmaking.gateway';
 
 
-@Controller('game/matchmaking')
-export default class MatchmakingController {
-  constructor(
-    private readonly mmService: MatchmakingService,
-  ) {};
+// @Controller('game/matchmaking')
+// export default class MatchmakingController {
 
-  @Get()
-  waitForMatch(@Req() req: Request, @Res() res: Response): void {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
+//   constructor(
+//     private readonly mmService: MatchmakingService,
+//   ) {};
 
-    const intervalId = setInterval(() => {
+//   // @Get()
+//   // waitForMatch(@Req() req: Request, @Res() res: Response): void {
+//   @Sse('waiting')
+//   wait(): void {
+//     if (this.mmService.readyForGame() === true)
+//       this.mmService.startGame();
+//     // res.setHeader('Content-Type', 'text/event-stream');
+//     // res.setHeader('Cache-Control', 'no-cache');
+//     // res.setHeader('Connection', 'keep-alive');
 
-      if (this.mmService.readyForGame() == true)
-      {
-        res.write(`data: ready to play!\n\n`);
-        clearInterval(intervalId);
-      }
-    }, 1000);
+//     // this._checker = setInterval(() => {
 
-    // req.on('close', () => {
-    //   clearInterval(intervalId);
-    // });
-  }
+//     //   if (this.mmService.readyForGame() == true)
+//     //   {
+//     //     this.mmService.printPlayers();
+//     //     res.write(`data: ready to play!\n\n`);
+//     //     clearInterval(this._checker);
+//     //   }
+//     // }, 1000);
 
-  @Get('addPlayer')
-  addPlayer( @Req() request: Request ) {
+//     // req.on('close', () => {
+//     //   clearInterval(intervalId);
+//     // });
+//   }
 
-    this.mmService.addPlayer((request as any).ip);
-  };
+//   @Get('addPlayer')
+//   addPlayer( @Req() request: Request ) {
 
-  @Get('removePlayer')
-  removePlayer( @Req() request: Request ) {
+//     this.mmService.addPlayer((request as any).ip);
+//   };
 
-    this.mmService.removePlayer((request as any).ip);
-  };
-};
+//   @Get('removePlayer')
+//   removePlayer( @Req() request: Request ) {
+
+//     this.mmService.removePlayer((request as any).ip);
+//   };
+// };
