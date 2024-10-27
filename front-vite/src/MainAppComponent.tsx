@@ -7,6 +7,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { themeOptions } from './Styles/themeOptions';
 import { useUser } from './Providers/UserContext/User';
 import './mainAppComponent.css';
+import{ Chat } from './Layout/Chat/index'
 
 const MainAppComponent: React.FC = () => {
   const theme = createTheme(themeOptions);
