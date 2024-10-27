@@ -27,6 +27,10 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
   console.log('Search Prompt onChange activated: ', chatProps.searchPrompt);
   };
 
+  const handleAddChatClick = () => {
+	console.log("'Add new chat' button clicked, implementation needed!");
+  };
+
   const DrawerContent = (
   <Stack width={250} role="chatrooms" direction="column"
     sx={{
