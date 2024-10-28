@@ -1,5 +1,6 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+// import { ConfigService } from '@nestjs/config';
 // import { Injectable } from '@nestjs/common';
 // import { User } from '../../entities/user.entity';
 // import { Subject } from 'rxjs';
@@ -9,9 +10,13 @@ import { Server, Socket } from 'socket.io';
 // import { Repository } from 'typeorm';
 
 
-@WebSocketGateway(4001, { namespace: '/matchmaking', 
+const ws_port = Number(process.env.PORT_WS_BACKEND);
+const ws_namespace = process.env.WS_NAMESPACE;
+const ws_frontend = process.env.ORIGIN_URL_FRONT;
+
+@WebSocketGateway(ws_port, { namespace: ws_namespace, 
   cors: {
-    origin: 'http://localhost:3000', // TODO store in env. var
+    origin: ws_frontend,
     methods: ['GET'],
     credentials: true,
   }
@@ -21,6 +26,8 @@ export class MatchmakingGateway {
   
   @WebSocketServer()
   server: Server;
+
+  constructor() {}
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);

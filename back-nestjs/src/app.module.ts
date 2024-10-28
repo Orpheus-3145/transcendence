@@ -21,11 +21,11 @@ import GameModule from './game/game.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('POSTGRES_HOST'),
-        port: configService.get('PORT_POSTGRES'),
-        username: configService.get('POSTGRES_USER'),
-        password: configService.get('POSTGRES_PASSWORD'),
-        database: configService.get('POSTGRES_DB'),
+        host: configService.get<string>('POSTGRES_HOST'),
+        port: configService.get<number>('PORT_POSTGRES', 5432),
+        username: configService.get<string>('POSTGRES_USER'),
+        password: configService.get<string>('POSTGRES_PASSWORD'),
+        database: configService.get<string>('POSTGRES_DB'),
         entities: [User], // List your entities here
         synchronize: true,
         // logging: true,

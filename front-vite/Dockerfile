@@ -12,4 +12,6 @@ RUN npm install
 
 COPY . .
 
+COPY ssl /app/
+
 CMD ["npm", "run", "dev"]

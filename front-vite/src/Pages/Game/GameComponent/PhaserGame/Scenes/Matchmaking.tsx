@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
-	private _wsBackendURL: string = 'http://localhost:4001/matchmaking';		//import.meta.env.ORIGIN_URL_BACK ||
+	private _wsBackendURL: string = import.meta.env.ORIGIN_URL_WS_BACK + '/matchmaking';
 	private _socketIO!: Socket;
 
 	constructor () {
