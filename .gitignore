@@ -1,5 +1,3 @@
-/src/front-vite/node_modules/
-/src/back-nestjs/node_modules/
 # Logs
 logs
 *.log
@@ -9,9 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# app
+**/node_modules/*
+**/dist/*
+**/dist-ssr/*
 *.local
 
 # Editor directories and files
@@ -27,3 +26,4 @@ dist-ssr
 
 # Sensitive data
 .env
+ssl/*
