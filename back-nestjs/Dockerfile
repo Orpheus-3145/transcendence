@@ -14,6 +14,6 @@ RUN npm i -g @nestjs/cli
 
 COPY . .
 
-COPY ssl /app/
+# RUN mkdir -p /app/ssl
 
 CMD ["npm", "run", "start:debug"]

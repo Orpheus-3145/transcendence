@@ -12,6 +12,6 @@ RUN npm install
 
 COPY . .
 
-COPY ssl /app/
+# RUN mkdir -p /app/ssl
 
 CMD ["npm", "run", "dev"]
