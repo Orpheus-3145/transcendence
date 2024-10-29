@@ -39,7 +39,7 @@ export class AuthService {
           client_id: this.configService.get<string>('SECRET_UID'),
           client_secret: this.configService.get<string>('SECRET_PWD'),
           code: code,
-          redirect_uri: this.configService.get<string>('REDIRECT_URI'),
+          redirect_uri: this.configService.get<string>('URL_BACKEND_LOGIN'),
         })
       });
       if (!response.ok) {
@@ -78,7 +78,7 @@ export class AuthService {
   async login(code: string, res: Response): Promise<UserDTO | null> {
     if (!code) {
       res.clearCookie('auth_token');
-      res.redirect(process.env.ORIGIN_URL_FRONT + '/login');
+      res.redirect(this.configService.get<string>('URL_FRONTEND') + '/login');
       return (null);
     }
 
@@ -95,12 +95,12 @@ export class AuthService {
     res.cookie('auth_token', signedToken, { httpOnly: true, maxAge: 10 * 365 * 24 * 60 * 60 * 1000 });
     try {
       const userDTOreturn = await this.userService.createUser(access, userMe);
-      res.redirect(process.env.ORIGIN_URL_FRONT + '/');
+      res.redirect(this.configService.get<string>('URL_FRONTEND'));
       return (userDTOreturn);
     
     } catch (error) {
       console.error('Error creating user:', error);
-      res.redirect(process.env.ORIGIN_URL_FRONT + '/login');
+      res.redirect(this.configService.get<string>('URL_FRONTEND') + '/login');
       return (null);
     
     }

@@ -12,9 +12,9 @@ import { Server, Socket } from 'socket.io';
 
 const ws_port = Number(process.env.PORT_WS_BACKEND);
 const ws_namespace = process.env.WS_NAMESPACE;
-const ws_frontend = process.env.ORIGIN_URL_FRONT;
+const ws_frontend = process.env.URL_FRONTEND;
 
-@WebSocketGateway(ws_port, { namespace: ws_namespace, 
+@WebSocketGateway({ namespace: ws_namespace, 
   cors: {
     origin: ws_frontend,
     methods: ['GET'],
@@ -22,24 +22,55 @@ const ws_frontend = process.env.ORIGIN_URL_FRONT;
   }
 })
 export class MatchmakingGateway {
-  private _waitingPlayersIP = new Set<Socket>();
+  private _waitingPlayersIP: Socket[];
+  private _checker;
   
   @WebSocketServer()
   server: Server;
 
-  constructor() {}
+  constructor() {
+  
+    // setInterval(() => this.checkNewGame(), 1000);
+  }
+
+  checkNewGame(): void {
+
+    this.server.emit('message', 'ready');
+    if (this._waitingPlayersIP.length > 1)
+    {
+      this._waitingPlayersIP.shift().emit('message', 'ready');  // message player1
+      this._waitingPlayersIP.shift().emit('message', 'ready');  // message player2
+
+      console.log('New game starts!');
+    }
+  };
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
-    this._waitingPlayersIP.add(client);
 
-    if (this._waitingPlayersIP.size == 2)
-      this.server.emit('message', 'ready');
+    this._waitingPlayersIP.push(client);
+
+    console.log(`Client connected: ${client.id}`);
+    if (this._checker == null)
+      this._checker = setInterval(() => this.checkNewGame(), 1000);
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
 
-    this._waitingPlayersIP.delete(client);
+    const tmpWaitingPlayers: Socket[] = [];
+    while (this._waitingPlayersIP.length > 0) {
+      
+      const currentPlayer = this._waitingPlayersIP.pop();
+      if (currentPlayer != client)
+        tmpWaitingPlayers.push(currentPlayer);
+    }
+    this._waitingPlayersIP = tmpWaitingPlayers;
+
+    if (this._waitingPlayersIP.length == 0)
+    {
+      clearInterval(this._checker);
+      this._checker = null;
+    }
+
+    console.log(`Client disconnected: ${client.id}`);
   }
 };

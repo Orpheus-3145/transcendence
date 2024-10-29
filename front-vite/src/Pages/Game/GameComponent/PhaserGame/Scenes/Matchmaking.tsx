@@ -1,37 +1,43 @@
-import { Socket } from 'dgram';
+// import { Socket } from 'dgram';
 import { GAME } from '../Game.data'
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
-	private _wsBackendURL: string = import.meta.env.ORIGIN_URL_WS_BACK + '/matchmaking';
-	private _socketIO!: Socket;
+	private _socketIO: Socket;
 
 	constructor () {
 
 		super({ key: 'Matchmaking' });
-	}
+		this._socketIO = io(
+			import.meta.env.URL_WS_BACKEND as string,
+			{
+				path: import.meta.env.WS_NAMESPACE,
+				withCredentials: true, // Include cookies, if necessary
+			}
+		);
 
-	// shots when scene.start('Matchmaking') is called
-  init() {
-
-		this._socketIO = io(this._wsBackendURL, {
-			withCredentials: true, // Include cookies, if necessary
-		});
+		this._socketIO.on('connect', () => {
+      console.log('Connected');
+    });
 
 		this._socketIO.on('message', () => {
 				console.log('Ready to play!');
 				this.scene.start('Game');
 		});
+	}
+
+	// shots when scene.start('Matchmaking') is called
+  init(): void {
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
-  }
+	}
 
 	// loading graphic assets, fired after init()
   preload(): void {}
 
 	// run after preload(), creation of the elements of the menu
-  create () {
+  create(): void {
 
 		// sets the background
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');

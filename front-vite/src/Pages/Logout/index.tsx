@@ -10,7 +10,7 @@ const LogoutPage: React.FC = () => {
   useEffect(() => {
   async function logout() {
     try {
-      const response = await axios.get(import.meta.env.ORIGIN_URL_BACK + '/auth/logout', { withCredentials: true });
+      const response = await axios.get(import.meta.env.URL_BACKEND + '/auth/logout', { withCredentials: true });
       setUser({ id: 0 });
       navigate(response.data.redirectTo);
     } catch (error) {

@@ -3,19 +3,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RouterModule } from '@nestjs/core';
 
-import { AuthController } from './auth/auth.controller';
-import { UsersController } from './users/users.controller';
+// import { AuthController } from './auth/auth.controller';
+// import { UsersController } from './users/users.controller';
 import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
-
+import MatchmakingModule from './game/matchmaking/matchmaking.module';
 import GameModule from './game/game.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  controllers: [AuthController, UsersController],
+  // controllers: [AuthController, UsersController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    AuthModule,
-    GameModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,6 +30,10 @@ import GameModule from './game/game.module';
         // logging: true,
       }),
     }),
+    AuthModule,
+    GameModule,
+    MatchmakingModule,
+    UsersModule,
   ],
 })
 export default class AppModule {};

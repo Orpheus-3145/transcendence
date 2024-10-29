@@ -6,7 +6,7 @@ const LoginPage: React.FC = () => {
   const theme = useTheme();
 
   async function goAuth() {
-    window.location.href = import.meta.env.VITE_AUTH_URL;
+    window.location.href = import.meta.env.URL_INTRA_AUTH as string;
   };
 
   return (
@@ -30,7 +30,7 @@ const LoginPage: React.FC = () => {
       fontWeight: 'bold',
     }}
     >
-    Transcendence
+    {import.meta.env.PROJECT_NAME}
     </Typography>
     <Typography
     variant="body1"
@@ -38,9 +38,7 @@ const LoginPage: React.FC = () => {
       color: 'text.secondary',
       textAlign: 'center',
     }}
-    >
-    {import.meta.env.REDIRECT_URL}
-    </Typography>
+    ></Typography>
     <Button
     variant="contained"
     color="primary"

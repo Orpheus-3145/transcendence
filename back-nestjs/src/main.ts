@@ -12,16 +12,14 @@ async function bootstrap() {
       httpsOptions: {
         key: fs.readFileSync(process.env.SSL_KEY_PATH),
         cert: fs.readFileSync(process.env.SSL_CERT_PATH),
-        // key: fs.readFileSync('../' + process.env.SSL_KEY_PATH),
-        // cert: fs.readFileSync('../' + process.env.SSL_CERT_PATH),
       }
     });
     const configService = app.get(ConfigService);
     const port = configService.get<number>('PORT_BACKEND', 4000);
-    process.env.ORIGIN_URL_FRONT
     // Required for using same host for the services
     app.enableCors({
-        origin: configService.get<string>('ORIGIN_URL_FRONT'),
+        origin: configService.get<string>('URL_FRONTEND'),
+        methods: ['GET'],
         credentials: true,
     });
 
