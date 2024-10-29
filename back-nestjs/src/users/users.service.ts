@@ -38,4 +38,13 @@ export class UsersService {
   async findOne(intraId: number): Promise<User | null> {
     return this.usersRepository.findOne({ where: { intraId } });
   }
+
+  async tmp(id: number): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { id } });
+  }
+
+  async getUser(code: string): Promise<User | null> {
+    const numb = Number(code);
+    return (this.tmp(numb));
+  }
 }

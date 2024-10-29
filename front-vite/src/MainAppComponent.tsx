@@ -6,6 +6,7 @@ import { Box, Container, CssBaseline, Divider } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { themeOptions } from './Styles/themeOptions';
 import { useUser } from './Providers/UserContext/User';
+import { Chat } from './Layout/Chat/index';
 import './mainAppComponent.css';
 
 const MainAppComponent: React.FC = () => {
@@ -22,6 +23,7 @@ const MainAppComponent: React.FC = () => {
         </Box>
       </Container>
       <Divider orientation="horizontal" sx={{ backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%' }} />
+      <Chat />
       <Footer />
     </ThemeProvider>
   );

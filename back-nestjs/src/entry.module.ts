@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth/auth.controller';
 import { UsersController } from './users/users.controller';
+import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
 
@@ -11,6 +12,7 @@ import { User } from './entities/user.entity';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
+    UsersModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

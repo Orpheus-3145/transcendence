@@ -62,3 +62,16 @@ export const useUser = () => {
   }
   return context;
 };
+
+export const fetchUserProfile = async (username: string) => {
+  try {
+    const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost.codam.nl:4000';
+    const response = await axios.get(BACKEND_URL + `/users/profile/${username}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error in fetchUserProfile:', error);
+    throw new Error('fetchUserProfile has failed!');
+  }
+};
+
+

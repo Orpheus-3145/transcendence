@@ -15,11 +15,9 @@ import {
 } from '@mui/icons-material';
 import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import EditIcon from '@mui/icons-material/Edit';
-import { useUser } from '../../Providers/UserContext/User';
+import { useUser, fetchUserProfile } from '../../Providers/UserContext/User';
 import { useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
-import { UsersService as UserService, UsersService } from '../../../../back-nestjs/src/users/users.service';
-
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -36,7 +34,7 @@ const ProfilePage: React.FC = () => {
 	const [showInput, setShowInput] = useState(false);
 	const [inputValue, setInputValue] = useState('');
 
-	let friendLine = (name:string) => {
+	let friendLine = (name:string, isUser:boolean) => {
 		return (
 			<Stack direction={'row'}
 				sx={{
@@ -67,50 +65,65 @@ const ProfilePage: React.FC = () => {
 						<a href="http://localhost:3000/profile/2">{name}</a>
 					</Typography>
 				</Stack>
-				<Stack direction={'row'} 
-					alignContent='center' 
-					alignItems={'center'} 
-					marginY={theme.spacing(.5)}
-				>
-					<Grid container gap={1} justifyContent={'center'} alignContent={'center'} flexGrow={1}></Grid>
-					<Grid item>
-						<Tooltip title="Remove user from friendlist!" arrow>
-							<IconButton
-								variant="contained"
-								onClick={() => {RemoveFriend}}
-								sx={{
-									color: theme.palette.secondary.light, 
-									cursor: 'pointer', 
-									'&:hover': { 
-										color: theme.palette.error.dark 
-									},
-								}}
-							>
-								<PersonOffIcon />
-							</IconButton>
-						</Tooltip>
-					</Grid>
-					<Grid item>
-						<Tooltip title="Block user!" arrow>
-							<IconButton
-								variant="contained"
-								onClick={() => {BlockFriend}}
-								sx={{color: theme.palette.secondary.light, 
-									cursor: 'pointer', 
-									'&:hover': { 
-										color: theme.palette.error.dark,
-									},
-								}}
-							>
-								<BlockIcon />
-							</IconButton>
-						</Tooltip>
-					</Grid>
-				</Stack>
+				{friendLineButtons(isUser)}
 			</Stack>
 		);
 	};
 	
+	let friendLineButtons = (isUser:boolean) => {
+		if (isUser == true)
+		{
+			return (
+			<Stack direction={'row'} 
+						alignContent='center' 
+						alignItems={'center'} 
+						marginY={theme.spacing(.5)}
+					>
+						<Grid container gap={1} justifyContent={'center'} alignContent={'center'} flexGrow={1}></Grid>
+						<Grid item>
+							<Tooltip title="Remove user from friendlist!" arrow>
+								<IconButton
+									variant="contained"
+									onClick={() => {RemoveFriend}}
+									sx={{
+										color: theme.palette.secondary.light, 
+										cursor: 'pointer', 
+										'&:hover': { 
+											color: theme.palette.error.dark 
+										},
+									}}
+								>
+									<PersonOffIcon />
+								</IconButton>
+							</Tooltip>
+						</Grid>
+						<Grid item>
+							<Tooltip title="Block user!" arrow>
+								<IconButton
+									variant="contained"
+									onClick={() => {BlockFriend}}
+									sx={{color: theme.palette.secondary.light, 
+										cursor: 'pointer', 
+										'&:hover': { 
+											color: theme.palette.error.dark,
+										},
+									}}
+								>
+									<BlockIcon />
+								</IconButton>
+							</Tooltip>
+						</Grid>
+					</Stack>
+			);
+		}
+		else
+		{
+			return (
+				<Stack></Stack>
+			)
+		}
+	}
+
 	let RemoveFriend = () => {
 		console.log("User: " + user.nameNick + " wants to remove this person!");
 	} //still need to make it work
@@ -121,7 +134,7 @@ const ProfilePage: React.FC = () => {
 
 	let strings: string[] = ["apple", "hallo", "cherry"];
 
-	let friendCategory = () => {
+	let friendCategory = (isUser:boolean) => {
 		return (
 			<Stack
 				direction='column'
@@ -151,12 +164,12 @@ const ProfilePage: React.FC = () => {
 					},
 				}}
 			>
-				{strings.map((friendName) => friendLine(friendName))}
+				{strings.map((friendName) => friendLine(friendName, isUser))}
 			</Stack>
 		);
 	};
 
-	let friendsBox = () => {
+	let friendsBox = (isUser:boolean) => {
 		return (
 			<Stack
 				gap={1}
@@ -184,7 +197,7 @@ const ProfilePage: React.FC = () => {
 						overflowY: 'scroll',
 					}}
 				>
-					{friendCategory()}
+					{friendCategory(isUser)}
 				</Stack>
 			</Stack>
 		);
@@ -400,7 +413,7 @@ const ProfilePage: React.FC = () => {
 
 	let GetUserStatus = (user:any, isUser: boolean) =>
 	{
-		user.status = 'online';
+		user.status = 'offline';
 		
 		let color, top;
 		if (user.status == 'offline')
@@ -784,7 +797,7 @@ const ProfilePage: React.FC = () => {
 						margin={'1em'}
 						minHeight={'60vh'}
 					>
-						{friendsBox()}
+						{friendsBox(true)}
 						{GameBox()}
 					</Stack>
 				</Stack>
@@ -795,7 +808,7 @@ const ProfilePage: React.FC = () => {
 	let pageWrapperOther = () => {
 		//need to make it so that the i can get the other pesrsons info
 		user.intraId = lastSegment;
-		user.nameNick = "dhussain";
+		user.nameNick = "nein";
 		user.nameIntra = "notdhussain";
 		user.nameFirst = "ya";
 		user.nameLast = "no";
@@ -818,7 +831,7 @@ const ProfilePage: React.FC = () => {
 						margin={'1em'}
 						minHeight={'60vh'}
 					>
-						{friendsBox()}
+						{friendsBox(false)}
 						{GameBox()}
 					</Stack>
 				</Stack>
@@ -826,11 +839,55 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
+	const [ownPage, showOwnPage] = useState(false);
+	const [otherUser, setOtherUser] = useState(user);
+	let bruh = async () =>
+	{
+		try {
+			const tmp = await fetchUserProfile(lastSegment);
+			if (!tmp) {
+			  console.error('tmp not found');
+			  return;
+			}
+			console.log("user: " + user.id + ", id of segment: " + tmp.id);
+			if (user.id == tmp.id) 
+			{
+			  showOwnPage(true);
+			  setOtherUser(user);
+			} 
+			else 
+			{
+			  showOwnPage(false);
+			  setOtherUser(tmp);
+			}
+		  } catch (error) {
+			console.error('Error fetching user profile:', error);
+		  }		
+	}
+
 	let whichPage = () =>
 	{
-		if (lastSegment == user.id)
+		bruh();
+		if (ownPage == true)
+		{
+			if (otherUser.id != user.id)
+			{
+				console.log("mother ducker not working!");
+			}
+			else
+				console.log("OtherUser is equal to user");
 			return (pageWrapperUser());
-		return (pageWrapperOther());	
+		}
+		else
+		{
+			if (otherUser.id != user.id)
+			{
+				console.log("OtherUser is not equal to user, lesh go!");
+			}
+			else
+				console.log("OtherUser is equal to user, F************CK");
+			return (pageWrapperOther());
+		}
 	}
 
 	return (
