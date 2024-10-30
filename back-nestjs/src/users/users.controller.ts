@@ -14,4 +14,11 @@ export class UsersController {
  	async getProfile(@Param('username') username: string) {
     	return (this.UserService.getUser(username));
   	}
+
+	@Get('/profile/:username/:nameNick')
+	async newNickname(@Param('username') username: string, @Param('nameNick') nameNick: string)
+	{
+		console.log("NewNickName has been called!");
+		return (this.UserService.setNameNick(username, nameNick));
+	}
  }

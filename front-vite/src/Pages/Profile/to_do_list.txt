@@ -17,9 +17,6 @@ i need to make it so that you can only send 1 request per a cetrain amount of ti
 if other accepts, private game room gets created
 
 as for the friend section,
-if user is on its own page, the buttons are there
-if user is on other users profilepage, the buttons should dissapear
-
 the name of the friend is also a link to their profilepage, so i need their id
 
 if the user presses on the remove friend button, the person gets removed from friends list
@@ -32,26 +29,3 @@ i need access to the game database,
 i need to know what type of game it is, the score and against whom
 i also need to see if the user won or lost, if user won it would show 'WON' in green, else 'LOST' in red
 i need to calculate the ratio of win/lose
-
-
-
-
-fetchuserprofile works with intraID, but i need to make it so that it works with the lastsegment
-i need to make a way to find the lastsegment in the database
-		// try {
-		// 	const user = await fetchUserProfile(lastSegment);
-		// 	if (!user) {
-		// 	  console.error('User not found');
-		// 	  return;
-		// 	}
-		// 	console.log("haha");
-		// 	console.log(user.id);
-		// 	console.log(user.nameIntra);
-		// 	// if (lastSegment == user.id) {
-		// 	//   return (pageWrapperUser(user));
-		// 	// } else {
-		// 	//   return (pageWrapperOther(user));
-		// 	// }
-		//   } catch (error) {
-		// 	console.error('Error fetching user profile:', error);
-		//   }

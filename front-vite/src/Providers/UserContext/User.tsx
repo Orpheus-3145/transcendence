@@ -64,14 +64,29 @@ export const useUser = () => {
 };
 
 export const fetchUserProfile = async (username: string) => {
-  try {
+  try 
+  {
     const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost.codam.nl:4000';
     const response = await axios.get(BACKEND_URL + `/users/profile/${username}`);
     return response.data;
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     console.error('Error in fetchUserProfile:', error);
     throw new Error('fetchUserProfile has failed!');
   }
 };
 
+export const setNewNickname = async (username: string, newNickName: string) => {
+  try 
+  {
+    const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost.codam.nl:4000';
+    await axios.get(BACKEND_URL + `/users/profile/${username}/${newNickName}`);
+  } 
+  catch (error) 
+  {
+    console.error('Error in setNewNickname:', error);
+    throw new Error('setNewNickname has failed!');
+  }
+};
 

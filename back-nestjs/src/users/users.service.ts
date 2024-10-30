@@ -39,12 +39,19 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { intraId } });
   }
 
-  async tmp(id: number): Promise<User | null> {
+  async findOneId(id: number): Promise<User | null> {
     return this.usersRepository.findOne({ where: { id } });
   }
 
   async getUser(code: string): Promise<User | null> {
     const numb = Number(code);
-    return (this.tmp(numb));
+    return (this.findOneId(numb));
+  }
+
+  async setNameNick(id: string, nameNick: string)
+  {
+    var user = this.getUser(id);
+    (await user).nameNick = nameNick;
+    this.usersRepository.save((await user));
   }
 }

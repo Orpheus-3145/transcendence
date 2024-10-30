@@ -13,9 +13,8 @@ export class User {
   @Column({ nullable: false })
   intraId: number;
 
-  @Column({ nullable: true, length: 20 })
+  @Column({ nullable: true})
   @IsAscii()
-  @Length(0, 20)
   nameNick: string | null;
   
   @Column({ nullable: true, length: 20 })

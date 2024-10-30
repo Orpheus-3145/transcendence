@@ -22,6 +22,7 @@ export const Main: React.FC = () => {
       <Route path="/channels" element={<ChannelsPage />} />
       <Route path="/profile/settings" element={<UserSettings />} />
       <Route path="/profile/:username" element={<ProfilePage />} />
+      <Route path="/404" element={<ErrorPage />} />
     </>
   );
 
