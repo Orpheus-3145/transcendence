@@ -43,6 +43,10 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
+  async findOneNick(nameNick: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { nameNick } });
+  }
+
   async getUser(code: string): Promise<User | null> {
     const numb = Number(code);
     return (this.findOneId(numb));
@@ -53,5 +57,45 @@ export class UsersService {
     var user = this.getUser(id);
     (await user).nameNick = nameNick;
     this.usersRepository.save((await user));
+  }
+
+  async addFriend(iduser: string, idother:string)
+  {
+    // var user = this.findOneNick(iduser);
+    // (await user).friends.push(idother);
+    // this.usersRepository.save((await user));
+    //still need to test if this works!!!!!!!!!!
+    console.log("add friend");
+  }
+
+  async changeProfilePic(id:string, image:any)
+  {
+    console.log("change profile picture");
+  }
+
+  async removeFriend(iduser:string, idother:string)
+  {
+    // var user = this.findOneNick(iduser);
+    // var newlist = (await user).friends.filter(friend => friend !== idother);
+    // (await user).friends = newlist;
+    // this.usersRepository.save((await user));
+    // console.log("hahaha: " + (await user).friends);
+    //doenst work yet since friends list is empty!!!!!!!!!!!!
+    console.log("remove friend");
+  }
+
+  async blockUser(iduser:string, idother:string)
+  {
+    console.log("block user");
+  }
+
+  async inviteGame(iduser:string, idother:string)
+  {
+    console.log("invite game");
+  }
+
+  async sendMessage(iduser:string, idother:string, message:string)
+  {
+    console.log("send message");
   }
 }

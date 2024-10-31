@@ -51,6 +51,9 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column("text", { array: true, default: '{}' })
+  friends: string[];
+
   async validate() {
     await validateOrReject(this);
   }

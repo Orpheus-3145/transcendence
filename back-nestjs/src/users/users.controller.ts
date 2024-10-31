@@ -9,16 +9,25 @@ export class UsersController {
 		private readonly UserService: UsersService,
 	  ) { }
 
-	
-	@Get('/profile/:username')
- 	async getProfile(@Param('username') username: string) {
-    	return (this.UserService.getUser(username));
-  	}
 
-	@Get('/profile/:username/:nameNick')
-	async newNickname(@Param('username') username: string, @Param('nameNick') nameNick: string)
+	@Get('/profile/:username/:key/:value')
+	async handleCallFrontend(@Param('username') username: string, @Param('key') key: string, @Param('value') value: string)
 	{
-		console.log("NewNickName has been called!");
-		return (this.UserService.setNameNick(username, nameNick));
+		if (key == "setNameNick")
+			return (this.UserService.setNameNick(username, value));
+		else if (key == "getUser")
+			return (this.UserService.getUser(username));
+		else if (key == "addFriend")
+			return (this.UserService.addFriend(username, value));
+		else if (key == "changeProfilePic")
+			return (this.UserService.changeProfilePic(username, value));
+		else if (key == "removeFriend")
+			return (this.UserService.removeFriend(username, value));
+		else if (key == "blockUser")
+			return (this.UserService.blockUser(username, value));
+		else if (key == "inviteGame")
+			return (this.UserService.inviteGame(username, value));
+		else if (key == "sendMessage")
+			return (this.UserService.sendMessage(username, value, "NEEDTOFIX"));
 	}
- }
+}

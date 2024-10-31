@@ -15,7 +15,7 @@ import {
 } from '@mui/icons-material';
 import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import EditIcon from '@mui/icons-material/Edit';
-import { useUser, fetchUserProfile, setNewNickname } from '../../Providers/UserContext/User';
+import { useUser, callBackEnd } from '../../Providers/UserContext/User';
 import { useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -66,15 +66,20 @@ const ProfilePage: React.FC = () => {
 							},
 						}}
 					>
-						<a href="http://localhost:3000/profile/2">{name}</a>
+						<a href="#" onClick={redirectFriend(name)}>{name}</a>
 					</Typography>
 				</Stack>
-				{friendLineButtons()}
+				{friendLineButtons(name)}
 			</Stack>
 		);
 	};
 	
-	let friendLineButtons = () => {
+	let redirectFriend = (name:any) =>
+	{
+		console.log("user want to go to: " + name + " profile page!");
+	}
+
+	let friendLineButtons = (name:string) => {
 		if (ownPage == true)
 		{
 			return (
@@ -88,7 +93,7 @@ const ProfilePage: React.FC = () => {
 							<Tooltip title="Remove user from friendlist!" arrow>
 								<IconButton
 									variant="contained"
-									onClick={() => {RemoveFriend}}
+									onClick={() => {RemoveFriend(name)}}
 									sx={{
 										color: theme.palette.secondary.light, 
 										cursor: 'pointer', 
@@ -105,7 +110,7 @@ const ProfilePage: React.FC = () => {
 							<Tooltip title="Block user!" arrow>
 								<IconButton
 									variant="contained"
-									onClick={() => {BlockFriend}}
+									onClick={() => {BlockFriend(name)}}
 									sx={{color: theme.palette.secondary.light, 
 										cursor: 'pointer', 
 										'&:hover': { 
@@ -128,15 +133,13 @@ const ProfilePage: React.FC = () => {
 		}
 	}
 
-	let RemoveFriend = () => {
-		console.log("User: " + user.nameNick + " wants to remove this person!");
-	} //still need to make it work
+	let RemoveFriend = (name:string) => {
+		callBackEnd(user.id, "removeFriend", name);
+	}
 
-	let BlockFriend = () => {
-		console.log("User: " + user.nameNick + " wants to block this person!");
-	} //still need to make it work
-
-	let strings: string[] = ["apple", "hallo", "cherry"];
+	let BlockFriend = (name:string) => {
+		callBackEnd(user.id, "blockUser", name);
+	}
 
 	let friendCategory = () => {
 		return (
@@ -168,7 +171,7 @@ const ProfilePage: React.FC = () => {
 					},
 				}}
 			>
-				{strings.map((friendName) => friendLine(friendName))}
+				{userProfile.friends.map((friendName) => friendLine(friendName))}
 			</Stack>
 		);
 	};
@@ -457,7 +460,7 @@ const ProfilePage: React.FC = () => {
 		const files = event.target.files;
 		if (files && files.length > 0) {
 			setSelectedFile(files[0]);
-			user.image = selectedFile;
+			callBackEnd(ownPage.id, "changeProfilePic", selectedFile);
 		}
 	}
 
@@ -574,7 +577,7 @@ const ProfilePage: React.FC = () => {
 		{
 			if (inputValue.length > 0 && inputValue.length < 28)
 			{
-				setNewNickname(userProfile.id.toString(), inputValue);
+				callBackEnd(userProfile.id, "setNameNick", inputValue);
 				setInputValue("");
 				setShowInput(false);
 			}
@@ -624,7 +627,7 @@ const ProfilePage: React.FC = () => {
 				)}
 			</Tooltip>
 		);
-	} //still need to make it work
+	}
 
 	let AddingFriendIcon = () => {
 		return (
@@ -649,8 +652,8 @@ const ProfilePage: React.FC = () => {
 	}
 
 	let AddingFriend = () => {
-		console.log("User: " + userProfile.nameNick + " wants to add person to friendslist!");
-	} //still need to make it work
+		callBackEnd(user.id, "addFriend", userProfile.id);
+	}
 
 	let InviteToGameIcon = () => {
 		return (
@@ -675,8 +678,8 @@ const ProfilePage: React.FC = () => {
 	}
 
 	let InviteToGame = () => {
-		console.log("User: " + userProfile.nameNick + " wants to invite this person to a game!");
-	} //still need to make it work
+		callBackEnd(user.id, "inviteGame", userProfile.id);
+	}
 
 	
 	const CheckChangeMessage = () => {
@@ -693,13 +696,13 @@ const ProfilePage: React.FC = () => {
 	  	{
 			if (inputMessage.length > 0)
 			{
-				SendMessage(inputMessage)
+				callBackEnd(user.id, "sendMessage", userProfile.id);
 				setInputMessage('');
 				setShowInputMessage(false);
 			}
 	 	}
   	}
-
+	
 	let SendMessageIcon = () => {
 		return (
 			<Tooltip title="Send a Message!" arrow
@@ -744,10 +747,6 @@ const ProfilePage: React.FC = () => {
 			</Tooltip>
 		);
 	}
-
-	let SendMessage = (message:string) => {
-		console.log("User wants to send: '" + message + "' to this person!");
-	} //still need to make it work
 
 	let OtherInfo = () =>
 	{
@@ -843,16 +842,16 @@ const ProfilePage: React.FC = () => {
 	{
 		try 
 		{
-			const tmp = await fetchUserProfile(lastSegment);
-			console.log(tmp);
+			const tmp = await callBackEnd(lastSegment, "getUser", "EMPTY");
 			if (Object.keys(tmp).length === 0)
-			{
-				console.log("User does not exist!");
 				return (-1);
-			}
 
-			if (user.id == tmp.id) 
-			  showOwnPage(true);
+			if (user.id == tmp.id)
+			{
+				showOwnPage(true);
+				tmp.friends[0] = "haha";
+				tmp.friends[1] = "nene"; //need to fix the add user function but i need another user for that to test
+			}
 			else 
 			  showOwnPage(false);
 
@@ -872,21 +871,9 @@ const ProfilePage: React.FC = () => {
 				navigate('/404');
 		});
 		if (ownPage == true)
-		{
-			if (userProfile.id != user.id)
-				console.log("mother ducker not working!");
-			else
-				console.log("userProfile is equal to user");
 			return (pageWrapperUser());
-		}
 		else
-		{
-			if (userProfile.id != user.id)
-				console.log("userProfile is not equal to user, lesh go!");
-			else
-				console.log("userProfile is equal to user, F************CK");
 			return (pageWrapperOther());
-		}
 	}
 
 	return (
