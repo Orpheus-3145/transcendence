@@ -1,4 +1,11 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
+import { WebSocketGateway,
+  WebSocketServer,
+  OnGatewayInit,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 // import { ConfigService } from '@nestjs/config';
 // import { Injectable } from '@nestjs/common';
@@ -10,28 +17,20 @@ import { Server, Socket } from 'socket.io';
 // import { Repository } from 'typeorm';
 
 
-const ws_port = Number(process.env.PORT_WS_BACKEND);
-const ws_namespace = process.env.WS_NAMESPACE;
-const ws_frontend = process.env.URL_FRONTEND;
-
-@WebSocketGateway({ namespace: ws_namespace, 
+@WebSocketGateway( Number(process.env.PORT_WS_BACKEND), { 
+  namespace: process.env.WS_NAMESPACE, 
   cors: {
-    origin: ws_frontend,
-    methods: ['GET'],
+    origin: process.env.URL_FRONTEND,
+    methods: ['GET', 'POST'],
     credentials: true,
   }
 })
-export class MatchmakingGateway {
+export class MatchmakingGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
   private _waitingPlayersIP: Socket[];
   private _checker;
   
   @WebSocketServer()
   server: Server;
-
-  constructor() {
-  
-    // setInterval(() => this.checkNewGame(), 1000);
-  }
 
   checkNewGame(): void {
 
@@ -45,13 +44,24 @@ export class MatchmakingGateway {
     }
   };
 
+  @SubscribeMessage('msg')
+  handleEvent(
+    @MessageBody() data: string,
+    @ConnectedSocket() client: Socket
+  ): void {
+    
+    // do smt with client
+    console.log('client says HI: ', data);
+  }
+  
   handleConnection(client: Socket) {
 
     this._waitingPlayersIP.push(client);
 
-    console.log(`Client connected: ${client.id}`);
     if (this._checker == null)
       this._checker = setInterval(() => this.checkNewGame(), 1000);
+    
+    console.log(`Client connected: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {

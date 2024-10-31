@@ -1,9 +1,5 @@
 FROM node:19
 
-ARG PORT
-
-EXPOSE $PORT
-
 WORKDIR /app
 
 COPY package*.json ./
@@ -11,7 +7,5 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-
-# RUN mkdir -p /app/ssl
 
 CMD ["npm", "run", "dev"]

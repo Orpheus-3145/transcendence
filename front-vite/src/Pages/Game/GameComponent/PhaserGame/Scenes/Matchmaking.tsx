@@ -1,4 +1,3 @@
-// import { Socket } from 'dgram';
 import { GAME } from '../Game.data'
 import { io, Socket } from 'socket.io-client';
 
@@ -10,19 +9,22 @@ class Matchmaking extends Phaser.Scene {
 	constructor () {
 
 		super({ key: 'Matchmaking' });
+
 		this._socketIO = io(
-			import.meta.env.URL_WS_BACKEND as string,
+			import.meta.env.URL_WS_BACKEND,
 			{
 				path: import.meta.env.WS_NAMESPACE,
 				withCredentials: true, // Include cookies, if necessary
 			}
 		);
 
+		this._socketIO.connect();
 		this._socketIO.on('connect', () => {
       console.log('Connected');
     });
 
 		this._socketIO.on('message', () => {
+	
 				console.log('Ready to play!');
 				this.scene.start('Game');
 		});
@@ -30,6 +32,8 @@ class Matchmaking extends Phaser.Scene {
 
 	// shots when scene.start('Matchmaking') is called
   init(): void {
+
+		this._socketIO.emit('msg', {text: 'di\'o hane'});
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	}
 
