@@ -6,19 +6,17 @@ import { darken, alpha } from '@mui/material/styles';
 import {
 	AccountCircle as AccountCircleIcon,
 	EmojiEvents as Cup,
-	PersonAdd as AddIcon,
 	Add as Add,
 	Block as BlockIcon,
-	VideogameAsset as GameIcon,
-	Message as MessageIcon,
 	PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
 import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import EditIcon from '@mui/icons-material/Edit';
 import { useUser, callBackEnd } from '../../Providers/UserContext/User';
 import { useLocation } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ProfilePageOther from './other'
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -29,7 +27,6 @@ const ProfilePage: React.FC = () => {
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
 	const [showInputMessage, setShowInputMessage] = useState(false);
-	const [inputMessage, setInputMessage] = useState('');
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [changed, setChanged] = useState(false);
@@ -37,8 +34,65 @@ const ProfilePage: React.FC = () => {
 	const [inputValue, setInputValue] = useState('');
 	const [ownPage, showOwnPage] = useState(false);
 	const [userProfile, setUserProfile] = useState(user);
+	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
 
-	let friendLine = (name:string) => {
+	let friendLineButtons = (name:string) => 
+	{
+		return (
+			<Stack direction={'row'} 
+				alignContent='center' 
+				alignItems={'center'} 
+				marginY={theme.spacing(.5)}
+			>
+				<Grid container gap={1} justifyContent={'center'} alignContent={'center'} flexGrow={1}></Grid>
+				<Grid item>
+					<Tooltip title="Remove user from friendlist!" arrow>
+						<IconButton
+							variant="contained"
+							onClick={() => {RemoveFriend(name)}}
+							sx={{
+								color: theme.palette.secondary.light, 
+								cursor: 'pointer', 
+								'&:hover': { 
+									color: theme.palette.error.dark 
+								},
+							}}
+						>
+							<PersonOffIcon />
+						</IconButton>
+					</Tooltip>
+				</Grid>
+				<Grid item>
+					<Tooltip title="Block user!" arrow>
+						<IconButton
+							variant="contained"
+							onClick={() => {BlockFriend(name)}}
+							sx={{color: theme.palette.secondary.light, 
+								cursor: 'pointer', 
+								'&:hover': { 
+									color: theme.palette.error.dark,
+								},
+							}}
+						>
+							<BlockIcon />
+						</IconButton>
+					</Tooltip>
+				</Grid>
+			</Stack>
+		);
+	}
+
+	let RemoveFriend = (name:string) => {
+		callBackEnd(user.id, "removeFriend", name);
+	}
+
+	let BlockFriend = (name:string) => {
+		callBackEnd(user.id, "blockUser", name);
+	}
+
+	let friendLine = (intraid:string) => 
+	{
+		var friend = callBackEnd(userProfile.id, "getFriend", intraid);
 		return (
 			<Stack direction={'row'}
 				sx={{
@@ -66,82 +120,21 @@ const ProfilePage: React.FC = () => {
 							},
 						}}
 					>
-						<a href="#" onClick={redirectFriend(name)}>{name}</a>
+						<a href="" onClick={() => redirectFriend(friend.id)}>{friend.nameNick}</a>
 					</Typography>
 				</Stack>
-				{friendLineButtons(name)}
+				{friendLineButtons(intraid)}
 			</Stack>
 		);
 	};
 	
-	let redirectFriend = (name:any) =>
+	let redirectFriend = (id:any) =>
 	{
-		console.log("user want to go to: " + name + " profile page!");
+		navigate('/profile/' + id);
 	}
 
-	let friendLineButtons = (name:string) => {
-		if (ownPage == true)
-		{
-			return (
-			<Stack direction={'row'} 
-						alignContent='center' 
-						alignItems={'center'} 
-						marginY={theme.spacing(.5)}
-					>
-						<Grid container gap={1} justifyContent={'center'} alignContent={'center'} flexGrow={1}></Grid>
-						<Grid item>
-							<Tooltip title="Remove user from friendlist!" arrow>
-								<IconButton
-									variant="contained"
-									onClick={() => {RemoveFriend(name)}}
-									sx={{
-										color: theme.palette.secondary.light, 
-										cursor: 'pointer', 
-										'&:hover': { 
-											color: theme.palette.error.dark 
-										},
-									}}
-								>
-									<PersonOffIcon />
-								</IconButton>
-							</Tooltip>
-						</Grid>
-						<Grid item>
-							<Tooltip title="Block user!" arrow>
-								<IconButton
-									variant="contained"
-									onClick={() => {BlockFriend(name)}}
-									sx={{color: theme.palette.secondary.light, 
-										cursor: 'pointer', 
-										'&:hover': { 
-											color: theme.palette.error.dark,
-										},
-									}}
-								>
-									<BlockIcon />
-								</IconButton>
-							</Tooltip>
-						</Grid>
-					</Stack>
-			);
-		}
-		else
-		{
-			return (
-				<Stack></Stack>
-			)
-		}
-	}
-
-	let RemoveFriend = (name:string) => {
-		callBackEnd(user.id, "removeFriend", name);
-	}
-
-	let BlockFriend = (name:string) => {
-		callBackEnd(user.id, "blockUser", name);
-	}
-
-	let friendCategory = () => {
+	let friendCategory = () => 
+	{
 		return (
 			<Stack
 				direction='column'
@@ -176,7 +169,8 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let friendsBox = () => {
+	let friendsBox = () => 
+	{
 		return (
 			<Stack
 				gap={1}
@@ -222,7 +216,8 @@ const ProfilePage: React.FC = () => {
 		{ title: 'Custom Games', value: 100, rate: '75%' },
 	];
 
-	let gameStats = () => {
+	let gameStats = () => 
+	{
 		return (
 			<Box
 				sx={{
@@ -285,7 +280,8 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let gameLine = () => {
+	let gameLine = () => 
+	{
 		return (
 			<Stack
 				direction={'row'}
@@ -344,47 +340,24 @@ const ProfilePage: React.FC = () => {
 
 	let userInfo = () => 
 	{
-		if (ownPage == true)
-		{
-			return (
-				<Stack
-					justifyContent={'space-between'}
-					margin={'1em'}
-					bgcolor={theme.palette.primary.dark}
-					sx={{
-						maxWidth: '1200px',
-						maxHeight: '300px',
-					}}
-				>
-					{GetProfilePic()}
-					{SetChangePfpButton()}
-					{GetUserStatus()}
-					{GetNickName()}
-					{ButtonsProfileGrid()}
-					{OtherInfo()}
-				</Stack>
-			);
-		}
-		else
-		{
-			return (
-				<Stack
-					justifyContent={'space-between'}
-					margin={'1em'}
-					bgcolor={theme.palette.primary.dark}
-					sx={{
-						maxWidth: '1200px',
-						maxHeight: '300px',
-					}}
-				>
-					{GetProfilePic()}
-					{GetUserStatus()}
-					{GetNickName()}
-					{ButtonsProfileGrid()}
-					{OtherInfo()}
-				</Stack>
-			);
-		}
+		return (
+			<Stack
+				justifyContent={'space-between'}
+				margin={'1em'}
+				bgcolor={theme.palette.primary.dark}
+				sx={{
+					maxWidth: '1200px',
+					maxHeight: '300px',
+				}}
+			>
+				{GetProfilePic()}
+				{SetChangePfpButton()}
+				{GetUserStatus()}
+				{GetNickName()}
+				{EditNickName()}
+				{OtherInfo()}
+			</Stack>
+		);
 	};
 
 	let GetProfilePic = () =>
@@ -431,11 +404,6 @@ const ProfilePage: React.FC = () => {
 			color = '#0fc00c';
 		else if (user.status == 'ingame')
 			color = '#0dddc4';
-
-		if (ownPage == true)
-			top = '-60px';
-		else
-			top = '0px';
 		
 		return (
 			<Stack>
@@ -446,7 +414,7 @@ const ProfilePage: React.FC = () => {
 					backgroundColor: color,
 					borderRadius: '50%',
 					position: 'relative',
-					top: top,
+					top: '-60px',
 					left: '190px',
 				}}
 				>
@@ -460,7 +428,7 @@ const ProfilePage: React.FC = () => {
 		const files = event.target.files;
 		if (files && files.length > 0) {
 			setSelectedFile(files[0]);
-			callBackEnd(ownPage.id, "changeProfilePic", selectedFile);
+			callBackEnd(userProfile.id, "changeProfilePic", files);
 		}
 	}
 
@@ -505,10 +473,6 @@ const ProfilePage: React.FC = () => {
 		if (userProfile.nameNick.lenght > 25)
 			size = '1rem';
 		
-		let top = '-150px';
-		if (ownPage == true)
-			top = '-210px';
-		
 		return (
 			<Stack
 				sx={{
@@ -517,7 +481,7 @@ const ProfilePage: React.FC = () => {
 					justifyContent: 'center',
 					alignItems: 'center',
 					position: 'relative',
-					top: top,
+					top: '-210px',
 					left: '-15px',
 				}}
 			>
@@ -539,31 +503,9 @@ const ProfilePage: React.FC = () => {
 			</Stack>
 		);
 	}
-
-	let ButtonsProfileGrid = () =>
-	{
-		if (ownPage == true)
-		{
-			return (
-				<Stack>
-					{EditNickName()}
-				</Stack>
-			);
-
-		}
-		else
-		{
-			return (
-				<Stack>
-					{AddingFriendIcon()}
-					{InviteToGameIcon()}
-					{SendMessageIcon()}
-				</Stack>
-			);		
-		}
-	}
   
-	const CheckChange = () => {
+	const CheckChange = () => 
+	{
 		if (showInputMessage)
 		{
 			setShowInputMessage(false);
@@ -571,7 +513,8 @@ const ProfilePage: React.FC = () => {
 		setShowInput((prev) => !prev);
 	};
 
-	const handleKeyDownNickname = (event: React.KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyDownNickname = (event: React.KeyboardEvent<HTMLInputElement>) => 
+	{
 	  	const key = event.key;
 		if (key === 'Enter') 
 		{
@@ -584,7 +527,8 @@ const ProfilePage: React.FC = () => {
 		}
 	}
 
-	let EditNickName = () => {
+	let EditNickName = () => 
+	{
 		return (
 			<Tooltip title="Edit Nickname!" arrow
 				PopperProps={{
@@ -629,131 +573,8 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let AddingFriendIcon = () => {
-		return (
-			<Tooltip title="Add Friend!" arrow>
-				<IconButton
-					variant="contained"
-					onClick={() => AddingFriend()}
-							sx={{
-								fontSize: '30px',
-								top: '-130px',
-								left: '420px',
-								width: '50px',
-								'&:hover': {
-									color: '#0c31df',
-								},
-							}}
-				>
-					<AddIcon fontSize="inherit"/>
-				</IconButton>
-			</Tooltip>
-		);
-	}
-
-	let AddingFriend = () => {
-		callBackEnd(user.id, "addFriend", userProfile.id);
-	}
-
-	let InviteToGameIcon = () => {
-		return (
-			<Tooltip title="Invite to Game!" arrow>
-			<IconButton
-				variant="contained"
-				onClick={() => InviteToGame()}
-				sx={{
-					fontSize: '30px',
-					top: '-175px',
-					left: '500px',
-					width: '50px',
-					'&:hover': {
-						color: '#BF77F6',
-					},
-				}}
-			>
-				<GameIcon fontSize="inherit"/>
-			</IconButton>
-		</Tooltip>
-		);
-	}
-
-	let InviteToGame = () => {
-		callBackEnd(user.id, "inviteGame", userProfile.id);
-	}
-
-	
-	const CheckChangeMessage = () => {
-		if (showInput)
-		{
-			setShowInput(false);
-		}
-		setShowInputMessage((prev) => !prev);
-	};
-
-	const handleKeyDownMessage = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		const key = event.key;
-	  	if (key === 'Enter') 
-	  	{
-			if (inputMessage.length > 0)
-			{
-				callBackEnd(user.id, "sendMessage", userProfile.id);
-				setInputMessage('');
-				setShowInputMessage(false);
-			}
-	 	}
-  	}
-	
-	let SendMessageIcon = () => {
-		return (
-			<Tooltip title="Send a Message!" arrow
-				PopperProps={{
-					modifiers: [
-					{
-						name: 'offset',
-						options: {
-						offset: [110, -220],
-						},
-					},
-				],
-				}}
-			>
-				<IconButton
-					variant="contained"
-					onClick={CheckChangeMessage}
-					sx={{
-						fontSize: '30px',
-						top: '-220px',
-						left: '580px',
-						width: '50px',
-						'&:hover': {
-							color: '#f4bf13',
-						},
-					}}
-				>
-					<MessageIcon fontSize="inherit"/>
-				</IconButton>
-				{showInputMessage && (
-					<Input
-						value={inputMessage}
-						onChange={(e) => setInputMessage(e.target.value)}
-						onKeyDown={handleKeyDownMessage}
-						placeholder="Type a message to send..."
-						sx={{
-							top: '-170px',
-							left: '380px',
-						}}
-					/>
-				)}		
-			</Tooltip>
-		);
-	}
-
 	let OtherInfo = () =>
 	{
-		let top = '-320px';
-		if (ownPage == true)
-			top = '-300px';
-
 		return (
 			<Stack
 				direction={'column'}
@@ -763,7 +584,7 @@ const ProfilePage: React.FC = () => {
 					width: '100%',
 					height: '10px',
 					position: 'relative',
-					top: top,
+					top: '-300px',
 					left: '830px',
 				}}
 			>
@@ -782,41 +603,8 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let pageWrapperUser = () => {
-		return (
-			<Container sx={{ padding: theme.spacing(3) }}>
-				<Stack
-						maxWidth={'100%'}
-						overflow={'hidden'}
-				>
-					{userInfo()}
-					<Stack
-						direction={isSmallScreen ? 'column' : 'row'}
-						bgcolor={theme.palette.primary.dark}
-						margin={'1em'}
-						minHeight={'60vh'}
-					>
-						{friendsBox()}
-						{GameBox()}
-					</Stack>
-				</Stack>
-			</Container>
-		);
-	};
-
-	let pageWrapperOther = () => {
-		//need to make it so that the i can get the other pesrsons info
-		userProfile.intraId = lastSegment;
-		userProfile.nameNick = "nein";
-		userProfile.nameIntra = "notdhussain";
-		userProfile.nameFirst = "ya";
-		userProfile.nameLast = "no";
-		userProfile.email = "yano@student.codam.nl";
-		userProfile.image = 'default_profile_photo.png';
-		userProfile.greeting = 'Hello, I have just landed!';
-		userProfile.status = 'online';
-		/////
-
+	let pageWrapperUser = () => 
+	{
 		return (
 			<Container sx={{ padding: theme.spacing(3) }}>
 				<Stack
@@ -849,13 +637,11 @@ const ProfilePage: React.FC = () => {
 			if (user.id == tmp.id)
 			{
 				showOwnPage(true);
-				tmp.friends[0] = "haha";
-				tmp.friends[1] = "nene"; //need to fix the add user function but i need another user for that to test
 			}
 			else 
 			  showOwnPage(false);
 
-			setUserProfile(tmp); 
+			setUserProfile(tmp);
 		} 
 		catch (error) 
 		{
@@ -863,17 +649,24 @@ const ProfilePage: React.FC = () => {
 		}
 		return (1);	
 	}
-
+	
 	let whichPage = () =>
 	{
-		getUserProfile().then(number => {
-			if (number == -1)
-				navigate('/404');
-		});
-		if (ownPage == true)
-			return (pageWrapperUser());
-		else
-			return (pageWrapperOther());
+		useEffect(() => 
+		{
+			getUserProfile().then((number) => 
+			{
+				if (number === -1) 
+					navigate('/404');
+				else 
+					setUserProfileNumber(number);
+			});
+		}, []);
+		
+		if (userProfileNumber === null) 
+			return <Stack>Loading...</Stack>;
+		
+		return ownPage ? pageWrapperUser() : <ProfilePageOther />;
 	}
 
 	return (

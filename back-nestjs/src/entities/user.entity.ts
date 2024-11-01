@@ -54,6 +54,9 @@ export class User {
   @Column("text", { array: true, default: '{}' })
   friends: string[];
 
+  @Column("text", { array: true, default: '{}' })
+  blocked: string[];
+
   async validate() {
     await validateOrReject(this);
   }

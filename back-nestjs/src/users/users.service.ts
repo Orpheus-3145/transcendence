@@ -47,7 +47,8 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { nameNick } });
   }
 
-  async getUser(code: string): Promise<User | null> {
+  async getUser(code: string): Promise<User | null> 
+  {
     const numb = Number(code);
     return (this.findOneId(numb));
   }
@@ -58,35 +59,48 @@ export class UsersService {
     (await user).nameNick = nameNick;
     this.usersRepository.save((await user));
   }
-
-  async addFriend(iduser: string, idother:string)
+  
+  async getFriend(code: string): Promise<User | null> 
   {
-    // var user = this.findOneNick(iduser);
-    // (await user).friends.push(idother);
-    // this.usersRepository.save((await user));
-    //still need to test if this works!!!!!!!!!!
-    console.log("add friend");
+    const numb = Number(code);
+    return (this.findOne(numb));
+  }
+  
+  async addFriend(iduser: string, idother:string) //think its done, not tested tho
+  {
+    const numbuser = Number(iduser);
+    const numbother = Number(idother);
+    var user = this.findOneId(numbuser);
+    var otheruser = this.findOneId(numbother);
+    if (!(await user).friends)
+    {
+      (await user).friends =  [];
+    }
+    (await user).friends.push((await otheruser).intraId.toString());
+    this.usersRepository.save((await user));
   }
 
-  async changeProfilePic(id:string, image:any)
+  async removeFriend(iduser:string, idother:string) //think its done, not tested tho
   {
-    console.log("change profile picture");
-  }
-
-  async removeFriend(iduser:string, idother:string)
-  {
-    // var user = this.findOneNick(iduser);
-    // var newlist = (await user).friends.filter(friend => friend !== idother);
-    // (await user).friends = newlist;
-    // this.usersRepository.save((await user));
-    // console.log("hahaha: " + (await user).friends);
-    //doenst work yet since friends list is empty!!!!!!!!!!!!
-    console.log("remove friend");
+    const numb = Number(iduser);
+    var user = this.findOneId(numb);
+    var newlist = (await user).friends.filter(friend => friend !== idother);
+    (await user).friends = newlist;
+    this.usersRepository.save((await user));
   }
 
   async blockUser(iduser:string, idother:string)
   {
-    console.log("block user");
+    this.removeFriend(iduser, idother);
+    const numb = Number(iduser);
+    var user = this.findOneId(numb);
+    (await user).blocked.push(idother);
+    this.usersRepository.save((await user));
+  }
+  
+  async changeProfilePic(id:string, image:any)
+  {
+    console.log("change profile picture");
   }
 
   async inviteGame(iduser:string, idother:string)

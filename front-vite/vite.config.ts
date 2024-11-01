@@ -14,6 +14,9 @@ for (const [key, value] of Object.entries(process.env)) {
 export default defineConfig({
   plugins: [react()],
   define: envVariables,
+  optimizeDeps: {
+    exclude: ['chunk-FGS4JGDZ.js'], // replace with the actual name of the problematic dependency
+  },
   server: {
     watch: {
       usePolling: true

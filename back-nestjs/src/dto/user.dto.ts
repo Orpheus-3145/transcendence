@@ -20,6 +20,7 @@ export class UserDTO {
     this.greeting = user.greeting;
     this.status = user.status;
     this.friends = user.friends;
+    this.blocked = user.blocked;
   }
 
   @IsNumber()
@@ -54,4 +55,7 @@ export class UserDTO {
   @IsString({ each: true })
   friends: string[];
 
+  @IsArray()
+  @IsString({ each: true })
+  blocked: string[];
 }

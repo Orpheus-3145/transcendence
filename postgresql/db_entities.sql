@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS Users (
 		intra_surname VARCHAR(50),
 		intra_email VARCHAR(50)
 		friends TEXT[] DEFAULT '{}';
+		blocked TEXT[] DEFAULT '{}';
 	);
 
 CREATE TYPE FRIEND_REQUEST_STATUS AS ENUM ('active', 'inactive', 'pending');

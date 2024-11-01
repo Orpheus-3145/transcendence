@@ -9,7 +9,6 @@ export class UsersController {
 		private readonly UserService: UsersService,
 	  ) { }
 
-
 	@Get('/profile/:username/:key/:value')
 	async handleCallFrontend(@Param('username') username: string, @Param('key') key: string, @Param('value') value: string)
 	{
@@ -17,6 +16,8 @@ export class UsersController {
 			return (this.UserService.setNameNick(username, value));
 		else if (key == "getUser")
 			return (this.UserService.getUser(username));
+		else if (key == "getFriend")
+			return (this.UserService.getFriend(value));
 		else if (key == "addFriend")
 			return (this.UserService.addFriend(username, value));
 		else if (key == "changeProfilePic")
