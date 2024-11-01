@@ -18,6 +18,8 @@ export class SimulationService {
 	// private player2: number, // y coordinate only
 	// private bot: boolean, // bot will automatically move towards the position of the ball
 	// private roomId: number, // different game rooms can existprivate
+	windowWidth = 800; // will be overwritten by the value from the client
+	windowHeight = 600; // overwritten by value form the clien t
 	private ball = { x: 400, y: 300, dx: 5, dy: 5 };
   	private player1 = { y: 300 };
   	private player2 = { y: 300 };
@@ -55,7 +57,7 @@ export class SimulationService {
     }
   };
 
-    // Handle paddle movement
+    // Handle paddle movement based on key data
   movePaddle(player: 'player1' | 'player2', direction: 'up' | 'down') {
     const paddle = player === 'player1' ? this.player1 : this.player2;
     const delta = direction === 'up' ? -10 : 10;

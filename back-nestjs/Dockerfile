@@ -12,6 +12,8 @@ RUN npm i
 
 RUN npm i -g @nestjs/cli
 
+RUN npm install @nestjs/platform-socket.io # Add this line
+
 COPY . .
 
 CMD ["npm", "run", "start:debug"]

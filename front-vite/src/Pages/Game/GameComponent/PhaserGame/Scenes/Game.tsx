@@ -2,6 +2,7 @@ import { GAME, GAME_BALL, GAME_BAR } from '../Game.data';
 import Ball from '../GameObjects/Ball';
 import PlayerBar from '../GameObjects/PlayerBar';
 import Field from '../GameObjects/Field';
+import { io } from 'socket.io-client';
 
 const socket = io('http://localhost:3000');
 
@@ -48,6 +49,7 @@ class Game extends Phaser.Scene {
 
   // Create game objects and establish WebSocket connection
   create(): void {
+	  console.log("Game scene started!");
     // Set background
     this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
     this._background.setDisplaySize(this.scale.width, this.scale.height);
@@ -82,13 +84,14 @@ class Game extends Phaser.Scene {
     let direction = '';
 
     if (this._cursors.up.isDown || this._keyW.isDown) {
-      direction = 'up'; // Move up
+	  direction = 'up'; // Move up
     } else if (this._cursors.down.isDown || this._keyS.isDown) {
       direction = 'down'; // Move down
     }
 
     // Emit player movement only if a direction is pressed
     if (direction) {
+		console.log(`Emitting playerMove for ${this._idLeft} with direction: ${direction}`);
       socket.emit('playerMove', {
         playerId: this._idLeft, // Change to right player ID if needed
         direction

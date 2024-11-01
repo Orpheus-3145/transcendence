@@ -11,11 +11,6 @@ export default class GameController {
     private readonly gameService: GameService,
   ) { }
 
-  @Get('engine')
-  async gameSimulation(@Res() res: Response) {
-    return ;
-  }
-  
   @Get('currentPlayers')
   async getCurrentPlayers(): Promise<number> {
     

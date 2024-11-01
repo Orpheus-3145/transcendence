@@ -15,8 +15,6 @@ import { Repository } from 'typeorm';
 @Controller('simulations')
 export default class SimulationController {
   constructor(
-    @InjectRepository(User)
-    private userService: UserService,
 	private simulationService: SimulationService
   ) { }
 

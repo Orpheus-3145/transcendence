@@ -1,6 +1,6 @@
 // simulation/simulation.module.ts
 import { Module } from '@nestjs/common';
-import { SimulationController } from './simulation.controller';
+import SimulationController from './simulation.controller';
 import { SimulationService } from './simulation.service';
 import { GameGateway } from '../game.gateway';
 
