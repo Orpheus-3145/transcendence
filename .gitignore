@@ -26,4 +26,4 @@ lerna-debug.log*
 
 # Sensitive data
 .env
-./ssl/*
+**/ssl/*
