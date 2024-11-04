@@ -12,6 +12,10 @@ async function bootstrap() {
       httpsOptions: {
         key: fs.readFileSync(process.env.SSL_KEY_PATH),
         cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+        requestCert: true,
+        ca: [
+          fs.readFileSync(process.env.SSL_CERT_PATH),
+        ]
       }
     });
     const configService = app.get(ConfigService);
