@@ -15,7 +15,7 @@ export default defineConfig({
   plugins: [react()],
   define: envVariables,
   optimizeDeps: {
-    exclude: ['chunk-FGS4JGDZ.js'], // replace with the actual name of the problematic dependency
+    exclude: ['chunk-ZTP42Z7Q'], // replace with the actual name of the problematic dependency
   },
   server: {
     watch: {
@@ -28,3 +28,5 @@ export default defineConfig({
     host: '0.0.0.0',
   }
 })
+
+

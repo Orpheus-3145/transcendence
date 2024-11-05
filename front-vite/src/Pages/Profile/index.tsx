@@ -12,11 +12,18 @@ import {
 } from '@mui/icons-material';
 import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import EditIcon from '@mui/icons-material/Edit';
-import { useUser, callBackEnd } from '../../Providers/UserContext/User';
 import { useLocation } from 'react-router-dom';
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProfilePageOther from './other'
+import { useUser,
+		getUserFromDatabase, 
+		setNewNickname, 
+		getFriend, 
+		removeFriend, 
+		blockFriend, 
+		changePFP, 
+		User} from '../../Providers/UserContext/User';
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -33,9 +40,9 @@ const ProfilePage: React.FC = () => {
 	const [showInput, setShowInput] = useState(false);
 	const [inputValue, setInputValue] = useState('');
 	const [ownPage, showOwnPage] = useState(false);
-	const [userProfile, setUserProfile] = useState(user);
+	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
-
+	
 	let friendLineButtons = (name:string) => 
 	{
 		return (
@@ -83,16 +90,16 @@ const ProfilePage: React.FC = () => {
 	}
 
 	let RemoveFriend = (name:string) => {
-		callBackEnd(user.id, "removeFriend", name);
+		removeFriend(userProfile.id, name);
 	}
 
 	let BlockFriend = (name:string) => {
-		callBackEnd(user.id, "blockUser", name);
+		blockFriend(userProfile.id, name);
 	}
 
 	let friendLine = (intraid:string) => 
 	{
-		var friend = callBackEnd(userProfile.id, "getFriend", intraid);
+		var friend = getFriend(intraid);
 		return (
 			<Stack direction={'row'}
 				sx={{
@@ -428,7 +435,7 @@ const ProfilePage: React.FC = () => {
 		const files = event.target.files;
 		if (files && files.length > 0) {
 			setSelectedFile(files[0]);
-			callBackEnd(userProfile.id, "changeProfilePic", files);
+			changePFP(userProfile.id, files[0]);
 		}
 	}
 
@@ -520,7 +527,8 @@ const ProfilePage: React.FC = () => {
 		{
 			if (inputValue.length > 0 && inputValue.length < 28)
 			{
-				callBackEnd(userProfile.id, "setNameNick", inputValue);
+				setNewNickname(userProfile.id, inputValue);
+				userProfile.nameNick = inputValue;
 				setInputValue("");
 				setShowInput(false);
 			}
@@ -628,25 +636,18 @@ const ProfilePage: React.FC = () => {
 
 	let getUserProfile = async () : Promise<number> =>
 	{
-		try 
-		{
-			const tmp = await callBackEnd(lastSegment, "getUser", "EMPTY");
-			if (Object.keys(tmp).length === 0)
-				return (-1);
+		const tmp = await getUserFromDatabase(lastSegment);
 
-			if (user.id == tmp.id)
-			{
-				showOwnPage(true);
-			}
-			else 
-			  showOwnPage(false);
+		if (Object.keys(tmp).length === 0)
+			return (-1);
 
-			setUserProfile(tmp);
-		} 
-		catch (error) 
-		{
-			console.error('Error fetching user profile:', error);
-		}
+		if (user.id == tmp.id)
+			showOwnPage(true);
+		else 
+		  showOwnPage(false);
+
+		  setUserProfile(tmp);
+		
 		return (1);	
 	}
 	

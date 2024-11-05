@@ -13,10 +13,10 @@ import {
 	Message as MessageIcon,
 	PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
-import { useUser, callBackEnd } from '../../Providers/UserContext/User';
 import { useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUser, getFriend, addFriend, sendMessage, inviteToGame, getUserFromDatabase } from '../../Providers/UserContext/User';
 
 const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
@@ -33,7 +33,7 @@ const ProfilePageOther: React.FC = () => {
 
 	let friendLine = (intraid:string) => 
 	{
-		var friend = callBackEnd(userProfile.id, "getFriend", intraid);
+		var friend = getFriend(intraid);
 		return (
 			<Stack direction={'row'}
 				sx={{
@@ -438,7 +438,7 @@ const ProfilePageOther: React.FC = () => {
 	}
 
 	let AddingFriend = () => {
-		callBackEnd(user.id, "addFriend", userProfile.id);
+		addFriend(user.id, userProfile.id);
 	}
 
 	let InviteToGameIcon = () => 
@@ -465,7 +465,7 @@ const ProfilePageOther: React.FC = () => {
 	}
 
 	let InviteToGame = () => {
-		callBackEnd(user.id, "inviteGame", userProfile.id);
+		inviteToGame(user.id, userProfile.id);
 	}
 
 	
@@ -485,7 +485,7 @@ const ProfilePageOther: React.FC = () => {
 	  	{
 			if (inputMessage.length > 0)
 			{
-				callBackEnd(user.id, "sendMessage", userProfile.id);
+				sendMessage(user.id, userProfile.id, inputMessage);
 				setInputMessage('');
 				setShowInputMessage(false);
 			}
@@ -570,18 +570,14 @@ const ProfilePageOther: React.FC = () => {
 
 	let getUserProfile = async () : Promise<number> =>
 	{
-		try 
-		{
-			const tmp = await callBackEnd(lastSegment, "getUser", "EMPTY");
-			if (Object.keys(tmp).length === 0)
-				return (-1);
+
+		const tmp = getUserFromDatabase(lastSegment);
+		
+		if (Object.keys(tmp).length === 0)
+			return (-1);
 			
-			setUserProfile(tmp); 
-		} 
-		catch (error) 
-		{
-			console.error('Error fetching user profile:', error);
-		}
+		setUserProfile(tmp); 
+
 		return (1);	
 	}
 
