@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import fs from 'fs'
 
 // Define which environment variables are safe to expose
 // const safeEnvVars = ['URL_BACKEND', 'URL_FRONTEND', 'PORT_BACKEND', 'PORT_FRONTEND'];
@@ -31,9 +30,5 @@ export default defineConfig({
     //     // rewrite: (path: string) => path.replace(/^/api/, ''),
     //   },
     // },
-    https: {
-      key: fs.readFileSync(process.env.SSL_KEY_PATH as string),
-      cert: fs.readFileSync(process.env.SSL_CERT_PATH as string),
-    },
   }
 });

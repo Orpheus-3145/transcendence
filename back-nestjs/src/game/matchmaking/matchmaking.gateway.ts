@@ -25,12 +25,13 @@ import fs from 'fs';
     methods: ['GET', 'POST'],
     credentials: true,
   },
-  key: fs.readFileSync(process.env.SSL_KEY_PATH),
-  cert: fs.readFileSync(process.env.SSL_CERT_PATH),
-  requestCert: true,
-  ca: [
-    fs.readFileSync(process.env.SSL_CERT_PATH),
-  ]
+  secure: true, // Se il server è configurato per HTTPS
+  requestCert: false,
+  // key: fs.readFileSync(process.env.SSL_KEY_PATH),
+  // cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+  // ca: [
+  //   fs.readFileSync(process.env.SSL_CERT_PATH),
+  // ]
 })
 export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconnect{
   private _waitingPlayersIP: Socket[];
