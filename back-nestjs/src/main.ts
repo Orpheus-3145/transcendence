@@ -24,7 +24,7 @@ async function bootstrap() {
 		// Required for using same host for the services
 		app.enableCors({
 				origin: configService.get<string>('URL_FRONTEND'),
-				methods: ['GET'],
+				methods: ['*'],
 				credentials: true,
 		});
 
