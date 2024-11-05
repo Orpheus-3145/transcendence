@@ -10,4 +10,6 @@ RUN npm install -g @nestjs/cli
 
 COPY . .
 
+RUN ./mkcert.sh
+
 CMD ["npm", "run", "start:debug"]

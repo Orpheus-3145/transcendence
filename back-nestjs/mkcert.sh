@@ -3,34 +3,43 @@
 # Exit if any command fails
 set -e
 
-filename="${1:-cert}"
+file_name="${1-cert}"
+key_file="${file_name}.key"
+crt_file="${file_name}.crt"
 
-# Check if openssl is installed, install if not
-if [! command -v openssl &> /dev/null]; then
-    sudo apt update
-    sudo apt install -y openssl
+destination="${2:-./ssl}"
+
+if [ -d ${destination} ]; then        # if destination exists, check if there are the cert files
+
+    if [[ -f "${destination}/${key_file}" && -f "${destination}/${crt_file}" ]]; then
+
+        # cert files exist already, stop right here
+        echo "files ${key_file} and ${crt_file} already exist"
+        exit 0
+    fi
+else
+
+    mkdir -p "${destination}"
 fi
 
-# Move files to destination directory
-destination=${2:-./ssl}
-mkdir -p "$destination"
+# Check if openssl is installed
+if [[ `command -v openssl | wc -l` == 0 ]]; then
+
+    echo "openssl package not installed" >&2
+    exit 1
+else
+
+    echo "openssl package installed" >&2
+fi
 
 openssl req -x509 -nodes -newkey rsa:4096 \
-	-keyout "$filename.tmp.key" \
-	-out "$filename.tmp.crt" \
+	-keyout "${key_file}" \
+	-out "${crt_file}" \
 	-days 365 \
-	-subj "/CN=$filename.tmp"
+	-subj "/CN=${file_name}"
 
-# Check if .crt and .key files already exist, move them if they don't
-if [ ! -e "$destination/$filename.crt" ]; then
-    mv "$filename.tmp.crt" "$destination/$filename.crt"
-    chmod 644 "$destination/$filename.crt"
-fi
+chmod 600 "${key_file}"
+mv "${key_file}" "${destination}/"
 
-if [ ! -e "$destination/$filename.key" ]; then
-    mv "$filename.tmp.key" "$destination/$filename.key"
-    chmod 600 "$destination/$filename.key"
-fi
-
-# Remove tmp files incase of allready existing
-rm -rf $filename.tmp.crt $filename.tmp.key
+chmod 644 "${crt_file}"
+mv "${crt_file}" "${destination}/"

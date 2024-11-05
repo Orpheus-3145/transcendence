@@ -8,4 +8,6 @@ RUN npm install
 
 COPY . .
 
+RUN ./mkcert.sh
+
 CMD ["npm", "run", "dev"]
