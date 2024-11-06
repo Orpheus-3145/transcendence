@@ -31,10 +31,10 @@ services:
       - database
     expose:
       - "${PORT_BACKEND}"
-      - "${PORT_WS_BACKEND}"
+      # - "${PORT_WS_BACKEND}"
     ports:
       - "${PORT_BACKEND}:${PORT_BACKEND}"
-      - "${PORT_WS_BACKEND}:${PORT_WS_BACKEND}"
+      # - "${PORT_WS_BACKEND}:${PORT_WS_BACKEND}"
     networks:
       - internal
 

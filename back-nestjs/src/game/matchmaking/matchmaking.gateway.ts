@@ -18,14 +18,16 @@ import { Server, Socket } from 'socket.io';
 // import { Repository } from 'typeorm';
 
 
-@WebSocketGateway( Number(process.env.PORT_WS_BACKEND), { 
+@WebSocketGateway( //Number(process.env.PORT_WS_BACKEND), 
+{ 
   namespace: process.env.WS_NAMESPACE, 
+  // path: "/",
   cors: {
     origin: process.env.URL_FRONTEND,
     methods: ['GET', 'POST'],
     credentials: true,
   },
-  secure: true,
+  // secure: true,
   transports: ['websocket'],
   // key: fs.readFileSync(process.env.SSL_KEY_PATH),
   // cert: fs.readFileSync(process.env.SSL_CERT_PATH),
@@ -34,7 +36,7 @@ import { Server, Socket } from 'socket.io';
   // ]
 })
 export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconnect{
-  private _waitingPlayersIP: Socket[];
+  private _waitingPlayersIP: Socket[] = [];
   private _checker = null;
   
   @WebSocketServer()
@@ -43,7 +45,7 @@ export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconn
   checkNewGame(): void {
 
     this.server.emit('message', 'ready');
-    if (this._waitingPlayersIP.length > 1)
+    if (this._waitingPlayersIP.length > 2)
     {
       this._waitingPlayersIP.shift().emit('message', 'ready');  // message player1
       this._waitingPlayersIP.shift().emit('message', 'ready');  // message player2

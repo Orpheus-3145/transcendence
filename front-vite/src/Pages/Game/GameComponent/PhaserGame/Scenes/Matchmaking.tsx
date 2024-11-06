@@ -12,16 +12,17 @@ class Matchmaking extends Phaser.Scene {
 		super({ key: 'Matchmaking' });
 
 		this._socketIO = io(
-			import.meta.env.URL_WS_BACKEND,
+			import.meta.env.URL_WS_BACKEND + import.meta.env.WS_NAMESPACE,
 			{
 				// key: String(readFileSync(import.meta.env.SSL_KEY_PATH)),
 				// cert: String(readFileSync(import.meta.env.SSL_CERT_PATH)), //String(readFileSync(import.meta.env.SSL_CERT_PATH)
 				// ca: [
 				// 	String(readFileSync(import.meta.env.SSL_CERT_PATH)),
 				// ],
-				path: import.meta.env.WS_NAMESPACE,
+				// path: import.meta.env.WS_NAMESPACE,
 				withCredentials: true, // Include cookies, if necessary
 				transports: ['websocket'],
+  			// path: "/"
 				// secure: true, // Assicura che la connessione sia sicura
 			}
 		);
