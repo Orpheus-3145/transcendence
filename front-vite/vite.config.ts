@@ -26,12 +26,10 @@ export default defineConfig({
     https: {
       key: String(fs.readFileSync(process.env.SSL_KEY_PATH as string)),
       cert: String(fs.readFileSync(process.env.SSL_CERT_PATH as string)),
-      requestCert: false,
       ca: [
         String(fs.readFileSync(process.env.SSL_CERT_PATH as string)),
       ],
     },
-    // rejectUnauthorized: false, // Solo se non vuoi validare i certificati client
     // proxy: {     //Se stai facendo delle chiamate al backend in sviluppo e vuoi evitare problemi di CORS usa proxy
     //   '/api/channels/mychats': {
     //     target: 'http://backend:4000/',

@@ -12,8 +12,6 @@ async function bootstrap() {
 			httpsOptions: {
 				key: fs.readFileSync(process.env.SSL_KEY_PATH),
 				cert: fs.readFileSync(process.env.SSL_CERT_PATH),
-				requestCert: false,
-				// rejectUnauthorized: false, // Solo se non vuoi validare i certificati client
 				ca: [
 					fs.readFileSync(process.env.SSL_CERT_PATH),
 				]
@@ -23,9 +21,9 @@ async function bootstrap() {
 		const port = configService.get<number>('PORT_BACKEND', 4000);
 		// Required for using same host for the services
 		app.enableCors({
-				origin: configService.get<string>('URL_FRONTEND'),
-				methods: ['*'],
-				credentials: true,
+			origin: configService.get<string>('URL_FRONTEND'),
+			methods: ['*'],
+			credentials: true,
 		});
 
 		// Enables req.cookies
@@ -35,8 +33,8 @@ async function bootstrap() {
 		}));
 
 		await app.listen(port).catch(() => {
-				console.log(`listen to ${port} failed`);
-				process.exit(1);
+			console.log(`listen to ${port} failed`);
+			process.exit(1);
 		});
 }
 

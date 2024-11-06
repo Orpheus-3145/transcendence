@@ -1,13 +1,13 @@
 import { WebSocketGateway,
   WebSocketServer,
-  OnGatewayInit,
+  // OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
   MessageBody,
   ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import fs from 'fs';
+// import fs from 'fs';
 // import { ConfigService } from '@nestjs/config';
 // import { Injectable } from '@nestjs/common';
 // import { User } from '../../entities/user.entity';
@@ -25,8 +25,8 @@ import fs from 'fs';
     methods: ['GET', 'POST'],
     credentials: true,
   },
-  secure: true, // Se il server è configurato per HTTPS
-  requestCert: false,
+  secure: true,
+  transports: ['websocket'],
   // key: fs.readFileSync(process.env.SSL_KEY_PATH),
   // cert: fs.readFileSync(process.env.SSL_CERT_PATH),
   // ca: [

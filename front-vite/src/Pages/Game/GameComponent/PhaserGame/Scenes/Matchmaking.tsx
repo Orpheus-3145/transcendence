@@ -21,10 +21,12 @@ class Matchmaking extends Phaser.Scene {
 				// ],
 				path: import.meta.env.WS_NAMESPACE,
 				withCredentials: true, // Include cookies, if necessary
-				transports: ['websocket'], // Assicurati di usare solo il trasporto WebSocket
-				secure: true, // Assicura che la connessione sia sicura
+				transports: ['websocket'],
+				// secure: true, // Assicura che la connessione sia sicura
 			}
 		);
+		this._socketIO.connect()
+		console.log(this._socketIO);
 		
 		this._socketIO.on('connect', () => {
       console.log('Connected');
