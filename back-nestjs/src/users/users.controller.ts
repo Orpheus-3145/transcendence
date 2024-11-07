@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param, Post, HttpException} from '@nestjs/common';
 import { UsersService } from './users.service';
 
 
@@ -11,11 +11,19 @@ export class UsersController {
 
 	@Post('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
-		return (this.UserService.getUser(username));
+		var user = this.UserService.getUser(username);
+		if (!user)
+			throw new HttpException('Not Found', 404);
+		return (user);
 	}
 
 	@Post('/profile/:username/newnick/:newname')
 	async setNewNickname(@Param('username') username: string, @Param('newname') newname: string) {
+		if (newname.length == 0)
+			throw new HttpException('Bad Request', 400);
+		if (newname.length > 28)
+			throw new HttpException('Bad Request', 400);
+
 		return (this.UserService.setNameNick(username, newname));
 	}
 

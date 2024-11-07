@@ -65,17 +65,25 @@ export const useUser = () => {
 
 const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost.codam.nl:4000';
 
-export async function getUserFromDatabase(username: string): Promise<User>
+export async function getUserFromDatabase(username: string, navigate: (path: string) => void): Promise<User>
 {
   const request = new Request(BACKEND_URL + '/users/profile/' + username, {
     method: "POST",
     body: JSON.stringify({username}),
   });
 
-  const response = await fetch(request)
+  try
+  {
+    const response = await fetch(request)
     .then((raw) => raw.json())
     .then((json) => json as User);
     return response;
+  }
+  catch (error)
+  {
+    console.error("ERROR: User not found!");
+    navigate('/404');
+  }
 }
 
 export async function setNewNickname(username:string, nickname:string): Promise<void> {
@@ -85,11 +93,8 @@ export async function setNewNickname(username:string, nickname:string): Promise<
   });
 
   const response = await fetch(request)
-    .then((raw) =>raw.json());
-  if (!response)
-      console.log("M8 SETTIN NICKNAME SUCKS ASS");
-  else
-    console.log("M8 SETTING NICKNAME IS BADDASS");
+    .then((raw) => raw.json());
+  console.log(response);
 
 }
 

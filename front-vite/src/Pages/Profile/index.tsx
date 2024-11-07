@@ -475,7 +475,7 @@ const ProfilePage: React.FC = () => {
 		let size = '4rem';
 		if (userProfile.nameNick.length > 10)
 			size = '3rem';
-		if (userProfile.nameNick.length > 20)
+		if (userProfile.nameNick.length > 18)
 			size = '2rem';
 		if (userProfile.nameNick.lenght > 25)
 			size = '1rem';
@@ -634,21 +634,16 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let getUserProfile = async () : Promise<number> =>
+	let getUserProfile = async () : Promise<void> =>
 	{
-		const tmp = await getUserFromDatabase(lastSegment);
-
-		if (Object.keys(tmp).length === 0)
-			return (-1);
+		const tmp = await getUserFromDatabase(lastSegment, navigate);
 
 		if (user.id == tmp.id)
 			showOwnPage(true);
 		else 
-		  showOwnPage(false);
+			showOwnPage(false);
 
-		  setUserProfile(tmp);
-		
-		return (1);	
+		setUserProfile(tmp);
 	}
 	
 	let whichPage = () =>
@@ -657,10 +652,7 @@ const ProfilePage: React.FC = () => {
 		{
 			getUserProfile().then((number) => 
 			{
-				if (number === -1) 
-					navigate('/404');
-				else 
-					setUserProfileNumber(number);
+				setUserProfileNumber(number);
 			});
 		}, []);
 		
