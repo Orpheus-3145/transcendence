@@ -3,6 +3,7 @@ import { ChatProps, ChatStatus, ChatRoom } from './InterfaceChat';
 import { Box, Drawer, Divider, Stack, IconButton, InputBase, Typography } from '@mui/material';
 import { darken, alpha, useTheme } from '@mui/material/styles';
 import { Add as AddIcon, Settings as SettingsIcon, Logout as LogoutIcon } from '@mui/icons-material';
+import ContentSettings from './ContentSettings';
 
 interface ContentDrawerProps {
   chatProps: ChatProps;
@@ -27,8 +28,12 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
   console.log('Search Prompt onChange activated: ', chatProps.searchPrompt);
   };
 
-  const handleAddChatClick = () => {
+  const handleAddChatClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+	setChatProps({ ...chatProps, searchPrompt: event.target.value });
+	event.stopPropagation();
+	toggleChatStatus(ChatStatus.Settings, null);
 	console.log("'Add new chat' button clicked, implementation needed!");
+	// return <ContentSettings chatProps={chatProps} setChatProps={setChatProps} />;
   };
 
   const DrawerContent = (
