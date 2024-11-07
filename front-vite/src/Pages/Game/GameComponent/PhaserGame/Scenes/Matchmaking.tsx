@@ -4,32 +4,32 @@ import { io, Socket } from 'socket.io-client';
 class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
-	private _socketIO: Socket;
+	private _socketIO!: Socket;
 
 	constructor () {
 
 		super({ key: 'Matchmaking' });
-
-		this._socketIO = io(
-			import.meta.env.URL_WS_MATCHMAKING,
-			{
-				withCredentials: true,
-				transports: ['websocket'],
-			}
-		);
-		
-		this._socketIO.on('ready', () => {
-	
-			console.log('Ready to play!');
-			this.scene.start('Game');
-		});
 	}
 
 	// executed when scene.start('Matchmaking') is called
   init(): void {
 	
+		this._socketIO = io(
+			import.meta.env.URL_WS_MATCHMAKING, 
+			{
+				withCredentials: true,
+				transports: ['websocket'],
+			}
+		);
+
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
-	}
+
+		this._socketIO.on('ready', () => {
+	
+			console.log('Ready to play!');
+			this.scene.start('Game');
+		});
+	};
 
 	// loading graphic assets, fired after init()
   preload(): void {}

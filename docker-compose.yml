@@ -31,10 +31,8 @@ services:
       - database
     expose:
       - "${PORT_BACKEND}"
-      - "${PORT_WEBSOCKET}"
     ports:
       - "${PORT_BACKEND}:${PORT_BACKEND}"
-      - "${PORT_WEBSOCKET}:${PORT_WEBSOCKET}"
     networks:
       - internal
 

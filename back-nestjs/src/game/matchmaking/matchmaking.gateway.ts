@@ -8,8 +8,7 @@ import { WebSocketGateway,
 import { Server, Socket } from 'socket.io';
 
 
-@WebSocketGateway( //Number(process.env.PORT_WEBSOCKET),
-  {
+@WebSocketGateway( {
   namespace: process.env.NS_MATCHMAKING, 
   cors: {
     origin: process.env.URL_FRONTEND,
@@ -21,18 +20,16 @@ import { Server, Socket } from 'socket.io';
 export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconnect{
   private _waitingPlayersIP: Socket[] = [];
   private _checker = null;
-  
+
   @WebSocketServer()
   server: Server;
 
   checkNewGame(): void {
 
-    if (this._waitingPlayersIP.length > 2)
-    {
+    if (this._waitingPlayersIP.length > 1) {
+
       this._waitingPlayersIP.shift().emit('ready');  // message player1
       this._waitingPlayersIP.shift().emit('ready');  // message player2
-
-      console.log('New game starts!');
     }
   };
 
@@ -43,26 +40,27 @@ export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconn
     if (this._checker == null)
       this._checker = setInterval(() => this.checkNewGame(), 1000);
     
-    console.log(`Client connected: ${client.id}`);
+    console.log(`Client connected: ${client.handshake.address}`);
   };
 
   handleDisconnect(client: Socket): void {
 
     const tmpWaitingPlayers: Socket[] = [];
     while (this._waitingPlayersIP.length > 0) {
-      
+
       const currentPlayer = this._waitingPlayersIP.pop();
       if (currentPlayer != client)
         tmpWaitingPlayers.push(currentPlayer);
     }
+
     this._waitingPlayersIP = tmpWaitingPlayers;
 
-    if (this._waitingPlayersIP.length == 0)
-    {
+    if (this._waitingPlayersIP.length == 0) {
+      
       clearInterval(this._checker);
       this._checker = null;
     }
 
-    console.log(`Client disconnected: ${client.id}`);
+    console.log(`Client disconnected: ${client.handshake.address}`);
   };
 };
