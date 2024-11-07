@@ -14,7 +14,7 @@ if [ -d ${destination} ]; then        # if destination exists, check if there ar
     if [[ -f "${destination}/${key_file}" && -f "${destination}/${crt_file}" ]]; then
 
         # cert files exist already, stop right here
-        echo "files ${key_file} and ${crt_file} already exist"
+        echo "${key_file} and ${crt_file} already exist"
         exit 0
     fi
 else
@@ -27,9 +27,6 @@ if [[ `command -v openssl | wc -l` == 0 ]]; then
 
     echo "openssl package not installed" >&2
     exit 1
-else
-
-    echo "openssl package installed" >&2
 fi
 
 openssl req -x509 -nodes -newkey rsa:4096 \

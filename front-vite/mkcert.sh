@@ -27,9 +27,6 @@ if [[ `command -v openssl | wc -l` == 0 ]]; then
 
     echo "openssl package not installed" >&2
     exit 1
-else
-
-    echo "openssl package installed" >&2
 fi
 
 openssl req -x509 -nodes -newkey rsa:4096 \
