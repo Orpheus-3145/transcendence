@@ -1,38 +1,67 @@
 import { GAME } from '../Game.data'
+import { io, Socket } from 'socket.io-client';
+// import { readFileSync } from "fs";
 
 class Matchmaking extends Phaser.Scene {
 
-	// background texture
 	private _background!: Phaser.GameObjects.Image;
+	private _socketIO: Socket;
 
 	constructor () {
 
 		super({ key: 'Matchmaking' });
+
+		this._socketIO = io(
+			import.meta.env.URL_WS_BACKEND + import.meta.env.WS_NS_MATCHMAKING,
+			{
+				// key: String(readFileSync(import.meta.env.SSL_KEY_PATH)),
+				// cert: String(readFileSync(import.meta.env.SSL_CERT_PATH)), //String(readFileSync(import.meta.env.SSL_CERT_PATH)
+				// ca: [
+				// 	String(readFileSync(import.meta.env.SSL_CERT_PATH)),
+				// ],
+				// path: import.meta.env.WS_NAMESPACE,
+				withCredentials: true, // Include cookies, if necessary
+				transports: ['websocket'],
+  			// path: "/"
+				// secure: true, // Assicura che la connessione sia sicura
+			}
+		);
+		this._socketIO.connect()
+		console.log(this._socketIO);
+		
+		this._socketIO.on('connect', () => {
+      console.log('Connected');
+    });
+
+		this._socketIO.on('message', () => {
+	
+				console.log('Ready to play!');
+				this.scene.start('Game');
+		});
 	}
 
 	// shots when scene.start('Matchmaking') is called
   init(): void {
 
-  }
+		this._socketIO.emit('msg', {text: 'di\'o hane'});
+		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
+	}
 
 	// loading graphic assets, fired after init()
-  preload(): void {
-
-  }
+  preload(): void {}
 
 	// run after preload(), creation of the elements of the menu
-  create (): void {
+  create(): void {
 
 		// sets the background
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
     
-    this.add.text(400, 150, 'Waiting for playerz ...', {
+		this.add.text(400, 150, 'Waiting for playerz ...', {
       fontSize: '32px',
       align: 'center',
       color: '#fff',
     });
-
     // button for going home
 		const goHomeButton = this.add.text(GAME.width - 150, GAME.height - 100, 'Home', {
 			fontSize: '32px',
@@ -48,9 +77,7 @@ class Matchmaking extends Phaser.Scene {
   }
 
   // run every frame update
-  update(): void {
-
-  }
+  update(): void {}
 };
 
 export default Matchmaking;

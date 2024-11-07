@@ -7,19 +7,22 @@ import {
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  ConnectedSocket
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { SimulationService } from './simulation/simulation.service';
+import { Server, Socket } from 'socket.io';
+import { SimulationService } from './simulation.service';
 
-@WebSocketGateway(Number(process.env.PORT_WS_BACKEND), { 
-  namespace: process.env.WS_NAMESPACE, 
+@WebSocketGateway(
+{ 
+  namespace: process.env.WS_NS_SIMULATION, 
   cors: {
     origin: process.env.URL_FRONTEND,
     methods: ['GET', 'POST'],
     credentials: true,
   }
 })
-export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+
+export default class SimulationGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -35,6 +38,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.server.emit('gameState', gameState);
     }, 1000 / 30); // Emit at 30 FPS
   }
+
+  @SubscribeMessage('msg')
+  handleEvent(
+    @MessageBody() data: string,
+    @ConnectedSocket() client: Socket
+  ): void {
+    
+    // do smt with client
+    console.log('client says HI: ', data);
+  };
+  
 
   handleConnection(client: any) {
     console.log('Client connected:', client.id);
@@ -65,5 +79,3 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   	this.simulationService.windowHeight = data.height;
 	}
 }
-
-

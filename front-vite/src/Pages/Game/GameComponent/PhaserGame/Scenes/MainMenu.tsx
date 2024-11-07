@@ -42,7 +42,10 @@ class MainMenu extends Phaser.Scene {
 		// Change color back when not hovered
 		singlePlayerButton.on('pointerout', () => singlePlayerButton.setStyle({ fill: '#fff' }));
 		 // Start the main game
-		singlePlayerButton.on('pointerup', () => this.scene.start('Game', {idLeft: 'id1', idRight: 'id2'}));
+		singlePlayerButton.on('pointerup', () => {
+				console.log("Printing!")
+				this.scene.start('Game', {idLeft: 'id1', idRight: 'id2'})
+		});
 
 		// multi player mode button
 		const multiPlayerButton = this.add.text(400, 150, 'Play [multi player]', {

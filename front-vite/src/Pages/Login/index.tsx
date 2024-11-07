@@ -1,12 +1,14 @@
 import React from 'react';
+import axios from 'axios';
 import { Box, Stack, Button, useTheme, Typography } from '@mui/material';
 
 const LoginPage: React.FC = () => {
   const theme = useTheme();
 
-  function goAuth() {
-  window.location.href = import.meta.env.VITE_AUTH_URL;
+  async function goAuth() {
+    window.location.href = import.meta.env.URL_INTRA_AUTH as string;
   };
+
   return (
   <Box
     sx={{
@@ -28,7 +30,7 @@ const LoginPage: React.FC = () => {
       fontWeight: 'bold',
     }}
     >
-    Transcendence
+    {import.meta.env.PROJECT_NAME}
     </Typography>
     <Typography
     variant="body1"
@@ -36,9 +38,7 @@ const LoginPage: React.FC = () => {
       color: 'text.secondary',
       textAlign: 'center',
     }}
-    >
-    {import.meta.env.REDIRECT_URL}
-    </Typography>
+    ></Typography>
     <Button
     variant="contained"
     color="primary"

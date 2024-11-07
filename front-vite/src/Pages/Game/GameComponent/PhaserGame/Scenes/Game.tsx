@@ -2,9 +2,10 @@ import { GAME, GAME_BALL, GAME_BAR } from '../Game.data';
 import Ball from '../GameObjects/Ball';
 import PlayerBar from '../GameObjects/PlayerBar';
 import Field from '../GameObjects/Field';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
-const socket = io('http://localhost:3000');
+// use a different port
+// const socket = io('http://localhost:3000');
 
 class Game extends Phaser.Scene {
   // Game objects
@@ -26,8 +27,28 @@ class Game extends Phaser.Scene {
   private _idLeft: string = '';
   private _idRight: string = '';
 
+  private _socketIO: Socket;
+
   constructor() {
     super({ key: 'Game' });
+	this._socketIO = io(
+			import.meta.env.URL_WS_BACKEND + import.meta.env.WS_NS_SIMULATION,
+			{
+				withCredentials: true, // Include cookies, if necessary
+				transports: ['websocket']
+			}
+		);
+
+		this._socketIO.connect();
+		console.log(this._socketIO);
+		this._socketIO.on('connect', () => {
+      console.log('Connected');
+    });
+
+		this._socketIO.on('message', () => {
+	
+				console.log('Ready to play!');
+		});
   }
 
   // Initialize players and key bindings
@@ -68,12 +89,12 @@ class Game extends Phaser.Scene {
     // Create field (handles borders, scoring, etc.)
     this._field = new Field(this, this._ball, this._idLeft, this._idRight);
 
-    // WebSocket - Listen for game state updates
-    socket.on('gameState', (state: { ball: { x: number, y: number }, paddles: { [id: string]: number } }) => {
-      this._ball.setPosition(state.ball.x, state.ball.y); // Update ball position
-      this._leftBar.y = state.paddles[this._idLeft] || this._leftBar.y;  // Update left paddle
-      this._rightBar.y = state.paddles[this._idRight] || this._rightBar.y;  // Update right paddle
-    });
+    // // WebSocket - Listen for game state updates
+    // socket.on('gameState', (state: { ball: { x: number, y: number }, paddles: { [id: string]: number } }) => {
+    //   this._ball.setPosition(state.ball.x, state.ball.y); // Update ball position
+    //   this._leftBar.y = state.paddles[this._idLeft] || this._leftBar.y;  // Update left paddle
+    //   this._rightBar.y = state.paddles[this._idRight] || this._rightBar.y;  // Update right paddle
+    // });
 
     // Reset ball and paddles for a new game
     this.resetBallAndBars();
@@ -91,7 +112,7 @@ class Game extends Phaser.Scene {
 
     // Emit player movement only if a direction is pressed
     if (direction) {
-		console.log(`Emitting playerMove for ${this._idLeft} with direction: ${direction}`);
+		// console.log(`Emitting playerMove for ${this._idLeft} with direction: ${direction}`);
       socket.emit('playerMove', {
         playerId: this._idLeft, // Change to right player ID if needed
         direction

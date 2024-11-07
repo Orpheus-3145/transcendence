@@ -1,13 +1,10 @@
 // simulation/simulation.module.ts
 import { Module } from '@nestjs/common';
-import SimulationController from './simulation.controller';
 import { SimulationService } from './simulation.service';
-import { GameGateway } from '../game.gateway';
+import SimulationGateway from './simulation.gateway'
 
 @Module({
-  controllers: [SimulationController],
-  providers: [SimulationService, GameGateway],
-  exports: [SimulationService], // Export to use in game module
+  providers: [SimulationGateway, SimulationService],
 })
-export class SimulationModule {}
+export default class SimulationModule {}
 
