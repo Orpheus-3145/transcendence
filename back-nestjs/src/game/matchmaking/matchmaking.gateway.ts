@@ -1,39 +1,22 @@
 import { WebSocketGateway,
   WebSocketServer,
-  // OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
   MessageBody,
   ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-// import fs from 'fs';
-// import { ConfigService } from '@nestjs/config';
-// import { Injectable } from '@nestjs/common';
-// import { User } from '../../entities/user.entity';
-// import { Subject } from 'rxjs';
-// import { UserDTO } from 'src/dto/user.dto';
-
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
 
 
-@WebSocketGateway( //Number(process.env.PORT_WS_BACKEND), 
-{ 
-  namespace: process.env.WS_NAMESPACE, 
-  // path: "/",
+@WebSocketGateway( //Number(process.env.PORT_WEBSOCKET),
+  {
+  namespace: process.env.NS_MATCHMAKING, 
   cors: {
     origin: process.env.URL_FRONTEND,
     methods: ['GET', 'POST'],
     credentials: true,
   },
-  // secure: true,
   transports: ['websocket'],
-  // key: fs.readFileSync(process.env.SSL_KEY_PATH),
-  // cert: fs.readFileSync(process.env.SSL_CERT_PATH),
-  // ca: [
-  //   fs.readFileSync(process.env.SSL_CERT_PATH),
-  // ]
 })
 export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconnect{
   private _waitingPlayersIP: Socket[] = [];
@@ -44,26 +27,15 @@ export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconn
 
   checkNewGame(): void {
 
-    this.server.emit('message', 'ready');
     if (this._waitingPlayersIP.length > 2)
     {
-      this._waitingPlayersIP.shift().emit('message', 'ready');  // message player1
-      this._waitingPlayersIP.shift().emit('message', 'ready');  // message player2
+      this._waitingPlayersIP.shift().emit('ready');  // message player1
+      this._waitingPlayersIP.shift().emit('ready');  // message player2
 
       console.log('New game starts!');
     }
   };
 
-  @SubscribeMessage('msg')
-  handleEvent(
-    @MessageBody() data: string,
-    @ConnectedSocket() client: Socket
-  ): void {
-    
-    // do smt with client
-    console.log('client says HI: ', data);
-  };
-  
   handleConnection(client: Socket): void {
 
     this._waitingPlayersIP.push(client);

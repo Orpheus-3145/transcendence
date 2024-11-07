@@ -1,6 +1,5 @@
 import { GAME } from '../Game.data'
 import { io, Socket } from 'socket.io-client';
-// import { readFileSync } from "fs";
 
 class Matchmaking extends Phaser.Scene {
 
@@ -12,38 +11,23 @@ class Matchmaking extends Phaser.Scene {
 		super({ key: 'Matchmaking' });
 
 		this._socketIO = io(
-			import.meta.env.URL_WS_BACKEND + import.meta.env.WS_NAMESPACE,
+			import.meta.env.URL_WS_MATCHMAKING,
 			{
-				// key: String(readFileSync(import.meta.env.SSL_KEY_PATH)),
-				// cert: String(readFileSync(import.meta.env.SSL_CERT_PATH)), //String(readFileSync(import.meta.env.SSL_CERT_PATH)
-				// ca: [
-				// 	String(readFileSync(import.meta.env.SSL_CERT_PATH)),
-				// ],
-				// path: import.meta.env.WS_NAMESPACE,
-				withCredentials: true, // Include cookies, if necessary
+				withCredentials: true,
 				transports: ['websocket'],
-  			// path: "/"
-				// secure: true, // Assicura che la connessione sia sicura
 			}
 		);
-		this._socketIO.connect()
-		console.log(this._socketIO);
 		
-		this._socketIO.on('connect', () => {
-      console.log('Connected');
-    });
-
-		this._socketIO.on('message', () => {
+		this._socketIO.on('ready', () => {
 	
-				console.log('Ready to play!');
-				this.scene.start('Game');
+			console.log('Ready to play!');
+			this.scene.start('Game');
 		});
 	}
 
-	// shots when scene.start('Matchmaking') is called
+	// executed when scene.start('Matchmaking') is called
   init(): void {
-
-		this._socketIO.emit('msg', {text: 'di\'o hane'});
+	
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	}
 
