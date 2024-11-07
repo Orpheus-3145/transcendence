@@ -7,6 +7,7 @@ import { AccessTokenDTO } from '../dto/auth.dto';
 
 @Injectable()
 export class UsersService {
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -25,14 +26,18 @@ export class UsersService {
     user.status = UserStatus.Offline;
     try {
       await user.validate();
+      // TODO check user not exists in table, if so, inserts into it
       await this.usersRepository.save(user);
+      // thi
       return new UserDTO(user);
     } catch (error) {
       console.error('User validation error: ', error);
       throw error;
     }
   }
+
   async findOne(intraId: number): Promise<User | null> {
+
     return this.usersRepository.findOne({ where: { intraId } });
   }
 }

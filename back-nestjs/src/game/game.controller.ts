@@ -9,16 +9,5 @@ export default class GameController {
 
   constructor(
     private readonly gameService: GameService,
-  ) { }
-
-  @Get('engine')
-  async run_game(@Res() res: Response) {
-    return ;
-  }
-  
-  @Get('currentPlayers')
-  async getCurrentPlayers(): Promise<number> {
-    
-    return this.gameService.getPlayers();
-  };
+  ) {};
 };

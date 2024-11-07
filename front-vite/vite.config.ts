@@ -1,27 +1,30 @@
 import { defineConfig } from 'vite'
+import fs from 'fs';
 import react from '@vitejs/plugin-react'
 
-// Define which environment variables are safe to expose
-const safeEnvVars = ['ORIGIN_URL_BACK', 'ORIGIN_URL_FRONT', 'PORT_BACKEND', 'PORT_FRONTEND'];
 
 const envVariables: Record<string, string> = {};
 for (const [key, value] of Object.entries(process.env)) {
-  if (safeEnvVars.includes(key)) {
-  envVariables[`import.meta.env.${key}`] = JSON.stringify(value);
-  }
+    envVariables[`import.meta.env.${key}`] = JSON.stringify(value);
 }
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   define: envVariables,
   server: {
-  watch: {
-    usePolling: true
-  },
-  // host: HOST,
-  port: parseInt(process.env.PORT_FRONTEND || '3000', 10),
-  strictPort: true,
-  // open: '/',
-  host: '0.0.0.0',
+    watch: {
+      usePolling: true
+    },
+    port: parseInt(process.env.PORT_FRONTEND as string, 10),
+    strictPort: true,
+    host: '0.0.0.0',
+    https: {
+      key: String(fs.readFileSync(process.env.SSL_KEY_PATH as string)),
+      cert: String(fs.readFileSync(process.env.SSL_CERT_PATH as string)),
+      ca: [
+        String(fs.readFileSync(process.env.SSL_CERT_PATH as string)),
+      ],
+    },
   }
-})
+});

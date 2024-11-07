@@ -1,39 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Request, Response } from 'express';
-import { sign, verify, JwtPayload } from 'jsonwebtoken';
-import { UsersService as UserService } from '../users/users.service';
-import { AccessTokenDTO } from '../dto/auth.dto';
-import { UserDTO } from '../dto/user.dto';
-import { User } from '../entities/user.entity';
+// import { ConfigService } from '@nestjs/config';
 
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+// import { UsersService as UserService } from '../users/users.service';
 
 
 @Injectable()
 export default class GameService {
   constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
-    private configService: ConfigService,
-    private userService: UserService,
-	// private ball: number, // vector
-	// private player1: number, // y coordinate only (probably the centre coordinate)
-	// private player2: number, // y coordinate only
-	// private bot: boolean, // bot will automatically move towards the position of the ball
-	// private roomId: number, // different game rooms can exist
-	// 
-  ) { }
-
-  async getPlayers(): Promise<number> {
-    
-    var count = 1;
-
-    // do some async reading on this.usersRepository
-
-    return count;
-  };
+    // private configService: ConfigService,
+    // private userService: UserService,
+		// private ball: number, // vector
+		// private player1: number, // y coordinate only (probably the centre coordinate)
+		// private player2: number, // y coordinate only
+		// private bot: boolean, // bot will automatically move towards the position of the ball
+		// private roomId: number, // different game rooms can exist
+  ) {};
 
 	/* Logic
 	   - Check what key is being pressed/ direction by the players
@@ -60,7 +41,4 @@ export default class GameService {
 		// If touches paddle, flip the direction to the opposite
 		//Else, recentre game position and increment ponumber for player
   };
-
-
-
 };

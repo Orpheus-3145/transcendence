@@ -9,7 +9,7 @@ services:
     expose:
       - ${PORT_POSTGRES}
     ports:
-      - "${PORT_POSTGRES}:${PORT_POSTGRES}" # Optional: expose for debugging.
+      - "${PORT_POSTGRES}:${PORT_POSTGRES}"
     networks:
       - internal
     environment:
@@ -21,8 +21,6 @@ services:
   backend:
     build:
       context: ./back-nestjs
-      args:
-        PORT: ${PORT_BACKEND}
     volumes:
       - ./back-nestjs:/app
       - nestjs_modules:/app/node_modules
@@ -31,20 +29,16 @@ services:
       - .env
     depends_on:
       - database
-    environment:
-      PORT: ${PORT_BACKEND}
-    ports:
-      - "${PORT_BACKEND}:${PORT_BACKEND}" # Optional: expose for debugging.
     expose:
       - "${PORT_BACKEND}"
+    ports:
+      - "${PORT_BACKEND}:${PORT_BACKEND}"
     networks:
       - internal
 
   frontend:
     build:
       context: ./front-vite
-      args:
-        PORT: ${PORT_FRONTEND}
     volumes:
       - ./front-vite:/app
       - react_modules:/app/node_modules
@@ -53,12 +47,10 @@ services:
       - .env
     depends_on:
       - backend
-    environment:
-      PORT: ${PORT_FRONTEND}
-    ports:
-      - "${PORT_FRONTEND}:${PORT_FRONTEND}"
     expose:
       - "${PORT_FRONTEND}"
+    ports:
+      - "${PORT_FRONTEND}:${PORT_FRONTEND}"
     networks:
       - internal
 

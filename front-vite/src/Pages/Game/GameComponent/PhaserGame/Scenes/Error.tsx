@@ -8,7 +8,7 @@ class Error extends Phaser.Scene {
     super({ key: 'Error' });
   }
 
-	// shots when scene.start('Error') is called,
+	// executed when scene.start('Error') is called,
   // @param trace: information about the error
   init( data: {trace: string}): void {
 

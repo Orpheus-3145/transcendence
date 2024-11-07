@@ -11,7 +11,7 @@ class Settings extends Phaser.Scene {
 	
 	}
 
-	// shots when scene.start('Matchmaking') is called
+	// executed when scene.start('Matchmaking') is called
   init(): void {
 
   }

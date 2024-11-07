@@ -8,7 +8,7 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
-  ) { }
+  ) {}
 
   @Get('login')
   async login(@Query('code') code: string, @Res() res: Response) {

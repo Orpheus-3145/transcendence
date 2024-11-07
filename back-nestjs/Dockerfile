@@ -1,17 +1,13 @@
 FROM node:19
 
-ARG PORT
-
-EXPOSE $PORT
-
 WORKDIR /app
 
-COPY package*.json ./
-
-RUN npm i
-
-RUN npm i -g @nestjs/cli
-
 COPY . .
+
+RUN chmod 744 mkcert.sh
+
+RUN ./mkcert.sh
+
+RUN npm install
 
 CMD ["npm", "run", "start:debug"]

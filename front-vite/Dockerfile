@@ -1,15 +1,13 @@
 FROM node:19
 
-ARG PORT
-
-EXPOSE $PORT
-
 WORKDIR /app
 
-COPY package*.json ./
+COPY . .
+
+RUN chmod 744 mkcert.sh
+
+RUN ./mkcert.sh
 
 RUN npm install
-
-COPY . .
 
 CMD ["npm", "run", "dev"]

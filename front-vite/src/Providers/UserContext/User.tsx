@@ -31,19 +31,18 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User>({ id: 0 });
   const navigate = useNavigate();
 
-  const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost.codam.nl:4000';
   useEffect(() => {
-  const validate = async () => {
-    try {
-    const response = await axios.get(BACKEND_URL + '/auth/validate', { withCredentials: true });
-    const userDTO = response.data.user;
-    setUser(userDTO);
-    } catch (error) {
-    navigate('/login');
-    setUser({ id: 0 });
-    }
-  };
-  validate();
+    const validate = async () => {
+      try {
+        const response = await axios.get(import.meta.env.URL_BACKEND + '/auth/validate', { withCredentials: true });
+        const userDTO = response.data.user;
+        setUser(userDTO);
+      } catch (error) {
+        navigate('/login');
+        setUser({ id: 0 });
+      }
+    };
+    validate();
   }, [user.id]);
 
   return (
@@ -56,7 +55,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-  throw new Error('useUser must be used within a UserProvider');
+    throw new Error('useUser must be used within a UserProvider');
   }
   return context;
 };
