@@ -68,46 +68,52 @@ class Game extends Phaser.Scene {
 
     // Create the ball as an instance of the Ball class
     this._ball = new Ball(this, GAME.width / 2, GAME.height / 2, 0, 0);  // Initialize ball with no movement initially
-
-    // //Create ball
-    // const shapeBall: Phaser.GameObjects.Arc = this.add.circle(GAME.width / 2, GAME.height / 2, GAME_BALL.radius, 0xff0000);
-    // this._ball = new Ball(this, shapeBall, GAME.width / 2, GAME.height / 2);
-
-    // Create left and right paddles
-    const shapeLeftBar = this.add.rectangle(GAME_BAR.width / 2 * -1, GAME.height / 2, GAME_BAR.width, GAME_BAR.height, 0xff0000);
-    const shapeRightBar = this.add.rectangle(GAME.width - GAME_BAR.width / 2, GAME.height / 2, GAME_BAR.width, GAME_BAR.height, 0xff0000);
-
-    this._leftBar = new PlayerBar(this, shapeLeftBar, this._ball, GAME_BAR.width / 2 * -1, GAME.height / 2);
-    this._rightBar = new PlayerBar(this, shapeRightBar, this._ball, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
+	this._leftBar = new PlayerBar(this, GAME_BAR.width / 2, GAME.height / 2);
+	this._rightBar = new PlayerBar(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
 
     // Create field (handles borders, scoring, etc.)
     this._field = new Field(this, this._ball, this._idLeft, this._idRight);
 
-				
-	this._socketIO.on('gameWindow', ( size: { widht: number, height: number}) => {
-		console.log(`WINDOWWIDTH: ${size.widith}, WINDOWHEIGHT: ${size.height}`);
+	// FE should send it to the BE	
+	this._socketIO.emit('gameObjectSize', {
+		windowWidth: GAME.width,
+		windowHeight: GAME.height,
+		paddleWidth: GAME_BAR.width, 
+		paddleHeight: GAME_BAR.height
 	});
-
-	// this._socketIO.on('gameState', (state: { ball: { x: number, y: number, dx: number, dy: number }, player1: { y: number }, player2: { y: number } }) => {
- //  // Update ball position using the new method
- //  this._ball.updatePosition(state.ball.x, state.ball.y);  // Ensure the ball is drawn at the new position
-	//
- //  // Optionally, you can also update the velocity
- //  this._ball.updateVelocity(state.ball.dx, state.ball.dy);
-	//
- //  // Update paddles based on player positions
- //  this._leftBar.y = state.player1.y ?? this._leftBar.y;  // Update left paddle position (player1)
- //  this._rightBar.y = state.player2.y ?? this._rightBar.y;  // Update right paddle position (player2)
-	//
- //  // Logging the positions for debugging
- //  console.log('Left Paddle ID:', this._idLeft, 'Y Position:', state.player1.y);
- //  console.log('Right Paddle ID:', this._idRight, 'Y Position:', state.player2.y);
- //  console.log('Ball Position:', state.ball.x, state.ball.y);  // Debugging ball position
-	// });
 }
 
   // Frame-by-frame update
   update(): void {
+
+	this.emitPaddleMovement();
+	
+    // Exit game with ESC
+    if (this._keyEsc.isDown) {
+      this.scene.start('MainMenu');
+    }
+	this.updateGameState();
+
+  }
+
+	updateGameState(): void {
+	this._socketIO.on('gameState', (state: { ball: { x: number, y: number, dx: number, dy: number }, player1: { y: number }, player2: { y: number } }) => {
+	// Update ball position using the new method
+	this._ball.updatePosition(state.ball.x, state.ball.y);  // Ensure the ball is drawn at the new position
+
+
+	// Update paddles based on player positions
+	this._leftBar.updatePosition(state.player1.y);
+	this._rightBar.updatePosition(state.player2.y);
+
+	// Logging the positions for debugging
+	console.log('Left Paddle ID:', this._idLeft, 'Y Position:', state.player1.y);
+	console.log('Right Paddle ID:', this._idRight, 'Y Position:', state.player2.y);
+	console.log('Ball Position:', state.ball.x, state.ball.y);  // Debugging ball position
+	});
+	}
+
+	emitPaddleMovement(): void {
     let direction = '';
 
     if (this._cursors.up.isDown || this._keyW.isDown) {
@@ -118,45 +124,12 @@ class Game extends Phaser.Scene {
 
     // Emit player movement only if a direction is pressed
     if (direction) {
-		// console.log(`Emitting playerMove for ${this._idLeft} with direction: ${direction}`);
       	this._socketIO.emit('playerMove', {
         playerId: this._idLeft, // Change to right player ID if needed, which side should the first person be on
         direction
       });
     }
-
-    // Exit game with ESC
-    if (this._keyEsc.isDown) {
-      this.scene.start('MainMenu');
-    }
-
-this._socketIO.on('gameState', (state: { ball: { x: number, y: number, dx: number, dy: number }, player1: { y: number }, player2: { y: number } }) => {
-  // Update ball position using the new method
-  this._ball.updatePosition(state.ball.x, state.ball.y);  // Ensure the ball is drawn at the new position
-
-  // Optionally, you can also update the velocity
-  this._ball.updateVelocity(state.ball.dx, state.ball.dy);
-
-  // Update paddles based on player positions
-  this._leftBar.y = state.player1.y ?? this._leftBar.y;  // Update left paddle position (player1)
-  this._rightBar.y = state.player2.y ?? this._rightBar.y;  // Update right paddle position (player2)
-
-  // Logging the positions for debugging
-  console.log('Left Paddle ID:', this._idLeft, 'Y Position:', state.player1.y);
-  console.log('Right Paddle ID:', this._idRight, 'Y Position:', state.player2.y);
-  console.log('Ball Position:', state.ball.x, state.ball.y);  // Debugging ball position
-	});
-
-
-  }
-
-  // Reset ball and paddles on game start or score
-  resetBallAndBars(): void {
-    this._ball.resetPos();
-    this._leftBar.resetPos();
-    this._rightBar.resetPos();
-    this._ball.startMoving();
-  }
+	}
 
   // Navigate to error page
   openErrorpage(trace: string): void {

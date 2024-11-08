@@ -18,11 +18,13 @@ export class SimulationService {
 	// private player2: number, // y coordinate only
 	// private bot: boolean, // bot will automatically move towards the position of the ball
 	// private roomId: number, // different game rooms can existprivate
-	windowWidth = 1152; // will be overwritten by the value from the client
-	windowHeight = 648; // overwritten by value form the clien t
-	private ball = { x: 400, y: 300, dx: 5, dy: 5 };
-  	private player1 = { y: 300 };
-  	private player2 = { y: 300 };
+	windowWidth = 0; // will be overwritten by the value from the client
+	windowHeight = 0; // overwritten by value form the client
+	paddleWidth = 0;
+	paddleHeight = 0;
+	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
+  	private player1 = { y: this.windowHeight / 2 };
+  	private player2 = { y: this.windowHeight / 2 };
   	private botEnabled = false;
   	private roomId: number;
 
@@ -37,12 +39,15 @@ export class SimulationService {
 resetBall() {
     this.ball.x = this.windowWidth / 2;  // Reset to center of the screen
     this.ball.y = this.windowHeight / 2;
-	const randomXDirection = Math.random() < 0.5 ? -1 : 1;  // Random horizontal direction
-    const randomYDirection = Math.random() < 0.5 ? -1 : 1;  // Random vertical direction
-    const speed = 0.2;  // You can adjust this value for ball speed
 
-    this.ball.dx = randomXDirection * speed;
-    this.ball.dy = randomYDirection * speed;
+	// Formula: Math.random() * (max - min) + min
+	const randomX = Math.random() * (Math.sqrt(3) / 2 - 1) + 1; // between [rad(3)/2, 1] = [cos(+-30), cos(0)]
+	const randomY = Math.random() * (0.5 + 0.5) - 0.5; // between [-1/2, 1/2] = [sin(-30), sin(30)]
+	const randomDirection = Math.random() < 0.5 ? -1 : 1;							// random between -1 and 1
+    const speed = 0.5;  // You can adjust this value for ball speed
+
+    this.ball.dx = randomX * randomDirection * speed;
+    this.ball.dy = randomY * speed;
 }
 
 
@@ -59,19 +64,20 @@ updateBall() {
     // // Collision detection with paddles (Player bars)
     // // Left Paddle (Player 1)
     // if (
-    //     this.ball.x <= 50 && 
-    //     Math.abs(this.player1.y - this.ball.y) <= 50
+    //     this.ball.x <= this.paddleWidth && 
+    //     Math.abs(this.player1.y - this.ball.y) <= this.paddleWidth
     // ) {
     //     this.ball.dx = -this.ball.dx;  // Reverse direction when ball hits left paddle
     // }
-    //
-    // // Right Paddle (Player 2)
-    // if (
-    //     this.ball.x >= 750 && 
-    //     Math.abs(this.player2.y - this.ball.y) <= 50
-    // ) {
-    //     this.ball.dx = -this.ball.dx;  // Reverse direction when ball hits right paddle
-    // }
+
+    // Right Paddle (Player 2)
+    if (
+        this.ball.x >= (this.windowWidth - this.paddleWidth) && 
+		(this.ball.y <= this.player1.y - this.paddleHeight/2 && this.ball.y >= this.player1.y + this.paddleHeight/2)
+       // Math.abs(this.player2.y - this.ball.y) <= (this.windowWidth - this.paddleWidth)
+    ) {
+        this.ball.dx = -this.ball.dx;  // Reverse direction when ball hits right paddle
+    }
 
 	if (this.ball.x <= 0 || this.ball.x >= this.windowWidth) {
     this.resetBall();  // Reposition the ball and give it a random velocity
@@ -82,7 +88,7 @@ updateBall() {
   movePaddle(player: 'player1' | 'player2', direction: 'up' | 'down') {
     const paddle = player === 'player1' ? this.player1 : this.player2;
     const delta = direction === 'up' ? -10 : 10;
-    paddle.y = Math.max(0, Math.min(this.windowHeight, paddle.y + delta));
+    paddle.y = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, paddle.y + delta));
 	console.log(`Player move->  playerId: ${player} | direction: ${direction} | y_pos: ${paddle.y}`);
 
 
@@ -96,11 +102,11 @@ updateBall() {
       player2: this.player2,
     	};
 	}
-	getGameWindow() {
-		return {
-			width: this.windowWidth,
-			height: this.windowHeight
-		};
+	setObjectSize(windowWidth: number, windowHeight: number, paddleWidth: number, paddleHeight: number) {
+		this.windowWidth = windowWidth;
+		this.windowHeight = windowHeight;
+		this.paddleWidth = paddleWidth;
+		this.paddleHeight = paddleHeight;
 	}
 
 }

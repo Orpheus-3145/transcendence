@@ -64,7 +64,7 @@ class PlayerBar {
     this._graphic = scene.add.rectangle(x, y, GAME_BAR.width, GAME_BAR.height, 0x0f0); // A green bar
 
     // Optional: Set some default properties for the bar
-    this._graphic.setOrigin(0.5, 0.5); // Set origin to the center (for easier positioning)
+    // this._graphic.setOrigin(0.5, 0.5); // Set origin to the center (for easier positioning)
     this._graphic.setDepth(1); // Ensure the bar is drawn above other elements (optional)
   }
 

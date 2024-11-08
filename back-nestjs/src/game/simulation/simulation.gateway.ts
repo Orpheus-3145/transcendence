@@ -34,8 +34,6 @@ export default class SimulationGateway implements OnGatewayInit, OnGatewayConnec
   constructor(private simulationService: SimulationService) {}
 
   afterInit() {
-	const windowData = this.simulationService.getGameWindow();
-	this.server.emit('gameWindow', windowData);
     // Set up a loop to broadcast game state
     this.interval = setInterval(() => {
 		// console.log("Set interval called backend!");
@@ -67,12 +65,19 @@ export default class SimulationGateway implements OnGatewayInit, OnGatewayConnec
     console.log('Client disconnected:', client.id);
   }
 
-  // Handle player move events from frontend
+  @SubscribeMessage('gameObjectSize')
+  handleGameWindow(
+    @MessageBody() data: {windowWidth: number, windowHeight: number, paddleWidth: number, paddleHeight: number}) {
+	console.log(`Received size: Window - ${data.windowWidth}, ${data.windowHeight} | Paddle ${data.paddleWidth}, ${data.paddleHeight}`);
+  	this.simulationService.setObjectSize(data.windowWidth, data.windowHeight, data.paddleWidth, data.paddleHeight);
+	};
+  
+	// Handle player move events from frontend
 	@SubscribeMessage('playerMove')
 		handlePlayerMove(
 		@MessageBody() data: { playerId: string; direction: string }) {
-	// console.log(`PlayerMove message - PlayerID: ${data.playerId} Direction: ${data.direction}`);
-     const player = data.playerId === 'leftPlayerId' ? 'player1' : 'player2';
+	console.log(`PlayerMove message - PlayerID: ${data.playerId} Direction: ${data.direction}`);
+     const player = data.playerId === 'id1' ? 'player1' : 'player2';
 	// Validate direction before calling movePaddle
 	if (data.direction === 'up' || data.direction === 'down') {
 		this.simulationService.movePaddle(player, data.direction);

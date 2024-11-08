@@ -46,7 +46,7 @@ class Ball extends Phaser.GameObjects.Graphics {
   constructor(scene: Phaser.Scene, x: number, y: number, dx: number, dy: number) {
     super(scene);
 
-    this.fillStyle(0xff0000, 1);  // Set color to white
+    this.fillStyle(0xff0000, 1); 
     this.fillCircle(x, y, this.radius);  // Draw circle with hardcoded radius
 
     scene.add.existing(this);  // Add ball to the scene
