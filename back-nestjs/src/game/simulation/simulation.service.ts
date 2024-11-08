@@ -18,8 +18,8 @@ export class SimulationService {
 	// private player2: number, // y coordinate only
 	// private bot: boolean, // bot will automatically move towards the position of the ball
 	// private roomId: number, // different game rooms can existprivate
-	windowWidth = 800; // will be overwritten by the value from the client
-	windowHeight = 600; // overwritten by value form the clien t
+	windowWidth = 1152; // will be overwritten by the value from the client
+	windowHeight = 648; // overwritten by value form the clien t
 	private ball = { x: 400, y: 300, dx: 5, dy: 5 };
   	private player1 = { y: 300 };
   	private player2 = { y: 300 };
@@ -28,40 +28,64 @@ export class SimulationService {
 
 // Set everything to the start position: ball in the centre, paddles centralised
   setStartPos() {
-    this.ball = { x: 400, y: 300, dx: 5, dy: 5 };
-    this.player1.y = 300;
-    this.player2.y = 300; 
+    this.ball = { x: this.windowWidth / 2, y: this.windowHeight/2, dx: 5, dy: 5 };
+    this.player1.y = this.windowHeight / 2;
+    this.player2.y = this.windowHeight / 2; 
   };
 
-  updateBall() {
-		// update ball position every frame (setIntrerval function in JS)
-		// Considerations: contact with edge of the window 
-		// Move ball in direction until it reaches edge of the window,
-		// If touches paddle, flip the direction to the opposite
-		//Else, recentre game position and increment ponumber for player
-		    // Move the ball
+
+resetBall() {
+    this.ball.x = this.windowWidth / 2;  // Reset to center of the screen
+    this.ball.y = this.windowHeight / 2;
+	const randomXDirection = Math.random() < 0.5 ? -1 : 1;  // Random horizontal direction
+    const randomYDirection = Math.random() < 0.5 ? -1 : 1;  // Random vertical direction
+    const speed = 0.2;  // You can adjust this value for ball speed
+
+    this.ball.dx = randomXDirection * speed;
+    this.ball.dy = randomYDirection * speed;
+}
+
+
+updateBall() {
+    // Move the ball
     this.ball.x += this.ball.dx;
     this.ball.y += this.ball.dy;
 
     // Bounce off top and bottom walls
-    if (this.ball.y <= 0 || this.ball.y >= 600) {
-      this.ball.dy = -this.ball.dy;
+    if (this.ball.y <= 0 || this.ball.y >= this.windowHeight) {
+        this.ball.dy = -this.ball.dy;
     }
 
-    // Collision detection with paddles (basic example)
-    if (
-      (this.ball.x <= 50 && Math.abs(this.player1.y - this.ball.y) <= 50) ||
-      (this.ball.x >= 750 && Math.abs(this.player2.y - this.ball.y) <= 50)
-    ) {
-      this.ball.dx = -this.ball.dx;
-    }
-  };
+    // // Collision detection with paddles (Player bars)
+    // // Left Paddle (Player 1)
+    // if (
+    //     this.ball.x <= 50 && 
+    //     Math.abs(this.player1.y - this.ball.y) <= 50
+    // ) {
+    //     this.ball.dx = -this.ball.dx;  // Reverse direction when ball hits left paddle
+    // }
+    //
+    // // Right Paddle (Player 2)
+    // if (
+    //     this.ball.x >= 750 && 
+    //     Math.abs(this.player2.y - this.ball.y) <= 50
+    // ) {
+    //     this.ball.dx = -this.ball.dx;  // Reverse direction when ball hits right paddle
+    // }
+
+	if (this.ball.x <= 0 || this.ball.x >= this.windowWidth) {
+    this.resetBall();  // Reposition the ball and give it a random velocity
+	}
+};
 
     // Handle paddle movement based on key data
   movePaddle(player: 'player1' | 'player2', direction: 'up' | 'down') {
     const paddle = player === 'player1' ? this.player1 : this.player2;
     const delta = direction === 'up' ? -10 : 10;
-    paddle.y = Math.max(0, Math.min(600, paddle.y + delta));
+    paddle.y = Math.max(0, Math.min(this.windowHeight, paddle.y + delta));
+	console.log(`Player move->  playerId: ${player} | direction: ${direction} | y_pos: ${paddle.y}`);
+
+
   }
 
   // Get positions of ball and paddles
@@ -70,7 +94,14 @@ export class SimulationService {
       ball: this.ball,
       player1: this.player1,
       player2: this.player2,
-    };
-  }
+    	};
+	}
+	getGameWindow() {
+		return {
+			width: this.windowWidth,
+			height: this.windowHeight
+		};
+	}
+
 }
 

@@ -12,14 +12,17 @@ import {
 import { Server, Socket } from 'socket.io';
 import { SimulationService } from './simulation.service';
 
-@WebSocketGateway(
+
+@WebSocketGateway( //Number(process.env.PORT_WS_BACKEND), 
 { 
   namespace: process.env.WS_NS_SIMULATION, 
+  // path: "/",
   cors: {
     origin: process.env.URL_FRONTEND,
     methods: ['GET', 'POST'],
     credentials: true,
-  }
+  },
+  transports: ['websocket'],
 })
 
 export default class SimulationGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -31,12 +34,17 @@ export default class SimulationGateway implements OnGatewayInit, OnGatewayConnec
   constructor(private simulationService: SimulationService) {}
 
   afterInit() {
+	const windowData = this.simulationService.getGameWindow();
+	this.server.emit('gameWindow', windowData);
     // Set up a loop to broadcast game state
     this.interval = setInterval(() => {
 		// console.log("Set interval called backend!");
        const gameState = this.simulationService.getGameState();
       this.server.emit('gameState', gameState);
     }, 1000 / 30); // Emit at 30 FPS
+
+
+	setInterval(() =>{this.simulationService.updateBall();})
   }
 
   @SubscribeMessage('msg')
@@ -63,11 +71,11 @@ export default class SimulationGateway implements OnGatewayInit, OnGatewayConnec
 	@SubscribeMessage('playerMove')
 		handlePlayerMove(
 		@MessageBody() data: { playerId: string; direction: string }) {
-	console.log(`PlayerMove message - PlayerID: ${data.playerId} Direction: ${data.direction}`);
-    const player = data.playerId === 'leftPlayerId' ? 'player1' : 'player2';
+	// console.log(`PlayerMove message - PlayerID: ${data.playerId} Direction: ${data.direction}`);
+     const player = data.playerId === 'leftPlayerId' ? 'player1' : 'player2';
 	// Validate direction before calling movePaddle
 	if (data.direction === 'up' || data.direction === 'down') {
-	this.simulationService.movePaddle(player, data.direction);
+		this.simulationService.movePaddle(player, data.direction);
 	} else {
 	console.warn(`Invalid direction received: ${data.direction}`);
   	}
