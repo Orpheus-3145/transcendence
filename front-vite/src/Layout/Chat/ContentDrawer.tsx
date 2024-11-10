@@ -35,11 +35,8 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
   };
 
   const handleAddChatClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-	event.stopPropagation();
-	// toggleChatStatus(ChatStatus.Settings, null);
 	setIsAddingNewChat(true);
-	console.log("'Add new chat' button clicked, implementation needed!");
-	// return <ContentSettings chatProps={chatProps} setChatProps={setChatProps} />;
+	console.log("'Add new chat' button clicked!");
   };
 
   const handleSaveNewChat = () => {
@@ -146,7 +143,7 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
             value={newChatName}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewChatName(e.target.value)}
             sx={{ marginLeft: '8px', color: theme.palette.secondary.main }}
-            placeholder="Enter new chat name"
+            placeholder="Enter chat name"
           />
           <IconButton sx={{ color: theme.palette.secondary.main }} onClick={handleSaveNewChat}>
             <CheckIcon />
