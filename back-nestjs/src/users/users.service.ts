@@ -98,9 +98,12 @@ export class UsersService {
     this.usersRepository.save((await user));
   }
   
-  async changeProfilePic(id:string, image:any)
+  async changeProfilePic(id:string, image:string)
   {
     console.log("change profile picture");
+    var user = this.getUser(id);
+    (await user).image = image;
+    this.usersRepository.save((await user));
   }
 
   async inviteGame(iduser:string, idother:string)

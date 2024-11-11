@@ -87,6 +87,8 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 }
 
 export async function setNewNickname(username:string, nickname:string): Promise<Number> {
+  if (nickname.length == 0)
+    return (-1);
 	let i = Number(0);
 	while (i < nickname.length)
 	{
@@ -94,8 +96,6 @@ export async function setNewNickname(username:string, nickname:string): Promise<
     		return (-1);
 		i++;
 	}
-	if (nickname.length == 0)
-		return (-1);
 
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick/' + nickname, {
 		method: "POST",
@@ -192,10 +192,10 @@ export async function inviteToGame(username:string, friend:string): Promise<void
     console.log("M8 INVITING TO GAME IS BADDASS");
 }
 
-export async function changePFP(username:string, image:string): Promise<void> {
-  const request = new Request(BACKEND_URL + '/users/profile/' + username + '/changepfp/' + image, {
+export async function changePFP(username:string, image:FormData): Promise<void> {
+  const request = new Request(BACKEND_URL + '/users/profile/' + username + '/changepfp', {
     method: "POST",
-    body: JSON.stringify({username, image}),
+    body: image,
   });
 
   const response = await fetch(request)

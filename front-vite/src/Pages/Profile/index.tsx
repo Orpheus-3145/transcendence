@@ -35,13 +35,14 @@ const ProfilePage: React.FC = () => {
 	const lastSegment = pathSegments[pathSegments.length - 1]
 	const [showInputMessage, setShowInputMessage] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
-	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [changed, setChanged] = useState(false);
 	const [showInput, setShowInput] = useState(false);
 	const [inputValue, setInputValue] = useState('');
 	const [ownPage, showOwnPage] = useState(false);
 	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
+	const [showMessageNickname, setShowMessageNickname] = useState(false);
+	const messageErrorNickname = "Invalid nickname! Maximum of 27 chars and only letters, numbers and spaces are allowed!";
+	
 	
 	let friendLineButtons = (name:string) => 
 	{
@@ -379,22 +380,52 @@ const ProfilePage: React.FC = () => {
 			>
 				<Avatar
 					sx={{
-						alignItems: 'center',
-						justifyContent: 'center',
-						display: 'flex',
-						width: '100%',
-						height: 'auto',
-						minWidth: '115px',
-						minHeight: '115px',
-						maxHeight: '200px',
-						maxWidth: '200px',
-						bgcolor: theme.palette.success.main,
+						width: '200px',
+						height: '200px',
+						bgcolor: theme.palette.primary.light,
+						objectFit: 'contain',
 					}}
 					src={userProfile.image}
 				>
-					<AccountCircleIcon sx={{ width: '100%', height: 'auto' }} />
 				</Avatar>
 			</Stack>
+		);
+	}
+
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => 
+	{
+		const image = event.target.files[0];
+		let formdata = new FormData();
+		formdata.append("name", "Profile Picture");
+		formdata.append("file", image);
+		if (image.type.startsWith("image/") && image.size > 0) 
+		{
+			changePFP(userProfile.id, formdata);
+		}
+	}
+	
+	let SetChangePfpButton = () =>
+	{
+		return (
+			<Tooltip title="Change your Profile Picture!" arrow>
+				<IconButton 
+					variant="contained" 
+					component="label"
+					sx={{
+						left: '60px',
+						top: '-10px',
+						width: '60px',
+						height: '60px',
+						fontSize: '40px',
+						'&:hover': {
+							color: '#09af07',
+						},
+					}}				
+				>
+					<AddToPhotosIcon fontSize="inherit" />
+					<input type="file" hidden accept="image/*" onChange={handleFileChange}/>
+				</IconButton>
+			</Tooltip>
 		);
 	}
 
@@ -402,7 +433,7 @@ const ProfilePage: React.FC = () => {
 	{
 		userProfile.status = 'offline';
 		
-		let color, top;
+		let color;
 		if (user.status == 'offline')
 			color = '#df310e';
 		else if (user.status == 'idle')
@@ -427,46 +458,6 @@ const ProfilePage: React.FC = () => {
 				>
 				</Box>
 			</Stack>
-		);
-	}
-
-	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => 
-	{
-		const files = event.target.files;
-		if (files && files.length > 0) {
-			setSelectedFile(files[0]);
-			changePFP(userProfile.id, files[0]);
-		}
-	}
-
-	const IsChanged = () =>
-	{
-		setChanged((prev) => !prev);
-	}
-
-	let SetChangePfpButton = () =>
-	{
-		return (
-			<Tooltip title="Change your Profile Picture!" arrow>
-				<IconButton 
-					variant="contained" 
-					component="label"
-					onClick={IsChanged}
-					sx={{
-						left: '60px',
-						top: '-10px',
-						width: '60px',
-						height: '60px',
-						fontSize: '40px',
-						'&:hover': {
-							color: '#09af07',
-						},
-					}}				
-				>
-					<AddToPhotosIcon fontSize="inherit" />
-					<input type="file" ref={fileInputRef} hidden onChange={handleFileChange}/>
-				</IconButton>
-			</Tooltip>
 		);
 	}
 
@@ -511,15 +502,14 @@ const ProfilePage: React.FC = () => {
 		);
 	}
   
-	const [showMessageNickname, setShowMessageNickname] = useState(false);
-	const [messageNickname, setMessageNickname] = useState("");
-
 	const CheckChange = () => 
 	{
 		if (showInputMessage)
-		{
 			setShowInputMessage(false);
-		}
+		
+		if (showMessageNickname)
+			setShowMessageNickname(false);
+		
 		setShowInput((prev) => !prev);
 	};
 
@@ -541,7 +531,6 @@ const ProfilePage: React.FC = () => {
 			{
 				console.log("Nickname update failed");
 				setShowMessageNickname(true);
-				setMessageNickname("Invalid Nickname!");
 			}
 		}
 	}
@@ -549,33 +538,24 @@ const ProfilePage: React.FC = () => {
 	let EditNickName = () => 
 	{
 		return (
-			<Tooltip title="Edit Nickname!" arrow
-				PopperProps={{
-					modifiers: [
-					{
-						name: 'offset',
-						options: {
-						offset: [-55, -191],
-						},
-					},
-				],
-				}}
-			>
-				<IconButton
-					variant="contained"
-					onClick={CheckChange}
-					sx={{
-							fontSize: '30px',
-							top: '-190px',
-							left: '515px',
-							width: '50px',
-							'&:hover': {
-								color: '#09af07',
-							},
-					}}
-				>
-					<EditIcon fontSize="inherit"/>
-				</IconButton>
+			<Stack>
+				<Tooltip title="Edit Nickname!" arrow>
+					<IconButton
+						variant="contained"
+						onClick={CheckChange}
+						sx={{
+								fontSize: '30px',
+								top: '-190px',
+								left: '515px',
+								width: '50px',
+								'&:hover': {
+									color: '#09af07',
+								},
+						}}
+					>
+						<EditIcon fontSize="inherit"/>
+					</IconButton>
+				</Tooltip>
 				{showInput && (
 					<Input
 					value={inputValue}
@@ -583,29 +563,27 @@ const ProfilePage: React.FC = () => {
 					onKeyDown={handleNicknameUpdate}
 					placeholder="Type new nickname..."
 					sx={{
-						top: '-140px',
-						left: '410px',
+						top: '-180px',
+						left: '450px',
+						width: '200px',
+						height: '40px',
 					}}
 					/>
 				)}
-				{/*{showMessageNickname && (	
+				{showMessageNickname && (	
 					<Stack
 					sx={{
-						position: 'absolute',
+						position: 'relative',
 						color: 'red',
-						fontSize: '14px',
-						backgroundColor: 'rgba(255, 255, 255, 0.9)',
-						padding: '8px',
-						borderRadius: '4px',
-						boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-						top: '-100px', // Adjust position relative to Tooltip
-						left: '515px',  // Adjust this value based on exact layout
+						fontSize: '18px',
+						top: '-163px',
+						left: '200px',
 					}}
 					>
-						{messageNickname}
+						{messageErrorNickname}
 					</Stack>
-				)}	*/}
-			</Tooltip>
+				)}
+			</Stack>
 		);
 	}
 
@@ -619,9 +597,9 @@ const ProfilePage: React.FC = () => {
 				sx={{
 					width: '100%',
 					height: '10px',
-					position: 'relative',
-					top: '-300px',
-					left: '830px',
+					position: 'absolute',
+					top: '240px',
+					left: '930px',
 				}}
 			>
 				<Typography>

@@ -1,5 +1,7 @@
-import { Controller, Get, Param, Post, HttpException} from '@nestjs/common';
+import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
 
 
 @Controller('users')
@@ -24,7 +26,7 @@ export class UsersController {
 			console.log("Invalid new nickname, to short!");
 			throw new HttpException('Bad Request', 400);
 		}
-		if (newname.length > 28)
+		if (newname.length > 27)
 		{
 			console.log("Invalid new nickname, to long!");
 			throw new HttpException('Bad Request', 400);
@@ -78,8 +80,10 @@ export class UsersController {
 		return (this.UserService.inviteGame(username, id));
 	}
 
-	@Post('profile/:username/changepfp/:image/')
-	async changePFP(@Param('username') username:string, @Param('image') image: string) {
+	@Post('profile/:username/changepfp')
+	@UseInterceptors(FileInterceptor('file')) //instead of any the file should be Express.Multer.File,
+	async changePFP(@Param('username') username:string,  @UploadedFile() file: any,) {
+		const image = 'data:image/png;base64,' + file.buffer.toString('base64');
 		return (this.UserService.changeProfilePic(username, image));
 	}
 }
