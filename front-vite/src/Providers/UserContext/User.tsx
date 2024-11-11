@@ -86,16 +86,27 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
   }
 }
 
-export async function setNewNickname(username:string, nickname:string): Promise<void> {
-  const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick/' + nickname, {
-    method: "POST",
-    body: JSON.stringify({username, nickname}),
-  });
+export async function setNewNickname(username:string, nickname:string): Promise<Number> {
+	let i = Number(0);
+	while (i < nickname.length)
+	{
+    	if (nickname[i] == '?' || nickname[i] == '/')
+    		return (-1);
+		i++;
+	}
+	if (nickname.length == 0)
+		return (-1);
 
-  const response = await fetch(request)
-    .then((raw) => raw.json());
-  console.log(response);
+	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick/' + nickname, {
+		method: "POST",
+		body: JSON.stringify({username, nickname}),
+	});
 
+	const response = await fetch(request)
+	console.log(response);
+	if (response.status == 400)
+		return (-1);
+	return (1);
 }
 
 export async function getFriend(friend:string): Promise<User | null> {

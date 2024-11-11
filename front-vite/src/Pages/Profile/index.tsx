@@ -511,6 +511,9 @@ const ProfilePage: React.FC = () => {
 		);
 	}
   
+	const [showMessageNickname, setShowMessageNickname] = useState(false);
+	const [messageNickname, setMessageNickname] = useState("");
+
 	const CheckChange = () => 
 	{
 		if (showInputMessage)
@@ -520,17 +523,25 @@ const ProfilePage: React.FC = () => {
 		setShowInput((prev) => !prev);
 	};
 
-	const handleKeyDownNickname = (event: React.KeyboardEvent<HTMLInputElement>) => 
+	const handleNicknameUpdate = async (event: React.KeyboardEvent<HTMLInputElement>): Promise<void> => 
 	{
-	  	const key = event.key;
+		const key = event.key;
 		if (key === 'Enter') 
 		{
-			if (inputValue.length > 0 && inputValue.length < 28)
+			const result = await setNewNickname(userProfile.id, inputValue);
+	  
+			if (result === 1) 
 			{
-				setNewNickname(userProfile.id, inputValue);
 				userProfile.nameNick = inputValue;
 				setInputValue("");
 				setShowInput(false);
+				setShowMessageNickname(false);
+			} 
+			else 
+			{
+				console.log("Nickname update failed");
+				setShowMessageNickname(true);
+				setMessageNickname("Invalid Nickname!");
 			}
 		}
 	}
@@ -569,14 +580,31 @@ const ProfilePage: React.FC = () => {
 					<Input
 					value={inputValue}
 					onChange={(e) => setInputValue(e.target.value)}
-					onKeyDown={handleKeyDownNickname}
+					onKeyDown={handleNicknameUpdate}
 					placeholder="Type new nickname..."
 					sx={{
 						top: '-140px',
-						left: '395px',
+						left: '410px',
 					}}
 					/>
 				)}
+				{/*{showMessageNickname && (	
+					<Stack
+					sx={{
+						position: 'absolute',
+						color: 'red',
+						fontSize: '14px',
+						backgroundColor: 'rgba(255, 255, 255, 0.9)',
+						padding: '8px',
+						borderRadius: '4px',
+						boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+						top: '-100px', // Adjust position relative to Tooltip
+						left: '515px',  // Adjust this value based on exact layout
+					}}
+					>
+						{messageNickname}
+					</Stack>
+				)}	*/}
 			</Tooltip>
 		);
 	}

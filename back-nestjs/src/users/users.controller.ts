@@ -20,11 +20,32 @@ export class UsersController {
 	@Post('/profile/:username/newnick/:newname')
 	async setNewNickname(@Param('username') username: string, @Param('newname') newname: string) {
 		if (newname.length == 0)
+		{
+			console.log("Invalid new nickname, to short!");
 			throw new HttpException('Bad Request', 400);
+		}
 		if (newname.length > 28)
+		{
+			console.log("Invalid new nickname, to long!");
 			throw new HttpException('Bad Request', 400);
+		}
 
-		return (this.UserService.setNameNick(username, newname));
+		let i = Number(0);
+		while (i < newname.length)
+		{
+			if (((newname[i] < 'a') || (newname[i] > 'z')) && ((newname[i] < 'A') || (newname[i] > 'Z')) && ((newname[i] < '0') || (newname[i] > '9')))
+			{
+				if (newname[i] != ' ')
+				{
+					console.log("Invalid character in the new nickname");
+					throw new HttpException('Bad Request', 400);
+				}
+			}
+			i++;
+		}
+		console.log("User: " + username + " changed his nickname to: " + newname);
+		this.UserService.setNameNick(username, newname);
+		throw new HttpException('Ok', 200);
 	}
 
 	@Post('/profile/username/friend/:id')
