@@ -96,21 +96,24 @@ class Game extends Phaser.Scene {
 
   }
 
+	checkScore(score1: number, score2: number) {
+		if (score1 == 10){
+		this.endGame('player1');
+		}
+		else if (score2 == 10){
+		this.endGame('player2');
+		}
+	}
+
 	updateGameState(): void {
 	this._socketIO.on('gameState', (state: { ball: { x: number, y: number, dx: number, dy: number }, player1: { y: number }, player2: { y: number }, score: {player1: number, player2: number} }) => {
 	// Update ball position using the new method
 	this._ball.updatePosition(state.ball.x, state.ball.y);  // Ensure the ball is drawn at the new position
-	console.log(`Score updated: Left - ${state.score.player1}, Right - ${state.score.player2}`); // 
 	this._field.setScore(state.score.player1, state.score.player2);
-
+	this.checkScore(state.score.player1, state.score.player2);
 	// Update paddles based on player positions
 	this._leftBar.updatePosition(state.player1.y);
 	this._rightBar.updatePosition(state.player2.y);
-
-	// Logging the positions for debugging
-	// console.log('Left Paddle ID:', this._idLeft, 'Y Position:', state.player1.y);
-	// console.log('Right Paddle ID:', this._idRight, 'Y Position:', state.player2.y);
-	// console.log('Ball Position:', state.ball.x, state.ball.y);  // Debugging ball position
 	});
 	}
 

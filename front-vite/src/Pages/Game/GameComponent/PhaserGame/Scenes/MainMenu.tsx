@@ -43,7 +43,6 @@ class MainMenu extends Phaser.Scene {
 		singlePlayerButton.on('pointerout', () => singlePlayerButton.setStyle({ fill: '#fff' }));
 		 // Start the main game
 		singlePlayerButton.on('pointerup', () => {
-				console.log("Printing!")
 				this.scene.start('Game', {id: 'id1', bot: true});
 				// this.scene.start('Game', {idLeft: 'id1', idRight: 'id2'})
 		});

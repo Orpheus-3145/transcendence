@@ -105,7 +105,7 @@ updateBall() {
 		++this.score.player1;
         this.resetBall();  // Reset position and give random velocity
     }
-	console.log(`Score updated: Left - ${this.score.player1}, Right - ${this.score.player2}`); // 
+	// console.log(`Score updated: Left - ${this.score.player1}, Right - ${this.score.player2}`); // 
 
     // Move bot if enabled
     if (this.botEnabled) {
