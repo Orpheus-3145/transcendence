@@ -6,7 +6,7 @@
 export const GAME = {
   width: 1150,
   height: 648,
-  maxScore: 10,
+  maxScore: 3,
   background: './assets/texture/background.png',
 };
 
