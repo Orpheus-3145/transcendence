@@ -97,10 +97,10 @@ class Game extends Phaser.Scene {
   }
 
 	checkScore(score1: number, score2: number) {
-		if (score1 == 10){
+		if (score1 == GAME.maxScore){
 		this.endGame('player1');
 		}
-		else if (score2 == 10){
+		else if (score2 == GAME.maxScore){
 		this.endGame('player2');
 		}
 	}

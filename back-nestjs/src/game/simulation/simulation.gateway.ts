@@ -41,8 +41,9 @@ export default class SimulationGateway implements OnGatewayInit, OnGatewayConnec
       this.server.emit('gameState', gameState);
     }, 1000 / 30); // Emit at 30 FPS
 
-	setInterval(() => {this.simulationService.updateBall();}, 1000 / 30); // For 30 FPS, like the other interval
-  }
+	setInterval(() => {this.simulationService.updateBall();}, 1000/30); // For 30 FPS, like the other interval
+	setInterval(() =>{this.simulationService.updateBotPaddle();}, 1000/30);
+	}
 
   @SubscribeMessage('msg')
   handleEvent(
@@ -52,7 +53,7 @@ export default class SimulationGateway implements OnGatewayInit, OnGatewayConnec
     
     // do smt with client
     console.log('client says HI: ', data);
-  };
+  }
   
 
   handleConnection(client: any) {
