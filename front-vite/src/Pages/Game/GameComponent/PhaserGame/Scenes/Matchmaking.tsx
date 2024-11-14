@@ -1,6 +1,5 @@
 import { GAME } from '../Game.data'
 import { io, Socket } from 'socket.io-client';
-import { useUser } from '../../../../../Providers/UserContext/User';
 
 class Matchmaking extends Phaser.Scene {
 
@@ -22,14 +21,14 @@ class Matchmaking extends Phaser.Scene {
 				transports: ['websocket'],
 			}
 		);
-		
+
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 		this._socketIO.on('ready', () => this.scene.start('Game'));
-		this._socketIO.emit('waiting', useUser());
+		this._socketIO.emit('waiting', this.registry.get("user42data"));
 	};
 
 	// loading graphic assets, fired after init()
-  preload(): void {}
+  preload(): void {};
 
 	// run after preload(), creation of the elements of the menu
   create(): void {
@@ -55,10 +54,10 @@ class Matchmaking extends Phaser.Scene {
 		goHomeButton.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }));
 		 // Start the main game
 		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
-  }
+  };
 
   // run every frame update
-  update(): void {}
+  update(): void {};
 };
 
 export default Matchmaking;

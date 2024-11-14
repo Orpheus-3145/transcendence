@@ -2,7 +2,7 @@ import { User } from '../../entities/user.entity';
 import { UserDTO } from '../../dto/user.dto';
 import { WebSocketGateway,
   WebSocketServer,
-  OnGatewayConnection,
+  // OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
   MessageBody,
@@ -25,55 +25,48 @@ export interface Player {
   },
   transports: ['websocket'],
 })
-export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconnect{
+export class MatchmakingGateway implements OnGatewayDisconnect{
   private _waitingPlayersIP: Player[] = [];
   private _checker = null;
 
   @WebSocketServer()
   server: Server;
 
-  checkNewGame(): void {
-
-    if (this._waitingPlayersIP.length > 1) {
-      
-      this._waitingPlayersIP.shift().clientSocket.emit('ready');  // message player1
-      this._waitingPlayersIP.shift().clientSocket.emit('ready');  // message player2
-    }
-  };
-
   handleDisconnect(client: Socket): void {
+    
+    for (const player of this._waitingPlayersIP) {
 
-    if (this.server.of('/').sockets.get(client.id))
-      this.removePlayerFromQueue(client);
+      if (player.clientSocket.id === client.id)
+        this.removePlayerFromQueue(client);
+    }
   };
 
   @SubscribeMessage('waiting')
   clientWaitingAdd(@MessageBody() data: UserDTO, @ConnectedSocket() client: Socket) {
 
     this.addPlayerToQueue(client, data);
-
-    console.log(`Player waiting\nIP: ${client.handshake.address}\nusername: ${data.nameNick}`);
-  }
+  };
 
   @SubscribeMessage('leavingWait')
   clientWaitingRemove(@ConnectedSocket() client: Socket) {
 
     this.removePlayerFromQueue(client);
-
-    console.log(`Player waiting\nIP: ${client.handshake.address}`);
-  }
+  };
 
   addPlayerToQueue(clientSocket: Socket, intra42data: UserDTO): void {
 
-    var newPlayer: Player;
-    newPlayer.clientSocket = clientSocket;
-    newPlayer.intraId = intra42data.id;
-    newPlayer.nameNick = intra42data.nameNick;
+    const newPlayer: Player = {
+      clientSocket: clientSocket,
+      intraId: intra42data.id,
+      nameNick: intra42data.nameNick,
+    };
   
     this._waitingPlayersIP.push(newPlayer);
 
     this.setChecker();
-  }
+
+    console.log(`player ${newPlayer.nameNick} [${newPlayer.clientSocket.handshake.address}] joined queue`);
+  };
 
   removePlayerFromQueue(clientSocket: Socket): void {
 
@@ -84,24 +77,33 @@ export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconn
       if (currentPlayer.clientSocket.id !== clientSocket.id)
         tmpWaitingPlayers.push(currentPlayer);
       else
-        console.log(`Player disconnected\nIP: ${currentPlayer.clientSocket.handshake.address}\nusername: ${currentPlayer.nameNick}`);;
+        console.log(`player ${currentPlayer.nameNick} left queue `);
     }
     
-    if (tmpWaitingPlayers.length == 0)
-      this.unsetChecker();
-
     this._waitingPlayersIP = tmpWaitingPlayers;
-  }
+
+    if (this._waitingPlayersIP.length == 0)
+      this.unsetChecker();
+  };
+
+  checkNewGame(): void {
+
+    if (this._waitingPlayersIP.length > 1) {
+      
+      this._waitingPlayersIP.shift().clientSocket.emit('ready');  // message player1
+      this._waitingPlayersIP.shift().clientSocket.emit('ready');  // message player2
+    }
+  };
 
   setChecker(): void {
 
     if (this._checker === null)
       this._checker = setInterval(() => this.checkNewGame(), 1000);
-  }
+  };
 
   unsetChecker(): void {
       
     clearInterval(this._checker);
     this._checker = null;
-  }
+  };
 };
