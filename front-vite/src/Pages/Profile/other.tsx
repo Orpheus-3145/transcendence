@@ -14,7 +14,7 @@ import {
 	PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, getFriend, addFriend, sendMessage, inviteToGame, getUserFromDatabase } from '../../Providers/UserContext/User';
 
@@ -568,38 +568,8 @@ const ProfilePageOther: React.FC = () => {
 		);
 	}
 
-	let getUserProfile = async () : Promise<number> =>
-	{
-
-		const tmp = getUserFromDatabase(lastSegment);
-		
-		if (Object.keys(tmp).length === 0)
-			return (-1);
-			
-		setUserProfile(tmp); 
-
-		return (1);	
-	}
-
 	let pageWrapperOther = () => 
 	{
-		getUserProfile().then(number => {
-			if (number == -1)
-				navigate('/404');
-		});
-		////////
-		userProfile.intraId = lastSegment;
-		userProfile.id = 2;
-		userProfile.nameNick = "nein";
-		userProfile.nameIntra = "notdhussain";
-		userProfile.nameFirst = "ya";
-		userProfile.nameLast = "no";
-		userProfile.email = "yano@student.codam.nl";
-		userProfile.image = 'default_profile_photo.png';
-		userProfile.greeting = 'Hello, I have just landed!';
-		userProfile.status = 'online';
-		/////
-
 		return (
 			<Container sx={{ padding: theme.spacing(3) }}>
 				<Stack
@@ -621,8 +591,32 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
+	const [userProfileNumber, setUserProfileNumber] = useState(0);
+
+	let getUserProfile = async () : Promise<void> =>
+	{
+		const tmp = await getUserFromDatabase(lastSegment, navigate);
+		setUserProfile(tmp);
+	}
+		
+	let PageWrapper = () =>
+	{
+		useEffect(() => 
+		{
+			getUserProfile().then((number) => 
+			{
+				setUserProfileNumber(number);
+			});
+		}, []);
+		
+		if (userProfileNumber === null) 
+			return <Stack>Loading...</Stack>;
+		
+		return pageWrapperOther();
+	}
+
 	return (
-		pageWrapperOther()
+		PageWrapper()
 	);
 };
 

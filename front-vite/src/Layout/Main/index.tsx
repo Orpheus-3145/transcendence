@@ -8,6 +8,7 @@ import ProfilePage from '../../Pages/Profile';
 import LoginPage from '../../Pages/Login/index';
 import ChannelsPage from '../../Pages/Channels/index';
 import LogoutPage from '../../Pages/Logout';
+import AllUsersPage from '../../Pages/AllUsers';
 import { useUser } from '../../Providers/UserContext/User';
 
 export const Main: React.FC = () => {
@@ -23,6 +24,7 @@ export const Main: React.FC = () => {
       <Route path="/profile/settings" element={<UserSettings />} />
       <Route path="/profile/:username" element={<ProfilePage />} />
       <Route path="/404" element={<ErrorPage />} />
+      <Route path="/viewusers" element={<AllUsersPage />} />
     </>
   );
 

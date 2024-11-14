@@ -205,3 +205,21 @@ export async function changePFP(username:string, image:FormData): Promise<void> 
     else
     console.log("M8 CHANGIN PFP IS BADDASS");
 }
+
+export async function getAll(): Promise<User[]> {
+  const request = new Request(BACKEND_URL + '/users/profile/getAll', {
+    method: "GET",
+  });
+
+  try
+  {
+    const response = await fetch(request)
+    .then((raw) => raw.json())
+    .then((json) => json as User[]);
+    return response;
+  }
+  catch (error)
+  {
+    console.error("ERROR: User array in getAll() not found!");
+  }
+}

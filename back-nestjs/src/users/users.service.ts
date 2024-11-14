@@ -25,14 +25,31 @@ export class UsersService {
     user.image = userMe.image.link;
     user.greeting = 'Hello, I have just landed!';
     user.status = UserStatus.Offline;
+    const tmp = new User();
+    tmp.accessToken = access.access_token;
+    tmp.intraId = 47328;
+    tmp.nameNick = 'bald';
+    tmp.nameIntra = 'baldwin';
+    tmp.nameFirst = 'bal';
+    tmp.nameLast = 'dwin';
+    tmp.email = 'baldwin@student.codam.nl';
+    tmp.image = userMe.image.link;
+    tmp.greeting = 'Hello, I have just landed!';
+    tmp.status = UserStatus.Offline;  
     try {
       await user.validate();
+      await tmp.validate();
       await this.usersRepository.save(user);
+      await this.usersRepository.save(tmp);
       return new UserDTO(user);
     } catch (error) {
       console.error('User validation error: ', error);
       throw error;
     }
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.usersRepository.find();
   }
 
   async findOne(intraId: number): Promise<User | null> {
@@ -100,7 +117,6 @@ export class UsersService {
   
   async changeProfilePic(id:string, image:string)
   {
-    console.log("change profile picture");
     var user = this.getUser(id);
     (await user).image = image;
     this.usersRepository.save((await user));

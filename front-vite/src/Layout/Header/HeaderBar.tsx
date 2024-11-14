@@ -5,6 +5,8 @@ import { useUser } from '../../Providers/UserContext/User';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
+import ContactsIcon from '@mui/icons-material/Contacts';
+import {  Tooltip } from '@mui/material';
 
 export const Bar: React.FC = () => {
   const { user } = useUser();
@@ -12,7 +14,7 @@ export const Bar: React.FC = () => {
   const theme = useTheme();
 
   const navToProfile = () => { user && user.id && navigate(`/profile/${user.id}`) }
-
+  const navToAll = () => {navigate('/viewusers')}
   return (
     <Box
       alignContent='center'
@@ -31,6 +33,20 @@ export const Bar: React.FC = () => {
         borderBottom={`0.1em outset ${theme.palette.divider}`}
       >
         <MenuDrawer />
+          <Tooltip title="View Users!" arrow>
+          <IconButton
+              onClick={navToAll}
+              variant="contained"
+                  sx={{
+                    left: '630px',
+                    '&:hover': {
+                      color: '#0c31df',
+                    },
+                  }}
+            >
+              <ContactsIcon />
+            </IconButton>
+          </Tooltip>
         <IconButton
           onClick={navToProfile}
           sx={{

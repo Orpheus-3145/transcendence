@@ -11,6 +11,12 @@ export class UsersController {
 		private readonly UserService: UsersService,
 	  ) { }
 
+
+	@Get('/profile/getAll')
+	async getAllUsers() {
+		return (this.UserService.findAll());
+	}
+
 	@Post('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
 		var user = this.UserService.getUser(username);
@@ -83,7 +89,7 @@ export class UsersController {
 	@Post('profile/:username/changepfp')
 	@UseInterceptors(FileInterceptor('file')) //instead of any the file should be Express.Multer.File,
 	async changePFP(@Param('username') username:string,  @UploadedFile() file: any,) {
-		const image = 'data:image/png;base64,' + file.buffer.toString('base64');
+		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 		return (this.UserService.changeProfilePic(username, image));
 	}
 }

@@ -33,8 +33,8 @@ const ProfilePage: React.FC = () => {
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
+	const [profileImage, setProfileImage] = useState();
 	const [showInputMessage, setShowInputMessage] = useState(false);
-	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const [showInput, setShowInput] = useState(false);
 	const [inputValue, setInputValue] = useState('');
 	const [ownPage, showOwnPage] = useState(false);
@@ -368,7 +368,7 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let GetProfilePic = () =>
+	let GetProfilePic = () => 
 	{
 		return (
 			<Stack
@@ -383,15 +383,14 @@ const ProfilePage: React.FC = () => {
 						width: '200px',
 						height: '200px',
 						bgcolor: theme.palette.primary.light,
-						objectFit: 'contain',
 					}}
-					src={userProfile.image}
+					src={profileImage}
 				>
 				</Avatar>
 			</Stack>
 		);
 	}
-
+	
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => 
 	{
 		const image = event.target.files[0];
@@ -401,6 +400,7 @@ const ProfilePage: React.FC = () => {
 		if (image.type.startsWith("image/") && image.size > 0) 
 		{
 			changePFP(userProfile.id, formdata);
+			setProfileImage(image);
 		}
 	}
 	
@@ -599,7 +599,7 @@ const ProfilePage: React.FC = () => {
 					height: '10px',
 					position: 'absolute',
 					top: '240px',
-					left: '930px',
+					left: '1000px',
 				}}
 			>
 				<Typography>
@@ -649,6 +649,7 @@ const ProfilePage: React.FC = () => {
 		else 
 			showOwnPage(false);
 
+		setProfileImage(tmp.image);
 		setUserProfile(tmp);
 	}
 	
@@ -660,7 +661,7 @@ const ProfilePage: React.FC = () => {
 			{
 				setUserProfileNumber(number);
 			});
-		}, []);
+		}, [profileImage]);
 		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;
