@@ -22,77 +22,113 @@ export class SimulationService {
 	windowHeight = 0; // overwritten by value form the client
 	paddleWidth = 0;
 	paddleHeight = 0;
+	private speed = 1.5
 	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
   	private player1 = { y: this.windowHeight / 2 };
   	private player2 = { y: this.windowHeight / 2 };
-  	private botEnabled = false;
+	private score: { player1: number; player2: number } = { player1: 0, player2: 0 };
+	// private score = {player1: 0, player2: 0}
+  	private botEnabled: boolean = false;
   	private roomId: number;
 
 // Set everything to the start position: ball in the centre, paddles centralised
   setStartPos() {
-    this.ball = { x: this.windowWidth / 2, y: this.windowHeight/2, dx: 5, dy: 5 };
+	const randomDelta = this.randomDelta();
+    this.ball = { x: this.windowWidth / 2, y: this.windowHeight/2, dx: randomDelta.dx, dy: randomDelta.dy};
     this.player1.y = this.windowHeight / 2;
-    this.player2.y = this.windowHeight / 2; 
+    this.player2.y = this.windowHeight / 2;
+	this.score.player1 = 0;
+	this.score.player2 = 0;
   };
 
+randomDelta(): { dx: number, dy: number} {
+	const randomX = Math.random() * (Math.sqrt(3) / 2 - 1) + 1; // between [rad(3)/2, 1] = [cos(+-30), cos(0)]
+	const randomY = Math.random() * (0.5 + 0.5) - 0.5; // between [-1/2, 1/2] = [sin(-30), sin(30)]
+	const randomDirection = Math.random() < 0.5 ? -1 : 1;							// random between -1 and 1
+    const speed = 10;  // You can adjust this value for ball speed
+
+    const deltaX = randomX * randomDirection * speed;
+    const deltaY = randomY * speed;
+	return {dx: deltaX, dy: deltaY};
+}
 
 resetBall() {
     this.ball.x = this.windowWidth / 2;  // Reset to center of the screen
     this.ball.y = this.windowHeight / 2;
+	const randomDelta = this.randomDelta();
+	this.ball.dx = randomDelta.dx;
+	this.ball.dy = randomDelta.dy
+}
 
-	// Formula: Math.random() * (max - min) + min
-	const randomX = Math.random() * (Math.sqrt(3) / 2 - 1) + 1; // between [rad(3)/2, 1] = [cos(+-30), cos(0)]
-	const randomY = Math.random() * (0.5 + 0.5) - 0.5; // between [-1/2, 1/2] = [sin(-30), sin(30)]
-	const randomDirection = Math.random() < 0.5 ? -1 : 1;							// random between -1 and 1
-    const speed = 0.5;  // You can adjust this value for ball speed
 
-    this.ball.dx = randomX * randomDirection * speed;
-    this.ball.dy = randomY * speed;
+paddleHit(player_y: number, isLeftPaddle: boolean): boolean {
+    if (isLeftPaddle) {
+        return (
+            this.ball.x <= this.paddleWidth &&
+            Math.abs(player_y - this.ball.y) <= this.paddleHeight / 2
+        );
+    } else {
+        return (
+            this.ball.x >= this.windowWidth - this.paddleWidth &&
+            Math.abs(player_y - this.ball.y) <= this.paddleHeight / 2
+        );
+    }
 }
 
 
 updateBall() {
     // Move the ball
-    this.ball.x += this.ball.dx;
-    this.ball.y += this.ball.dy;
+    this.ball.x += this.ball.dx * this.speed;
+    this.ball.y += this.ball.dy * this.speed;
 
     // Bounce off top and bottom walls
     if (this.ball.y <= 0 || this.ball.y >= this.windowHeight) {
         this.ball.dy = -this.ball.dy;
     }
 
-    // // Collision detection with paddles (Player bars)
-    // // Left Paddle (Player 1)
-    // if (
-    //     this.ball.x <= this.paddleWidth && 
-    //     Math.abs(this.player1.y - this.ball.y) <= this.paddleWidth
-    // ) {
-    //     this.ball.dx = -this.ball.dx;  // Reverse direction when ball hits left paddle
-    // }
-
-    // Right Paddle (Player 2)
-    if (
-        this.ball.x >= (this.windowWidth - this.paddleWidth) && 
-		(this.ball.y <= this.player1.y - this.paddleHeight/2 && this.ball.y >= this.player1.y + this.paddleHeight/2)
-       // Math.abs(this.player2.y - this.ball.y) <= (this.windowWidth - this.paddleWidth)
-    ) {
-        this.ball.dx = -this.ball.dx;  // Reverse direction when ball hits right paddle
+    // Collision detection with left paddle
+    if (this.paddleHit(this.player1.y, true)) {
+        this.ball.dx = Math.abs(this.ball.dx);  // Ensure ball moves right after left paddle hit
     }
 
-	if (this.ball.x <= 0 || this.ball.x >= this.windowWidth) {
-    this.resetBall();  // Reposition the ball and give it a random velocity
-	}
-};
+    // Collision detection with right paddle
+    if (this.paddleHit(this.player2.y, false)) {
+        this.ball.dx = -Math.abs(this.ball.dx);  // Ensure ball moves left after right paddle hit
+    }
 
-    // Handle paddle movement based on key data
-  movePaddle(player: 'player1' | 'player2', direction: 'up' | 'down') {
+    // If hits left wall, player2 get a point
+    if (this.ball.x <= 0) {
+		++this.score.player2;
+		this.resetBall();  // Reset position and give random velocity
+	}
+ 	else if (this.ball.x >= this.windowWidth) { // If hits right wall, player1 get a point
+		++this.score.player1;
+        this.resetBall();  // Reset position and give random velocity
+    }
+	console.log(`Score updated: Left - ${this.score.player1}, Right - ${this.score.player2}`); // 
+
+    // Move bot if enabled
+    if (this.botEnabled) {
+        if (this.ball.y < this.player2.y) {
+            this.movePaddle('player2', 'up');
+        } else {
+            this.movePaddle('player2', 'down');
+        }
+    }
+}
+
+    movePaddle(player: 'player1' | 'player2', direction: 'up' | 'down') {
     const paddle = player === 'player1' ? this.player1 : this.player2;
     const delta = direction === 'up' ? -10 : 10;
     paddle.y = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, paddle.y + delta));
-	console.log(`Player move->  playerId: ${player} | direction: ${direction} | y_pos: ${paddle.y}`);
 
+}
 
-  }
+    // Handle paddle movement based on key data
+  handlePaddle(player: 'player1' | 'player2', direction: 'up' | 'down') {
+	this.movePaddle(player, direction);
+	}
+
 
   // Get positions of ball and paddles
   getGameState() {
@@ -100,14 +136,21 @@ updateBall() {
       ball: this.ball,
       player1: this.player1,
       player2: this.player2,
+		score: this.score
     	};
 	}
-	setObjectSize(windowWidth: number, windowHeight: number, paddleWidth: number, paddleHeight: number) {
+	// setObjectSize(windowWidth: number, windowHeight: number, paddleWidth: number, paddleHeight: number) {
+	// 	this.windowWidth = windowWidth;
+	// 	this.windowHeight = windowHeight;
+	// 	this.paddleWidth = paddleWidth;
+	// 	this.paddleHeight = paddleHeight;
+	// }
+	setGameData(windowWidth: number, windowHeight: number, paddleWidth: number, paddleHeight: number, bot: boolean) {
 		this.windowWidth = windowWidth;
 		this.windowHeight = windowHeight;
 		this.paddleWidth = paddleWidth;
 		this.paddleHeight = paddleHeight;
+		this.botEnabled = bot;
 	}
-
 }
 

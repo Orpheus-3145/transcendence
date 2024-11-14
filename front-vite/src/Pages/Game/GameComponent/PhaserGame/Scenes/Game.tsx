@@ -20,11 +20,11 @@ class Game extends Phaser.Scene {
   private _keyS!: Phaser.Input.Keyboard.Key;
   private _keyEsc!: Phaser.Input.Keyboard.Key;
 
-  // Player references
-  private _idLeft: string = '';
-  private _idRight: string = '';
 
-  private _socketIO: Socket;
+  // Player references
+	private _id: string = '';
+	private _bot: boolean = false;
+	private _socketIO: Socket;
 
   constructor() {
     super({ key: 'Game' });
@@ -43,9 +43,9 @@ class Game extends Phaser.Scene {
   }
 
   // Initialize players and key bindings
-  init(data: { idLeft: string, idRight: string }): void {
-    this._idLeft = data.idLeft;
-    this._idRight = data.idRight;
+  init(data: { id: string, bot: boolean}): void {
+	this._id = data.id;
+	this._bot = data.bot;
 
     // Key bindings
     this._cursors = this.input.keyboard.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
@@ -72,14 +72,14 @@ class Game extends Phaser.Scene {
 	this._rightBar = new PlayerBar(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
 
     // Create field (handles borders, scoring, etc.)
-    this._field = new Field(this, this._ball, this._idLeft, this._idRight);
-
+    this._field = new Field(this);
 	// FE should send it to the BE	
-	this._socketIO.emit('gameObjectSize', {
+	this._socketIO.emit('gameData', {
 		windowWidth: GAME.width,
 		windowHeight: GAME.height,
 		paddleWidth: GAME_BAR.width, 
-		paddleHeight: GAME_BAR.height
+		paddleHeight: GAME_BAR.height,
+		bot: this._bot
 	});
 }
 
@@ -97,19 +97,20 @@ class Game extends Phaser.Scene {
   }
 
 	updateGameState(): void {
-	this._socketIO.on('gameState', (state: { ball: { x: number, y: number, dx: number, dy: number }, player1: { y: number }, player2: { y: number } }) => {
+	this._socketIO.on('gameState', (state: { ball: { x: number, y: number, dx: number, dy: number }, player1: { y: number }, player2: { y: number }, score: {player1: number, player2: number} }) => {
 	// Update ball position using the new method
 	this._ball.updatePosition(state.ball.x, state.ball.y);  // Ensure the ball is drawn at the new position
-
+	console.log(`Score updated: Left - ${state.score.player1}, Right - ${state.score.player2}`); // 
+	this._field.setScore(state.score.player1, state.score.player2);
 
 	// Update paddles based on player positions
 	this._leftBar.updatePosition(state.player1.y);
 	this._rightBar.updatePosition(state.player2.y);
 
 	// Logging the positions for debugging
-	console.log('Left Paddle ID:', this._idLeft, 'Y Position:', state.player1.y);
-	console.log('Right Paddle ID:', this._idRight, 'Y Position:', state.player2.y);
-	console.log('Ball Position:', state.ball.x, state.ball.y);  // Debugging ball position
+	// console.log('Left Paddle ID:', this._idLeft, 'Y Position:', state.player1.y);
+	// console.log('Right Paddle ID:', this._idRight, 'Y Position:', state.player2.y);
+	// console.log('Ball Position:', state.ball.x, state.ball.y);  // Debugging ball position
 	});
 	}
 
@@ -125,7 +126,7 @@ class Game extends Phaser.Scene {
     // Emit player movement only if a direction is pressed
     if (direction) {
       	this._socketIO.emit('playerMove', {
-        playerId: this._idLeft, // Change to right player ID if needed, which side should the first person be on
+        playerId: this._id, // Change to right player ID if needed, which side should the first person be on
         direction
       });
     }

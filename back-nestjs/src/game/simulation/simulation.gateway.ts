@@ -41,8 +41,7 @@ export default class SimulationGateway implements OnGatewayInit, OnGatewayConnec
       this.server.emit('gameState', gameState);
     }, 1000 / 30); // Emit at 30 FPS
 
-
-	setInterval(() =>{this.simulationService.updateBall();})
+	setInterval(() => {this.simulationService.updateBall();}, 1000 / 30); // For 30 FPS, like the other interval
   }
 
   @SubscribeMessage('msg')
@@ -65,30 +64,31 @@ export default class SimulationGateway implements OnGatewayInit, OnGatewayConnec
     console.log('Client disconnected:', client.id);
   }
 
-  @SubscribeMessage('gameObjectSize')
+  @SubscribeMessage('gameData')
   handleGameWindow(
-    @MessageBody() data: {windowWidth: number, windowHeight: number, paddleWidth: number, paddleHeight: number}) {
-	console.log(`Received size: Window - ${data.windowWidth}, ${data.windowHeight} | Paddle ${data.paddleWidth}, ${data.paddleHeight}`);
-  	this.simulationService.setObjectSize(data.windowWidth, data.windowHeight, data.paddleWidth, data.paddleHeight);
+    @MessageBody() data: {windowWidth: number, windowHeight: number, paddleWidth: number, paddleHeight: number, bot: boolean}) {
+	// console.log(`Received size: Window - ${data.windowWidth}, ${data.windowHeight} | Paddle ${data.paddleWidth}, ${data.paddleHeight}`);
+  	this.simulationService.setGameData(data.windowWidth, data.windowHeight, data.paddleWidth, data.paddleHeight, data.bot);
+	this.simulationService.setStartPos();
 	};
   
-	// Handle player move events from frontend
+
 	@SubscribeMessage('playerMove')
 		handlePlayerMove(
 		@MessageBody() data: { playerId: string; direction: string }) {
-	console.log(`PlayerMove message - PlayerID: ${data.playerId} Direction: ${data.direction}`);
-     const player = data.playerId === 'id1' ? 'player1' : 'player2';
+	// console.log(`PlayerMove message - PlayerID: ${data.playerId} Direction: ${data.direction}`);
+    const player = data.playerId === 'id1' ? 'player1' : 'player2';
 	// Validate direction before calling movePaddle
 	if (data.direction === 'up' || data.direction === 'down') {
-		this.simulationService.movePaddle(player, data.direction);
+		this.simulationService.handlePaddle(player, data.direction);
 	} else {
 	console.warn(`Invalid direction received: ${data.direction}`);
   	}
-	}
+	};
 
-	@SubscribeMessage('windowSize')
-	handleWindowSize(@MessageBody() data: { width: number, height: number }) {
- 	this.simulationService.windowWidth = data.width;
-  	this.simulationService.windowHeight = data.height;
-	}
+	// @SubscribeMessage('windowSize')
+	// handleWindowSize(@MessageBody() data: { width: number, height: number }) {
+ 	// this.simulationService.windowWidth = data.width;
+  	// this.simulationService.windowHeight = data.height;
+	// }
 }
