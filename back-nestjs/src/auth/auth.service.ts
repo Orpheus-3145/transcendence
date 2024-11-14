@@ -93,6 +93,7 @@ export class AuthService {
     const signedToken = sign({ intraId: userMe.id }, this.configService.get<string>('SECRET_KEY'));
 
     res.cookie('auth_token', signedToken, { httpOnly: true, maxAge: 10 * 365 * 24 * 60 * 60 * 1000 });
+    
     try {
       const userDTOreturn = await this.userService.createUser(access, userMe);
       res.redirect(this.configService.get<string>('URL_FRONTEND'));

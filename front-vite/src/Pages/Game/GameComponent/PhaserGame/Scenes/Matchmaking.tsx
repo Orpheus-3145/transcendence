@@ -1,5 +1,6 @@
 import { GAME } from '../Game.data'
 import { io, Socket } from 'socket.io-client';
+import { useUser } from '../../../../../Providers/UserContext/User';
 
 class Matchmaking extends Phaser.Scene {
 
@@ -13,7 +14,7 @@ class Matchmaking extends Phaser.Scene {
 
 	// executed when scene.start('Matchmaking') is called
   init(): void {
-	
+
 		this._socketIO = io(
 			import.meta.env.URL_WS_MATCHMAKING, 
 			{
@@ -21,14 +22,10 @@ class Matchmaking extends Phaser.Scene {
 				transports: ['websocket'],
 			}
 		);
-
+		
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
-
-		this._socketIO.on('ready', () => {
-	
-			console.log('Ready to play!');
-			this.scene.start('Game');
-		});
+		this._socketIO.on('ready', () => this.scene.start('Game'));
+		this._socketIO.emit('waiting', useUser());
 	};
 
 	// loading graphic assets, fired after init()
@@ -40,7 +37,7 @@ class Matchmaking extends Phaser.Scene {
 		// sets the background
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
-    
+
 		this.add.text(400, 150, 'Waiting for playerz ...', {
       fontSize: '32px',
       align: 'center',
