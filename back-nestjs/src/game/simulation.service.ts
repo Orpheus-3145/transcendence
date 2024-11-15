@@ -5,7 +5,7 @@ import { Server, Socket } from 'socket.io';
 // A provider can be injected as a dependency, object can create various relationships with each other.
 // Dependencies are passed to the constructor of your controller
 @Injectable()
-export class SimulationService {
+export default class SimulationService {
 
 	windowWidth = 0; // will be overwritten by the value from the client
 	windowHeight = 0; // overwritten by value form the client

@@ -23,7 +23,7 @@ export interface Player {
   },
   transports: ['websocket'],
 })
-export class MatchmakingGateway implements OnGatewayDisconnect{
+export default class MatchmakingGateway implements OnGatewayDisconnect{
   private _waitingPlayersIP: Player[] = [];
   private _checker = null;
 
