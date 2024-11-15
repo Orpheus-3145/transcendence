@@ -14,7 +14,7 @@ if [ -d ${destination} ]; then        # if destination exists, check if there ar
     if [[ -f "${destination}/${key_file}" && -f "${destination}/${crt_file}" ]]; then
 
         # cert files exist already, stop right here
-        echo "${key_file} and ${crt_file} already exist"
+        echo "files ${key_file} and ${crt_file} already exist"
         exit 0
     fi
 else

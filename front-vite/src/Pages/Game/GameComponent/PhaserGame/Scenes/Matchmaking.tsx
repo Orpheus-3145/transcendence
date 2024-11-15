@@ -1,6 +1,5 @@
 import { GAME } from '../Game.data'
 import { io, Socket } from 'socket.io-client';
-
 class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
@@ -9,6 +8,34 @@ class Matchmaking extends Phaser.Scene {
 	constructor () {
 
 		super({ key: 'Matchmaking' });
+
+		this._socketIO = io(
+			import.meta.env.URL_WS_BACKEND + import.meta.env.WS_NS_MATCHMAKING,
+			{
+				// key: String(readFileSync(import.meta.env.SSL_KEY_PATH)),
+				// cert: String(readFileSync(import.meta.env.SSL_CERT_PATH)), //String(readFileSync(import.meta.env.SSL_CERT_PATH)
+				// ca: [
+				// 	String(readFileSync(import.meta.env.SSL_CERT_PATH)),
+				// ],
+				// path: import.meta.env.WS_NAMESPACE,
+				withCredentials: true, // Include cookies, if necessary
+				transports: ['websocket'],
+  			// path: "/"
+				// secure: true, // Assicura che la connessione sia sicura
+			}
+		);
+		this._socketIO.connect()
+		console.log(this._socketIO);
+		
+		this._socketIO.on('connect', () => {
+      console.log('Connected');
+    });
+
+		this._socketIO.on('message', () => {
+	
+				console.log('Ready to play!');
+				this.scene.start('Game');
+		});
 	}
 
 	// executed when scene.start('Matchmaking') is called

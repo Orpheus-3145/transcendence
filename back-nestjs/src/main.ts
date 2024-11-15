@@ -8,9 +8,7 @@ import AppModule from './app.module';
 
 
 async function bootstrap() {
-
 		const app = await NestFactory.create(AppModule, {
-			// https configuration
 			httpsOptions: {
 				key: fs.readFileSync(process.env.SSL_KEY_PATH),
 				cert: fs.readFileSync(process.env.SSL_CERT_PATH),
@@ -19,9 +17,8 @@ async function bootstrap() {
 				]
 			}
 		});
-
 		const configService = app.get(ConfigService);
-		
+		const port = configService.get<number>('PORT_BACKEND', 4000);
 		// Required for using same host for the services
 		app.enableCors({
 			origin: configService.get<string>('URL_FRONTEND'),
@@ -32,11 +29,9 @@ async function bootstrap() {
 		// Enables req.cookies
 		app.use(cookieParser());
 		app.useGlobalPipes(new ValidationPipe({
-			transform: true,
+				transform: true,
 		}));
 
-		// listening to port
-		const port = configService.get<number>('PORT_BACKEND', 4000);
 		await app.listen(port).catch(() => {
 			console.log(`listen to ${port} failed`);
 			process.exit(1);
