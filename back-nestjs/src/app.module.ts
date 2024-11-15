@@ -8,7 +8,6 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
 import MatchmakingModule from './game/matchmaking/matchmaking.module';
 import SimulationModule from './game/simulation/simulation.module';
-import GameModule from './game/game.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -31,9 +30,8 @@ import { UsersModule } from './users/users.module';
       }),
     }),
     AuthModule,
-    // GameModule,
     MatchmakingModule,
-	SimulationModule,
+	  SimulationModule,
     UsersModule,
   ],
 })

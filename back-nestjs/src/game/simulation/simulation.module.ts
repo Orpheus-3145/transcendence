@@ -1,4 +1,3 @@
-// simulation/simulation.module.ts
 import { Module } from '@nestjs/common';
 import { SimulationService } from './simulation.service';
 import SimulationGateway from './simulation.gateway'

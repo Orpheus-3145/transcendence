@@ -16,7 +16,6 @@ import { SimulationService } from './simulation.service';
 @WebSocketGateway( //Number(process.env.PORT_WS_BACKEND), 
 { 
   namespace: process.env.WS_NS_SIMULATION, 
-  // path: "/",
   cors: {
 	origin: process.env.URL_FRONTEND,
 	methods: ['GET', 'POST'],

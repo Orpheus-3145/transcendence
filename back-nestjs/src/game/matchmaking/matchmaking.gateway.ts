@@ -1,9 +1,6 @@
-import { User } from '../../entities/user.entity';
 import { UserDTO } from '../../dto/user.dto';
 import { WebSocketGateway,
   WebSocketServer,
-  // OnGatewayInit,
-//   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
   MessageBody,
@@ -29,6 +26,7 @@ export interface Player {
 export class MatchmakingGateway implements OnGatewayDisconnect{
   private _waitingPlayersIP: Player[] = [];
   private _checker = null;
+
   @WebSocketServer()
   server: Server;
 
@@ -72,6 +70,7 @@ export class MatchmakingGateway implements OnGatewayDisconnect{
 
     const tmpWaitingPlayers: Player[] = [];
     while (this._waitingPlayersIP.length > 0) {
+
       const currentPlayer = this._waitingPlayersIP.pop();
       if (currentPlayer.clientSocket.id !== clientSocket.id)
         tmpWaitingPlayers.push(currentPlayer);

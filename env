@@ -1,0 +1,57 @@
+# ╔═════════════════════╗
+# ║ENVIRONMENT VARIABLES║
+# ╚═════════════════════╝
+# ╭──────╮
+# │SECRET│
+# ╰──────╯ for signing and verifying the intra User
+SECRET_KEY=uj93H5SzL9D01nAefmavIMuRYO49emAb
+# ╭─────────────────╮
+# │ INTRA 42 TOKENS │
+# ╰─────────────────╯
+# Lore tokens for localhost
+# SECRET_UID=u-s4t2ud-f10de2a2ac0bb29ed3d81146b7c048ee71db0b9a9d6753a79e1daceb8b6191ed
+# SECRET_PWD=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
+# Fra tokens for localhost
+SECRET_UID=u-s4t2ud-e3e740e0c42479c28ae3070ff3ad7d56af44dfd1ed40a5a4d1f2afb7980532a1
+SECRET_PWD=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
+# Fra tokens for 80.113.228.15
+# SECRET_UID=u-s4t2ud-90c3322c9f5c4579e1302d96610511d3688a4400261207fdd0a0445d3fc1bdb4
+# SECRET_PWD=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
+# ╭───╮
+# │SSL│
+# ╰───╯
+SSL_KEY_PATH=/app/ssl/cert.key
+SSL_CERT_PATH=/app/ssl/cert.crt
+# ╭─────────╮
+# │ GENERAL │
+# ╰─────────╯
+PROJECT_NAME=Transcendence
+DOMAIN=localhost   # 80.113.228.15 (Fra public server)
+WS_NS_MATCHMAKING=/matchmaking
+WS_NS_SIMULATION=/simulation
+COMPOSE_HTTP_TIMEOUT=120
+# ╭─────╮
+# │PORTS│
+# ╰─────╯
+PORT_FRONTEND=3000
+PORT_BACKEND=4000
+PORT_WS_BACKEND=4000
+PORT_POSTGRES=5432
+# ╭─────╮
+# | URL |
+# ╰─────╯
+URL_FRONTEND=https://${DOMAIN}:${PORT_FRONTEND}
+URL_BACKEND=https://${DOMAIN}:${PORT_BACKEND}
+URL_BACKEND_LOGIN=${URL_BACKEND}/auth/login
+URL_BACKEND_LOGIN_ENC=https%3A%2F%2F${DOMAIN}%3A${PORT_BACKEND}%2Fauth%2Flogin
+URL_INTRA_AUTH=https://api.intra.42.fr/oauth/authorize?client_id=${SECRET_UID}&redirect_uri=${URL_BACKEND_LOGIN_ENC}&response_type=code
+URL_WS_BACKEND=wss://${DOMAIN}:${PORT_WS_BACKEND}
+# ╭────────╮
+# │DATABASE│
+# ╰────────╯ Host value is set the name of the service
+POSTGRES_HOST=database
+POSTGRES_PASSWORD=QGnv1wwt8Rn3p0D
+POSTGRES_USER=zubizaretta
+POSTGRES_DB=postgres
+# POSTGRES_INITDB_ARGS=
+# PGDATA=
