@@ -1,10 +1,5 @@
 import { GAME } from '../Game.data'
 import { io, Socket } from 'socket.io-client';
-<<<<<<< HEAD
-=======
-// import { readFileSync } from "fs";
->>>>>>> simulation
-
 class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
