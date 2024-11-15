@@ -4,9 +4,9 @@
 // @param maxScore: max goals before end of the game
 // @param background: image 
 export const GAME = {
-  width: 1152,
+  width: 1150,
   height: 648,
-  maxScore: 10,
+  maxScore: 3,
   background: './assets/texture/background.png',
 };
 
@@ -26,7 +26,7 @@ export const GAME_BALL = {
 // @param defaultSpeed: scroll speed of the bar 
 // @param texture: image of the bar
 export const GAME_BAR = {
-  width: 25,
+  width: GAME.width / 46,
   height: GAME.height / 6,
   defaultSpeed: 15,
   texture: '',

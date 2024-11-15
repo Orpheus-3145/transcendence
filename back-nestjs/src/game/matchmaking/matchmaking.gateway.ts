@@ -1,5 +1,6 @@
 import { WebSocketGateway,
   WebSocketServer,
+  // OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -20,7 +21,6 @@ import { Server, Socket } from 'socket.io';
 export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconnect{
   private _waitingPlayersIP: Socket[] = [];
   private _checker = null;
-
   @WebSocketServer()
   server: Server;
 
@@ -47,7 +47,6 @@ export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconn
 
     const tmpWaitingPlayers: Socket[] = [];
     while (this._waitingPlayersIP.length > 0) {
-
       const currentPlayer = this._waitingPlayersIP.pop();
       if (currentPlayer != client)
         tmpWaitingPlayers.push(currentPlayer);

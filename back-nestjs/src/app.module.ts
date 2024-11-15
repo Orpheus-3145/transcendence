@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RouterModule } from '@nestjs/core';
-
 // import { AuthController } from './auth/auth.controller';
 // import { UsersController } from './users/users.controller';
 import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
 import MatchmakingModule from './game/matchmaking/matchmaking.module';
+import SimulationModule from './game/simulation/simulation.module';
 import GameModule from './game/game.module';
 import { UsersModule } from './users/users.module';
 
@@ -31,8 +31,9 @@ import { UsersModule } from './users/users.module';
       }),
     }),
     AuthModule,
-    GameModule,
+    // GameModule,
     MatchmakingModule,
+	SimulationModule,
     UsersModule,
   ],
 })

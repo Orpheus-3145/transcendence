@@ -1,125 +1,157 @@
-import { GAME, GAME_BALL, GAME_BAR } from '../Game.data'
-import Ball from '../GameObjects/Ball'
-import PlayerBar from '../GameObjects/PlayerBar'
-import Field from '../GameObjects/Field'
+import { GAME, GAME_BALL, GAME_BAR } from '../Game.data';
+import Ball from '../GameObjects/Ball';
+import PlayerBar from '../GameObjects/PlayerBar';
+import Field from '../GameObjects/Field';
+import { io, Socket } from 'socket.io-client';
 
 class Game extends Phaser.Scene {
+  // Game objects
+  private _ball!: Ball;
+  private _leftBar!: PlayerBar;
+  private _rightBar!: PlayerBar;
+  private _field!: Field;
 
-	// game objects
-	private _ball!: Ball;
-	private _leftBar!: PlayerBar;
-	private _rightBar!: PlayerBar; 
-	private _field!: Field;
+  // Background image
+  private _background!: Phaser.GameObjects.Image;
 
-	// background image
-	private _background!: Phaser.GameObjects.Image;
+  // Key listeners
+  private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private _keyW!: Phaser.Input.Keyboard.Key;
+  private _keyS!: Phaser.Input.Keyboard.Key;
+  private _keyEsc!: Phaser.Input.Keyboard.Key;
 
-	// key listeners
-	private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-	private _keyW!: Phaser.Input.Keyboard.Key;
-	private _keyS!: Phaser.Input.Keyboard.Key;
-	private _keyEsc!: Phaser.Input.Keyboard.Key;
+
+  // Player references
+	private _id: string = '';
+	private _bot: boolean = false;
+	private _socketIO: Socket;
+
+  constructor() {
+	super({ key: 'Game' });
+	this._socketIO = io(
+			import.meta.env.URL_WS_BACKEND + import.meta.env.WS_NS_SIMULATION,
+			{
+				withCredentials: true, // Include cookies, if necessary
+				transports: ['websocket']
+			}
+		);
+
+		this._socketIO.connect();
+		console.log(this._socketIO);
+		// this._socketIO.on('connect', () => {console.log('Connected');});
+  }
+
+  // Initialize players and key bindings
+  init(data: { id: string, bot: boolean}): void {
+	this._id = data.id;
+	this._bot = data.bot;
+
+	// Key bindings
+	this._cursors = this.input.keyboard.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
+	this._keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W) as Phaser.Input.Keyboard.Key;
+	this._keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S) as Phaser.Input.Keyboard.Key;
+	this._keyEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
+  }
+
+  // Load assets
+  preload(): void {
+	// Load assets like images or sounds here
+  }
+
+  // Create game objects and establish WebSocket connection
+  create(): void {
+	console.log("Game scene started!");
+	// Set background
+	this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
+	this._background.setDisplaySize(this.scale.width, this.scale.height);
+
+	// Create the ball as an instance of the Ball class
+	this._ball = new Ball(this, GAME.width / 2, GAME.height / 2, 0, 0);  // Initialize ball with no movement initially
+	this._leftBar = new PlayerBar(this, GAME_BAR.width / 2, GAME.height / 2);
+	this._rightBar = new PlayerBar(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
+
+	// Create field (handles borders, scoring, etc.)
+	this._field = new Field(this);
+	// FE should send it to the BE	
+	this._socketIO.emit('gameData', {
+		windowWidth: GAME.width,
+		windowHeight: GAME.height,
+		paddleWidth: GAME_BAR.width, 
+		paddleHeight: GAME_BAR.height,
+		bot: this._bot
+	});
+	console.log("Sent game data to BE");
+}
+
+  // Frame-by-frame update
+  update(): void {
+
+	this.emitPaddleMovement();
 	
-	// player references
-	private _idLeft: string = '';
-	private _idRight: string = '';
+	// Exit game with ESC
+	if (this._keyEsc.isDown) {
+	  this.scene.start('MainMenu');
+	}
+	this.updateGameState();
+	this._socketIO.on('gameEnd', (state: {gameEnd: boolean}) => {
 
-	constructor () {
+	});
+  }
 
-		super({ key: 'Game' });
-
+	checkScore(score1: number, score2: number) {
+		if (score1 == GAME.maxScore || score2 == GAME.maxScore) {
+			console.log("Score is MAX");
+		}
+		if (score1 == GAME.maxScore){
+		this.endGame('player1');
+		}
+		else if (score2 == GAME.maxScore){
+		this.endGame('player2');
+		}
 	}
 
-	// fired when scene.start('Game') is called, 
-	// ids and keybindings are set ('UP', 'DOWN', 'W', 'S','ESC')
-	// @param idLeft: left player
-	// @param idRight: right player
-	init(data: {idLeft: string, idRight: string}): void {
-
-		this._idLeft = data.idLeft;
-		this._idRight = data.idRight;
-
-		this._cursors = this.input?.keyboard?.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
-		this._keyW = this.input?.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W) as Phaser.Input.Keyboard.Key;
-		this._keyS = this.input?.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.S) as Phaser.Input.Keyboard.Key;
-		this._keyEsc = this.input?.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
-	}
-
-	// loading graphic assets, fired after init()
-	preload(): void {
-
-	}
-
-	// run after preload(), creation of the elements of the game
-	create(): void {
+	updateGameState(): void {
 	
-		// sets the background
-		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
-		this._background.setDisplaySize(this.scale.width, this.scale.height);
-
-		// ball object
-		const shapeBall: Phaser.GameObjects.Arc = this.add.circle(GAME.width / 2, GAME.height / 2, GAME_BALL.radius, 0xff0000);
-		this._ball = new Ball(this, shapeBall, GAME.width / 2, GAME.height / 2);
-
-		// left and right bars for the two players
-		const shapeLeftBar: Phaser.GameObjects.Rectangle = this.add.rectangle(GAME_BAR.width / 2 * -1, GAME.height / 2, GAME_BAR.width, GAME_BAR.height, 0xff0000);
-		const shapeRightBar: Phaser.GameObjects.Rectangle = this.add.rectangle(GAME.width - GAME_BAR.width / 2, GAME.height / 2, GAME_BAR.width, GAME_BAR.height, 0xff0000);
-		
-		this._leftBar = new PlayerBar(this, shapeLeftBar, this._ball, GAME_BAR.width / 2 * -1, GAME.height / 2);
-		this._rightBar = new PlayerBar(this, shapeRightBar, this._ball,  GAME.width - GAME_BAR.width / 2, GAME.height / 2);
-
-		// field that contains the game, handles
-		// the borders, scoring system, background, ...
-		this._field = new Field(this, this._ball, this._idLeft, this._idRight);
-		
-		// start the game, set everything in position
-		this.resetBallAndBars();
-	}
-	
-	// run every frame update, receives key inputs
-	// for moving the bars or close the game
-	update(): void {
-
-		if ( this._cursors.up.isDown || this._keyW.isDown ) {
-			
-			this._leftBar.moveUp();
-			this._rightBar.moveUp();
-		}
-		else if ( this._cursors.down.isDown || this._keyS.isDown ) {
-			
-			this._leftBar.moveDown();
-			this._rightBar.moveDown();
-		}
-		else if ( this._keyEsc.isDown ) {
-			
-			this.scene.start('MainMenu');
-		}
+		this._socketIO.on('gameState', (state: { ball: { x: number, y: number}, player1: { y: number }, player2: { y: number }, score: {player1: number, player2: number} }) => {
+			console.log(`Receiving game data\n  score: (${state.score.player1}, ${state.score.player2})`);
+			this._field.setScore(state.score.player1, state.score.player2);
+			this.checkScore(state.score.player1, state.score.player2);
+			// Update ball position using the new method
+			this._ball.updatePosition(state.ball.x, state.ball.y);  // Ensure the ball is drawn at the new position
+			// Update paddles based on player positions
+			this._leftBar.updatePosition(state.player1.y);
+			this._rightBar.updatePosition(state.player2.y);
+		});
 	}
 
-	// run when the game starts and on every new point
-	// resets position of ball and bars, fires the ball afterwards
-	resetBallAndBars(): void {
-		
-		this._ball.resetPos();
-		this._leftBar.resetPos();
-		this._rightBar.resetPos();
-		this._ball.startMoving();
+	emitPaddleMovement(): void {
+	let direction = '';
+
+	if (this._cursors.up.isDown || this._keyW.isDown) {
+	  direction = 'up'; // Move up
+	} else if (this._cursors.down.isDown || this._keyS.isDown) {
+	  direction = 'down'; // Move down
 	}
 
-	// stop game, goes on error page
-	// @param trace: error description
-	openErrorpage(trace: string): void {
-		
-		this.scene.start('Error', {trace: trace});
+	// Emit player movement only if a direction is pressed
+	if (direction) {
+	  	this._socketIO.emit('playerMove', {
+		playerId: this._id, // Change to right player ID if needed, which side should the first person be on
+		direction
+	  });
+	}
 	}
 
-	// once the maximum is reached the scene is changed
-	// into the Result
-	// @param idWinner: is of the winner player
-	endGame(idWinner: string): void {
+  // Navigate to error page
+  openErrorpage(trace: string): void {
+	this.scene.start('Error', { trace });
+  }
 
-		this.scene.start('Results', {idWinner: idWinner});
-	}
-};
+	// End game and show results
+  endGame(idWinner: string): void {
+	this.scene.start('Results', { idWinner });
+  }
+}
 
 export default Game;
+

@@ -9,5 +9,11 @@ export default class GameController {
 
   constructor(
     private readonly gameService: GameService,
-  ) {};
+  ) { }
+
+  @Get('currentPlayers')
+  async getCurrentPlayers(): Promise<number> {
+    
+    return this.gameService.getPlayers();
+  };
 };

@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 
 import GameController from './game.controller';
 import GameService from './game.service';
-// import MatchmakingModule from './matchmaking/matchmaking.module';
+import SimulationModule from './simulation/simulation.module';
+
 
 @Module({
   controllers: [GameController],
   providers: [GameService],
-  // imports: [MatchmakingModule],
+  imports: [SimulationModule],
 })
 export default class GameModule {};
