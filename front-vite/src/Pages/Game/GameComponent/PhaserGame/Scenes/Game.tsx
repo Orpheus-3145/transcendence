@@ -27,30 +27,27 @@ class Game extends Phaser.Scene {
 	private _socketIO: Socket;
 
   constructor() {
-	super({ key: 'Game' });
-	this._socketIO = io(
-			import.meta.env.URL_WS_BACKEND + import.meta.env.WS_NS_SIMULATION,
+		super({ key: 'Game' });
+
+  }
+
+  // Initialize players and key bindings
+  init(data: { id: string, bot: boolean}): void {
+		this._socketIO = io(
+			import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION,
 			{
 				withCredentials: true, // Include cookies, if necessary
 				transports: ['websocket']
 			}
 		);
+		this._id = data.id;
+		this._bot = data.bot;
 
-		this._socketIO.connect();
-		console.log(this._socketIO);
-		// this._socketIO.on('connect', () => {console.log('Connected');});
-  }
-
-  // Initialize players and key bindings
-  init(data: { id: string, bot: boolean}): void {
-	this._id = data.id;
-	this._bot = data.bot;
-
-	// Key bindings
-	this._cursors = this.input.keyboard.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
-	this._keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W) as Phaser.Input.Keyboard.Key;
-	this._keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S) as Phaser.Input.Keyboard.Key;
-	this._keyEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
+		// Key bindings
+		this._cursors = this.input.keyboard.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
+		this._keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W) as Phaser.Input.Keyboard.Key;
+		this._keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S) as Phaser.Input.Keyboard.Key;
+		this._keyEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
   }
 
   // Load assets

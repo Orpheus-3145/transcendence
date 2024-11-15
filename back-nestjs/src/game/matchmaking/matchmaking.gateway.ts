@@ -15,7 +15,7 @@ export interface Player {
 };
 
 @WebSocketGateway( {
-  namespace: process.env.NS_MATCHMAKING, 
+  namespace: process.env.WS_NS_MATCHMAKING, 
   cors: {
     origin: process.env.URL_FRONTEND,
     methods: ['GET', 'POST'],

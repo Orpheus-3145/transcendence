@@ -13,7 +13,7 @@ import { Server, Socket } from 'socket.io';
 import { SimulationService } from './simulation.service';
 
 
-@WebSocketGateway( //Number(process.env.PORT_WS_BACKEND), 
+@WebSocketGateway(
 { 
   namespace: process.env.WS_NS_SIMULATION, 
   cors: {

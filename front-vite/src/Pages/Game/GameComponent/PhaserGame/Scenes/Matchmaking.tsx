@@ -15,7 +15,7 @@ class Matchmaking extends Phaser.Scene {
   init(): void {
 
 		this._socketIO = io(
-			import.meta.env.URL_WS_BACKEND + import.meta.env.WS_NS_MATCHMAKING, 
+			import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_MATCHMAKING, 
 			{
 				withCredentials: true,
 				transports: ['websocket'],
