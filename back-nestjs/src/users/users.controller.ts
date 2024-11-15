@@ -51,12 +51,11 @@ export class UsersController {
 			}
 			i++;
 		}
-		console.log("User: " + username + " changed his nickname to: " + newname);
 		this.UserService.setNameNick(username, newname);
 		throw new HttpException('Ok', 200);
 	}
 
-	@Post('/profile/username/friend/:id')
+	@Post('/profile/:username/friend/:id')
 	async getFriend(@Param('id') id: string) {
 		return (this.UserService.getFriend(id));
 	}

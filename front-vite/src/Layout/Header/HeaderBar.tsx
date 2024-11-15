@@ -38,7 +38,6 @@ export const Bar: React.FC = () => {
               onClick={navToAll}
               variant="contained"
                   sx={{
-                    left: '630px',
                     '&:hover': {
                       color: '#0c31df',
                     },

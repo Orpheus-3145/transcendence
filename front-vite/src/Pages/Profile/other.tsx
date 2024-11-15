@@ -1,22 +1,27 @@
 import React from 'react';
-import { Avatar, Box, Button, Stack, Typography, useTheme, Divider, Grid, IconButton, Container } from '@mui/material';
+import { Avatar, Box, Stack, Typography, useTheme, Divider, IconButton, Container } from '@mui/material';
 import {Input} from '@mui/material'
 import { useMediaQuery, Tooltip } from '@mui/material';
-import { darken, alpha } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import {
 	AccountCircle as AccountCircleIcon,
 	EmojiEvents as Cup,
 	PersonAdd as AddIcon,
-	Add as Add,
 	Block as BlockIcon,
 	VideogameAsset as GameIcon,
 	Message as MessageIcon,
-	PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser, getFriend, addFriend, sendMessage, inviteToGame, getUserFromDatabase } from '../../Providers/UserContext/User';
+import { useUser,
+	getUserFromDatabase, 
+	getFriend, 
+	addFriend,
+	sendMessage,
+	blockFriend,
+	inviteToGame,
+	User} from '../../Providers/UserContext/User';
 
 const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
@@ -30,10 +35,23 @@ const ProfilePageOther: React.FC = () => {
 	const [inputMessage, setInputMessage] = useState('');
 	const [showInput, setShowInput] = useState(false);
 	const [userProfile, setUserProfile] = useState(user);
-
+	const [userFriend, setUserFriend] = useState<User | null>(null);
+	const [userProfileNumber, setUserProfileNumber] = useState(0);
+	const [isFriend, setIsFriend] = useState(false);
+	const [friendsList, setFriendsList] = useState<string[]>([]);
+	
+	
+	let setFriend = async (intraid:string) : Promise<void> =>
+	{
+		var friend = await getFriend(intraid);
+		setUserFriend(friend);
+	}
+	
 	let friendLine = (intraid:string) => 
 	{
-		var friend = getFriend(intraid);
+		setFriend(intraid);
+		if (userFriend === null)
+			return (<Stack></Stack>);
 		return (
 			<Stack direction={'row'}
 				sx={{
@@ -49,7 +67,16 @@ const ProfilePageOther: React.FC = () => {
 					alignItems={'center'} 
 					marginY={theme.spacing(.5)}
 				>
-					<AccountCircleIcon />
+					<Avatar
+					sx={{
+						width: '40px',
+						height: '40px',
+						left: '-5px',
+						bgcolor: theme.palette.primary.light,
+					}}
+					src={userFriend.image}
+					>
+					</Avatar>
 					<Typography 
 						sx={{
 							'& a': {
@@ -61,18 +88,18 @@ const ProfilePageOther: React.FC = () => {
 							},
 						}}
 					>
-						<a href="" onClick={() => redirectFriend(friend.id)}>{friend.nameNick}</a>
+						<a href="" onClick={() => redirectFriend(userFriend.id)}>{userFriend.nameNick}</a>
 					</Typography>
 				</Stack>
 			</Stack>
 		);
 	};
-	
+		
 	let redirectFriend = (id:any) =>
 	{
 		navigate('/profile/' + id);
 	}
-
+	
 	let friendCategory = () => 
 	{
 		return (
@@ -104,11 +131,11 @@ const ProfilePageOther: React.FC = () => {
 					},
 				}}
 			>
-				{userProfile.friends.map((friendName) => friendLine(friendName))}
+				{friendsList.map((friendName) => friendLine(friendName))}
 			</Stack>
 		);
 	};
-
+	
 	let friendsBox = () => 
 	{
 		return (
@@ -337,8 +364,6 @@ const ProfilePageOther: React.FC = () => {
 		let color;
 		if (user.status == 'offline')
 			color = '#df310e';
-		else if (user.status == 'idle')
-			color = '#cfdf0e';
 		else if (user.status == 'online')
 			color = '#0fc00c';
 		else if (user.status == 'ingame')
@@ -381,7 +406,6 @@ const ProfilePageOther: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-150px',
-					left: '-15px',
 				}}
 			>
 				<Typography variant={'h2'}
@@ -410,12 +434,18 @@ const ProfilePageOther: React.FC = () => {
 				{AddingFriendIcon()}
 				{InviteToGameIcon()}
 				{SendMessageIcon()}
+				{BlockUserIcon()}
 			</Stack>
 		);
 	}
 
 	let AddingFriendIcon = () => 
 	{
+		if (isFriend)
+		{
+			return (<Stack></Stack>);
+		}
+
 		return (
 			<Tooltip title="Add Friend!" arrow>
 				<IconButton
@@ -424,7 +454,7 @@ const ProfilePageOther: React.FC = () => {
 							sx={{
 								fontSize: '30px',
 								top: '-130px',
-								left: '420px',
+								left: '425px',
 								width: '50px',
 								'&:hover': {
 									color: '#0c31df',
@@ -443,6 +473,11 @@ const ProfilePageOther: React.FC = () => {
 
 	let InviteToGameIcon = () => 
 	{
+		var top = '-175px';
+		if (isFriend)
+		{
+			top = '-130px';
+		}
 		return (
 			<Tooltip title="Invite to Game!" arrow>
 			<IconButton
@@ -450,8 +485,8 @@ const ProfilePageOther: React.FC = () => {
 				onClick={() => InviteToGame()}
 				sx={{
 					fontSize: '30px',
-					top: '-175px',
-					left: '500px',
+					top: top,
+					left: '495px',
 					width: '50px',
 					'&:hover': {
 						color: '#BF77F6',
@@ -494,52 +529,97 @@ const ProfilePageOther: React.FC = () => {
 	
 	let SendMessageIcon = () => 
 	{
+		var top = '-220px';
+		var topMessage = '-210px';
+		if (isFriend)
+		{
+			top = '-175px';
+			topMessage = '-170px';
+		}
+
 		return (
-			<Tooltip title="Send a Message!" arrow
-				PopperProps={{
-					modifiers: [
-					{
-						name: 'offset',
-						options: {
-						offset: [110, -220],
-						},
-					},
-				],
-				}}
-			>
-				<IconButton
-					variant="contained"
-					onClick={CheckChangeMessage}
+			<Stack>
+				<Tooltip title="Send Message!" arrow>
+					<IconButton
+						variant="contained"
+						onClick={CheckChangeMessage}
+						sx={{
+								fontSize: '30px',
+								top: top,
+								left: '580px',
+								width: '50px',
+								'&:hover': {
+									color: '#09af07',
+								},
+						}}
+					>
+						<MessageIcon fontSize="inherit"/>
+					</IconButton>
+				</Tooltip>
+				{showInputMessage && (
+					<Input
+					value={inputMessage}
+					onChange={(e) => setInputMessage(e.target.value)}
+					onKeyDown={handleKeyDownMessage}
+					placeholder="Type a message..."
+					sx={{
+						position: 'relative',
+						top: topMessage,
+						left: '470px',
+						width: '200px',
+						height: '40px',
+					}}
+					/>
+				)}
+			</Stack>
+		);
+	}
+
+	let BlockUser = () => {
+		blockFriend(user.id, userProfile.intraid);
+	}
+
+	let BlockUserIcon = () =>
+	{
+		if (isFriend)
+		{
+			return (<Stack></Stack>);
+		}
+
+		let top = '-268px';
+		if (showInputMessage)
+			top = '-308px';
+	
+		return (
+			<Tooltip title="Block user!" arrow>
+				<IconButton 
+					onClick={() => BlockUser()}
 					sx={{
 						fontSize: '30px',
-						top: '-220px',
-						left: '580px',
+						top: top,
+						left: '648px',
 						width: '50px',
 						'&:hover': {
-							color: '#f4bf13',
+							color: '#df310e',
 						},
 					}}
 				>
-					<MessageIcon fontSize="inherit"/>
+				<BlockIcon fontSize="inherit"/>	
 				</IconButton>
-				{showInputMessage && (
-					<Input
-						value={inputMessage}
-						onChange={(e) => setInputMessage(e.target.value)}
-						onKeyDown={handleKeyDownMessage}
-						placeholder="Type a message to send..."
-						sx={{
-							top: '-170px',
-							left: '380px',
-						}}
-					/>
-				)}		
 			</Tooltip>
 		);
 	}
 
 	let OtherInfo = () =>
 	{
+		let top = '-368px';
+		if (showInputMessage)
+			top = '-408px';
+		if (isFriend)
+			top = '-278px';
+		if (showInputMessage && isFriend)
+			top = '-318px';
+
 		return (
 			<Stack
 				direction={'column'}
@@ -549,8 +629,8 @@ const ProfilePageOther: React.FC = () => {
 					width: '100%',
 					height: '10px',
 					position: 'relative',
-					top: '-320px',
-					left: '830px',
+					top: top,
+					left: '860px',
 				}}
 			>
 				<Typography>
@@ -591,12 +671,13 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
-	const [userProfileNumber, setUserProfileNumber] = useState(0);
-
 	let getUserProfile = async () : Promise<void> =>
 	{
 		const tmp = await getUserFromDatabase(lastSegment, navigate);
 		setUserProfile(tmp);
+		var friend = await getUserFromDatabase(user.id, navigate);
+		setIsFriend(tmp.friends.find((str:string) => str === friend.intraId.toString()));
+		setFriendsList(tmp.friends);
 	}
 		
 	let PageWrapper = () =>
@@ -607,7 +688,7 @@ const ProfilePageOther: React.FC = () => {
 			{
 				setUserProfileNumber(number);
 			});
-		}, []);
+		}, [friendsList]);
 		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;

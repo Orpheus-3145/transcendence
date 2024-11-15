@@ -22,7 +22,3 @@ i need access to the game database,
 i need to know what type of game it is, the score and against whom
 i also need to see if the user won or lost, if user won it would show 'WON' in green, else 'LOST' in red
 i need to calculate the ratio of win/lose
-
-
-nicknam:
---- "; select * from Users

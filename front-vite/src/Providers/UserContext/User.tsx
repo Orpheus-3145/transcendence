@@ -11,7 +11,9 @@ export enum UserStatus {
 }
 
 export interface User {
+  friends: any;
   id: number;
+  intraId: number;
   nameNick: string | null;
   nameIntra: string;
   nameFirst: string;
@@ -64,6 +66,24 @@ export const useUser = () => {
 };
 
 const BACKEND_URL: string = import.meta.env.ORIGIN_URL_BACK || 'http://localhost.codam.nl:4000';
+
+export async function getAll(): Promise<User[]> {
+  const request = new Request(BACKEND_URL + '/users/profile/getAll', {
+    method: "GET",
+  });
+
+  try
+  {
+    const response = await fetch(request)
+    .then((raw) => raw.json())
+    .then((json) => json as User[]);
+    return response;
+  }
+  catch (error)
+  {
+    console.error("ERROR: User array in getAll() not found!");
+  }
+}
 
 export async function getUserFromDatabase(username: string, navigate: (path: string) => void): Promise<User>
 {
@@ -132,8 +152,6 @@ export async function addFriend(username:string, friend:string): Promise<void> {
     .then((raw) => raw.json())
     if (!response)
       console.log("M8 ADDING FRIEND FAILES FUCKIN HARD");
-    else
-      console.log("M8 ADDING FRIEND IS BADDASS");
 }
 
 export async function removeFriend(username:string, friend:string): Promise<void> {
@@ -146,8 +164,6 @@ export async function removeFriend(username:string, friend:string): Promise<void
     .then((raw) => raw.json())
     if (!response)
       console.log("M8 removing FRIEND FAILES FUCKIN HARD");
-    else
-      console.log("M8 REMOVING FRIEND IS BADDASS");
 }
 
 export async function blockFriend(username:string, friend:string): Promise<void> {
@@ -160,8 +176,6 @@ export async function blockFriend(username:string, friend:string): Promise<void>
     .then((raw) => raw.json())
     if (!response)
       console.log("M8 BLOCKING FRIEND FAILES FUCKIN HARD");
-    else
-      console.log("M8 BLOCKING FRIEND IS BADDASS");
 }
 
 export async function sendMessage(username:string, friend:string, message:string): Promise<void> {
@@ -174,8 +188,6 @@ export async function sendMessage(username:string, friend:string, message:string
     .then((raw) => raw.json())
     if (!response)
       console.log("M8 SENDING MESSAGE FAILES FUCKIN HARD");
-    else
-    console.log("M8 SENDING MESSAGE IS BADDASS");
 }
 
 export async function inviteToGame(username:string, friend:string): Promise<void> {
@@ -188,8 +200,6 @@ export async function inviteToGame(username:string, friend:string): Promise<void
     .then((raw) => raw.json())
     if (!response)
       console.log("M8 INVITING TO GAME FAILES FUCKIN HARD");
-    else
-    console.log("M8 INVITING TO GAME IS BADDASS");
 }
 
 export async function changePFP(username:string, image:FormData): Promise<void> {
@@ -202,24 +212,4 @@ export async function changePFP(username:string, image:FormData): Promise<void> 
     .then((raw) => raw.json())
     if (!response)
       console.log("M8 CHANGIN PFP FAILES FUCKIN HARD");
-    else
-    console.log("M8 CHANGIN PFP IS BADDASS");
-}
-
-export async function getAll(): Promise<User[]> {
-  const request = new Request(BACKEND_URL + '/users/profile/getAll', {
-    method: "GET",
-  });
-
-  try
-  {
-    const response = await fetch(request)
-    .then((raw) => raw.json())
-    .then((json) => json as User[]);
-    return response;
-  }
-  catch (error)
-  {
-    console.error("ERROR: User array in getAll() not found!");
-  }
 }

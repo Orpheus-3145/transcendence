@@ -35,12 +35,25 @@ export class UsersService {
     tmp.email = 'baldwin@student.codam.nl';
     tmp.image = userMe.image.link;
     tmp.greeting = 'Hello, I have just landed!';
-    tmp.status = UserStatus.Offline;  
+    tmp.status = UserStatus.Offline;
+    const a = new User();
+    a.accessToken = access.access_token;
+    a.intraId = 58493;
+    a.nameNick = 'nani';
+    a.nameIntra = 'nanida';
+    a.nameFirst = 'nani';
+    a.nameLast = 'fuq';
+    a.email = 'nanidafuq@student.codam.nl';
+    a.image = userMe.image.link;
+    a.greeting = 'Hello, I have just landed!';
+    a.status = UserStatus.Offline;
     try {
       await user.validate();
       await tmp.validate();
+      await a.validate();
       await this.usersRepository.save(user);
-      await this.usersRepository.save(tmp);
+      await this.usersRepository.save(tmp); //remove tmp when testing is done, it is an extra user to test
+      await this.usersRepository.save(a);//remove tmp when testing is done, it is an extra user to test
       return new UserDTO(user);
     } catch (error) {
       console.error('User validation error: ', error);
@@ -83,34 +96,42 @@ export class UsersService {
     return (this.findOne(numb));
   }
   
-  async addFriend(iduser: string, idother:string) //think its done, not tested tho
+  async addFriend(iduser: string, idother:string)
   {
-    const numbuser = Number(iduser);
-    const numbother = Number(idother);
-    var user = this.findOneId(numbuser);
-    var otheruser = this.findOneId(numbother);
+    var user = this.getUser(iduser);
+    var otheruser = this.getUser(idother);
     if (!(await user).friends)
     {
       (await user).friends =  [];
     }
+    if (!(await otheruser).friends)
+      {
+        (await otheruser).friends =  [];
+      }
     (await user).friends.push((await otheruser).intraId.toString());
     this.usersRepository.save((await user));
+    (await otheruser).friends.push((await user).intraId.toString());
+    this.usersRepository.save((await otheruser));
   }
 
-  async removeFriend(iduser:string, idother:string) //think its done, not tested tho
+  async removeFriend(iduser:string, idother:string)
   {
-    const numb = Number(iduser);
-    var user = this.findOneId(numb);
+    var user = this.getUser(iduser);
+    var numb = Number(idother);
+    var other = this.findOne(numb);
     var newlist = (await user).friends.filter(friend => friend !== idother);
     (await user).friends = newlist;
     this.usersRepository.save((await user));
+    var userid = (await user).intraId.toString();
+    newlist = (await other).friends.filter(afriend => afriend !== userid);
+    (await other).friends = newlist;
+    this.usersRepository.save((await other));
   }
 
   async blockUser(iduser:string, idother:string)
   {
     this.removeFriend(iduser, idother);
-    const numb = Number(iduser);
-    var user = this.findOneId(numb);
+    var user = this.getUser(iduser);
     (await user).blocked.push(idother);
     this.usersRepository.save((await user));
   }

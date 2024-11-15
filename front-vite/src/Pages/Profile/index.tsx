@@ -33,7 +33,6 @@ const ProfilePage: React.FC = () => {
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
-	const [profileImage, setProfileImage] = useState();
 	const [showInputMessage, setShowInputMessage] = useState(false);
 	const [showInput, setShowInput] = useState(false);
 	const [inputValue, setInputValue] = useState('');
@@ -42,9 +41,12 @@ const ProfilePage: React.FC = () => {
 	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
 	const [showMessageNickname, setShowMessageNickname] = useState(false);
 	const messageErrorNickname = "Invalid nickname! Maximum of 27 chars and only letters, numbers and spaces are allowed!";
+	const [profileImage, setProfileImage] = useState();
+	const [userFriend, setUserFriend] = useState<User | null>(null);
+	const [friendsList, setFriendsList] = useState<string[]>([]);
 	
 	
-	let friendLineButtons = (name:string) => 
+	let friendLineButtons = () => 
 	{
 		return (
 			<Stack direction={'row'} 
@@ -57,7 +59,7 @@ const ProfilePage: React.FC = () => {
 					<Tooltip title="Remove user from friendlist!" arrow>
 						<IconButton
 							variant="contained"
-							onClick={() => {RemoveFriend(name)}}
+							onClick={() => {RemoveFriend(userFriend.intraId)}}
 							sx={{
 								color: theme.palette.secondary.light, 
 								cursor: 'pointer', 
@@ -74,7 +76,7 @@ const ProfilePage: React.FC = () => {
 					<Tooltip title="Block user!" arrow>
 						<IconButton
 							variant="contained"
-							onClick={() => {BlockFriend(name)}}
+							onClick={() => {BlockFriend(userFriend.intraId)}}
 							sx={{color: theme.palette.secondary.light, 
 								cursor: 'pointer', 
 								'&:hover': { 
@@ -90,17 +92,31 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let RemoveFriend = (name:string) => {
-		removeFriend(userProfile.id, name);
+	let RemoveFriend = (id:string) => {
+		removeFriend(userProfile.id, id);
 	}
 
-	let BlockFriend = (name:string) => {
-		blockFriend(userProfile.id, name);
+	let BlockFriend = (id:string) => {
+		blockFriend(userProfile.id, id);
+	}
+
+	let redirectFriend = (id:number) =>
+	{
+		navigate('/profile/' + id.toString());
+	}
+
+	let setFriend = async (intraid:string) : Promise<void> =>
+	{
+		var friend = await getFriend(intraid);
+		setUserFriend(friend);
 	}
 
 	let friendLine = (intraid:string) => 
 	{
-		var friend = getFriend(intraid);
+		setFriend(intraid);
+		if (userFriend === null)
+			return (<Stack></Stack>);
+
 		return (
 			<Stack direction={'row'}
 				sx={{
@@ -116,30 +132,34 @@ const ProfilePage: React.FC = () => {
 					alignItems={'center'} 
 					marginY={theme.spacing(.5)}
 				>
-					<AccountCircleIcon />
+					<Avatar
+					sx={{
+						width: '40px',
+						height: '40px',
+						left: '-5px',
+						bgcolor: theme.palette.primary.light,
+					}}
+					src={userFriend.image}
+					>
+					</Avatar>
 					<Typography 
 						sx={{
 							'& a': {
 								textDecoration: 'none',
 								color: theme.palette.secondary.main,
 								'&:hover': { 
-									color: theme.palette.secondary.dark 
+									color: theme.palette.secondary.dark
 								}
 							},
 						}}
 					>
-						<a href="" onClick={() => redirectFriend(friend.id)}>{friend.nameNick}</a>
+						<a href="" onClick={() => redirectFriend(userFriend.id)}>{userFriend.nameNick}</a>
 					</Typography>
 				</Stack>
-				{friendLineButtons(intraid)}
+				{friendLineButtons()}
 			</Stack>
 		);
 	};
-	
-	let redirectFriend = (id:any) =>
-	{
-		navigate('/profile/' + id);
-	}
 
 	let friendCategory = () => 
 	{
@@ -172,7 +192,7 @@ const ProfilePage: React.FC = () => {
 					},
 				}}
 			>
-				{userProfile.friends.map((friendName) => friendLine(friendName))}
+				{friendsList.map((friendId:string) => friendLine(friendId))}
 			</Stack>
 		);
 	};
@@ -480,7 +500,6 @@ const ProfilePage: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-210px',
-					left: '-15px',
 				}}
 			>
 				<Typography variant={'h2'}
@@ -529,7 +548,6 @@ const ProfilePage: React.FC = () => {
 			} 
 			else 
 			{
-				console.log("Nickname update failed");
 				setShowMessageNickname(true);
 			}
 		}
@@ -546,7 +564,7 @@ const ProfilePage: React.FC = () => {
 						sx={{
 								fontSize: '30px',
 								top: '-190px',
-								left: '515px',
+								left: '530px',
 								width: '50px',
 								'&:hover': {
 									color: '#09af07',
@@ -564,7 +582,7 @@ const ProfilePage: React.FC = () => {
 					placeholder="Type new nickname..."
 					sx={{
 						top: '-180px',
-						left: '450px',
+						left: '465px',
 						width: '200px',
 						height: '40px',
 					}}
@@ -589,6 +607,14 @@ const ProfilePage: React.FC = () => {
 
 	let OtherInfo = () =>
 	{
+		let top = '-290px';
+		if (showInput)
+		{
+			top = '-330px';
+			if (showMessageNickname)
+				top = '-357px';
+		}
+
 		return (
 			<Stack
 				direction={'column'}
@@ -597,9 +623,9 @@ const ProfilePage: React.FC = () => {
 				sx={{
 					width: '100%',
 					height: '10px',
-					position: 'absolute',
-					top: '240px',
-					left: '1000px',
+					position: 'relative',
+					top: top,
+					left: '860px',
 				}}
 			>
 				<Typography>
@@ -645,12 +671,14 @@ const ProfilePage: React.FC = () => {
 		const tmp = await getUserFromDatabase(lastSegment, navigate);
 
 		if (user.id == tmp.id)
+		{
 			showOwnPage(true);
+			setProfileImage(tmp.image);
+			setFriendsList(tmp.friends);
+			setUserProfile(tmp);
+		}
 		else 
 			showOwnPage(false);
-
-		setProfileImage(tmp.image);
-		setUserProfile(tmp);
 	}
 	
 	let whichPage = () =>
@@ -661,7 +689,7 @@ const ProfilePage: React.FC = () => {
 			{
 				setUserProfileNumber(number);
 			});
-		}, [profileImage]);
+		}, [profileImage, friendsList]);
 		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;
