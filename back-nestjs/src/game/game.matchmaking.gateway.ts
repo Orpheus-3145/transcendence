@@ -7,7 +7,7 @@ import { WebSocketGateway,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-import MatchmakingService from './matchmaking.service';
+import MatchmakingService from './game.matchmaking.service';
 import { UserDTO } from '../dto/user.dto';
 
 

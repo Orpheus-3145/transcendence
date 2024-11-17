@@ -27,7 +27,7 @@ class Matchmaking extends Phaser.Scene {
 		this._socketIO.on('ready', (sessionId) => {
 
 			console.log(`token: ${sessionId}`);
-			this.scene.start('Game')
+			this.scene.start('Game', {id: 'id1', bot: true})
 		});
 		this._socketIO.emit('waiting', this.registry.get("user42data"));
 	};

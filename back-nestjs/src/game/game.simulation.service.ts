@@ -13,8 +13,8 @@ export default class SimulationService {
 	paddleHeight = 0;
 	private speed = 1.5
 	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
-  	private player1 = { y: this.windowHeight / 2 };
-  	private player2 = { y: this.windowHeight / 2 };
+	private player1 = { y: this.windowHeight / 2 };
+	private player2 = { y: this.windowHeight / 2 };
 	private score: { player1: number; player2: number } = { player1: 0, player2: 0 };
 	// private score = {player1: 0, player2: 0}
 	private botEnabled: boolean = false;
@@ -181,9 +181,6 @@ export default class SimulationService {
 			this.server.emit('gameState', gameState);
 		}
 	}
-
-
-
 
 	updateBotPaddle() {
 	// Move bot if enabled

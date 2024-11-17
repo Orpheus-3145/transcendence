@@ -5,7 +5,7 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import SimulationService from './simulation.service';
+import SimulationService from './game.simulation.service';
 
 
 @WebSocketGateway(

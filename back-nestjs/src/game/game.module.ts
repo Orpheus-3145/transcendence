@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import MatchmakingGateway from './matchmaking.gateway';
-import SimulationGateway from './simulation.gateway';
-import MatchmakingService from './matchmaking.service';
-import SimulationService from './simulation.service';
+import MatchmakingGateway from './game.matchmaking.gateway';
+import SimulationGateway from './game.simulation.gateway';
+import MatchmakingService from './game.matchmaking.service';
+import SimulationService from './game.simulation.service';
 
 
 @Module({
