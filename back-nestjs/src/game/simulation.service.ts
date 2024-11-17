@@ -28,20 +28,15 @@ export default class SimulationService {
 		this.server = server
 		// Set up a loop to broadcast game state
 		this.gameStateInterval = setInterval(() => {
-			console.log('running gameInt');
-			// console.log("Set interval called backend!");
 			const gameState = this.getGameState();
 			this.server.emit('gameState', gameState);
-			// console.log(`Sending game data\n ball_pos: (${gameState.ball.x}, ${gameState.ball.y}) , score: (${gameState.score.player1}, ${gameState.score.player2})`);
 		}, 1000 / 30); // Emit at 30 FPS
 	
 		this.updateBallInterval = setInterval(() => {
-			console.log('running ballInt');
-		this.updateBall();
+			this.updateBall();
 		}, 1000/30); // For 30 FPS, like the other interval
 		
 		this.botPaddleInterval = setInterval(() =>{
-			console.log('running paddleInt');
 			this.updateBotPaddle();
 		}, 1000/30);
 	}
@@ -179,7 +174,6 @@ export default class SimulationService {
 		}
 		if (this.checkScore()){
 			// Stop simulation
-			console.log('running');
 			clearInterval(this.gameStateInterval);
 			clearInterval(this.botPaddleInterval);
 			clearInterval(this.updateBallInterval);

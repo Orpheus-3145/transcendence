@@ -1,16 +1,11 @@
-// game/game.gateway.ts
 import {
   WebSocketGateway,
   WebSocketServer,
   SubscribeMessage,
   MessageBody,
-  OnGatewayInit,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  ConnectedSocket
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { SimulationService } from './simulation.service';
+import SimulationService from './simulation.service';
 
 
 @WebSocketGateway(
@@ -24,7 +19,7 @@ import { SimulationService } from './simulation.service';
   transports: ['websocket'],
 })
 
-export default class SimulationGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export default class SimulationGateway {
   @WebSocketServer()
   server: Server;
 
@@ -50,15 +45,15 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 // 	// this.botPaddleInterval = setInterval(() =>{this.simulationService.updateBotPaddle();}, 1000/30);
 // 	}
   
-  handleConnection(client: any) {
-	console.log('Client connected:', client.id);
-	// this.simulationService.setStartPos(); // Reset game on new connection
+  // handleConnection(client: any) {
+	// console.log('Client connected:', client.id);
+	// // this.simulationService.setStartPos(); // Reset game on new connection
 	
-  }
+  // }
 
-  handleDisconnect(client: any) {
-	console.log('Client disconnected:', client.id);
-  }
+  // handleDisconnect(client: any) {
+	// console.log('Client disconnected:', client.id);
+  // }
 
   @SubscribeMessage('gameData')
   handleGameWindow(

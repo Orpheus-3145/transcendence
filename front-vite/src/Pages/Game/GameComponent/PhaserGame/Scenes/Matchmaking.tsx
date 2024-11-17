@@ -19,11 +19,16 @@ class Matchmaking extends Phaser.Scene {
 			{
 				withCredentials: true,
 				transports: ['websocket'],
-			}
+			},
 		);
 
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
-		this._socketIO.on('ready', () => this.scene.start('Game'));
+
+		this._socketIO.on('ready', (sessionId) => {
+
+			console.log(`token: ${sessionId}`);
+			this.scene.start('Game')
+		});
 		this._socketIO.emit('waiting', this.registry.get("user42data"));
 	};
 
