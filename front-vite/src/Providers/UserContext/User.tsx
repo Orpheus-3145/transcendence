@@ -129,7 +129,7 @@ export async function setNewNickname(username:string, nickname:string): Promise<
 	return (1);
 }
 
-export async function getFriend(friend:string): Promise<User | null> {
+export async function fetchFriend(friend:string): Promise<User> {
   const request = new Request(BACKEND_URL + '/users/profile/username/friend/' + friend, {
     method: "POST",
     body: JSON.stringify({friend}),

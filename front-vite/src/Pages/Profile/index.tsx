@@ -1,25 +1,23 @@
 import React from 'react';
-import { Avatar, Box, Button, Stack, Typography, useTheme, Divider, Grid, IconButton, Container } from '@mui/material';
+import { Avatar, Box, Stack, Typography, useTheme, Divider, Grid, IconButton, Container } from '@mui/material';
 import {Input} from '@mui/material'
 import { useMediaQuery, Tooltip } from '@mui/material';
-import { darken, alpha } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import {
-	AccountCircle as AccountCircleIcon,
 	EmojiEvents as Cup,
-	Add as Add,
 	Block as BlockIcon,
 	PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
 import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import EditIcon from '@mui/icons-material/Edit';
 import { useLocation } from 'react-router-dom';
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProfilePageOther from './other'
 import { useUser,
 		getUserFromDatabase, 
 		setNewNickname, 
-		getFriend, 
+		fetchFriend, 
 		removeFriend, 
 		blockFriend, 
 		changePFP, 
@@ -42,11 +40,19 @@ const ProfilePage: React.FC = () => {
 	const [showMessageNickname, setShowMessageNickname] = useState(false);
 	const messageErrorNickname = "Invalid nickname! Maximum of 27 chars and only letters, numbers and spaces are allowed!";
 	const [profileImage, setProfileImage] = useState();
-	const [userFriend, setUserFriend] = useState<User | null>(null);
 	const [friendsList, setFriendsList] = useState<string[]>([]);
+	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
 	
 	
-	let friendLineButtons = () => 
+	let RemoveFriend = (id:string) => {
+		removeFriend(userProfile.id, id);
+	}
+
+	let BlockFriend = (id:string) => {
+		blockFriend(userProfile.id, id);
+	}
+
+	let friendLineButtons = (intraid:string) => 
 	{
 		return (
 			<Stack direction={'row'} 
@@ -59,7 +65,7 @@ const ProfilePage: React.FC = () => {
 					<Tooltip title="Remove user from friendlist!" arrow>
 						<IconButton
 							variant="contained"
-							onClick={() => {RemoveFriend(userFriend.intraId)}}
+							onClick={() => {RemoveFriend(intraid)}}
 							sx={{
 								color: theme.palette.secondary.light, 
 								cursor: 'pointer', 
@@ -76,7 +82,7 @@ const ProfilePage: React.FC = () => {
 					<Tooltip title="Block user!" arrow>
 						<IconButton
 							variant="contained"
-							onClick={() => {BlockFriend(userFriend.intraId)}}
+							onClick={() => {BlockFriend(intraid)}}
 							sx={{color: theme.palette.secondary.light, 
 								cursor: 'pointer', 
 								'&:hover': { 
@@ -92,30 +98,24 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let RemoveFriend = (id:string) => {
-		removeFriend(userProfile.id, id);
-	}
-
-	let BlockFriend = (id:string) => {
-		blockFriend(userProfile.id, id);
-	}
-
 	let redirectFriend = (id:number) =>
 	{
 		navigate('/profile/' + id.toString());
 	}
 
-	let setFriend = async (intraid:string) : Promise<void> =>
-	{
-		var friend = await getFriend(intraid);
-		setUserFriend(friend);
-	}
+	const fetchFriendDetails = async (friendId: string) => {
+		const friend = await fetchFriend(friendId);
+		setFriendDetails((prev) => new Map(prev).set(friendId, friend));
+	};
 
 	let friendLine = (intraid:string) => 
 	{
-		setFriend(intraid);
-		if (userFriend === null)
-			return (<Stack></Stack>);
+		const friend = friendDetails.get(intraid);
+
+		if (!friend) {
+			fetchFriendDetails(intraid);
+			return <Stack></Stack>;
+		}
 
 		return (
 			<Stack direction={'row'}
@@ -139,7 +139,7 @@ const ProfilePage: React.FC = () => {
 						left: '-5px',
 						bgcolor: theme.palette.primary.light,
 					}}
-					src={userFriend.image}
+					src={friend.image}
 					>
 					</Avatar>
 					<Typography 
@@ -153,10 +153,10 @@ const ProfilePage: React.FC = () => {
 							},
 						}}
 					>
-						<a href="" onClick={() => redirectFriend(userFriend.id)}>{userFriend.nameNick}</a>
+						<a href="" onClick={() => redirectFriend(friend.id)}>{friend.nameNick}</a>
 					</Typography>
 				</Stack>
-				{friendLineButtons()}
+				{friendLineButtons(intraid)}
 			</Stack>
 		);
 	};
@@ -192,7 +192,7 @@ const ProfilePage: React.FC = () => {
 					},
 				}}
 			>
-				{friendsList.map((friendId:string) => friendLine(friendId))}
+				{friendsList.map((friendId: string) => friendLine(friendId))}
 			</Stack>
 		);
 	};
@@ -500,6 +500,7 @@ const ProfilePage: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-210px',
+					left:'-10px',
 				}}
 			>
 				<Typography variant={'h2'}

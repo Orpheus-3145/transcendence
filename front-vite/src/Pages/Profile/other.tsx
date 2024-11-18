@@ -16,7 +16,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser,
 	getUserFromDatabase, 
-	getFriend, 
+	fetchFriend, 
 	addFriend,
 	sendMessage,
 	blockFriend,
@@ -35,23 +35,31 @@ const ProfilePageOther: React.FC = () => {
 	const [inputMessage, setInputMessage] = useState('');
 	const [showInput, setShowInput] = useState(false);
 	const [userProfile, setUserProfile] = useState(user);
-	const [userFriend, setUserFriend] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState(0);
 	const [isFriend, setIsFriend] = useState(false);
 	const [friendsList, setFriendsList] = useState<string[]>([]);
+	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
 	
-	
-	let setFriend = async (intraid:string) : Promise<void> =>
+
+	let redirectFriend = (id:number) =>
 	{
-		var friend = await getFriend(intraid);
-		setUserFriend(friend);
+		navigate('/profile/' + id.toString());
 	}
-	
+
+	const fetchFriendDetails = async (friendId: string) => {
+		const friend = await fetchFriend(friendId);
+		setFriendDetails((prev) => new Map(prev).set(friendId, friend));
+	};
+
 	let friendLine = (intraid:string) => 
 	{
-		setFriend(intraid);
-		if (userFriend === null)
-			return (<Stack></Stack>);
+		const friend = friendDetails.get(intraid);
+
+		if (!friend) {
+			fetchFriendDetails(intraid);
+			return <Stack>Loading...</Stack>;
+		}
+
 		return (
 			<Stack direction={'row'}
 				sx={{
@@ -74,7 +82,7 @@ const ProfilePageOther: React.FC = () => {
 						left: '-5px',
 						bgcolor: theme.palette.primary.light,
 					}}
-					src={userFriend.image}
+					src={friend.image}
 					>
 					</Avatar>
 					<Typography 
@@ -83,23 +91,18 @@ const ProfilePageOther: React.FC = () => {
 								textDecoration: 'none',
 								color: theme.palette.secondary.main,
 								'&:hover': { 
-									color: theme.palette.secondary.dark 
+									color: theme.palette.secondary.dark
 								}
 							},
 						}}
 					>
-						<a href="" onClick={() => redirectFriend(userFriend.id)}>{userFriend.nameNick}</a>
+						<a href="" onClick={() => redirectFriend(friend.id)}>{friend.nameNick}</a>
 					</Typography>
 				</Stack>
 			</Stack>
 		);
 	};
-		
-	let redirectFriend = (id:any) =>
-	{
-		navigate('/profile/' + id);
-	}
-	
+
 	let friendCategory = () => 
 	{
 		return (
@@ -131,11 +134,11 @@ const ProfilePageOther: React.FC = () => {
 					},
 				}}
 			>
-				{friendsList.map((friendName) => friendLine(friendName))}
+				{friendsList.map((friendId: string) => friendLine(friendId))}
 			</Stack>
 		);
 	};
-	
+
 	let friendsBox = () => 
 	{
 		return (
@@ -406,6 +409,7 @@ const ProfilePageOther: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-150px',
+					left:'-10px',
 				}}
 			>
 				<Typography variant={'h2'}
@@ -454,7 +458,7 @@ const ProfilePageOther: React.FC = () => {
 							sx={{
 								fontSize: '30px',
 								top: '-130px',
-								left: '425px',
+								left: '415px',
 								width: '50px',
 								'&:hover': {
 									color: '#0c31df',
@@ -486,7 +490,7 @@ const ProfilePageOther: React.FC = () => {
 				sx={{
 					fontSize: '30px',
 					top: top,
-					left: '495px',
+					left: '485px',
 					width: '50px',
 					'&:hover': {
 						color: '#BF77F6',
@@ -546,7 +550,7 @@ const ProfilePageOther: React.FC = () => {
 						sx={{
 								fontSize: '30px',
 								top: top,
-								left: '580px',
+								left: '570px',
 								width: '50px',
 								'&:hover': {
 									color: '#09af07',
@@ -597,7 +601,7 @@ const ProfilePageOther: React.FC = () => {
 					sx={{
 						fontSize: '30px',
 						top: top,
-						left: '648px',
+						left: '638px',
 						width: '50px',
 						'&:hover': {
 							color: '#df310e',

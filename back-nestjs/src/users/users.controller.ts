@@ -56,7 +56,7 @@ export class UsersController {
 	}
 
 	@Post('/profile/:username/friend/:id')
-	async getFriend(@Param('id') id: string) {
+	async fetchFriend(@Param('id') id: string) {
 		return (this.UserService.getFriend(id));
 	}
 
