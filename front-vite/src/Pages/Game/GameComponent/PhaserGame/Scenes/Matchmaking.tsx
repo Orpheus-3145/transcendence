@@ -14,22 +14,7 @@ class Matchmaking extends Phaser.Scene {
 	// executed when scene.start('Matchmaking') is called
   init(): void {
 
-		this._socketIO = io(
-			import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_MATCHMAKING, 
-			{
-				withCredentials: true,
-				transports: ['websocket'],
-			},
-		);
-
-		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
-
-		this._socketIO.on('ready', (sessionId) => {
-
-			console.log(`token: ${sessionId}`);
-			this.scene.start('Game', {id: 'id1', bot: true})
-		});
-		this._socketIO.emit('waiting', this.registry.get("user42data"));
+		this.setupSocket();
 	};
 
 	// loading graphic assets, fired after init()
@@ -63,6 +48,26 @@ class Matchmaking extends Phaser.Scene {
 
   // run every frame update
   update(): void {};
+
+	setupSocket(): void {
+
+		this._socketIO = io(
+			import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_MATCHMAKING, 
+			{
+				withCredentials: true,
+				transports: ['websocket'],
+			},
+		);
+
+		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
+
+		this._socketIO.on('ready', (sessionId) => {
+
+			console.log(`token: ${sessionId}`);
+			this.scene.start('Game', {id: 'id1', bot: true})
+		});
+		this._socketIO.emit('waiting', this.registry.get("user42data"));
+	};
 };
 
 export default Matchmaking;
