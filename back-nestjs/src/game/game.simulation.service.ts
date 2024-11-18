@@ -4,7 +4,7 @@ import { Server, Socket } from 'socket.io';
 
 import GameStateDTO from '../dto/game.state.dto';
 import { UserDTO } from '../dto/user.dto';
-import Player from './player.interface';
+import Player, { GameMode } from './player.interface';
 import { GAME, GAME_BALL, GAME_PADDLE } from './game.data';
 
 // A provider can be injected as a dependency, object can create various relationships with each other.
@@ -17,7 +17,7 @@ export default class SimulationService {
 	private windowHeight: number = GAME.height; // overwritten by the value from the client: why? Shouldn't the value be same and given to clients?
 	private paddleWidth: number = GAME_PADDLE.width;
 	private paddleHeight: number = GAME_PADDLE.height;
-	private botEnabled: boolean = false;
+	private mode: GameMode = GameMode.unset;
 	private player1 = { y: this.windowHeight / 2 };
 	private player2 = { y: this.windowHeight / 2 };
 	private speed: number = 1.5
@@ -38,29 +38,32 @@ export default class SimulationService {
 
 		this.gameSetupInterval = setInterval(() => {
 			
-			if ((this.players.p1 !== null && this.players.p2 === null && this.botEnabled === true) || 
-			(this.players.p1 !== null && this.players.p2 !== null && this.botEnabled === false)) {
+			if ((this.players.p1 !== null && this.players.p2 === null && this.mode === GameMode.single) || 
+			    (this.players.p1 !== null && this.players.p2 !== null && this.mode === GameMode.multi)) {
 				
-				this.players.p1.clientSocket.emit('ready');
-				if (this.botEnabled == false)
-					this.players.p2.clientSocket.emit('ready');
-				clearInterval(this.gameSetupInterval);
 				this.startGame();
+				this.players.p1.clientSocket.emit('gameStart', this.getGameState());
+				if (this.mode == GameMode.multi)
+					this.players.p2.clientSocket.emit('gameStart', this.getGameState());
+				clearInterval(this.gameSetupInterval);
 			}
-		}, 1000 / 30); // Emit at 30 FPS
+		}, GAME.frameRate);
 	};
 
 	setPlayer(client: Socket, intra42data: UserDTO) {
 
-		// yes, but which player is player1 and player2 ???
+		if (this.pl)
 		this.players.p1.clientSocket = client;
 		this.players.p1.intraId = intra42data.id;
 		this.players.p1.nameNick = intra42data.nameNick;
 	};
 
-	setMode(mode: 'single' | 'multi') {
+	setMode(mode: GameMode) {
 		
-		this.botEnabled = mode === 'single';
+		if (this.mode === GameMode.unset)
+			this.mode = mode;
+		// else if (this.mode !== mode)
+		// 	console.log("clients sent different modes!")
 	};
 
 	// Set everything to the start position: ball in the centre, paddles centralised
@@ -74,22 +77,23 @@ export default class SimulationService {
 	// };
 
 	startGame() {
+		
 		this.gameStateInterval = setInterval(() => {
 
 			this.players.p1.clientSocket.emit('gameState', this.getGameState());
-			if (this.botEnabled == false)
+			if (this.mode == GameMode.multi)
 				this.players.p2.clientSocket.emit('gameState', this.getGameState());
-		}, 1000 / 30); // Emit at 30 FPS
+		}, GAME.frameRate); // Emit at 30 FPS
 	
 		this.updateBallInterval = setInterval(() => {
 			
 			this.updateBall();
-		}, 1000/30); // For 30 FPS, like the other interval
+		}, GAME.frameRate); // For 30 FPS, like the other interval
 		
 		this.botPaddleInterval = setInterval(() =>{
 			
 			this.updateBotPaddle();
-		}, 1000/30);
+		}, GAME.frameRate);
 	};
 
   // Get positions of ball and paddles
@@ -102,7 +106,7 @@ export default class SimulationService {
 			score: this.score
 		};
 		return (state);
-	}
+	};
 	
 	// Callback ball
 	updateBall() {
@@ -143,12 +147,12 @@ export default class SimulationService {
 		}
 		if (this.checkScore())
 			this.endGame();
-	}
+	};
 
 	// Callback opponent paddle
 	updateBotPaddle() {
 	// Move bot if enabled
-	if (this.botEnabled && this.ball.x > this.windowWidth / 2) {
+	if (this.mode === GameMode.single && this.ball.x > this.windowWidth / 2) {
 
 		if (this.ball.y < this.player2.y - 30) {
 			this.movePaddle('player2', 'up');
@@ -156,7 +160,7 @@ export default class SimulationService {
 			this.movePaddle('player2', 'down');
 		}
 	}
- }
+ 	};
 
 	randomDelta(): { dx: number, dy: number} {
 		const randomX = Math.random() * (Math.sqrt(3) / 2 - 1) + 1; // between [rad(3)/2, 1] = [cos(+-30), cos(0)]
@@ -167,7 +171,7 @@ export default class SimulationService {
 		const deltaX = randomX * randomDirection * speed;
 		const deltaY = randomY * speed;
 		return {dx: deltaX, dy: deltaY};
-	}
+	};
 
 	resetBall() {
 		this.ball.x = this.windowWidth / 2;  // Reset to center of the screen
@@ -175,7 +179,7 @@ export default class SimulationService {
 		const randomDelta = this.randomDelta();
 		this.ball.dx = randomDelta.dx;
 		this.ball.dy = randomDelta.dy
-	}
+	};
 
 // paddleHit(player_y: number, isLeftPaddle: boolean): boolean {
 //	 if (isLeftPaddle) {
@@ -202,7 +206,7 @@ export default class SimulationService {
 			}
 		}
 		return null;  // No collision
-	}
+	};
 
 // updateBall() {
 //	 // Move the ball
@@ -238,19 +242,25 @@ export default class SimulationService {
 // }
 
 	checkScore(): boolean {
+		
 		return (this.score.p1 == this.maxScore || this.score.p2 == this.maxScore);
-	}
+	};
 
 	endGame(): void {
 
 		clearInterval(this.gameStateInterval);
 		clearInterval(this.botPaddleInterval);
 		clearInterval(this.updateBallInterval);
-		this.server.emit('endGame', {winner: (this.score.p1 == this.maxScore) ? this.score.p1 : this.score.p2});
-	}
+
+		const winner: string = (this.score.p1 == this.maxScore) ? this.players.p1.nameNick : this.players.p2.nameNick;
+		this.players.p1.clientSocket.emit('endGame', winner);
+		if (this.mode == GameMode.multi)
+			this.players.p2.clientSocket.emit('endGame', winner);
+	};
 	
 	// Handle paddle movement based on key data
 	movePaddle(player: 'player1' | 'player2', direction: 'up' | 'down') {
+		
 		const paddle = player === 'player1' ? this.player1 : this.player2;
 		const delta = direction === 'up' ? -10 : 10;
 		paddle.y = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, paddle.y + delta));

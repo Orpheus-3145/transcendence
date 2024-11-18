@@ -6,3 +6,9 @@ export default interface Player {
   intraId: number,
   nameNick: string,
 };
+
+export enum GameMode {
+  single = 'single',
+  multi = 'multi',
+  unset = 'unset',
+};

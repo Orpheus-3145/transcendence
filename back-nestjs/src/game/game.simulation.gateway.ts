@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 
 import SimulationService from './game.simulation.service';
 import { UserDTO } from '../dto/user.dto';
+import { GameMode } from './player.interface';
 
 
 @WebSocketGateway(
@@ -39,16 +40,22 @@ export default class SimulationGateway {
 	// };
 
 	@SubscribeMessage('mode')
+	handleClientInfo(@MessageBody() data: {mode: GameMode, intra42data: UserDTO},
+									 @ConnectedSocket() client: Socket) {
+
+		this.simulationService.setMode(data.mode);
+		this.simulationService.setPlayer(client, data.intra42data);
+	}
+
+	@SubscribeMessage('mode')
 	setModeGame(@MessageBody() mode: 'single' | 'multi') {
 
-		this.simulationService.setMode(mode);
 	}
   
 	@SubscribeMessage('playerInfo')
   setPlayerInfo(@MessageBody() intra42data: UserDTO, 
 								@ConnectedSocket() client: Socket) {
 
-		this.simulationService.setPlayer(client, intra42data);
 	};
 
 	@SubscribeMessage('playerMove')

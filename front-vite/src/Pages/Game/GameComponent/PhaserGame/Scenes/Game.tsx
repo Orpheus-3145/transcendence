@@ -19,8 +19,15 @@ export interface GameState {
 		player2: number}
 };
 
+export enum GameMode {
+  single = 'single',
+  multi = 'multi',
+  unset = 'unset',
+};
+
 class Game extends Phaser.Scene {
-  // Game objects
+
+	// Game objects
   private _ball!: Ball;
   private _leftBar!: PlayerBar;
   private _rightBar!: PlayerBar;
@@ -35,24 +42,28 @@ class Game extends Phaser.Scene {
   private _keyS!: Phaser.Input.Keyboard.Key;
   private _keyEsc!: Phaser.Input.Keyboard.Key;
 
-
   // Player references
-	private _id: string = '';
-	private _bot: boolean = false;
+	private _id: number = -1;
+	private _userNick: string = '';
+	private _sessionId: string = '';
 	private _socketIO!: Socket;
 	private _gameState!: GameState;
 	private _gameStarted: boolean = false;
+	private _mode: GameMode = GameMode.unset;
 
   constructor() {
+		
 		super({ key: 'Game' });
-
   }
 
   // Initialize players and key bindings
-	init(data: { id: string, bot: boolean}): void {
+	init(data: {id: number, userNick: string, sessionId: string, mode: GameMode}): void {
 
 		this._id = data.id;
-		this._bot = data.bot;
+		this._userNick = data.userNick;
+		this._sessionId = data.sessionId;
+		this._mode = data.mode;
+		// this._bot = data.bot;
 
 		// Key bindings
 		this._cursors = this.input.keyboard.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
@@ -66,8 +77,9 @@ class Game extends Phaser.Scene {
   // Load assets like images or sounds here
 	preload(): void {};
 
-// Create game objects and establish WebSocket connection
+	// Create game objects and establish WebSocket connection
 	create(): void {
+
 		console.log("Game scene started!");
 		// Set background
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
@@ -91,14 +103,14 @@ class Game extends Phaser.Scene {
 			}
 		);
 
-		this._socketIO.on('gameState', (state: GameState) => this._gameState = state);
-
-		this._socketIO.on('ready', (state: GameState) => {
+		this._socketIO.on('gameStart', (state: GameState) => {
+			
 			this._gameStarted = true;
 			this._gameState = state;
 		});
-
-		// this._socketIO.on('gameEnd', (state: {gameEnd: boolean}) => {});  TODO
+		this._socketIO.on('gameState', (state: GameState) => this._gameState = state);
+		
+		this._socketIO.on('gameEnd', (winner: string) => this.endGame(winner));
 
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 
@@ -126,29 +138,6 @@ class Game extends Phaser.Scene {
 		this.updateGame();
   }
 
-	updateGame(): void {
-	
-		this._field.setScore(this._gameState.score.player1, this._gameState.score.player2);
-		this.checkScore(this._gameState.score.player1, this._gameState.score.player2);
-		// Update ball position using the new method
-		this._ball.updatePosition(this._gameState.ball.x, this._gameState.ball.y);  // Ensure the ball is drawn at the new position
-		// Update paddles based on player positions
-		this._leftBar.updatePosition(this._gameState.player1.y);
-		this._rightBar.updatePosition(this._gameState.player2.y);
-	}
-
-	checkScore(score1: number, score2: number) {
-		if (score1 == GAME.maxScore || score2 == GAME.maxScore) {
-			console.log("Score is MAX");
-		}
-		if (score1 == GAME.maxScore){
-			this.endGame('player1');
-		}
-		else if (score2 == GAME.maxScore){
-			this.endGame('player2');
-		}
-	}
-
 	emitPaddleMovement(): void {
 		let direction = '';
 
@@ -167,14 +156,40 @@ class Game extends Phaser.Scene {
 		}
 	}
 
-  // Navigate to error page
-  openErrorpage(trace: string): void {
-		this.scene.start('Error', { trace });
-  }
+	updateGame(): void {
+	
+		this._field.setScore(this._gameState.score.player1, this._gameState.score.player2);
+		// this.checkScore(this._gameState.score.player1, this._gameState.score.player2);
+		// Update ball position using the new method
+		this._ball.updatePosition(this._gameState.ball.x, this._gameState.ball.y);  // Ensure the ball is drawn at the new position
+		// Update paddles based on player positions
+		this._leftBar.updatePosition(this._gameState.player1.y);
+		this._rightBar.updatePosition(this._gameState.player2.y);
+	}
+
+	// checkScore(score1: number, score2: number) {
+
+	// 	if (score1 == GAME.maxScore || score2 == GAME.maxScore) {
+	// 		console.log("Score is MAX");
+	// 	}
+	// 	if (score1 == GAME.maxScore){
+	// 		this.endGame('player1');
+	// 	}
+	// 	else if (score2 == GAME.maxScore){
+	// 		this.endGame('player2');
+	// 	}
+	// }
 
 	// End game and show results
   endGame(idWinner: string): void {
-		this.scene.start('Results', { idWinner });
+
+		this.scene.start('Results', {idWinner});
+  }
+
+  // Navigate to error page
+  openErrorpage(trace: string): void {
+
+		this.scene.start('Error', { trace });
   }
 }
 

@@ -11,9 +11,9 @@ class Results extends Phaser.Scene {
   }
 
   // fired then scene.start('Results') is called, sets the id
-  init( data: {idWinner: string} ): void {
+  init( idWinner: string ): void {
 
-    this._idWinner = data.idWinner;
+    this._idWinner = idWinner;
   }
 
 	// loading graphic assets, fired after init()
