@@ -20,11 +20,11 @@ class PlayerDTO {
 class ScoreDTO {
     @IsInt()
     @Min(1)
-    player1: number;
+    p1: number;
 
     @IsInt()
     @Min(1)
-    player2: number;
+    p2: number;
 };
 
 export default class GameStateDTO {

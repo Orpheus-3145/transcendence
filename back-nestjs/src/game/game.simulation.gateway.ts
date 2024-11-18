@@ -25,52 +25,32 @@ export default class SimulationGateway {
   @WebSocketServer()
   server: Server;
 
-//   private gameStateInterval;
-//   private updateBallInterval;
-//   private botPaddleInterval;
+  constructor(private simulationService: SimulationService) {};
 
-  constructor(private simulationService: SimulationService) {}
 
-//   afterInit() {
+  // @SubscribeMessage('gameData')
+  // handleGameWindow(@MessageBody() gameData: GameDataDTO,
+	// 								 @MessageBody() intra42data: UserDTO, 
+	// 								 @ConnectedSocket() client: Socket) {
 
-// 	this.simulationService.setupGame(this.server);
-// 	// Set up a loop to broadcast game state
-// 	// this.gameStateInterval = setInterval(() => {
-// 	// 	// console.log("Set interval called backend!");
-// 	// 	const gameState = this.simulationService.getGameState();
-// 	// 	this.server.emit('gameState', gameState);
-// 	// }, 1000 / 30); // Emit at 30 FPS
+	// 	this.simulationService.setGameData(gameData);
+	// 	this.simulationService.setStartPos();
+	// 	this.simulationService.setupGame(this.server);
+	// };
 
-// 	// this.updateBallInterval = setInterval(() => {
-// 	// 	this.simulationService.updateBall()/*  */;
-// 	// }, 1000/30); // For 30 FPS, like the other interval
-// 	// this.botPaddleInterval = setInterval(() =>{this.simulationService.updateBotPaddle();}, 1000/30);
-// 	}
+	@SubscribeMessage('mode')
+	setModeGame(@MessageBody() mode: 'single' | 'multi') {
+
+		this.simulationService.setMode(mode);
+	}
   
-  // handleConnection(client: any) {
-	// console.log('Client connected:', client.id);
-	// // this.simulationService.setStartPos(); // Reset game on new connection
-	
-  // }
+	@SubscribeMessage('playerInfo')
+  setPlayerInfo(@MessageBody() intra42data: UserDTO, 
+								@ConnectedSocket() client: Socket) {
 
-  // handleDisconnect(client: any) {
-	// console.log('Client disconnected:', client.id);
-  // }
-
-  @SubscribeMessage('gameData')
-  handleGameWindow( @MessageBody() gameData: {windowWidth: number,
-																				  windowHeight: number,
-																				  paddleWidth: number,
-																				  paddleHeight: number,
-																					bot: boolean},
-										@MessageBody() intra42data: UserDTO, 
-										@ConnectedSocket() client: Socket)
-																					{
-		this.simulationService.setGameData(data.windowWidth, data.windowHeight, data.paddleWidth, data.paddleHeight, data.bot, intra42data);
-		this.simulationService.setStartPos();
-		this.simulationService.setupGame(this.server);
+		this.simulationService.setPlayer(client, intra42data);
 	};
-  
+
 	@SubscribeMessage('playerMove')
 	handlePlayerMove( @MessageBody() data: { playerId: string; direction: string }) {
 	

@@ -1,72 +1,95 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Injectable } from '@nestjs/common'
 import { Server, Socket } from 'socket.io';
-import { ConfigService
-} from '@nestjs/config';
 
-import GameStateDTO from '../dto/gameState.dto';
-import GameDataDTO from '../dto/gameData.dto';
+import GameStateDTO from '../dto/game.state.dto';
 import { UserDTO } from '../dto/user.dto';
+import Player from './player.interface';
+import { GAME, GAME_BALL, GAME_PADDLE } from './game.data';
 
 // A provider can be injected as a dependency, object can create various relationships with each other.
 // Dependencies are passed to the constructor of your controller
 @Injectable()
 export default class SimulationService {
-
-	windowWidth = 0; // will be overwritten by the value from the client
-	windowHeight = 0; // overwritten by value form the client
-	paddleWidth = 0;
-	paddleHeight = 0;
-	private speed = 1.5
-	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
+	
+	private maxScore: number = GAME.maxScore;
+	private windowWidth: number = GAME.width; // overwritten by the value from the client: why? Shouldn't the value be same and given to clients?
+	private windowHeight: number = GAME.height; // overwritten by the value from the client: why? Shouldn't the value be same and given to clients?
+	private paddleWidth: number = GAME_PADDLE.width;
+	private paddleHeight: number = GAME_PADDLE.height;
+	private botEnabled: boolean = false;
 	private player1 = { y: this.windowHeight / 2 };
 	private player2 = { y: this.windowHeight / 2 };
-	private score: { player1: number; player2: number } = { player1: 0, player2: 0 };
-	private botEnabled: boolean = false;
-	// private roomId: number;
-	private gameStateInterval;
-	private updateBallInterval;
-	private botPaddleInterval;
-	private server;
-	private maxScore: number = this.configEnv.get<number>('GAME_MAX_SCORE', 10);
+	private speed: number = 1.5
+	private ball = { x: 0, y: 0, dx: 5, dy: 5 };
+	private score: { p1: number; p2: number } = { p1: 0, p2: 0 };
 
-	private sessioneToken!: string;
+	private gameStateInterval: NodeJS.Timeout;
+	private updateBallInterval: NodeJS.Timeout;
+	private botPaddleInterval: NodeJS.Timeout;
+	private gameSetupInterval: NodeJS.Timeout;
+	// private server: Server;			// probabily it needs the two clients (see below this.players) not the server itself
+	
+	private players: {p1: Player, p2: Player} = {p1: null, p2: null};
 
-	constructor(private configEnv: ConfigService) {};
-	setGameData(windowWidth: number, windowHeight: number, paddleWidth: number, paddleHeight: number, bot: boolean) {
-		this.windowWidth = windowWidth;
-		this.windowHeight = windowHeight;
-		this.paddleWidth = paddleWidth;
-		this.paddleHeight = paddleHeight;
-		this.botEnabled = bot;
+	private sessionToken: string = '';		// unique session token shared between the two clients
+
+	constructor() {
+
+		this.gameSetupInterval = setInterval(() => {
+			
+			if ((this.players.p1 !== null && this.players.p2 === null && this.botEnabled === true) || 
+			(this.players.p1 !== null && this.players.p2 !== null && this.botEnabled === false)) {
+				
+				this.players.p1.clientSocket.emit('ready');
+				if (this.botEnabled == false)
+					this.players.p2.clientSocket.emit('ready');
+				clearInterval(this.gameSetupInterval);
+				this.startGame();
+			}
+		}, 1000 / 30); // Emit at 30 FPS
+	};
+
+	setPlayer(client: Socket, intra42data: UserDTO) {
+
+		// yes, but which player is player1 and player2 ???
+		this.players.p1.clientSocket = client;
+		this.players.p1.intraId = intra42data.id;
+		this.players.p1.nameNick = intra42data.nameNick;
+	};
+
+	setMode(mode: 'single' | 'multi') {
+		
+		this.botEnabled = mode === 'single';
 	};
 
 	// Set everything to the start position: ball in the centre, paddles centralised
-	setStartPos() {
-		const randomDelta = this.randomDelta();
-		this.ball = { x: this.windowWidth / 2, y: this.windowHeight/2, dx: randomDelta.dx, dy: randomDelta.dy};
-		this.player1.y = this.windowHeight / 2;
-		this.player2.y = this.windowHeight / 2;
-		this.score.player1 = 0;
-		this.score.player2 = 0;
-	};
+	// setStartPos() {
+	// 	const randomDelta = this.randomDelta();
+	// 	this.ball = { x: this.windowWidth / 2, y: this.windowHeight/2, dx: randomDelta.dx, dy: randomDelta.dy};
+	// 	this.player1.y = this.windowHeight / 2;
+	// 	this.player2.y = this.windowHeight / 2;
+	// 	this.score.p1 = 0;
+	// 	this.score.p2 = 0;
+	// };
 
-	setupGame(server: Server) {
-		this.server = server
-		// Set up a loop to broadcast game state
+	startGame() {
 		this.gameStateInterval = setInterval(() => {
-			const gameState: GameStateDTO = this.getGameState();
-			this.server.emit('gameState', gameState);
+
+			this.players.p1.clientSocket.emit('gameState', this.getGameState());
+			if (this.botEnabled == false)
+				this.players.p2.clientSocket.emit('gameState', this.getGameState());
 		}, 1000 / 30); // Emit at 30 FPS
 	
 		this.updateBallInterval = setInterval(() => {
+			
 			this.updateBall();
 		}, 1000/30); // For 30 FPS, like the other interval
 		
 		this.botPaddleInterval = setInterval(() =>{
+			
 			this.updateBotPaddle();
 		}, 1000/30);
-		this.server.emit('ready', this.getGameState());
 	};
 
   // Get positions of ball and paddles
@@ -86,7 +109,7 @@ export default class SimulationService {
 		// Move the ball
 		this.ball.x += this.ball.dx * this.speed;
 		this.ball.y += this.ball.dy * this.speed;
-
+	
 		// Bounce off top and bottom walls
 		if (this.ball.y <= 0 || this.ball.y >= this.windowHeight) {
 			this.ball.dy = -this.ball.dy;
@@ -112,10 +135,10 @@ export default class SimulationService {
 
 		// Check for scoring
 		if (this.ball.x <= 0) {
-			++this.score.player2;
+			++this.score.p2;
 			this.resetBall();  // Reset position and give random velocity
 		} else if (this.ball.x >= this.windowWidth) {
-			++this.score.player1;
+			++this.score.p1;
 			this.resetBall();  // Reset position and give random velocity
 		}
 		if (this.checkScore())
@@ -203,19 +226,19 @@ export default class SimulationService {
 
 //	 // If hits left wall, player2 get a point
 //	 if (this.ball.x <= 0) {
-// 		++this.score.player2;
+// 		++this.score.p2;
 // 		this.resetBall();  // Reset position and give random velocity
 // 	}
 //  	else if (this.ball.x >= this.windowWidth) { // If hits right wall, player1 get a point
-// 		++this.score.player1;
+// 		++this.score.p1;
 //		 this.resetBall();  // Reset position and give random velocity
 //	 }
-// 	// console.log(`Score updated: Left - ${this.score.player1}, Right - ${this.score.player2}`); // 
+// 	// console.log(`Score updated: Left - ${this.score.p1}, Right - ${this.score.p2}`); // 
 
 // }
 
 	checkScore(): boolean {
-		return (this.score.player1 == this.maxScore || this.score.player2 == this.maxScore);
+		return (this.score.p1 == this.maxScore || this.score.p2 == this.maxScore);
 	}
 
 	endGame(): void {
@@ -223,7 +246,7 @@ export default class SimulationService {
 		clearInterval(this.gameStateInterval);
 		clearInterval(this.botPaddleInterval);
 		clearInterval(this.updateBallInterval);
-		this.server.emit('endGame', {winner: (this.score.player1 == this.maxScore) ? this.score.player1 : this.score.player2});
+		this.server.emit('endGame', {winner: (this.score.p1 == this.maxScore) ? this.score.p1 : this.score.p2});
 	}
 	
 	// Handle paddle movement based on key data

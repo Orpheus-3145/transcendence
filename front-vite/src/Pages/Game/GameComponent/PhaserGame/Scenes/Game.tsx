@@ -98,17 +98,17 @@ class Game extends Phaser.Scene {
 			this._gameState = state;
 		});
 
-		this._socketIO.on('gameEnd', (state: {gameEnd: boolean}) => {});
+		// this._socketIO.on('gameEnd', (state: {gameEnd: boolean}) => {});  TODO
 
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 
-		this._socketIO.emit('gameData', {
-			windowWidth: GAME.width,
-			windowHeight: GAME.height,
-			paddleWidth: GAME_BAR.width, 
-			paddleHeight: GAME_BAR.height,
-			bot: this._bot
-		});
+		// this._socketIO.emit('gameData', {
+		// 	windowWidth: GAME.width,
+		// 	windowHeight: GAME.height,
+		// 	paddleWidth: GAME_BAR.width, 
+		// 	paddleHeight: GAME_BAR.height,
+		// 	bot: this._bot
+		// });
 	}
 
   // Frame-by-frame update
