@@ -5,6 +5,8 @@ export default interface Player {
   clientSocket: Socket,
   intraId: number,
   nameNick: string,
+  score: number,
+  posY: number,
 };
 
 export enum GameMode {

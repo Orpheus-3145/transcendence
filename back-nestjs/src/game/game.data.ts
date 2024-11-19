@@ -6,7 +6,7 @@ export const GAME = {
   width: 1150,
   height: 648,
   maxScore: 3,
-  frameRate: 1000 / 30;
+  frameRate: 1000 / 30,
 };
 
 // data about the ball

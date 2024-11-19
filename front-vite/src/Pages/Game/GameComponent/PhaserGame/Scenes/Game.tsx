@@ -44,26 +44,25 @@ class Game extends Phaser.Scene {
 
   // Player references
 	private _id: number = -1;
-	private _userNick: string = '';
-	private _sessionId: string = '';
+	private _nameNick: string = '';
+	private _sessionToken: string = '';
+	private _mode: GameMode = GameMode.unset;
 	private _socketIO!: Socket;
 	private _gameState!: GameState;
 	private _gameStarted: boolean = false;
-	private _mode: GameMode = GameMode.unset;
 
   constructor() {
 		
 		super({ key: 'Game' });
-  }
+  };
 
   // Initialize players and key bindings
-	init(data: {id: number, userNick: string, sessionId: string, mode: GameMode}): void {
+	init(data: {sessionId: string, mode: GameMode}): void {
 
-		this._id = data.id;
-		this._userNick = data.userNick;
-		this._sessionId = data.sessionId;
+		this._id = this.registry.get("user42data").id;
+		this._nameNick = this.registry.get("user42data").nameNick;
+		this._sessionToken = data.sessionId;
 		this._mode = data.mode;
-		// this._bot = data.bot;
 
 		// Key bindings
 		this._cursors = this.input.keyboard.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
@@ -72,7 +71,7 @@ class Game extends Phaser.Scene {
 		this._keyEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
   
 		this.setupSocket();
-	}
+	};
 
   // Load assets like images or sounds here
 	preload(): void {};
@@ -80,7 +79,6 @@ class Game extends Phaser.Scene {
 	// Create game objects and establish WebSocket connection
 	create(): void {
 
-		console.log("Game scene started!");
 		// Set background
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
@@ -91,7 +89,10 @@ class Game extends Phaser.Scene {
 		this._rightBar = new PlayerBar(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
-	}
+
+		this._socketIO.emit('playerInfo', {playerId: this._id, nameNick: this._nameNick});
+		this._socketIO.emit('initData', {sessionToken: this._sessionToken, mode: this._mode});
+	};
 
 	setupSocket() {
 
@@ -104,24 +105,17 @@ class Game extends Phaser.Scene {
 		);
 
 		this._socketIO.on('gameStart', (state: GameState) => {
-			
+
 			this._gameStarted = true;
 			this._gameState = state;
 		});
+
 		this._socketIO.on('gameState', (state: GameState) => this._gameState = state);
 		
-		this._socketIO.on('gameEnd', (winner: string) => this.endGame(winner));
+		this._socketIO.on('gameEnd', (winner: string) => this.scene.start('Results', {winner}));
 
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
-
-		// this._socketIO.emit('gameData', {
-		// 	windowWidth: GAME.width,
-		// 	windowHeight: GAME.height,
-		// 	paddleWidth: GAME_BAR.width, 
-		// 	paddleHeight: GAME_BAR.height,
-		// 	bot: this._bot
-		// });
-	}
+	};
 
   // Frame-by-frame update
 	update(): void {
@@ -136,7 +130,7 @@ class Game extends Phaser.Scene {
 			this.scene.start('MainMenu');
 		}
 		this.updateGame();
-  }
+  };
 
 	emitPaddleMovement(): void {
 		let direction = '';
@@ -149,12 +143,12 @@ class Game extends Phaser.Scene {
 
 		// Emit player movement only if a direction is pressed
 		if (direction) {
-				this._socketIO.emit('playerMove', {
-			playerId: this._id, // Change to right player ID if needed, which side should the first person be on
-			direction: direction
+			this._socketIO.emit('playerMove', {
+				playerId: this._nameNick, // Change to right player ID if needed, which side should the first person be on
+				direction: direction
 			});
 		}
-	}
+	};
 
 	updateGame(): void {
 	
@@ -165,7 +159,7 @@ class Game extends Phaser.Scene {
 		// Update paddles based on player positions
 		this._leftBar.updatePosition(this._gameState.player1.y);
 		this._rightBar.updatePosition(this._gameState.player2.y);
-	}
+	};
 
 	// checkScore(score1: number, score2: number) {
 
@@ -179,19 +173,7 @@ class Game extends Phaser.Scene {
 	// 		this.endGame('player2');
 	// 	}
 	// }
-
-	// End game and show results
-  endGame(idWinner: string): void {
-
-		this.scene.start('Results', {idWinner});
-  }
-
-  // Navigate to error page
-  openErrorpage(trace: string): void {
-
-		this.scene.start('Error', { trace });
-  }
-}
+};
 
 export default Game;
 

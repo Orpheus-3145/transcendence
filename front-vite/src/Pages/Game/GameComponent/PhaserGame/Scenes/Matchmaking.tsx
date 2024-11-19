@@ -1,6 +1,12 @@
 import { GAME } from '../Game.data'
 import { io, Socket } from 'socket.io-client';
 
+export enum GameMode {
+  single = 'single',
+  multi = 'multi',
+  unset = 'unset',
+};
+
 class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
@@ -44,6 +50,8 @@ class Matchmaking extends Phaser.Scene {
 		goHomeButton.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }));
 		 // Start the main game
 		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
+
+		this._socketIO.emit('waiting');
   };
 
   // run every frame update
@@ -58,17 +66,10 @@ class Matchmaking extends Phaser.Scene {
 				transports: ['websocket'],
 			},
 		);
-
+		
+		this._socketIO.on('ready', (sessionId) => this.scene.start('Game', {sessionId: sessionId, mode: GameMode.multi}));
+		
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
-
-		this._socketIO.on('ready', (sessionId) => {
-
-			console.log(`token: ${sessionId}`);
-			this.scene.start('Game', {id: this.registry.get("user42data").id, 
-																userNick: this.registry.get("user42data").userNick, 
-																sessionId: sessionId});
-		});
-		this._socketIO.emit('waiting', this.registry.get("user42data"));
 	};
 };
 

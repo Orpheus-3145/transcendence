@@ -4,11 +4,11 @@ import {
   SubscribeMessage,
   MessageBody,
 	ConnectedSocket,
+	OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 import SimulationService from './game.simulation.service';
-import { UserDTO } from '../dto/user.dto';
 import { GameMode } from './player.interface';
 
 
@@ -22,7 +22,7 @@ import { GameMode } from './player.interface';
   },
   transports: ['websocket'],
 })
-export default class SimulationGateway {
+export default class SimulationGateway implements OnGatewayDisconnect{
   @WebSocketServer()
   server: Server;
 
@@ -38,38 +38,38 @@ export default class SimulationGateway {
 	// 	this.simulationService.setStartPos();
 	// 	this.simulationService.setupGame(this.server);
 	// };
-
-	@SubscribeMessage('mode')
-	handleClientInfo(@MessageBody() data: {mode: GameMode, intra42data: UserDTO},
-									 @ConnectedSocket() client: Socket) {
-
-		this.simulationService.setMode(data.mode);
-		this.simulationService.setPlayer(client, data.intra42data);
-	}
-
-	@SubscribeMessage('mode')
-	setModeGame(@MessageBody() mode: 'single' | 'multi') {
-
-	}
   
-	@SubscribeMessage('playerInfo')
-  setPlayerInfo(@MessageBody() intra42data: UserDTO, 
-								@ConnectedSocket() client: Socket) {
+	handleDisconnect(): void {
+		
+		this.simulationService.interruptGame();
+	};
 
+	@SubscribeMessage('playerInfo')
+  setPlayer(@MessageBody() data: {playerId: number, nameNick: string}, 
+						@ConnectedSocket() client: Socket): void {
+		
+    this.simulationService.setPlayer(client, data.playerId, data.nameNick);
+	};
+
+	@SubscribeMessage('initData')
+  setInitData(@MessageBody() data: {sessionToken: string, mode: GameMode}): void {
+		
+    this.simulationService.setInitData(data.sessionToken, data.mode);
 	};
 
 	@SubscribeMessage('playerMove')
-	handlePlayerMove( @MessageBody() data: { playerId: string; direction: string }) {
+	movePaddle( @MessageBody() data: {playerNick: string; direction: 'up' | 'down'}): void {
 	
-		const player = data.playerId === 'id1' ? 'player1' : 'player2';
+		// const player = data.playerId === 'id1' ? 'player1' : 'player2';
 	
 			// Validate direction before calling movePaddle
-		if (data.direction === 'up' || data.direction === 'down') {
-			this.simulationService.movePaddle(player, data.direction);
-		} else {
-		console.warn(`Invalid direction received: ${data.direction}`);
-			}
+		// if (data.direction === 'up' || data.direction === 'down') {
+		this.simulationService.movePaddle(data.playerNick, data.direction);
+		// } else {
+		// 	console.warn(`Invalid direction received: ${data.direction}`);
+		// }
 	};
+
 
 	// @SubscribeMessage('windowSize')
 	// handleWindowSize(@MessageBody() data: { width: number, height: number }) {
