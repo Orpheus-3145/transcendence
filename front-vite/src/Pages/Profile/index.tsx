@@ -466,15 +466,15 @@ const ProfilePage: React.FC = () => {
 		return (
 			<Stack>
 				<Box
-				sx={{
-					width: 40,
-					height: 40,
-					backgroundColor: color,
-					borderRadius: '50%',
-					position: 'relative',
-					top: '-60px',
-					left: '190px',
-				}}
+					sx={{
+						width: 40,
+						height: 40,
+						backgroundColor: color,
+						borderRadius: '50%',
+						position: 'relative',
+						top: '-60px',
+						left: '190px',
+					}}
 				>
 				</Box>
 			</Stack>
