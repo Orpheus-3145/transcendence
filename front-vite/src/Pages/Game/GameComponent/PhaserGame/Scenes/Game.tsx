@@ -84,7 +84,7 @@ class Game extends Phaser.Scene {
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
 		// Create the ball as an instance of the Ball class
-		this._ball = new Ball(this, GAME.width / 2, GAME.height / 2, 0, 0);  // Initialize ball with no movement initially
+		this._ball = new Ball(this, GAME.width / 2, GAME.height / 2);  // Initialize ball with no movement initially
 		
 		// Create bars
 		this._leftPaddle = new Paddle(this, GAME_BAR.width / 2, GAME.height / 2);
@@ -117,6 +117,7 @@ class Game extends Phaser.Scene {
 		
 		this._socketIO.on('endGame', (winner: string) => this.scene.start('Results', {winner}));
 
+		this._socketIO.on('PlayerDisconnected', (trace: string) => this.scene.start('Errors', {trace}));
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	};
 

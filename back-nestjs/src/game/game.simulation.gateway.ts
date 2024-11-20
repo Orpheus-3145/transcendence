@@ -30,15 +30,15 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 
   constructor(private simulationService: SimulationService) {};
 
-	handleConnection(): void {
+	handleConnection(@ConnectedSocket() client: Socket): void {
 
 		if (this.simulationService.isRunning() == false)
 			this.simulationService.startSession();
 	}
 
-	handleDisconnect(): void {
+	handleDisconnect(@ConnectedSocket() client: Socket): void {
 		
-		this.simulationService.stopEngine();
+		this.simulationService.handleDisconnect(client);
 	};
 
 	@SubscribeMessage('playerInfo')

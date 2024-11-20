@@ -6,14 +6,12 @@ import Player, { GameMode } from './player.interface';
 import { GAME, GAME_BALL, GAME_PADDLE } from './game.data';
 
 
-// A provider can be injected as a dependency, object can create various relationships with each other.
-// Dependencies are passed to the constructor of your controller
 @Injectable()
 export default class SimulationService {
 	
 	private readonly maxScore: number = GAME.maxScore;
-	private readonly windowWidth: number = GAME.width; // overwritten by the value from the client: why? Shouldn't the value be same and given to clients?
-	private readonly windowHeight: number = GAME.height; // overwritten by the value from the client: why? Shouldn't the value be same and given to clients?
+	private readonly windowWidth: number = GAME.width;
+	private readonly windowHeight: number = GAME.height;
 	private readonly botName: string = GAME.botName;
 	private readonly paddleWidth: number = GAME_PADDLE.width;
 	private readonly paddleHeight: number = GAME_PADDLE.height;
@@ -21,13 +19,12 @@ export default class SimulationService {
 	
 	private sessionToken: string = '';		// unique session token shared between the two clients
 	private mode: GameMode = GameMode.unset;
-	private players: Array<Player> = [];
+	private player1: Player = null;
+	private player2: Player = null;
 	private ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
 	private sessionRunning = false;
 	
 	private gameStateInterval: NodeJS.Timeout = null;		// loop for setting up the game
-	private updateBallInterval: NodeJS.Timeout = null;		// engine loop: moving the ball
-	private botPaddleInterval: NodeJS.Timeout = null;    // engine loop: moving mov
 	private gameSetupInterval: NodeJS.Timeout = null;		// engine loop: data emitter to client(s)
 
 	isRunning(): boolean {
@@ -39,12 +36,8 @@ export default class SimulationService {
 
 		this.gameSetupInterval = setInterval(() => {
 			
-			if ((this.players.length < 1) || 
-				(this.players.length == 1 && this.mode === GameMode.multi))
+			if ((this.player1 === null) || (this.player2 === null) || (this.mode === GameMode.unset))
 				return;		// not ready to play yet
-
-			if (this.mode === GameMode.single)		// adding bot if single player
-				this.addPlayer(null, -1, this.botName)
 
 			this.startEngine();
 			this.sendUpdateToPlayers('gameStart');
@@ -52,67 +45,44 @@ export default class SimulationService {
 			clearInterval(this.gameSetupInterval);
 			this.gameSetupInterval = null;
 		}, GAME.frameRate);
-		
-		this.resetBall();
+
 		this.sessionRunning = true;
 	}
 
 	startEngine(): void {
 
-		if (this.players.length != 2 || this.mode == GameMode.unset) {
-
-			console.log("starting conditions not set");
-			return ;
-		}
-
 		this.gameStateInterval = setInterval(() => {
 
 			this.sendUpdateToPlayers('gameState');
-		}, GAME.frameRate);
-	
-		this.updateBallInterval = setInterval(() => {
-			
 			this.updateBall();
-		}, GAME.frameRate);
-		
-		this.botPaddleInterval = setInterval(() =>{
-			
 			this.updateBotPaddle();
 		}, GAME.frameRate);
+	
+		this.resetBall();
 	};
 
 	stopEngine(): void {
 
 		this.sessionToken = '';
 		this.mode = GameMode.unset;
-		this.players = [];
-		this.ball = { x: 0, y: 0, dx: 5, dy: 5 };
+		this.player1 = null;
+		this.player2 = null;
+		this.ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
 		this.sessionRunning = false;
 
 		clearInterval(this.gameStateInterval);
-		clearInterval(this.botPaddleInterval);
-		clearInterval(this.updateBallInterval);
-		
 		this.gameStateInterval = null;
-		this.botPaddleInterval = null;
-		this.updateBallInterval = null;
 	};
 
 	sendUpdateToPlayers(msgType: string) {
 
-		this.players[0].clientSocket.emit(msgType, this.getGameState());
+		this.player1.clientSocket.emit(msgType, this.getGameState());
 
-		if (this.mode == GameMode.multi)
-			this.players[1].clientSocket.emit(msgType, this.getGameState());
+		if (this.mode === GameMode.multi)
+			this.player2.clientSocket.emit(msgType, this.getGameState());
 	};
 
 	addPlayer(client: Socket, playerId: number, nameNick: string): void {
-
-		if (this.players.length == 2) {
-
-			console.log("this should never, like NEVER, happen (player)");
-			return ;
-		}
 
 		const newPlayer: Player = {
 			clientSocket: client,
@@ -121,8 +91,15 @@ export default class SimulationService {
 			score: 0,
 			posY: this.windowHeight / 2,
 		}
-		
-		this.players.push(newPlayer);
+
+		if (nameNick === this.botName)		// set bot, always player2
+			this.player2 = newPlayer;
+		else if (this.player1 === null)
+			this.player1 = newPlayer;
+		else if (this.player2 === null)
+			this.player2 = newPlayer;
+		else
+			console.log("this should never, like NEVER, happen (player)");
 	};
 
 	setInitData(sessionToken: string, mode: GameMode): void {
@@ -135,6 +112,9 @@ export default class SimulationService {
 		}
 		this.sessionToken = sessionToken;
 		this.mode = mode;
+
+		if (this.mode === GameMode.single)		// adding bot if single player
+			this.addPlayer(null, -1, this.botName)
 	};
 	
 	// Handle paddle movement based on key data
@@ -142,10 +122,10 @@ export default class SimulationService {
 		
 		const delta = direction === 'up' ? -10 : 10;
 
-		if (playerNick == this.players[0].nameNick)
-			this.players[0].posY = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, this.players[0].posY + delta));
+		if (playerNick === this.player1.nameNick)
+			this.player1.posY = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, this.player1.posY + delta));
 		else
-			this.players[1].posY = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, this.players[1].posY + delta));
+			this.player2.posY = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, this.player2.posY + delta));
  	};
 
   // Get positions of ball and paddles
@@ -153,9 +133,9 @@ export default class SimulationService {
 
 		const state: GameStateDTO = {
 			ball: {x: this.ball.x, y: this.ball.y},
-			player1: {y: this.players[0].posY},
-			player2: {y: this.players[1].posY},
-			score: {p1: this.players[0].score, p2: this.players[1].score},
+			player1: {y: this.player1.posY},
+			player2: {y: this.player2.posY},
+			score: {p1: this.player1.score, p2: this.player2.score},
 		}
 
 		return (state);
@@ -173,8 +153,8 @@ export default class SimulationService {
 		}
 
 		// Collision detection with paddles
-		const leftPaddleOffset = this.paddleHit(this.players[0].posY, true);
-		const rightPaddleOffset = this.paddleHit(this.players[1].posY, false);
+		const leftPaddleOffset = this.paddleHit(this.player1.posY, true);
+		const rightPaddleOffset = this.paddleHit(this.player2.posY, false);
 		const maxAngle = Math.PI / 4;  // Maximum bounce angle from paddle center (45 degrees)
 
 		if (leftPaddleOffset !== null) {
@@ -192,15 +172,15 @@ export default class SimulationService {
 
 		// Check for scoring
 		if (this.ball.x <= 0) {	// point for player2
-			this.players[1].score += 1;
-			if (this.players[1].score == this.maxScore)
-				this.endGame(this.players[1]);
+			this.player2.score += 1;
+			if (this.player2.score === this.maxScore)
+				this.endGame(this.player2);
 			else
 				this.resetBall();  // Reset position and give random velocity
 		} else if (this.ball.x >= this.windowWidth) {	// point for player1
-			this.players[0].score += 1;
-			if (this.players[0].score == this.maxScore)
-				this.endGame(this.players[0]);
+			this.player1.score += 1;
+			if (this.player1.score === this.maxScore)
+				this.endGame(this.player1);
 			else
 				this.resetBall();  // Reset position and give random velocity
 		}
@@ -210,11 +190,10 @@ export default class SimulationService {
 	updateBotPaddle(): void {
 		if (this.mode === GameMode.single && this.ball.x > this.windowWidth / 2) {
 
-			if (this.ball.y < this.players[1].posY - 30) {
+			if (this.ball.y < this.player2.posY - 30)
 				this.movePaddle(this.botName, 'up');
-			} else if (this.ball.y > this.players[1].posY + 30) {
+			else if (this.ball.y > this.player2.posY + 30)
 				this.movePaddle(this.botName, 'down');
-			}
 		}
  	};
 
@@ -241,23 +220,45 @@ export default class SimulationService {
 	paddleHit(player_y: number, isLeftPaddle: boolean): number | null {
 		const collisionZone = Math.abs(player_y - this.ball.y);
 		if (isLeftPaddle) {
-			if (this.ball.x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2) {
+			if (this.ball.x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - this.ball.y;  // Return offset
-			}
 		} else {
-			if (this.ball.x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeight / 2) {
+			if (this.ball.x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - this.ball.y;  // Return offset
-			}
 		}
 		return null;  // No collision
 	};
 
+	handleDisconnect(client: Socket): void {
+
+		if (this.sessionRunning === false)
+			return;
+		
+		if (this.mode === GameMode.multi) {
+			
+			if (this.player1.clientSocket.id === client.id) {
+
+				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player2.nameNick} left the game`);
+				this.player2.clientSocket.disconnect(true);
+			}
+			else if (this.player2.clientSocket.id === client.id) {
+
+				this.player1.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player1.nameNick} left the game`);
+				this.player1.clientSocket.disconnect(true);
+			}
+		}
+
+		this.stopEngine();
+	};
+
 	endGame(winner: Player): void {
 
-		this.players[0].clientSocket.emit('endGame', winner.nameNick);
-		if (this.mode == GameMode.multi)
-			this.players[1].clientSocket.emit('endGame', winner.nameNick);
+		this.player1.clientSocket.emit('endGame', winner.nameNick);
+		if (this.mode === GameMode.multi)
+			this.player2.clientSocket.emit('endGame', winner.nameNick);
 		
+		this.player1.clientSocket.disconnect(true);
+		this.player2.clientSocket.disconnect(true);
 		this.stopEngine();
 	};
 }
