@@ -1,6 +1,6 @@
 import { GAME, GAME_BALL, GAME_BAR } from '../Game.data';
 import Ball from '../GameObjects/Ball';
-import PlayerBar from '../GameObjects/PlayerBar';
+import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
 import { io, Socket } from 'socket.io-client';
 
@@ -15,8 +15,8 @@ export interface GameState {
 		y: number
 	},
 	score: {
-		player1: number, 
-		player2: number}
+		p1: number, 
+		p2: number}
 };
 
 export enum GameMode {
@@ -29,8 +29,8 @@ class Game extends Phaser.Scene {
 
 	// Game objects
   private _ball!: Ball;
-  private _leftBar!: PlayerBar;
-  private _rightBar!: PlayerBar;
+  private _leftPaddle!: Paddle;
+  private _righPaddle!: Paddle;
   private _field!: Field;
 
   // Background image
@@ -85,12 +85,15 @@ class Game extends Phaser.Scene {
 
 		// Create the ball as an instance of the Ball class
 		this._ball = new Ball(this, GAME.width / 2, GAME.height / 2, 0, 0);  // Initialize ball with no movement initially
-		this._leftBar = new PlayerBar(this, GAME_BAR.width / 2, GAME.height / 2);
-		this._rightBar = new PlayerBar(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
+		
+		// Create bars
+		this._leftPaddle = new Paddle(this, GAME_BAR.width / 2, GAME.height / 2);
+		this._righPaddle = new Paddle(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
+		
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
 
-		this._socketIO.emit('playerInfo', {playerId: this._id, nameNick: this._nameNick});
+		this._socketIO.emit('playerInfo', {playerNick: this._id, nameNick: this._nameNick});
 		this._socketIO.emit('initData', {sessionToken: this._sessionToken, mode: this._mode});
 	};
 
@@ -112,7 +115,7 @@ class Game extends Phaser.Scene {
 
 		this._socketIO.on('gameState', (state: GameState) => this._gameState = state);
 		
-		this._socketIO.on('gameEnd', (winner: string) => this.scene.start('Results', {winner}));
+		this._socketIO.on('endGame', (winner: string) => this.scene.start('Results', {winner}));
 
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	};
@@ -144,7 +147,7 @@ class Game extends Phaser.Scene {
 		// Emit player movement only if a direction is pressed
 		if (direction) {
 			this._socketIO.emit('playerMove', {
-				playerId: this._nameNick, // Change to right player ID if needed, which side should the first person be on
+				playerNick: this._nameNick, // Change to right player ID if needed, which side should the first person be on
 				direction: direction
 			});
 		}
@@ -152,27 +155,16 @@ class Game extends Phaser.Scene {
 
 	updateGame(): void {
 	
-		this._field.setScore(this._gameState.score.player1, this._gameState.score.player2);
-		// this.checkScore(this._gameState.score.player1, this._gameState.score.player2);
+		// Update score
+		this._field.updateScore(this._gameState.score.p1, this._gameState.score.p2);
+
 		// Update ball position using the new method
-		this._ball.updatePosition(this._gameState.ball.x, this._gameState.ball.y);  // Ensure the ball is drawn at the new position
+		this._ball.updatePosition(this._gameState.ball.x, this._gameState.ball.y);
+
 		// Update paddles based on player positions
-		this._leftBar.updatePosition(this._gameState.player1.y);
-		this._rightBar.updatePosition(this._gameState.player2.y);
+		this._leftPaddle.updatePosition(this._gameState.player1.y);
+		this._righPaddle.updatePosition(this._gameState.player2.y);
 	};
-
-	// checkScore(score1: number, score2: number) {
-
-	// 	if (score1 == GAME.maxScore || score2 == GAME.maxScore) {
-	// 		console.log("Score is MAX");
-	// 	}
-	// 	if (score1 == GAME.maxScore){
-	// 		this.endGame('player1');
-	// 	}
-	// 	else if (score2 == GAME.maxScore){
-	// 		this.endGame('player2');
-	// 	}
-	// }
 };
 
 export default Game;

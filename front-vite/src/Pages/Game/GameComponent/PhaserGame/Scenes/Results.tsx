@@ -3,7 +3,7 @@ import { GAME } from '../Game.data'
 class Results extends Phaser.Scene {
 
   // id of the winner of the game
-  private _idWinner: string = '';
+  private _winner: string = '';
 
   constructor () {
     
@@ -11,20 +11,18 @@ class Results extends Phaser.Scene {
   }
 
   // fired then scene.start('Results') is called, sets the id
-  init( idWinner: string ): void {
+  init( data: {winner: string} ): void {
 
-    this._idWinner = idWinner;
+    this._winner = data.winner;
   }
 
 	// loading graphic assets, fired after init()
-  preload(): void {
-
-  }
+  preload(): void {};
 
 	// run after preload(), shows a basic info of the error
   create (): void {
 
-    this.add.text(GAME.width / 2, 40, `Player: ${this._idWinner} won!`, {
+    this.add.text(GAME.width / 2, 40, `Player: ${this._winner} won!`, {
 			fontSize: '50px',
 			align: 'center',
 			color: '#0f0',
