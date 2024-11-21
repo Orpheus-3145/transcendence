@@ -254,11 +254,13 @@ export default class SimulationService {
 	endGame(winner: Player): void {
 
 		this.player1.clientSocket.emit('endGame', winner.nameNick);
-		if (this.mode === GameMode.multi)
-			this.player2.clientSocket.emit('endGame', winner.nameNick);
-		
 		this.player1.clientSocket.disconnect(true);
-		this.player2.clientSocket.disconnect(true);
+		if (this.mode === GameMode.multi) {
+			
+			this.player2.clientSocket.emit('endGame', winner.nameNick);
+			this.player2.clientSocket.disconnect(true);
+		}
+		
 		this.stopEngine();
 	};
 }
