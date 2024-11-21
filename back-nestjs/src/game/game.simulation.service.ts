@@ -53,9 +53,9 @@ export default class SimulationService {
 
 		this.gameStateInterval = setInterval(() => {
 
-			this.sendUpdateToPlayers('gameState');
 			this.updateBall();
 			this.updateBotPaddle();
+			this.sendUpdateToPlayers('gameState');
 		}, GAME.frameRate);
 	
 		this.resetBall();
@@ -116,7 +116,7 @@ export default class SimulationService {
 		if (this.mode === GameMode.single)		// adding bot if single player
 			this.addPlayer(null, -1, this.botName)
 	};
-	
+
 	// Handle paddle movement based on key data
 	movePaddle(playerNick: string, direction: 'up' | 'down'): void {
 		
@@ -210,6 +210,7 @@ export default class SimulationService {
 
 	resetBall(): void {
 
+		console.log('ball spawned (back-end)');
 		this.ball.x = this.windowWidth / 2;  // Reset to center of the screen
 		this.ball.y = this.windowHeight / 2;
 		const randomDelta = this.randomDelta();

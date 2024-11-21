@@ -5,7 +5,7 @@
 export const GAME = {
   width: 1150,
   height: 648,
-  maxScore: 3,
+  maxScore: 5,
   frameRate: 1000 / 30,
   botName: 'tobor',
 };
