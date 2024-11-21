@@ -66,17 +66,17 @@ export default class Game extends Phaser.Scene {
 
 		// Create the ball as an instance of the Ball class
 		this._ball = new Ball(this, GAME.width / 2, GAME.height / 2);  // Initialize ball with no movement initially
-		
+
 		// Create bars
 		this._leftPaddle = new Paddle(this, GAME_BAR.width / 2, GAME.height / 2);
 		this._righPaddle = new Paddle(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
-		
+
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
-		
+
 		const initData: GameTypes.InitData = {sessionToken: this._sessionToken, mode: this._mode};
 		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick};
-		
+
 		this.sendMsgToServer('initData', initData);
 		this.sendMsgToServer('playerData', playerData);
 	};
@@ -138,7 +138,7 @@ export default class Game extends Phaser.Scene {
 		this._ball.updatePosition(this._gameState.ball.x, this._gameState.ball.y);
 
 		// Update paddles based on player positions
-		this._leftPaddle.updatePosition(this._gameState.player1.y);
-		this._righPaddle.updatePosition(this._gameState.player2.y);
+		this._leftPaddle.updatePosition(this._gameState.p1.y);
+		this._righPaddle.updatePosition(this._gameState.p2.y);
 	};
 };

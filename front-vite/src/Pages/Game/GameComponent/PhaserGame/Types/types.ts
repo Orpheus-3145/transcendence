@@ -14,9 +14,10 @@ export interface GameState {
 		x: number, 
 		y: number
 	}, 
-	player1: { 
+	p1: { 
 		y: number 
-	}, player2: { 
+	},
+	p2: { 
 		y: number
 	},
 	score: {
