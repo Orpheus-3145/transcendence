@@ -1,5 +1,6 @@
 import React from 'react';
 import { MenuDrawer } from './Navigation/Menu/MenuDrawer';
+import {Notification} from './Notification/index'
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { useUser } from '../../Providers/UserContext/User';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
@@ -11,148 +12,28 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import ClearIcon from '@mui/icons-material/Clear';
 
 export const Bar: React.FC = () => {
-  const { user } = useUser();
-  const navigate = useNavigate();
-  const theme = useTheme();  
-  const [open, setOpen] = useState<Boolean>(false);
-  let [notificationDot, setnotificationDot] = useState<Boolean>(false);
+	const { user } = useUser();
+	const navigate = useNavigate();
+	const theme = useTheme();  
 
-  const navToProfile = () => { user && user.id && navigate(`/profile/${user.id}`) }
-  const navToAll = () => {navigate('/viewusers')}
-  const toggleDrawer = (newOpen: boolean) => () => {setOpen(newOpen)};
+	const navToProfile = () => { user && user.id && navigate(`/profile/${user.id}`) }
+	const navToAll = () => {navigate('/viewusers')}
 
-	let getNotificationMessages = () =>
-	{
-		return (
-			<Typography
-				sx={{
-					color: 'green',
-				}}
-			>	
-				You have no incoming messages!
-			</Typography>
-		);
-	}
-
-	let getNotificationFrRequests = () =>
-	{
-		return (
-			<Typography
-				sx={{
-					color: 'green',
-				}}
-			>
-				You have no incoming friend requests!
-			</Typography>
-		);
-	}
-
-	let DrawerList = () =>
-	{
-		return (
-			<Stack
-				width={300}
-			>
-				<Stack
-					sx={{
-						position: 'relative',
-						left: '60px',
-					}}
-				>
-					<Typography variant="h4"
-						sx={{		
-							color: '#f8d213',
-						}}
-					>
-						Notifications
-					</Typography>
-				</Stack>
-				<br />
-				<Box>
-					<Typography variant="h5"
-						sx={{		
-							fontFamily: 'Georgia, serif',
-							color: '#f8d213',
-						}}
-					>
-						Messages:
-					</Typography>
-					{getNotificationMessages()}
-					
-					<br />
-					<Divider />
-					<br />
-
-					<Typography variant="h5"
-						sx={{		
-							fontFamily: 'Georgia, serif',
-							color: '#f8d213',
-						}}
-					>
-						Friend Requests:
-					</Typography>
-					{getNotificationFrRequests()}
-				</Box>
-			</Stack>
-		);
-	}
-
-
-  	let notificationWrapper = () =>
-  	{
-		return (
-			<Stack>
-				<Tooltip title="Notifications" arrow>
-					<IconButton
-						onClick={toggleDrawer(true)}
-						sx={{
-							'&:hover': {
-							color: '#f8d213',
-							},
-						}}
-					>
-						<NotificationsIcon />
-					</IconButton>
-				</Tooltip>
-				{notificationDot && (
-					<Box
-						sx={{
-							width: 12,
-							height: 12,
-							backgroundColor: 'red',
-							borderRadius: '50%',
-							position: 'relative',
-							left: '20px',
-							top: '-35px',
-						}}
-					/>
-				)}
-				<Drawer
-					anchor={'right'}
-					open={open} 
-					onClose={toggleDrawer(false)}
-				>
-					{DrawerList()}
-				</Drawer>
-			</Stack>
-		);
-  	}
 
 	let viewUsersWrapper = () =>
 	{
-		let top = '0px';
-		if (notificationDot)
-			top = '-6px';
-
 		return (
 			<Tooltip title="View Users!" arrow>
 				<IconButton
 					onClick={navToAll}
 					sx={{
-						position: 'relative',
-						top: top,
+						position: 'absolute',
+						left: '-40px',
 						'&:hover': {
 						color: '#0c31df',
 						},
@@ -235,7 +116,7 @@ export const Bar: React.FC = () => {
 					}}
 				>
 					{viewUsersWrapper()}
-					{notificationWrapper()}
+					<Notification />
 				</Box>
 				{viewProfileWrapper()}
 			</Stack>

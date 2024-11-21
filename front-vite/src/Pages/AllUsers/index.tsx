@@ -9,10 +9,9 @@ import SearchIcon from '@mui/icons-material/Search';
 const AllUsersPage: React.FC = () => {
 	const allUsers = getAll();
 	const [users, setUsers] = useState<User[]>([]);
-	const [showInput, setShowInput] = useState(false);
-	const [inputValue, setInputValue] = useState('');
-	const [showMessage, setShowMessage] = useState(false);
-	const [amountUsers, setAmountUsers] = useState<Number>(5);
+	const [showInput, setShowInput] = useState<Boolean>(false);
+	const [inputValue, setInputValue] = useState<string>('');
+	const [showMessage, setShowMessage] = useState<Boolean>(false);
 	const navigate = useNavigate();
 	
 	useEffect(() => {
@@ -50,7 +49,6 @@ const AllUsersPage: React.FC = () => {
 			{
 				setUsers((await allUsers));
 				setInputValue('');
-				setAmountUsers(5);
 				setShowMessage(false);
 				setShowInput(false);
 				return ;
@@ -72,7 +70,7 @@ const AllUsersPage: React.FC = () => {
 			
 			if (added == 0)
 				setShowMessage(true);
-			setAmountUsers(added);
+
 			setUsers(newlist);
 			setInputValue('');
 			setShowInput(false);
@@ -166,13 +164,9 @@ const AllUsersPage: React.FC = () => {
 				</Stack>
 			);
 		}
-		
-		let col = amountUsers;
-		if (col > 5)
-			col = 5;
 
 		return (
-			<ImageList cols={col}>
+			<ImageList cols={4}>
 				{users.map((item: User) => (
 					<ImageListItem 
 						key={item.image}>
