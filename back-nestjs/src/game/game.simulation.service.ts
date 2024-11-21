@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { Socket } from 'socket.io';
 
-import GameStateDTO from '../dto/game.state.dto';
-import Player, { GameMode } from './player.interface';
+import GameStateDTO from '../dto/gameState.dto';
+import * as GameTypes from './game.types';
 import { GAME, GAME_BALL, GAME_PADDLE } from './game.data';
 
 
@@ -18,73 +18,90 @@ export default class SimulationService {
 	private readonly ballSpeed: number = GAME_BALL.speed;
 	
 	private sessionToken: string = '';		// unique session token shared between the two clients
-	private mode: GameMode = GameMode.unset;
-	private player1: Player = null;
-	private player2: Player = null;
+	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
+	private player1: GameTypes.Player = null;
+	private player2: GameTypes.Player = null;
 	private ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
-	private sessionRunning = false;
+	private waitingToStart = false;
+	private engineRunning = false;
 	
 	private gameStateInterval: NodeJS.Timeout = null;		// loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null;		// engine loop: data emitter to client(s)
 
-	isRunning(): boolean {
+	isWaiting(): boolean {
 
-		return (this.sessionRunning);
+		return (this.waitingToStart);
 	};
 
-	startSession(): void {
+	isRunning(): boolean {
 
+		return (this.engineRunning);
+	};
+
+	startWaiting(): void {
+
+		this.waitingToStart = true;
 		this.gameSetupInterval = setInterval(() => {
 			
-			if ((this.player1 === null) || (this.player2 === null) || (this.mode === GameMode.unset))
-				return;		// not ready to play yet
+			if ((this.player1 === null) || (this.player2 === null) || (this.mode === GameTypes.GameMode.unset))
+				return;		// missing info, not ready to play yet
 
+			this.waitingToStart = false;
 			this.startEngine();
-			this.sendUpdateToPlayers('gameStart');
-
+			
 			clearInterval(this.gameSetupInterval);
 			this.gameSetupInterval = null;
-		}, GAME.frameRate);
 
-		this.sessionRunning = true;
-	}
+		}, GAME.frameRate);
+	};
 
 	startEngine(): void {
 
+		this.engineRunning = true;
 		this.gameStateInterval = setInterval(() => {
 
 			this.updateBall();
 			this.updateBotPaddle();
 			this.sendUpdateToPlayers('gameState');
 		}, GAME.frameRate);
-	
+
 		this.resetBall();
+		this.sendUpdateToPlayers('gameStart');
 	};
 
 	stopEngine(): void {
 
-		this.sessionToken = '';
-		this.mode = GameMode.unset;
-		this.player1 = null;
-		this.player2 = null;
-		this.ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
-		this.sessionRunning = false;
-
 		clearInterval(this.gameStateInterval);
 		this.gameStateInterval = null;
+		this.engineRunning = false;
 	};
 
 	sendUpdateToPlayers(msgType: string) {
 
 		this.player1.clientSocket.emit(msgType, this.getGameState());
 
-		if (this.mode === GameMode.multi)
+		if (this.mode === GameTypes.GameMode.multi)
 			this.player2.clientSocket.emit(msgType, this.getGameState());
+	};
+
+	setInitData(sessionToken: string, mode: GameTypes.GameMode): void {
+	
+		if ((this.sessionToken !== '' && this.sessionToken !== sessionToken) ||
+				(this.mode !== GameTypes.GameMode.unset && this.mode !== mode)) {
+			
+			console.log("this should never, like NEVER, happen (init info)", this.sessionToken, this.mode);
+			return ;
+		}
+		this.sessionToken = sessionToken;
+		this.mode = mode;
+
+		if (this.mode === GameTypes.GameMode.single)		// adding bot if single player
+			this.addPlayer(null, -1, this.botName)
 	};
 
 	addPlayer(client: Socket, playerId: number, nameNick: string): void {
 
-		const newPlayer: Player = {
+		const newPlayer: GameTypes.Player = {
 			clientSocket: client,
 			intraId: playerId,
 			nameNick: nameNick,
@@ -102,27 +119,12 @@ export default class SimulationService {
 			console.log("this should never, like NEVER, happen (player)");
 	};
 
-	setInitData(sessionToken: string, mode: GameMode): void {
-	
-		if ((this.sessionToken !== '' && this.sessionToken !== sessionToken) ||
-				(this.mode !== GameMode.unset && this.mode !== mode)) {
-			
-			console.log("this should never, like NEVER, happen (init info)", this.sessionToken, this.mode);
-			return ;
-		}
-		this.sessionToken = sessionToken;
-		this.mode = mode;
-
-		if (this.mode === GameMode.single)		// adding bot if single player
-			this.addPlayer(null, -1, this.botName)
-	};
-
 	// Handle paddle movement based on key data
-	movePaddle(playerNick: string, direction: 'up' | 'down'): void {
+	movePaddle(idClient: string, direction: GameTypes.PaddleDirection): void {
 		
-		const delta = direction === 'up' ? -10 : 10;
+		const delta = direction === GameTypes.PaddleDirection.up ? -10 : 10;
 
-		if (playerNick === this.player1.nameNick)
+		if (idClient === this.player1.clientSocket.id)
 			this.player1.posY = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, this.player1.posY + delta));
 		else
 			this.player2.posY = Math.max(this.paddleHeight / 2, Math.min(this.windowHeight - this.paddleHeight / 2, this.player2.posY + delta));
@@ -140,7 +142,7 @@ export default class SimulationService {
 
 		return (state);
 	};
-	
+
 	// Callback ball
 	updateBall(): void {
 		// Move the ball
@@ -188,12 +190,12 @@ export default class SimulationService {
 
 	// Callback opponent paddle
 	updateBotPaddle(): void {
-		if (this.mode === GameMode.single && this.ball.x > this.windowWidth / 2) {
+		if (this.mode === GameTypes.GameMode.single && this.ball.x > this.windowWidth / 2) {
 
 			if (this.ball.y < this.player2.posY - 30)
-				this.movePaddle(this.botName, 'up');
+				this.movePaddle(this.botName, GameTypes.PaddleDirection.up);
 			else if (this.ball.y > this.player2.posY + 30)
-				this.movePaddle(this.botName, 'down');
+				this.movePaddle(this.botName, GameTypes.PaddleDirection.down);
 		}
  	};
 
@@ -210,7 +212,6 @@ export default class SimulationService {
 
 	resetBall(): void {
 
-		console.log('ball spawned (back-end)');
 		this.ball.x = this.windowWidth / 2;  // Reset to center of the screen
 		this.ball.y = this.windowHeight / 2;
 		const randomDelta = this.randomDelta();
@@ -232,15 +233,17 @@ export default class SimulationService {
 
 	handleDisconnect(client: Socket): void {
 
-		if (this.sessionRunning === false)
+		if (this.isRunning() === false)
 			return;
-		
-		if (this.mode === GameMode.multi) {
-			
+
+		this.stopEngine();
+
+		if (this.mode === GameTypes.GameMode.multi) { // force to disconnect the other client, only in multi-player mode
+
 			if (this.player1.clientSocket.id === client.id) {
 
 				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player2.nameNick} left the game`);
-				this.player2.clientSocket.disconnect(true);
+				this.player2.clientSocket.disconnect(true);    
 			}
 			else if (this.player2.clientSocket.id === client.id) {
 
@@ -248,21 +251,36 @@ export default class SimulationService {
 				this.player1.clientSocket.disconnect(true);
 			}
 		}
-
-		this.stopEngine();
+		
+		// do not clear data immediately because there can be loops of the engine
+		// scheduled before it stops but that happens after
+		setTimeout(() => this.clearGameData(), GAME.frameRate);
 	};
 
-	endGame(winner: Player): void {
-
-		this.player1.clientSocket.emit('endGame', winner.nameNick);
-		this.player1.clientSocket.disconnect(true);
-		if (this.mode === GameMode.multi) {
-			
-			this.player2.clientSocket.emit('endGame', winner.nameNick);
-			this.player2.clientSocket.disconnect(true);
-		}
+	endGame(winner: GameTypes.Player): void {
 		
 		this.stopEngine();
+		
+		this.player1.clientSocket.emit('endGame', winner.nameNick)
+		this.player1.clientSocket.disconnect(true);
+		if (this.mode === GameTypes.GameMode.multi) {
+
+			this.player2.clientSocket.emit('endGame', winner.nameNick)
+			this.player2.clientSocket.disconnect(true).emit('endGame', winner.nameNick);
+		}
+
+		// do not clear data immediately because there can be loops of the engine
+		// scheduled before it stops but that happens after
+		setTimeout(() => this.clearGameData(), GAME.frameRate);
 	};
-}
+
+	clearGameData(): void {
+
+		this.sessionToken = '';
+		this.mode = GameTypes.GameMode.unset;
+		this.player1 = null;
+		this.player2 = null;
+		this.ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
+	};
+};
 

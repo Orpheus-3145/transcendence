@@ -1,12 +1,8 @@
 import { GAME } from '../Game.data'
 
-export enum GameMode {
-  single = 'single',
-  multi = 'multi',
-  unset = 'unset',
-};
+import * as GameTypes from '../Types/types';
 
-class MainMenu extends Phaser.Scene {
+export default class MainMenu extends Phaser.Scene {
 	
 	// background texture
 	private _background!: Phaser.GameObjects.Image;
@@ -33,7 +29,7 @@ class MainMenu extends Phaser.Scene {
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
 		this.createBtn(400, 100, 'Play [single player]').on(
-			'pointerup', () => this.scene.start('Game', {sessionId: 'singlePlayerToken', mode: GameMode.single}));
+			'pointerup', () => this.scene.start('Game', {sessionToken: 'singlePlayerToken', mode: GameTypes.GameMode.single}));
 		this.createBtn(400, 150, 'Play [multi player]').on(
 			'pointerup', () => this.scene.start('Matchmaking'));
 		this.createBtn(400, 200, 'Settings').on(
@@ -59,5 +55,3 @@ class MainMenu extends Phaser.Scene {
 		return (newBtn);
 	}
 };
-
-export default MainMenu;

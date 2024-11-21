@@ -1,31 +1,12 @@
+import { io, Socket } from 'socket.io-client';
+
 import { GAME, GAME_BALL, GAME_BAR } from '../Game.data';
+import * as GameTypes from '../Types/types';
 import Ball from '../GameObjects/Ball';
 import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
-import { io, Socket } from 'socket.io-client';
 
-export interface GameState { 
-	ball: { 
-		x: number, 
-		y: number
-	}, 
-	player1: { 
-		y: number 
-	}, player2: { 
-		y: number
-	},
-	score: {
-		p1: number, 
-		p2: number}
-};
-
-export enum GameMode {
-  single = 'single',
-  multi = 'multi',
-  unset = 'unset',
-};
-
-class Game extends Phaser.Scene {
+export default class Game extends Phaser.Scene {
 
 	// Game objects
   private _ball!: Ball;
@@ -46,10 +27,10 @@ class Game extends Phaser.Scene {
 	private _id: number = -1;
 	private _nameNick: string = '';
 	private _sessionToken: string = '';
-	private _mode: GameMode = GameMode.unset;
 	private _socketIO!: Socket;
-	private _gameState!: GameState;
 	private _gameStarted: boolean = false;
+	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
+	private _gameState!: GameTypes.GameState;
 
   constructor() {
 		
@@ -57,18 +38,18 @@ class Game extends Phaser.Scene {
   };
 
   // Initialize players and key bindings
-	init(data: {sessionId: string, mode: GameMode}): void {
+	init(data: GameTypes.InitData): void {
 
 		this._id = this.registry.get("user42data").id;
 		this._nameNick = this.registry.get("user42data").nameNick;
-		this._sessionToken = data.sessionId;
+		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
 
 		// Key bindings
-		this._cursors = this.input.keyboard.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
-		this._keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W) as Phaser.Input.Keyboard.Key;
-		this._keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S) as Phaser.Input.Keyboard.Key;
-		this._keyEsc = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
+		this._cursors = this.input.keyboard!.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
+		this._keyW = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W) as Phaser.Input.Keyboard.Key;
+		this._keyS = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S) as Phaser.Input.Keyboard.Key;
+		this._keyEsc = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
   
 		this.setupSocket();
 	};
@@ -92,9 +73,12 @@ class Game extends Phaser.Scene {
 		
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
-
-		this._socketIO.emit('playerInfo', {playerNick: this._id, nameNick: this._nameNick});
-		this._socketIO.emit('initData', {sessionToken: this._sessionToken, mode: this._mode});
+		
+		const initData: GameTypes.InitData = {sessionToken: this._sessionToken, mode: this._mode};
+		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick};
+		
+		this.sendMsgToServer('initData', initData);
+		this.sendMsgToServer('playerData', playerData);
 	};
 
 	setupSocket() {
@@ -107,18 +91,24 @@ class Game extends Phaser.Scene {
 			}
 		);
 
-		this._socketIO.on('gameStart', (state: GameState) => {
+		this._socketIO.on('gameStart', (state: GameTypes.GameState) => {
 
 			this._gameStarted = true;
 			this._gameState = state;
 		});
 
-		this._socketIO.on('gameState', (state: GameState) => this._gameState = state);
+		this._socketIO.on('gameState', (state: GameTypes.GameState) => this._gameState = state);
 		
 		this._socketIO.on('endGame', (winner: string) => this.scene.start('Results', {winner}));
 
 		this._socketIO.on('PlayerDisconnected', (trace: string) => this.scene.start('Errors', {trace}));
+		
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
+	};
+
+	sendMsgToServer(msgType: string, content: any) {
+
+		this._socketIO.emit(msgType, content);
 	};
 
   // Frame-by-frame update
@@ -126,33 +116,18 @@ class Game extends Phaser.Scene {
 
 		if (this._gameStarted == false)
 			return;
-	
-		this.emitPaddleMovement();
-		
+
+		if (this._keyW.isDown || this._cursors.up.isDown)
+			this.sendMsgToServer('playerMove', GameTypes.PaddleDirection.up);
+		else if (this._keyS.isDown || this._cursors.up.isDown)
+			this.sendMsgToServer('playerMove', GameTypes.PaddleDirection.down);
+
 		// Exit game with ESC
-		if (this._keyEsc.isDown) {
+		if (this._keyEsc.isDown)
 			this.scene.start('MainMenu');
-		}
+		
 		this.updateGame();
   };
-
-	emitPaddleMovement(): void {
-		let direction = '';
-
-		if (this._cursors.up.isDown || this._keyW.isDown) {
-			direction = 'up'; // Move up
-		} else if (this._cursors.down.isDown || this._keyS.isDown) {
-			direction = 'down'; // Move down
-		}
-
-		// Emit player movement only if a direction is pressed
-		if (direction) {
-			this._socketIO.emit('playerMove', {
-				playerNick: this._nameNick, // Change to right player ID if needed, which side should the first person be on
-				direction: direction
-			});
-		}
-	};
 
 	updateGame(): void {
 	
@@ -167,6 +142,3 @@ class Game extends Phaser.Scene {
 		this._righPaddle.updatePosition(this._gameState.player2.y);
 	};
 };
-
-export default Game;
-

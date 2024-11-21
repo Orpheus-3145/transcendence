@@ -10,8 +10,10 @@ import {
 import { Server, Socket } from 'socket.io';
 
 import SimulationService from './game.simulation.service';
-import { GameMode } from './player.interface';
+import { PaddleDirection } from './game.types';
 
+import InitDataDTO from 'src/dto/initData.dto';
+import PlayerDataDTO from 'src/dto/playerData.dto';
 
 @WebSocketGateway(
 { 
@@ -30,33 +32,34 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 
   constructor(private simulationService: SimulationService) {};
 
-	handleConnection(@ConnectedSocket() client: Socket): void {
+	handleConnection(): void {
 
-		if (this.simulationService.isRunning() == false)
-			this.simulationService.startSession();
-	}
+		if (this.simulationService.isWaiting() === false)
+			this.simulationService.startWaiting();
+	};
 
 	handleDisconnect(@ConnectedSocket() client: Socket): void {
 		
 		this.simulationService.handleDisconnect(client);
 	};
 
-	@SubscribeMessage('playerInfo')
-  addPlayer(@MessageBody() data: {playerId: number, nameNick: string}, 
+	@SubscribeMessage('initData')
+  setInitData(@MessageBody() data: InitDataDTO): void {
+		
+    this.simulationService.setInitData(data.sessionToken, data.mode);
+	};
+
+	@SubscribeMessage('playerData')
+  addPlayer(@MessageBody() data: PlayerDataDTO, 
 						@ConnectedSocket() client: Socket): void {
 		
     this.simulationService.addPlayer(client, data.playerId, data.nameNick);
 	};
 
-	@SubscribeMessage('initData')
-  setInitData(@MessageBody() data: {sessionToken: string, mode: GameMode}): void {
-		
-    this.simulationService.setInitData(data.sessionToken, data.mode);
-	};
-
 	@SubscribeMessage('playerMove')
-	movePaddle( @MessageBody() data: {playerNick: string; direction: 'up' | 'down'}): void {
+	movePaddle( @MessageBody() data: PaddleDirection,
+							@ConnectedSocket() client: Socket): void {
 	
-		this.simulationService.movePaddle(data.playerNick, data.direction);
+		this.simulationService.movePaddle(client.id, data);
 	};
-}
+};
