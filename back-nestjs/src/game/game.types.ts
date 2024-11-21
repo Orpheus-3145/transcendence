@@ -16,8 +16,8 @@ export interface Player {
   clientSocket: Socket,
   intraId: number,
   nameNick: string,
-  // score: number,
-  // posY: number,
+  score: number,
+  posY: number,
 };
 
 export interface GameState {

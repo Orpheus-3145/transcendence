@@ -40,33 +40,35 @@ export default class SimulationService {
 
 	startWaiting(): void {
 
-		this.waitingToStart = true;
 		this.gameSetupInterval = setInterval(() => {
 			
 			if ((this.player1 === null) || (this.player2 === null) || (this.mode === GameTypes.GameMode.unset))
 				return;		// missing info, not ready to play yet
-
+			
 			this.waitingToStart = false;
 			this.startEngine();
 			
 			clearInterval(this.gameSetupInterval);
 			this.gameSetupInterval = null;
-
+			
 		}, GAME.frameRate);
+
+		this.waitingToStart = true;
 	};
 
 	startEngine(): void {
 
-		this.engineRunning = true;
 		this.gameStateInterval = setInterval(() => {
-
+			
 			this.updateBall();
 			this.updateBotPaddle();
 			this.sendUpdateToPlayers('gameState');
 		}, GAME.frameRate);
-
+		
 		this.resetBall();
 		this.sendUpdateToPlayers('gameStart');
+
+		this.engineRunning = true;
 	};
 
 	stopEngine(): void {
@@ -78,6 +80,7 @@ export default class SimulationService {
 
 	sendUpdateToPlayers(msgType: string) {
 
+		// throw excp if engine is not running
 		this.player1.clientSocket.emit(msgType, this.getGameState());
 
 		if (this.mode === GameTypes.GameMode.multi)
@@ -88,7 +91,7 @@ export default class SimulationService {
 	
 		if ((this.sessionToken !== '' && this.sessionToken !== sessionToken) ||
 				(this.mode !== GameTypes.GameMode.unset && this.mode !== mode)) {
-			
+			// throw excp
 			console.log("this should never, like NEVER, happen (init info)", this.sessionToken, this.mode);
 			return ;
 		}
@@ -115,13 +118,14 @@ export default class SimulationService {
 			this.player1 = newPlayer;
 		else if (this.player2 === null)
 			this.player2 = newPlayer;
-		else
+		else		// throw excp
 			console.log("this should never, like NEVER, happen (player)");
 	};
 
 	// Handle paddle movement based on key data
 	movePaddle(idClient: string, direction: GameTypes.PaddleDirection): void {
 		
+		// throw excp if engine is not running
 		const delta = direction === GameTypes.PaddleDirection.up ? -10 : 10;
 
 		if (idClient === this.player1.clientSocket.id)
@@ -135,8 +139,8 @@ export default class SimulationService {
 
 		const state: GameStateDTO = {
 			ball: {x: this.ball.x, y: this.ball.y},
-			player1: {y: this.player1.posY},
-			player2: {y: this.player2.posY},
+			p1: {y: this.player1.posY},
+			p2: {y: this.player2.posY},
 			score: {p1: this.player1.score, p2: this.player2.score},
 		}
 
@@ -145,6 +149,8 @@ export default class SimulationService {
 
 	// Callback ball
 	updateBall(): void {
+
+		// throw excp if engine is not running
 		// Move the ball
 		this.ball.x += this.ball.dx * this.ballSpeed;
 		this.ball.y += this.ball.dy * this.ballSpeed;
@@ -190,6 +196,8 @@ export default class SimulationService {
 
 	// Callback opponent paddle
 	updateBotPaddle(): void {
+
+		// throw excp if engine is not running
 		if (this.mode === GameTypes.GameMode.single && this.ball.x > this.windowWidth / 2) {
 
 			if (this.ball.y < this.player2.posY - 30)
@@ -212,6 +220,7 @@ export default class SimulationService {
 
 	resetBall(): void {
 
+		// throw excp if engine is not running
 		this.ball.x = this.windowWidth / 2;  // Reset to center of the screen
 		this.ball.y = this.windowHeight / 2;
 		const randomDelta = this.randomDelta();
@@ -220,6 +229,8 @@ export default class SimulationService {
 	};
 
 	paddleHit(player_y: number, isLeftPaddle: boolean): number | null {
+
+		// throw excp if engine is not running
 		const collisionZone = Math.abs(player_y - this.ball.y);
 		if (isLeftPaddle) {
 			if (this.ball.x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2)
