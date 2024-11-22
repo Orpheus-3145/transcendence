@@ -26,7 +26,7 @@ services:
       - nestjs_modules:/app/node_modules
     restart: unless-stopped
     env_file:
-      - .env
+      - env/.env
     depends_on:
       - database
     expose:
@@ -44,7 +44,7 @@ services:
       - react_modules:/app/node_modules
     restart: unless-stopped
     env_file:
-      - .env
+      - env/.env
     depends_on:
       - backend
     expose:
