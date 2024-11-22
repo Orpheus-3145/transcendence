@@ -40,7 +40,7 @@ export default class SimulationService {
 
 	startWaiting(): void {
 
-		this.gameSetupInterval = setInterval(() => {
+		this.gameSetupInterval = setInterval(() => { // Why is this in an interval? Should it not be called once?
 			
 			if ((this.player1 === null) || (this.player2 === null) || (this.mode === GameTypes.GameMode.unset))
 				return;		// missing info, not ready to play yet
@@ -272,8 +272,10 @@ export default class SimulationService {
 		
 		this.stopEngine();
 		
-		this.player1.clientSocket.emit('endGame', winner.nameNick) 
-		this.player1.clientSocket.disconnect(true); // causes a problem when intra name/id is the same
+		if (this.player1 !== null) { // This can happen sometimes when the intra name/id is the same
+			this.player1.clientSocket.emit('endGame', winner.nameNick) 
+			this.player1.clientSocket.disconnect(true);
+		}
 		if (this.mode === GameTypes.GameMode.multi) {
 
 			this.player2.clientSocket.emit('endGame', winner.nameNick)

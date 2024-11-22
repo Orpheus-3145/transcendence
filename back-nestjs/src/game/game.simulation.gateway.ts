@@ -32,7 +32,7 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 
   constructor(private simulationService: SimulationService) {};
 
-	handleConnection(): void {
+	handleConnection(): void { // Called by default everytime a client connecs to the websocket
 
 		if (this.simulationService.isWaiting() === false)
 			this.simulationService.startWaiting();

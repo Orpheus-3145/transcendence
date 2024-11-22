@@ -47,6 +47,7 @@ export default class Game extends Phaser.Scene {
 
 		// Key bindings
 		this._cursors = this.input.keyboard!.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
+		// this._keyArrowUp = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.UP) as Phaser.Input.Keyboard.Key;
 		this._keyW = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W) as Phaser.Input.Keyboard.Key;
 		this._keyS = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S) as Phaser.Input.Keyboard.Key;
 		this._keyEsc = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
@@ -78,7 +79,7 @@ export default class Game extends Phaser.Scene {
 		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick};
 
 		this.sendMsgToServer('initData', initData);
-		this.sendMsgToServer('playerData', playerData);
+		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	};
 
 	setupSocket() {
@@ -119,7 +120,7 @@ export default class Game extends Phaser.Scene {
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
 			this.sendMsgToServer('playerMove', GameTypes.PaddleDirection.up);
-		else if (this._keyS.isDown || this._cursors.up.isDown)
+		else if (this._keyS.isDown || this._cursors.down.isDown)
 			this.sendMsgToServer('playerMove', GameTypes.PaddleDirection.down);
 
 		// Exit game with ESC
