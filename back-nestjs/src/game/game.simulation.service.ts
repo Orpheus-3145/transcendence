@@ -8,7 +8,7 @@ import { GAME, GAME_BALL, GAME_PADDLE } from './game.data';
 
 @Injectable()
 export default class SimulationService {
-	
+
 	private readonly maxScore: number = GAME.maxScore;
 	private readonly windowWidth: number = GAME.width;
 	private readonly windowHeight: number = GAME.height;
@@ -16,7 +16,7 @@ export default class SimulationService {
 	private readonly paddleWidth: number = GAME_PADDLE.width;
 	private readonly paddleHeight: number = GAME_PADDLE.height;
 	private readonly ballSpeed: number = GAME_BALL.speed;
-	
+
 	private sessionToken: string = '';		// unique session token shared between the two clients
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private player1: GameTypes.Player = null;
@@ -24,7 +24,7 @@ export default class SimulationService {
 	private ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
 	private waitingToStart = false;
 	private engineRunning = false;
-	
+
 	private gameStateInterval: NodeJS.Timeout = null;		// loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null;		// engine loop: data emitter to client(s)
 
@@ -41,16 +41,16 @@ export default class SimulationService {
 	startWaiting(): void {
 
 		this.gameSetupInterval = setInterval(() => {
-			
+
 			if ((this.player1 === null) || (this.player2 === null) || (this.mode === GameTypes.GameMode.unset))
 				return;		// missing info, not ready to play yet
-			
+
 			this.waitingToStart = false;
 			this.startEngine();
-			
+
 			clearInterval(this.gameSetupInterval);
 			this.gameSetupInterval = null;
-			
+
 		}, GAME.frameRate);
 
 		this.waitingToStart = true;
@@ -59,12 +59,12 @@ export default class SimulationService {
 	startEngine(): void {
 
 		this.gameStateInterval = setInterval(() => {
-			
+
 			this.updateBall();
 			this.updateBotPaddle();
 			this.sendUpdateToPlayers('gameState');
 		}, GAME.frameRate);
-		
+
 		this.resetBall();
 		this.sendUpdateToPlayers('gameStart');
 
@@ -81,6 +81,7 @@ export default class SimulationService {
 	sendUpdateToPlayers(msgType: string) {
 
 		// throw excp if engine is not running
+		// if (this.isRunning() === false) {}
 		this.player1.clientSocket.emit(msgType, this.getGameState());
 
 		if (this.mode === GameTypes.GameMode.multi)
@@ -266,6 +267,11 @@ export default class SimulationService {
 		// do not clear data immediately because there can be loops of the engine
 		// scheduled before it stops but that happens after
 		setTimeout(() => this.clearGameData(), GAME.frameRate);
+	};
+
+	interruptGame(): void {
+
+
 	};
 
 	endGame(winner: GameTypes.Player): void {
