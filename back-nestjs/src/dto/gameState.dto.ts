@@ -34,11 +34,11 @@ export default class GameStateDTO {
 
     @ValidateNested()
     @Type(() => PlayerDTO)
-    player1: PlayerDTO;
+    p1: PlayerDTO;
 
     @ValidateNested()
     @Type(() => PlayerDTO)
-    player2: PlayerDTO;
+    p2: PlayerDTO;
 
     @ValidateNested()
     @Type(() => ScoreDTO)

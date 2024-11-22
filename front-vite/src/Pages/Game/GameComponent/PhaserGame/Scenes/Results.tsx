@@ -1,6 +1,6 @@
 import { GAME } from '../Game.data'
 
-class Results extends Phaser.Scene {
+export default class Results extends Phaser.Scene {
 
   // id of the winner of the game
   private _winner: string = '';
@@ -47,5 +47,3 @@ class Results extends Phaser.Scene {
     
   }
 };
-
-export default Results;

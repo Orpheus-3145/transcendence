@@ -1,4 +1,4 @@
-class Error extends Phaser.Scene {
+export default class Error extends Phaser.Scene {
   
   // error info
   private _errorData: string = '';
@@ -37,5 +37,3 @@ class Error extends Phaser.Scene {
 
   }
 };
-
-export default Error;

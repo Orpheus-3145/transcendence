@@ -1,16 +1,15 @@
 import { GAME } from '../Game.data'
 import { io, Socket } from 'socket.io-client';
 
-export enum GameMode {
-  single = 'single',
-  multi = 'multi',
-  unset = 'unset',
-};
+import * as GameTypes from '../Types/types';
 
-class Matchmaking extends Phaser.Scene {
+
+export default class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
 	private _socketIO!: Socket;
+
+  private _keyEsc!: Phaser.Input.Keyboard.Key;
 
 	constructor () {
 
@@ -20,6 +19,8 @@ class Matchmaking extends Phaser.Scene {
 	// executed when scene.start('Matchmaking') is called
   init(): void {
 
+		this._keyEsc = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
+		
 		this.setupSocket();
 	};
 
@@ -55,7 +56,12 @@ class Matchmaking extends Phaser.Scene {
   };
 
   // run every frame update
-  update(): void {};
+  update(): void {
+	
+		// Exit game with ESC
+		if (this._keyEsc.isDown)
+			this.scene.start('MainMenu');
+	};
 
 	setupSocket(): void {
 
@@ -67,10 +73,12 @@ class Matchmaking extends Phaser.Scene {
 			},
 		);
 		
-		this._socketIO.on('ready', (sessionId) => this.scene.start('Game', {sessionId: sessionId, mode: GameMode.multi}));
-		
+		this._socketIO.on('ready', (sessionId: string) => {
+			
+			const sessionData: GameTypes.InitData = {sessionToken: sessionId, mode: GameTypes.GameMode.multi};
+			this.scene.start('Game', sessionData);
+		});
+
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	};
 };
-
-export default Matchmaking;
