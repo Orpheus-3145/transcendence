@@ -105,7 +105,7 @@ export default class SimulationService {
 	addPlayer(client: Socket, playerId: number, nameNick: string): void {
 
 		const newPlayer: GameTypes.Player = {
-			clientSocket: client,
+			clientSocket: client, // socket created for each client
 			intraId: playerId,
 			nameNick: nameNick,
 			score: 0,
@@ -272,8 +272,8 @@ export default class SimulationService {
 		
 		this.stopEngine();
 		
-		this.player1.clientSocket.emit('endGame', winner.nameNick)
-		this.player1.clientSocket.disconnect(true);
+		this.player1.clientSocket.emit('endGame', winner.nameNick) 
+		this.player1.clientSocket.disconnect(true); // causes a problem when intra name/id is the same
 		if (this.mode === GameTypes.GameMode.multi) {
 
 			this.player2.clientSocket.emit('endGame', winner.nameNick)
