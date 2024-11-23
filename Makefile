@@ -1,30 +1,32 @@
+COMPOSE := docker compose --env-file ./env/.env
+
 all: build
 
 # re-build only image with an update in the build context (i.e. a file changed)
 build:
-	@docker compose build
+	@$(COMPOSE) build
 
 run:
-	@docker compose up
+	@$(COMPOSE) up
 
 re: down run
 
 # re-build images from scratch
 build_debug:
-	@docker compose build --no-cache --pull
+	@$(COMPOSE) build --no-cache --pull
 
 run_debug:
-	@docker compose up --build
+	@$(COMPOSE) up --build
 
 re_debug: clean run
 
 down:
-	@docker compose down
+	@$(COMPOSE) down
 
 clean:
-	@docker compose down --remove-orphans --volumes --rmi all
+	@$(COMPOSE) down --remove-orphans --volumes --rmi all
 
 check:
 	npx depcheck
 
-.PHONY: all build all debug down clean prune check
+.PHONY: all build run re build_debug run_debug re_debug down clean check
