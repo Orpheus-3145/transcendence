@@ -5,11 +5,7 @@ import SimulationGateway from './game.simulation.gateway';
 import MatchmakingService from './game.matchmaking.service';
 import SimulationService from './game.simulation.service';
 
-
 @Module({
-  providers: [MatchmakingGateway,
-              MatchmakingService,
-              SimulationGateway,
-              SimulationService],
+	providers: [MatchmakingGateway, MatchmakingService, SimulationGateway, SimulationService],
 })
-export default class MatchmakingModule {};
+export default class MatchmakingModule {}

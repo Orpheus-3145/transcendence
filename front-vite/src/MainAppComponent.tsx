@@ -9,22 +9,29 @@ import { useUser } from './Providers/UserContext/User';
 import './mainAppComponent.css';
 
 const MainAppComponent: React.FC = () => {
-  const theme = createTheme(themeOptions);
-  const { user } = useUser();
+	const theme = createTheme(themeOptions);
+	const { user } = useUser();
 
-  return (
-  <ThemeProvider theme={theme}>
-    {user.id !== 0 && <Header />}
-    <CssBaseline />
-    <Container maxWidth="xl">
-    <Box marginTop={user.id === 0 ? '0em' : '4em'}>
-      <Main />
-    </Box>
-    </Container>
-    <Divider orientation="horizontal" sx={{ backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%' }} />
-    <Footer />
-  </ThemeProvider>
-  );
-}
+	return (
+		<ThemeProvider theme={theme}>
+			{user.id !== 0 && <Header />}
+			<CssBaseline />
+			<Container maxWidth='xl'>
+				<Box marginTop={user.id === 0 ? '0em' : '4em'}>
+					<Main />
+				</Box>
+			</Container>
+			<Divider
+				orientation='horizontal'
+				sx={{
+					backgroundColor: theme.palette.background.default,
+					width: '0.01em',
+					minWidth: '100%',
+				}}
+			/>
+			<Footer />
+		</ThemeProvider>
+	);
+};
 
 export default MainAppComponent;

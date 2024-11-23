@@ -1,41 +1,33 @@
 class Error extends Phaser.Scene {
-  
-  // error info
-  private _errorData: string = '';
+	// error info
+	private _errorData: string = '';
 
-  constructor () {
-    
-    super({ key: 'Error' });
-  }
+	constructor() {
+		super({ key: 'Error' });
+	}
 
 	// executed when scene.start('Error') is called,
-  // @param trace: information about the error
-  init( data: {trace: string}): void {
+	// @param trace: information about the error
+	init(data: { trace: string }): void {
+		this._errorData = data.trace;
+	}
 
-    this._errorData = data.trace
-  }
-  
 	// loading graphic assets, fired after init()
-  preload(): void {
-
-  }
+	preload(): void {}
 
 	// run after preload(), shows a basic info of the error
-  create(): void {
+	create(): void {
+		this.add.text(400, 100, `ERROR: ${this._errorData}`, {
+			fontSize: '32px',
+			align: 'center',
+			color: '0xff0000',
+		});
 
-    this.add.text(400, 100, `ERROR: ${this._errorData}`, {
-      fontSize: '32px',
-      align: 'center',
-      color: '0xff0000',
-    });
+		// do something else, either kill the game, reload, ...
+	}
 
-    // do something else, either kill the game, reload, ...
-  }
-
-  // run every frame update
-  upload(): void {
-
-  }
-};
+	// run every frame update
+	upload(): void {}
+}
 
 export default Error;

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "type-check": "tsc --noEmit",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.ts*\"",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -34,12 +34,8 @@
     "@types/node": "^20.14.9",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
-    "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.6",
+    "prettier": "^3.3.3",
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
   }

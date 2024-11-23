@@ -1,4 +1,5 @@
-import { WebSocketGateway,
+import {
+	WebSocketGateway,
 	WebSocketServer,
 	OnGatewayDisconnect,
 	SubscribeMessage,
@@ -10,8 +11,7 @@ import { Server, Socket } from 'socket.io';
 import MatchmakingService from './game.matchmaking.service';
 import { UserDTO } from '../dto/user.dto';
 
-
-@WebSocketGateway( {
+@WebSocketGateway({
 	namespace: process.env.WS_NS_MATCHMAKING,
 	cors: {
 		origin: process.env.URL_FRONTEND,
@@ -20,21 +20,18 @@ import { UserDTO } from '../dto/user.dto';
 	},
 	transports: ['websocket'],
 })
-export default class MatchmakingGateway implements OnGatewayDisconnect{
-
+export default class MatchmakingGateway implements OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;
 
-	constructor(private matchmakingService: MatchmakingService) {};
+	constructor(private matchmakingService: MatchmakingService) {}
 
 	handleDisconnect(client: Socket): void {
-		
 		this.matchmakingService.removePlayerFromQueue(client);
-	};
+	}
 
 	@SubscribeMessage('waiting')
-  clientWaitingAdd(@MessageBody() data: UserDTO, @ConnectedSocket() client: Socket) {
-
-    this.matchmakingService.addPlayerToQueue(client, data);
-  };
-};
+	clientWaitingAdd(@MessageBody() data: UserDTO, @ConnectedSocket() client: Socket) {
+		this.matchmakingService.addPlayerToQueue(client, data);
+	}
+}
