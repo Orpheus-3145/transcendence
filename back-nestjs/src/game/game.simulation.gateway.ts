@@ -7,6 +7,7 @@ import {
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 } from '@nestjs/websockets';
+// import { UseFilters, InternalServerErrorException } from '@nestjs/common'
 import { Server, Socket } from 'socket.io';
 
 import SimulationService from './game.simulation.service';
@@ -14,6 +15,8 @@ import { PaddleDirection } from './game.types';
 
 import InitDataDTO from 'src/dto/initData.dto';
 import PlayerDataDTO from 'src/dto/playerData.dto';
+// import GameExceptionFilter from './game.exception.filter';
+
 
 @WebSocketGateway(
 { 

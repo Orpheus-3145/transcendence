@@ -1,26 +1,20 @@
 
 import { ExceptionFilter, Catch, ArgumentsHost, InternalServerErrorException } from '@nestjs/common';
+import { Socket } from 'socket.io';
 
 @Catch(InternalServerErrorException)
-export class HttpExceptionFilter implements ExceptionFilter {
+export default class GameExceptionFilter implements ExceptionFilter {
   
-  catch(exception: InternalServerErrorException) {
-  //   const ctx = host.switchToHttp();
-  //   const response = ctx.getResponse<Response>();
-  //   const request = ctx.getRequest<Request>();
-  //   const status = exception.getStatus();
-
-  //   response
-  //     .status(status)
-  //     .json({
-  //       statusCode: status,
-  //       timestamp: new Date().toISOString(),
-  //       path: request.url,
-  //     });
+  catch(exception: InternalServerErrorException, host: ArgumentsHost) {
+    
+    const ctx = host.switchToWs();
+    console.log('handling');
+    // const data: any = ctx.getData();
+    // const webSocket: Socket = ctx.getClient().server;
+    // console.log(webSocket);
+    
+    // webSocket.interruptGame();
   }
 }
 
 
-
-// @UseFilters(new HttpExceptionFilter())
-// export class CatsController {}

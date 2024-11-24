@@ -1,18 +1,20 @@
-import { Injectable } from '@nestjs/common'
+import { UseFilters, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { Socket } from 'socket.io';
 
 import GameStateDTO from '../dto/gameState.dto';
 import * as GameTypes from './game.types';
 import { GAME, GAME_BALL, GAME_PADDLE } from './game.data';
+import GameExceptionFilter from './game.exception.filter';
 
 
 @Injectable()
+@UseFilters(GameExceptionFilter)
 export default class SimulationService {
 
 	private readonly maxScore: number = GAME.maxScore;
+	private readonly botName: string = GAME.botName;
 	private readonly windowWidth: number = GAME.width;
 	private readonly windowHeight: number = GAME.height;
-	private readonly botName: string = GAME.botName;
 	private readonly paddleWidth: number = GAME_PADDLE.width;
 	private readonly paddleHeight: number = GAME_PADDLE.height;
 	private readonly ballSpeed: number = GAME_BALL.speed;
@@ -58,6 +60,10 @@ export default class SimulationService {
 
 	startEngine(): void {
 
+		// if (this.isRunning() === false)
+		throw new InternalServerErrorException( {
+			message: 'callback to players while engine is not running',
+		});
 		this.gameStateInterval = setInterval(() => {
 
 			this.updateBall();
@@ -75,13 +81,23 @@ export default class SimulationService {
 
 		clearInterval(this.gameStateInterval);
 		this.gameStateInterval = null;
-		this.engineRunning = false;
+
+		// do not clear data immediately because there can be loops of the engine
+		// scheduled before it stops but that happens after
+		setTimeout(() => {
+
+				this.sessionToken = '';
+				this.mode = GameTypes.GameMode.unset;
+				this.player1 = null;
+				this.player2 = null;
+				this.ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
+				this.engineRunning = false;
+			}, GAME.frameRate);
 	};
 
 	sendUpdateToPlayers(msgType: string) {
 
 		// throw excp if engine is not running
-		// if (this.isRunning() === false) {}
 		this.player1.clientSocket.emit(msgType, this.getGameState());
 
 		if (this.mode === GameTypes.GameMode.multi)
@@ -243,61 +259,53 @@ export default class SimulationService {
 		return null;  // No collision
 	};
 
+	interruptGame(trace: string): void {
+		
+    console.log('error caught');
+		this.player1.clientSocket.emit('error', trace)
+		this.player1.clientSocket.disconnect(true);
+		if (this.mode === GameTypes.GameMode.multi) {
+			
+			this.player2.clientSocket.emit('error', trace)
+			this.player2.clientSocket.disconnect(true);
+		}
+
+		this.stopEngine();
+	};
+
 	handleDisconnect(client: Socket): void {
 
 		if (this.isRunning() === false)
 			return;
-
-		this.stopEngine();
-
+		
 		if (this.mode === GameTypes.GameMode.multi) { // force to disconnect the other client, only in multi-player mode
-
+			
 			if (this.player1.clientSocket.id === client.id) {
-
+				
 				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player2.nameNick} left the game`);
 				this.player2.clientSocket.disconnect(true);    
 			}
 			else if (this.player2.clientSocket.id === client.id) {
-
+				
 				this.player1.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player1.nameNick} left the game`);
 				this.player1.clientSocket.disconnect(true);
 			}
 		}
 		
-		// do not clear data immediately because there can be loops of the engine
-		// scheduled before it stops but that happens after
-		setTimeout(() => this.clearGameData(), GAME.frameRate);
-	};
-
-	interruptGame(): void {
-
-
+		this.stopEngine();
 	};
 
 	endGame(winner: GameTypes.Player): void {
 		
-		this.stopEngine();
-		
 		this.player1.clientSocket.emit('endGame', winner.nameNick)
 		this.player1.clientSocket.disconnect(true);
 		if (this.mode === GameTypes.GameMode.multi) {
-
+			
 			this.player2.clientSocket.emit('endGame', winner.nameNick)
-			this.player2.clientSocket.disconnect(true).emit('endGame', winner.nameNick);
+			this.player2.clientSocket.disconnect(true);
 		}
 
-		// do not clear data immediately because there can be loops of the engine
-		// scheduled before it stops but that happens after
-		setTimeout(() => this.clearGameData(), GAME.frameRate);
-	};
-
-	clearGameData(): void {
-
-		this.sessionToken = '';
-		this.mode = GameTypes.GameMode.unset;
-		this.player1 = null;
-		this.player2 = null;
-		this.ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
+		this.stopEngine();
 	};
 };
 
