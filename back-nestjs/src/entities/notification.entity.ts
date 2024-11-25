@@ -1,31 +1,47 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 import { IsAscii, Length } from 'class-validator';
-import { User } from './user.entity'
 
 
 export enum NotificationStatus {
 	Accepted = 'Accepted',
 	Declined = 'Declined',
 	Pending = 'Pending',
+  None = 'None',
 }
 
 export enum NotificationType {
-	Message = 'message',
+	Message = 'Message',
 	FriendReq = 'Friend Request',
 }
 
 @Entity()
 export class Notification {
   @PrimaryGeneratedColumn()
-  Sender: User;
+  id: number;
 
   @Column({ nullable: false })
-  Receiver: User;
+  senderId: number;
+
+  @Column({nullable: false})
+  senderName: string;
 
   @Column({ nullable: false })
+  receiverId: number;
+
+  @Column({nullable: false})
+  receiverName: string;
+
+  @Column({
+    type: 'enum',
+    enum: NotificationType,
+  })
   type: NotificationType;
 
-  @Column({ nullable: false })
+  @Column({
+    type: 'enum',
+    enum: NotificationStatus,
+    default: NotificationStatus.Pending,
+  })
   status: NotificationStatus;
 
   @Column({ nullable: true, length: 100 })

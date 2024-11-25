@@ -11,12 +11,12 @@ import { User } from './entities/user.entity';
 import { Notification } from './entities/notification.entity';
 
 @Module({
-  controllers: [AuthController, UsersController], //NotificationController
+  controllers: [AuthController, UsersController, NotificationController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     UsersModule,
-    //NotificationModule,
+    NotificationModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -27,7 +27,7 @@ import { Notification } from './entities/notification.entity';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
-        entities: [User], // List your entities here //Notification
+        entities: [User, Notification],
         synchronize: true,
       })
     }),

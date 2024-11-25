@@ -11,7 +11,7 @@ export enum UserStatus {
 }
 
 export interface User {
-  friends: any;
+  friends: string[];
   id: number;
   intraId: number;
   nameNick: string | null;

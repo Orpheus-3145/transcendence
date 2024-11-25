@@ -5,31 +5,34 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import {  Tooltip } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClearIcon from '@mui/icons-material/Clear';
+import {getUserNotifications, removeNotificationDb, NotificationType, NotificationStatus} from '../../../Providers/NotificationContext/Notification'
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
 	const navigate = useNavigate();
 	const theme = useTheme();  
 	const [open, setOpen] = useState<Boolean>(false);
-	let [notificationDot, setnotificationDot] = useState<Boolean>(false);
+	const [notificationDot, setNotificationDot] = useState<Boolean>(false);
+	const [messageArray, setMessageArray] = useState<Notification[] | null>(null);
+	const [friendReqArray, setFriendReqArray] = useState<Notification[] | null>(null);
+	const [notificationNumber, setNotificationNumber] = useState<number | null>(null);
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpen(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)}
 
-	const message = "broeder kom gimma spelen!";
 
-	let removeNotification = () =>
+	let removeNotification = (noti: Notification) =>
 	{
-		console.log("haha");
+		removeNotificationDb(noti);
 	}
 
-	let initNotification = () =>
+	let initMessageNotification = (noti: Notification) =>
 	{
 		return (
 			<Stack
@@ -53,7 +56,7 @@ export const Notification: React.FC = () => {
 						<IconButton 
 							variant="contained" 
 							component="label"
-							onClick={() => removeNotification()}
+							onClick={() => removeNotification(noti)}
 							sx={{
 								left: '190px',
 								top: '-30px',
@@ -76,27 +79,54 @@ export const Notification: React.FC = () => {
 							fontSize: '0.9rem',
 						}}    
 					>
-						<a href="" onClick={() => navToUser("3")} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>Broeder</a>
+						<a href="" onClick={() => navToUser('/profile/' + noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
 						send you a message:
 						<br />
-						{message}
+						{noti.message}
 					</Typography>
 				</Box>
 			</Stack>
 		);
 	}
 
-	let acceptFriendReq = () =>
+	let getNotificationMessages = () =>
 	{
-		console.log("haha");
+		if (messageArray == null)
+		{
+			return (
+				<Typography
+					sx={{
+						position: 'relative',
+						left: '50px',
+					color: 'green',
+					}}
+				>	
+					<br />
+					You have no incoming messages!
+				</Typography>
+			);
+		}
+		
+		return (
+			<Stack>
+				{messageArray.map((item: Notification) => initMessageNotification(item))}
+			</Stack>
+		);
 	}
 
-	let declineFriendReq = () =>
+	let acceptFriendReq = (noti: Notification) =>
 	{
-		console.log("nene");
+		noti.status = NotificationStatus.Accepted;
+		// handleNotificationStatus(noti);
 	}
 
-	let initFriendNotification = () =>
+	let declineFriendReq = (noti: Notification) =>
+	{
+		noti.status = NotificationStatus.Declined;
+		// handleNotificationStatus(noti);
+	}
+
+	let initFriendNotification = (noti: Notification) =>
 	{
 		return (
 			<Stack
@@ -120,7 +150,7 @@ export const Notification: React.FC = () => {
 						<IconButton 
 							variant="contained" 
 							component="label"
-							onClick={() => removeNotification()}
+							onClick={() => removeNotification(noti)}
 							sx={{
 								left: '240px',
 								top: '-30px',
@@ -143,7 +173,7 @@ export const Notification: React.FC = () => {
 							fontSize: '0.9rem',
 						}}    
 					>
-						<a href="" onClick={() => navToUser("3")} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>Broeder</a>
+						<a href="" onClick={() => navToUser('/profile/' + noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
 						has sent you a friend request!
 					</Typography>
 
@@ -156,7 +186,7 @@ export const Notification: React.FC = () => {
 						}}
 					>
 						<Button
-							onClick={() => acceptFriendReq()}
+							onClick={() => acceptFriendReq(noti)}
 							sx={{
 								background: "green",
 								'&:hover': {
@@ -167,7 +197,7 @@ export const Notification: React.FC = () => {
 							Accept
 						</Button>
 						<Button
-							onClick={() => declineFriendReq()}
+							onClick={() => declineFriendReq(noti)}
 							sx={{
 								background: "red",
 								'&:hover': {
@@ -183,33 +213,28 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-	let getNotificationMessages = () =>
-	{
-		return (initNotification());
-
-		return (
-			<Typography
-				sx={{
-					color: 'green',
-				}}
-			>	
-				You have no incoming messages!
-			</Typography>
-		);
-	}
-
 	let getNotificationFrRequests = () =>
 	{
-		return (initFriendNotification());
-
-		return (
-			<Typography
+		if (friendReqArray == null)
+		{
+			return (
+				<Typography
 				sx={{
+					position: 'relative',
+					left: '35px',
 					color: 'green',
 				}}
-			>
-				You have no incoming friend requests!
-			</Typography>
+				>
+					<br />
+					You have no incoming friend requests!
+				</Typography>
+			);
+		}
+	
+		return (
+			<Stack>
+				{friendReqArray.map((item: Notification) => initFriendNotification(item))}
+			</Stack>
 		);
 	}
 
@@ -270,9 +295,8 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-
-  	let notificationWrapper = () =>
-  	{
+	let notificationBar = () =>
+	{
 		return (
 			<Stack>
 				<Tooltip title="Notifications" arrow>
@@ -310,9 +334,62 @@ export const Notification: React.FC = () => {
 				</Drawer>
 			</Stack>
 		);
+	}
+
+	let getNotificationUser = async () : Promise<void> =>
+	{
+		let arr = await getUserNotifications(user);
+		if (arr?.length === 0)
+		{
+			setNotificationDot(false);
+			setFriendReqArray(null);
+			setMessageArray(null);
+		}
+		else
+		{
+			var friendsArr: Notification[] | null = null;
+			var messageArr: Notification[] | null = null;
+			arr?.map((item: Notification) =>
+			{
+				if (item.type == NotificationType.Message)
+				{
+					if (messageArr == null)
+					{
+						messageArr = [];
+					}
+					messageArr.push(item);
+				}
+				else if (item.type == NotificationType.FriendReq)
+				{
+					if (friendsArr == null)
+					{
+						friendsArr = [];
+					}
+					friendsArr.push(item);
+				}
+			}
+			)
+			setNotificationDot(true);
+			setFriendReqArray(friendsArr);
+			setMessageArray(messageArr);
+		}
+	}
+
+  	let notificationWrapper = () =>
+  	{
+		useEffect(() => 
+		{
+			getNotificationUser().then((number) => 
+			{
+				setNotificationNumber(number);
+			});
+		}, [friendReqArray, messageArray, notificationDot]);
+
+		if (notificationNumber === null) 
+			return <Stack>Loading...</Stack>;
+
+		return (notificationBar());
   	}
-
-
 
 	return (
 		notificationWrapper()

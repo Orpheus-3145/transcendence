@@ -14,15 +14,6 @@ CREATE TABLE IF NOT EXISTS Users (
 		blocked TEXT[] DEFAULT '{}';
 	);
 
--- CREATE TABLE IF NOT EXIST Notification (
--- 		sender
--- 		receiver
--- 		type 
--- 		status
--- 		Messages
--- 		time_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
--- );
-
 CREATE TYPE FRIEND_REQUEST_STATUS AS ENUM ('active', 'inactive', 'pending');
 CREATE TABLE IF NOT EXISTS Friends (
 		sender_id INTEGER NOT NULL,

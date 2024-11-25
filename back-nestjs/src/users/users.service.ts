@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserStatus, UserDTO } from '../dto/user.dto'
 import { AccessTokenDTO } from '../dto/auth.dto';
+import { Notification, NotificationType } from 'src/entities/notification.entity';
 
 
 @Injectable()
@@ -11,6 +12,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+
   ) { }
 
   async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
@@ -100,25 +102,33 @@ export class UsersService {
   {
     var user = this.getUser(iduser);
     var otheruser = this.getUser(idother);
+    //I HAVE A INITREQ FUNCTION IN THE NOTIFICATION SERVICE, NEED TO FIND A WAY TO MAKE IT CALLABLE HERE
+  }
+
+  async friendReqAccepted(iduser:string, idother:string)
+  {
+    var user = this.getUser(iduser);
+    var otheruser = this.getUser(idother);
+
     if (!(await user).friends)
     {
-      (await user).friends =  [];
+        (await user).friends =  [];
     }
     if (!(await otheruser).friends)
-      {
+    {
         (await otheruser).friends =  [];
-      }
+    }
     (await user).friends.push((await otheruser).intraId.toString());
     this.usersRepository.save((await user));
     (await otheruser).friends.push((await user).intraId.toString());
     this.usersRepository.save((await otheruser));
   }
 
+
   async removeFriend(iduser:string, idother:string)
   {
     var user = this.getUser(iduser);
-    var numb = Number(idother);
-    var other = this.findOne(numb);
+    var other = this.getUser(idother);
     var newlist = (await user).friends.filter(friend => friend !== idother);
     (await user).friends = newlist;
     this.usersRepository.save((await user));
