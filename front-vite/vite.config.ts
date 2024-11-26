@@ -1,12 +1,14 @@
 import { defineConfig } from 'vite'
 import fs from 'fs';
 import react from '@vitejs/plugin-react'
+import { checkTLSfiles, makeCertTLS } from './src/createCerts'
 
 
 const envVariables: Record<string, string> = {};
 for (const [key, value] of Object.entries(process.env)) {
     envVariables[`import.meta.env.${key}`] = JSON.stringify(value);
 }
+
 
 // https://vitejs.dev/config/
 export default defineConfig({
