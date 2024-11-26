@@ -24,6 +24,7 @@ const MainAppComponent: React.FC = () => {
     </Container>
     <Divider orientation="horizontal" sx={{ backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%' }} />
     <Footer />
+	<Chat />
   </ThemeProvider>
   );
 }
