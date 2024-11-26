@@ -11,7 +11,7 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClearIcon from '@mui/icons-material/Clear';
-import {getUserNotifications, removeNotificationDb, NotificationType, NotificationStatus} from '../../../Providers/NotificationContext/Notification'
+import {NotificationStruct, getUserNotifications, removeNotificationDb, acceptFriendRequest, declineFriendRequest, NotificationType, NotificationStatus} from '../../../Providers/NotificationContext/Notification'
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
@@ -19,20 +19,20 @@ export const Notification: React.FC = () => {
 	const theme = useTheme();  
 	const [open, setOpen] = useState<Boolean>(false);
 	const [notificationDot, setNotificationDot] = useState<Boolean>(false);
-	const [messageArray, setMessageArray] = useState<Notification[] | null>(null);
-	const [friendReqArray, setFriendReqArray] = useState<Notification[] | null>(null);
+	const [messageArray, setMessageArray] = useState<NotificationStruct[] | null>(null);
+	const [friendReqArray, setFriendReqArray] = useState<NotificationStruct[] | null>(null);
 	const [notificationNumber, setNotificationNumber] = useState<number | null>(null);
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpen(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)}
 
 
-	let removeNotification = (noti: Notification) =>
+	let removeNotification = (noti: NotificationStruct) =>
 	{
-		removeNotificationDb(noti);
+		removeNotificationDb(noti.senderId.toString(), noti.receiverId.toString(), noti.type);
 	}
 
-	let initMessageNotification = (noti: Notification) =>
+	let initMessageNotification = (noti: NotificationStruct) =>
 	{
 		return (
 			<Stack
@@ -109,24 +109,22 @@ export const Notification: React.FC = () => {
 		
 		return (
 			<Stack>
-				{messageArray.map((item: Notification) => initMessageNotification(item))}
+				{messageArray.map((item: NotificationStruct) => initMessageNotification(item))}
 			</Stack>
 		);
 	}
 
-	let acceptFriendReq = (noti: Notification) =>
+	let acceptFriendReq = (noti: NotificationStruct) =>
 	{
-		noti.status = NotificationStatus.Accepted;
-		// handleNotificationStatus(noti);
+		acceptFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
 	}
 
-	let declineFriendReq = (noti: Notification) =>
+	let declineFriendReq = (noti: NotificationStruct) =>
 	{
-		noti.status = NotificationStatus.Declined;
-		// handleNotificationStatus(noti);
+		declineFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
 	}
 
-	let initFriendNotification = (noti: Notification) =>
+	let initFriendNotification = (noti: NotificationStruct) =>
 	{
 		return (
 			<Stack
@@ -233,7 +231,7 @@ export const Notification: React.FC = () => {
 	
 		return (
 			<Stack>
-				{friendReqArray.map((item: Notification) => initFriendNotification(item))}
+				{friendReqArray.map((item: NotificationStruct) => initFriendNotification(item))}
 			</Stack>
 		);
 	}
@@ -347,9 +345,9 @@ export const Notification: React.FC = () => {
 		}
 		else
 		{
-			var friendsArr: Notification[] | null = null;
-			var messageArr: Notification[] | null = null;
-			arr?.map((item: Notification) =>
+			var friendsArr: NotificationStruct[] | null = null;
+			var messageArr: NotificationStruct[] | null = null;
+			arr?.map((item: NotificationStruct) =>
 			{
 				if (item.type == NotificationType.Message)
 				{

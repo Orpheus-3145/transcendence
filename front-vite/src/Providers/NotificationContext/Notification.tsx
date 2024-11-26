@@ -15,7 +15,7 @@ import {User} from '../UserContext/User'
 		Pending = 'Pending',
 	}
 
-	export interface Notification {
+	export interface NotificationStruct {
 		senderId: number;
 		senderName: string;
 		receiverId: number;
@@ -47,11 +47,11 @@ import {User} from '../UserContext/User'
 		  }	
 	}
 
-	export async function removeNotificationDb(noti:Notification): Promise<void> 
+	export async function removeNotificationDb(senderid:string, receiverid: string, type:NotificationType): Promise<void> 
 	{
-		const request = new Request(BACKEND_URL + '/notification/removeNotification', {
+		const request = new Request(BACKEND_URL + '/notification/removeNotification/' + senderid + '/' + receiverid + '/' + type, {
 			method: "POST",
-			body: JSON.stringify({noti}),
+			body: JSON.stringify({senderid, receiverid, type}),
 		  });
 		
 		try
@@ -64,19 +64,31 @@ import {User} from '../UserContext/User'
 		}	
 	}
 
-	export async function handleNotification(noti:Notification): Promise<void> 
-	{
-		const request = new Request(BACKEND_URL + '/notification/handleNotification', {
+
+	export async function acceptFriendRequest(senderid:string, receiverid: string) {
+		const request = new Request(BACKEND_URL + '/notification/acceptNoti/' + senderid + '/' + receiverid, {
 			method: "POST",
-			body: JSON.stringify({noti}),
+			body: JSON.stringify({senderid, receiverid}),
 		  });
-		
-		try
-		{
+
+		  try {
 			await fetch(request);
-		}
-		catch (error)
-		{
-			console.error("FAILED TO HANDLE NOTIFICATION!");
-		}	
+		  } 
+		  catch (error) {
+			console.log("jdhskahdjksahjdksa");
+		  }
+	}
+
+	export async function declineFriendRequest(senderid:string, receiverid: string) {
+		const request = new Request(BACKEND_URL + '/notification/declineNoti/' + senderid + '/' + receiverid, {
+			method: "POST",
+			body: JSON.stringify({senderid, receiverid}),
+		  });
+
+		  try {
+			await fetch(request);
+		  } 
+		  catch (error) {
+			console.log("JDSKLAHJD");
+		  }
 	}

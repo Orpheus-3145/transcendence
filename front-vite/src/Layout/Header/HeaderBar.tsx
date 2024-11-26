@@ -8,13 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import {  Tooltip } from '@mui/material';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import { useState } from 'react';
-import Drawer from '@mui/material/Drawer';
-import Divider from '@mui/material/Divider';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import ClearIcon from '@mui/icons-material/Clear';
 
 export const Bar: React.FC = () => {
 	const { user } = useUser();

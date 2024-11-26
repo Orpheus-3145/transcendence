@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserStatus, UserDTO } from '../dto/user.dto'
 import { AccessTokenDTO } from '../dto/auth.dto';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationController } from 'src/notification/notification.controller';
 
 
 @Injectable()
@@ -12,7 +14,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-
+    @Inject(forwardRef(() => NotificationService))
+		private readonly notificationService: NotificationService,
   ) { }
 
   async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
@@ -102,14 +105,14 @@ export class UsersService {
   {
     var user = this.getUser(iduser);
     var otheruser = this.getUser(idother);
-    //I HAVE A INITREQ FUNCTION IN THE NOTIFICATION SERVICE, NEED TO FIND A WAY TO MAKE IT CALLABLE HERE
+    this.notificationService.initFriendReq((await user), (await otheruser));
   }
 
   async friendReqAccepted(iduser:string, idother:string)
   {
     var user = this.getUser(iduser);
     var otheruser = this.getUser(idother);
-
+    
     if (!(await user).friends)
     {
         (await user).friends =  [];

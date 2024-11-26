@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
@@ -21,6 +21,29 @@ export class NotificationService {
 	{
 		var tmp = Number(id);
 		return (this.notificationRepository.find({where: {receiverId: tmp}}));
+	}
+
+	async findAndRmvNotification(sender:string, receiver:string, type:NotificationType)
+	{
+		var send = Number(sender);
+		var recv = Number(receiver);
+
+		const noti = await this.notificationRepository.find({ where: { receiverId: recv, senderId: send, type: type } });
+		await this.notificationRepository.remove(noti);
+	}
+
+	async removeFrienReq(sender:string, receiver:string)
+	{
+		var send = Number(sender);
+		var recv = Number(receiver);
+		const arr = await this.notificationRepository.find({ where: { receiverId: recv, senderId: send } });
+
+		for (const item of arr) {
+			if (item.type === NotificationType.FriendReq) {
+				await this.notificationRepository.remove(item);
+				return ;
+			}
+		}
 	}
 
 	async initFriendReq(sender:User, receiver:User)
@@ -49,13 +72,13 @@ export class NotificationService {
 		this.notificationRepository.save(noti);
 	}
 
-	// async removeNotification(id:number)
-	// {
-	// 	const notification: Notification = await this.notificationRepository.findOne({where: id });
-	// 	if (!notification) {
-	// 		throw new Error('Notification not found');
-	// 	}
-	// 	await this.notificationRepository.remove(notification);
-	// }
+	 async removeNotification(id:number)
+	 {
+	 	const notification: Notification = await this.notificationRepository.findOne({where: {id:id} });
+	 	if (!notification) {
+	 		throw new Error('Notification not found');
+	 	}
+	 	await this.notificationRepository.remove(notification);
+	 }
 
 }

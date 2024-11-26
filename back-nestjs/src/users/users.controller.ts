@@ -1,14 +1,16 @@
-import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Inject, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, forwardRef } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
-
+import { NotificationService } from 'src/notification/notification.service';
 
 @Controller('users')
 export class UsersController {
 
 	constructor(
 		private readonly UserService: UsersService,
+		@Inject(forwardRef(() => NotificationService))
+		private readonly notificationService: NotificationService,
 	  ) { }
 
 
@@ -62,7 +64,10 @@ export class UsersController {
 
 	@Post('profile/:username/friend/add/:id')
 	async addFriend(@Param('username') username:string, @Param('id') id: string) {
-		return (this.UserService.addFriend(username, id));
+		var user = this.UserService.getUser(username);
+		var other = this.UserService.getUser(id);
+	
+		this.notificationService.initFriendReq((await user), (await other));
 	}
 
 	@Post('profile/:username/friend/remove/:id')
