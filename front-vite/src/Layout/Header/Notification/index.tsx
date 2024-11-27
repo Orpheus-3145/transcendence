@@ -11,7 +11,7 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClearIcon from '@mui/icons-material/Clear';
-import {NotificationStruct, getUserNotifications, removeNotificationDb, acceptFriendRequest, declineFriendRequest, NotificationType, NotificationStatus} from '../../../Providers/NotificationContext/Notification'
+import {NotificationStruct, getUserNotifications, removeNotificationDb, acceptFriendRequest, declineFriendRequest, acceptGameInvite, declineGameInvite ,NotificationType, NotificationStatus} from '../../../Providers/NotificationContext/Notification'
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
@@ -20,7 +20,8 @@ export const Notification: React.FC = () => {
 	const [open, setOpen] = useState<Boolean>(false);
 	const [notificationDot, setNotificationDot] = useState<Boolean>(false);
 	const [messageArray, setMessageArray] = useState<NotificationStruct[] | null>(null);
-	const [friendReqArray, setFriendReqArray] = useState<NotificationStruct[] | null>(null);
+	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[] | null>(null);
+	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[] | null>(null);
 	const [notificationNumber, setNotificationNumber] = useState<number | null>(null);
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpen(newOpen)};
@@ -114,18 +115,28 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-	let acceptFriendReq = (noti: NotificationStruct) =>
+	let pressAcceptRequest = (noti: NotificationStruct) =>
 	{
-		acceptFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+		if (noti.type == NotificationType.friendRequest)
+			acceptFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+		else if (noti.type == NotificationType.gameInvite)
+			acceptGameInvite(noti.senderId.toString(), noti.receiverId.toString());
 	}
 
-	let declineFriendReq = (noti: NotificationStruct) =>
-	{
-		declineFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+	let pressDeclineRequest = (noti: NotificationStruct) =>
+	{		
+		if (noti.type == NotificationType.friendRequest)
+			declineFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+		else if (noti.type == NotificationType.gameInvite)
+			declineGameInvite(noti.senderId.toString(), noti.receiverId.toString());
 	}
 
-	let initFriendNotification = (noti: NotificationStruct) =>
+	let initRequestNotification = (noti: NotificationStruct) =>
 	{
+		var message = "has sent you a friend request!";
+		if (noti.type == NotificationType.gameInvite)
+			message = "has sent you a game invite!"; 
+
 		return (
 			<Stack
 				sx={{
@@ -172,7 +183,7 @@ export const Notification: React.FC = () => {
 						}}    
 					>
 						<a href="" onClick={() => navToUser('/profile/' + noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-						has sent you a friend request!
+						{message}
 					</Typography>
 
 					<ButtonGroup 
@@ -184,7 +195,7 @@ export const Notification: React.FC = () => {
 						}}
 					>
 						<Button
-							onClick={() => acceptFriendReq(noti)}
+							onClick={() => pressAcceptRequest(noti)}
 							sx={{
 								background: "green",
 								'&:hover': {
@@ -195,7 +206,7 @@ export const Notification: React.FC = () => {
 							Accept
 						</Button>
 						<Button
-							onClick={() => declineFriendReq(noti)}
+							onClick={() => pressDeclineRequest(noti)}
 							sx={{
 								background: "red",
 								'&:hover': {
@@ -213,7 +224,7 @@ export const Notification: React.FC = () => {
 
 	let getNotificationFrRequests = () =>
 	{
-		if (friendReqArray == null)
+		if (friendRequestArray == null)
 		{
 			return (
 				<Typography
@@ -231,9 +242,34 @@ export const Notification: React.FC = () => {
 	
 		return (
 			<Stack>
-				{friendReqArray.map((item: NotificationStruct) => initFriendNotification(item))}
+				{friendRequestArray.map((item: NotificationStruct) => initRequestNotification(item))}
 			</Stack>
 		);
+	}
+
+	let getGameInvites = () =>
+	{
+		if (gameInviteArray == null)
+			{
+				return (
+					<Typography
+					sx={{
+						position: 'relative',
+						left: '45px',
+						color: 'green',
+					}}
+					>
+						<br />
+						You have no incoming game invites!
+					</Typography>
+				);
+			}
+		
+			return (
+				<Stack>
+					{gameInviteArray.map((item: NotificationStruct) => initRequestNotification(item))}
+				</Stack>
+			);		
 	}
 
 	let DrawerList = () =>
@@ -280,7 +316,7 @@ export const Notification: React.FC = () => {
 					<Typography variant="h5"
 						sx={{
 							position: 'relative',
-							left: '95px',	
+							left: '85px',	
 							fontFamily: 'Georgia, serif',
 							color: theme.palette.secondary.main,
 						}}
@@ -288,6 +324,22 @@ export const Notification: React.FC = () => {
 						Friend Requests:
 					</Typography>
 					{getNotificationFrRequests()}
+
+					<br />
+					<Divider />
+					<br />
+
+					<Typography variant="h5"
+						sx={{
+							position: 'relative',
+							left: '100px',	
+							fontFamily: 'Georgia, serif',
+							color: theme.palette.secondary.main,
+						}}
+					>
+						Game Invites:
+					</Typography>
+					{getGameInvites()}
 				</Box>
 			</Stack>
 		);
@@ -340,13 +392,15 @@ export const Notification: React.FC = () => {
 		if (arr?.length === 0)
 		{
 			setNotificationDot(false);
-			setFriendReqArray(null);
+			setFriendRequestArray(null);
 			setMessageArray(null);
+			setGameInviteArray(null);
 		}
 		else
 		{
 			var friendsArr: NotificationStruct[] | null = null;
 			var messageArr: NotificationStruct[] | null = null;
+			var gameArr: NotificationStruct[] | null = null;
 			arr?.map((item: NotificationStruct) =>
 			{
 				if (item.type == NotificationType.Message)
@@ -357,7 +411,7 @@ export const Notification: React.FC = () => {
 					}
 					messageArr.push(item);
 				}
-				else if (item.type == NotificationType.FriendReq)
+				else if (item.type == NotificationType.Request)
 				{
 					if (friendsArr == null)
 					{
@@ -365,11 +419,20 @@ export const Notification: React.FC = () => {
 					}
 					friendsArr.push(item);
 				}
+				else if (item.type == NotificationType.gameInvite)
+				{
+					if (gameArr == null)
+					{
+						gameArr = [];
+					}
+					gameArr.push(item);
+				}
 			}
 			)
 			setNotificationDot(true);
-			setFriendReqArray(friendsArr);
+			setFriendRequestArray(friendsArr);
 			setMessageArray(messageArr);
+			setGameInviteArray(gameArr);
 		}
 	}
 
@@ -381,7 +444,7 @@ export const Notification: React.FC = () => {
 			{
 				setNotificationNumber(number);
 			});
-		}, [friendReqArray, messageArray, notificationDot]);
+		}, [friendRequestArray, gameInviteArray, messageArray, notificationDot]);
 
 		if (notificationNumber === null) 
 			return <Stack>Loading...</Stack>;

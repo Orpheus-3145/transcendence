@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { Notification } from './entities/notification.entity';
 
 
 async function bootstrap() {
@@ -59,7 +60,7 @@ async function bootstrap() {
       username: configService.get('POSTGRES_USER'),
       password: configService.get('POSTGRES_PASSWORD'),
       database: configService.get('POSTGRES_DB'),
-      entities: [User], // List your entities here
+      entities: [User, Notification], // List your entities here
       synchronize: true,
     });
 

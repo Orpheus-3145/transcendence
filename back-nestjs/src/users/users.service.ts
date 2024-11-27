@@ -6,7 +6,6 @@ import { UserStatus, UserDTO } from '../dto/user.dto'
 import { AccessTokenDTO } from '../dto/auth.dto';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
 import { NotificationService } from 'src/notification/notification.service';
-import { NotificationController } from 'src/notification/notification.controller';
 
 
 @Injectable()
@@ -105,10 +104,10 @@ export class UsersService {
   {
     var user = this.getUser(iduser);
     var otheruser = this.getUser(idother);
-    this.notificationService.initFriendReq((await user), (await otheruser));
+    this.notificationService.initRequest((await user), (await otheruser), NotificationType.friendRequest);
   }
 
-  async friendReqAccepted(iduser:string, idother:string)
+  async friendRequestAccepted(iduser:string, idother:string)
   {
     var user = this.getUser(iduser);
     var otheruser = this.getUser(idother);
@@ -158,11 +157,15 @@ export class UsersService {
 
   async inviteGame(iduser:string, idother:string)
   {
-    console.log("invite game");
+    var user = this.getUser(iduser);
+    var otheruser = this.getUser(idother);
+    this.notificationService.initRequest((await user), (await otheruser), NotificationType.gameInvite);
   }
 
   async sendMessage(iduser:string, idother:string, message:string)
   {
-    console.log("send message");
+    var user = this.getUser(iduser);
+    var otheruser = this.getUser(idother);
+    this.notificationService.initMessage((await user), (await otheruser), message);
   }
 }

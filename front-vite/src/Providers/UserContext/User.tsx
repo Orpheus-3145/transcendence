@@ -181,13 +181,16 @@ export async function blockFriend(username:string, friend:string): Promise<void>
 export async function sendMessage(username:string, friend:string, message:string): Promise<void> {
   const request = new Request(BACKEND_URL + '/users/profile/' + username + '/message/' + friend + '/' + message, {
     method: "POST",
-    body: JSON.stringify({username, friend, message}),
+    body: JSON.stringify({message}),
   });
 
-  const response = await fetch(request)
-    .then((raw) => raw.json())
-    if (!response)
-      console.log("M8 SENDING MESSAGE FAILES FUCKIN HARD");
+  try 
+  {
+      await fetch(request);
+  } 
+  catch (error) {
+      console.log("error sending message");
+  }
 }
 
 export async function inviteToGame(username:string, friend:string): Promise<void> {

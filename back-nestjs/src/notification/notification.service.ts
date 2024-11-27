@@ -32,28 +32,28 @@ export class NotificationService {
 		await this.notificationRepository.remove(noti);
 	}
 
-	async removeFrienReq(sender:string, receiver:string)
+	async removeReq(sender:string, receiver:string, type:NotificationType)
 	{
 		var send = Number(sender);
 		var recv = Number(receiver);
 		const arr = await this.notificationRepository.find({ where: { receiverId: recv, senderId: send } });
 
 		for (const item of arr) {
-			if (item.type === NotificationType.FriendReq) {
+			if (item.type === type) {
 				await this.notificationRepository.remove(item);
 				return ;
 			}
 		}
 	}
 
-	async initFriendReq(sender:User, receiver:User)
+	async initRequest(sender:User, receiver:User, type:NotificationType)
 	{
 		var noti = new Notification();
 		noti.senderId = sender.id;
 		noti.senderName = sender.nameIntra;
 		noti.receiverId = receiver.id;
 		noti.receiverName = receiver.nameIntra;
-		noti.type = NotificationType.FriendReq;
+		noti.type = type;
 		noti.status = NotificationStatus.Pending;
 		noti.message = null;
 		this.notificationRepository.save(noti);
@@ -72,13 +72,12 @@ export class NotificationService {
 		this.notificationRepository.save(noti);
 	}
 
-	 async removeNotification(id:number)
-	 {
+	async removeNotification(id:number)
+	{
 	 	const notification: Notification = await this.notificationRepository.findOne({where: {id:id} });
 	 	if (!notification) {
 	 		throw new Error('Notification not found');
 	 	}
 	 	await this.notificationRepository.remove(notification);
-	 }
-
+	}
 }

@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from 'src/entities/notification.entity';
 
 @Controller('users')
 export class UsersController {
@@ -64,10 +65,7 @@ export class UsersController {
 
 	@Post('profile/:username/friend/add/:id')
 	async addFriend(@Param('username') username:string, @Param('id') id: string) {
-		var user = this.UserService.getUser(username);
-		var other = this.UserService.getUser(id);
-	
-		this.notificationService.initFriendReq((await user), (await other));
+		return (this.UserService.addFriend(username, id));
 	}
 
 	@Post('profile/:username/friend/remove/:id')

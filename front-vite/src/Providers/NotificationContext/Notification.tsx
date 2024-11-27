@@ -6,7 +6,8 @@ import {User} from '../UserContext/User'
 
 	export enum NotificationType {
 		Message = 'Message',
-		FriendReq = 'Friend Request',
+		friendRequest = 'Friend Request',
+		gameInvite = 'Game Invite',
 	}
 
 	export enum NotificationStatus {
@@ -66,7 +67,7 @@ import {User} from '../UserContext/User'
 
 
 	export async function acceptFriendRequest(senderid:string, receiverid: string) {
-		const request = new Request(BACKEND_URL + '/notification/acceptNoti/' + senderid + '/' + receiverid, {
+		const request = new Request(BACKEND_URL + '/notification/acceptNotiFR/' + senderid + '/' + receiverid, {
 			method: "POST",
 			body: JSON.stringify({senderid, receiverid}),
 		  });
@@ -80,7 +81,35 @@ import {User} from '../UserContext/User'
 	}
 
 	export async function declineFriendRequest(senderid:string, receiverid: string) {
-		const request = new Request(BACKEND_URL + '/notification/declineNoti/' + senderid + '/' + receiverid, {
+		const request = new Request(BACKEND_URL + '/notification/declineNotiFR/' + senderid + '/' + receiverid, {
+			method: "POST",
+			body: JSON.stringify({senderid, receiverid}),
+		  });
+
+		  try {
+			await fetch(request);
+		  } 
+		  catch (error) {
+			console.log("JDSKLAHJD");
+		  }
+	}
+
+	export async function acceptGameInvite(senderid:string, receiverid: string) {
+		const request = new Request(BACKEND_URL + '/notification/acceptNotiGI/' + senderid + '/' + receiverid, {
+			method: "POST",
+			body: JSON.stringify({senderid, receiverid}),
+		  });
+
+		  try {
+			await fetch(request);
+		  } 
+		  catch (error) {
+			console.log("jdhskahdjksahjdksa");
+		  }
+	}
+
+	export async function declineGameInvite(senderid:string, receiverid: string) {
+		const request = new Request(BACKEND_URL + '/notification/declineNotiGI/' + senderid + '/' + receiverid, {
 			method: "POST",
 			body: JSON.stringify({senderid, receiverid}),
 		  });

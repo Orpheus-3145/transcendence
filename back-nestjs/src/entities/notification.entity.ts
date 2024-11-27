@@ -11,7 +11,8 @@ export enum NotificationStatus {
 
 export enum NotificationType {
 	Message = 'Message',
-	FriendReq = 'Friend Request',
+	friendRequest = 'Friend Request',
+  gameInvite = 'Game Invite',
 }
 
 @Entity()

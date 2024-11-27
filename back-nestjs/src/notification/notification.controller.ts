@@ -32,17 +32,30 @@ export class NotificationController {
 		return (arr);
 	}
 
-	@Post('/acceptNoti/:sender/:receiver')
+	@Post('/acceptNotiFR/:sender/:receiver')
 	async acceptNotificationFR(@Param('sender') sender: string, @Param('receiver') receiver: string)
 	{
-		this.userService.friendReqAccepted(sender, receiver);
-		this.notificationService.removeFrienReq(sender, receiver);
+		this.userService.friendRequestAccepted(sender, receiver);
+		this.notificationService.removeReq(sender, receiver, NotificationType.friendRequest);
 	}
 
-	@Post('/declineNoti/:sender/:receiver')
+	@Post('/declineNotiFR/:sender/:receiver')
 	async declineNotificationFR(@Param('sender') sender: string, @Param('receiver') receiver: string)
 	{
-		this.notificationService.removeFrienReq(sender, receiver);
+		this.notificationService.removeReq(sender, receiver, NotificationType.friendRequest);
+	}
+
+	@Post('/acceptNotiGI/:sender/:receiver')
+	async acceptNotificationGI(@Param('sender') sender: string, @Param('receiver') receiver: string)
+	{
+		//need to init a game session
+		this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
+	}
+
+	@Post('/declineNotiGI/:sender/:receiver')
+	async declineNotificationGI(@Param('sender') sender: string, @Param('receiver') receiver: string)
+	{
+		this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
 	}
 
 	@Post('removeNotification/:senderid/:receiverid/:type')
@@ -50,21 +63,4 @@ export class NotificationController {
 	{
 		this.notificationService.findAndRmvNotification(senderid, receiverid, type);
 	}
-
-	//   @Get('/removeNotification/:id')
-	//   async removeNotification(@Param('id') id:string)
-	//   {
-	// 	var tmp = Number(id);
-	// 	this.notificationService.removeNotification(tmp);
-	//   }
-
-	//   @Post('handleNotification')
-	//   async handleNotification(@Body() noti:Notification)
-	//   {
-	// 	if (noti.status == NotificationStatus.Accepted)
-	// 	{
-
-	// 	}
-	// 	this.notificationService.removeNotification(noti.id);
-	//   }
-	}
+}
