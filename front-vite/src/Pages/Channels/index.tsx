@@ -1,7 +1,9 @@
 import React, { ReactNode } from 'react';
 import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Chat as ChatIcon } from '@mui/icons-material';
-import {useState} from 'react';
+import { SettingsModal } from './CreateChannel';
+import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField } from '@mui/material';
 import { styled } from '@mui/system';
@@ -127,53 +129,53 @@ const ChannelsPage: React.FC = () => {
 					icon: <ChatIcon />,
 					type: 'public',
 					password: null,
-					users: [
-					{
-					  name: 'User1',
-					  role: 'Guest',
-					  email: 'user1@example.com',
-					  password: 'password1',
-					  icon: <Typography>User1Icon</Typography>,
-					},
-					{
-					  name: 'User2',
-					  role: 'Owner',
-					  email: 'user2@example.com',
-					  password: 'password2',
-					  icon: <Typography>User2Icon</Typography>,
-					},
-					{
-					  name: 'User3',
-					  role: 'Administrator',
-					  email: 'user3@example.com',
-					  password: 'password3',
-					  icon: <Typography>User3Icon</Typography>,
-					},
-					{
-					  name: 'User4',
-					  role: 'Guest',
-					  email: 'user4@example.com',
-					  password: 'password4',
-					  icon: <Typography>User4Icon</Typography>,
-					},
+					users:[
+						{
+						  name: 'User1',
+						  role: 'Guest',
+						  email: 'user1@example.com',
+						  password: 'password1',
+						  icon: <Typography>User1Icon</Typography>,
+						},
+						{
+						  name: 'User2',
+						  role: 'Owner',
+						  email: 'user2@example.com',
+						  password: 'password2',
+						  icon: <Typography>User2Icon</Typography>,
+						},
+						{
+						  name: 'User3',
+						  role: 'Administrator',
+						  email: 'user3@example.com',
+						  password: 'password3',
+						  icon: <Typography>User3Icon</Typography>,
+						},
+						{
+						  name: 'User4',
+						  role: 'Guest',
+						  email: 'user4@example.com',
+						  password: 'password4',
+						  icon: <Typography>User4Icon</Typography>,
+						},
 					],
 					owner: 'set current user!!',
 		  		},
 			},
-			{
-				name: 'ChatName2',
-				icon: <ChatIcon />,
-				messages: [
-				],
-				settings: {
-					icon: <ChatIcon />,
-					type: 'private',
-					password: 'chat2password',
-					users: [
-					],
-					owner: 'set current user!!',
-				},
-			},
+			// {
+			// 	name: 'ChatName2',
+			// 	icon: <ChatIcon />,
+			// 	messages: [
+			// 	],
+			// 	settings: {
+			// 		icon: <ChatIcon />,
+			// 		type: 'private',
+			// 		password: 'chat2password',
+			// 		users: [
+			// 		],
+			// 		owner: 'set current user!!',
+			// 	},
+			// },
 		],
 		chatStatus: ChatStatus.ChannelsPage,
 		selected: null,
@@ -182,55 +184,28 @@ const ChannelsPage: React.FC = () => {
 	});
 	
 	return (
-		<Modal open={open} onClose={onClose}>
-		  <Box bgcolor="white" p={3} width="400px" borderRadius={2} margin="auto" mt="10%">
-			<Typography variant="h6">Channel Settings</Typography>
-			<Divider sx={{ my: 2 }} />
+		<Box height={'80vh'} bgcolor="lightgray" p={3}>
+		  <Typography variant="h6">Create a New Channel</Typography>
 	
-			{/* Privacy Options */}
-			<Stack direction="row" spacing={2}>
-			  <Button variant={settings.type === 'public' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('public', null)}>Public</Button>
-			  <Button variant={settings.type === 'private' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('private', null)}>Private</Button>
-			  <Button variant={settings.type === 'password' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('password', settings.password)}>Password Protected</Button>
-			</Stack>
+		  {/* Channel Name Input */}
+		  <TextField
+			label="Channel Name"
+			value={channelName}
+			onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChannelName(e.target.value)}
+			fullWidth
+			sx={{ mt: 2 }}
+		  />
 	
-			{/* Password field for password protected */}
-			{settings.type === 'password' && (
-			  <TextField
-				label="Password"
-				value={settings.password || ''}
-				onChange={(e) => handleChangePrivacy('password', e.target.value)}
-				fullWidth
-				sx={{ mt: 2 }}
-			  />
-			)}
+		  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3 }}>
+			<Typography variant="body1">Channel Name: {channelName}</Typography>
+			<IconButton onClick={() => setSettingsOpen(true)}>
+			  <SettingsIcon />
+			</IconButton>
+		  </Stack>
 	
-			{/* Add Friend */}
-			<TextField
-			  label="Add Friend"
-			  value={friendName}
-			  onChange={(e) => setFriendName(e.target.value)}
-			  fullWidth
-			  sx={{ mt: 2 }}
-			/>
-			<Button variant="contained" color="primary" onClick={handleAddFriend} sx={{ mt: 1 }}>
-			  Add Friend
-			</Button>
-	
-			{/* Friend List */}
-			<Stack spacing={1} mt={2}>
-			  {settings.users.map(user => (
-				<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
-				  <Typography>{user.name}</Typography>
-				  <Stack direction="row" spacing={1}>
-					<Button variant="outlined" color="secondary" onClick={() => handleRoleChange(user.name, 'Admin')}>Make Admin</Button>
-					<Button variant="outlined" color="error" onClick={() => handleRemoveFriend(user.name)}>Remove</Button>
-				  </Stack>
-				</Stack>
-			  ))}
-			</Stack>
-		  </Box>
-		</Modal>
+		  {/* Settings Modal */}
+		  <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={chatProps.settings} setSettings={chatProps.setSettings} />
+		</Box>
 	  );
   };
 
