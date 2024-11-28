@@ -6,6 +6,7 @@ export enum ChatStatus {
   Drawer = 'drawer',
   Chatbox = 'chatbox',
   Settings = 'settings',
+  ChannelsPage = 'channelsPage',
 }
 
 export interface ChatMessage {

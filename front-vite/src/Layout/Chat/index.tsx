@@ -53,7 +53,7 @@ export const Chat: React.FC = () => {
         icon: <Typography>User2Icon</Typography>,
       },
       {
-        name: 'User367890',
+        name: 'User3',
         role: 'Administrator',
         email: 'user3@example.com',
         password: 'password3',
