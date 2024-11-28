@@ -99,6 +99,14 @@ const ChannelsPage: React.FC = () => {
   	const [channelName, setChannelName] = useState('');
 	const [settingsOpen, setSettingsOpen] = useState(false);
 
+	const [settings, setSettings] = useState<ChatSettings>({
+		icon: <PersonAddIcon />,
+		type: 'public',  // default to public chat
+		password: null,
+		users: [],
+		owner: 'currentUser',  // assuming owner is 'currentUser'
+	});
+
 	const [chatProps, setChatProps] = useState<ChatProps>({
 		chatRooms: [
 			{
@@ -184,7 +192,7 @@ const ChannelsPage: React.FC = () => {
 	});
 	
 	return (
-		<Box height={'80vh'} bgcolor="lightgray" p={3}>
+		<Box height={'80vh'} bgcolor={theme.palette.primary.light} p={3}>
 		  <Typography variant="h6">Create a New Channel</Typography>
 	
 		  {/* Channel Name Input */}
@@ -204,7 +212,7 @@ const ChannelsPage: React.FC = () => {
 		  </Stack>
 	
 		  {/* Settings Modal */}
-		  <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={chatProps.settings} setSettings={chatProps.setSettings} />
+		  <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={settings} setSettings={setSettings} />
 		</Box>
 	  );
   };

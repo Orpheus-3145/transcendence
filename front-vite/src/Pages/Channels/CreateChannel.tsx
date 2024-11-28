@@ -16,6 +16,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	const [friendName, setFriendName] = useState('');
 
 	const handleAddFriend = () => {
+		console.log('"Add Friend" clicked!');
 		if (friendName) {
 			const newUser: UserProps = {
 				name: friendName,
@@ -30,17 +31,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	}
 
 	const handleRemoveFriend = (name: string) => {
+		console.log('"Remove Friend" clicked!');
 		const updatedUsers = settings.users.filter(user => user.name !== name);
 		setSettings({ ...settings, users: updatedUsers });
 	
 	};
 
 	const handleRoleChange = (name: string, role: string) => {
+		console.log('"Change Role" clicked!');
 		const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role } : user);
 		setSettings({ ...settings, users: updatedUsers });
 	};
 
 	const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
+		console.log('"Change Privacy" clicked!');
 		setSettings({ ...settings, type, password });
 	};
 
