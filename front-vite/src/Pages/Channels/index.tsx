@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Chat as ChatIcon } from '@mui/icons-material';
 import { SettingsModal } from './ChannelSettings';
-import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField } from '@mui/material';
@@ -94,6 +94,11 @@ const ChannelsPage: React.FC = () => {
 	  }
 	};
   
+	const handleCancelNewChannel = () => {
+		setIsAddingChannel(false);
+		setChannelName('');
+	};
+
 	const handleChannelClick = (channel: ChatRoom) => {
 	  setSelectedChannel(channel);
 	};
@@ -195,7 +200,6 @@ const ChannelsPage: React.FC = () => {
 			  {renderChannels(joinedChannels)} {/* Render joined channels */}
 			</Stack>
 		  </Stack>
-  
 		  {/* Right Section */}
 		  <Stack width={'100%'} padding={'1em'} bgcolor={theme.palette.primary.light} borderRadius={2}>
 			{isAddingChannel ? (
@@ -218,6 +222,19 @@ const ChannelsPage: React.FC = () => {
 				>
 				  Create Channel
 				</Button>
+				<Button
+				  variant="contained"
+				  color="primary"
+				  fullWidth
+				  onClick={handleCancelNewChannel}
+				//   disabled={!channelName.trim()}
+				  sx={{ fontWeight: 'bold', textTransform: 'none', mt: 2 }}
+				>
+				  Cancel
+				</Button>
+				{/* <IconButton sx={{ color: theme.palette.secondary.main }} onClick={handleCancelNewChannel}>
+					<CloseIcon />
+          		</IconButton> */}
 			  </>
 			) : selectedChannel ? (
 			  <>
