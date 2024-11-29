@@ -3,15 +3,15 @@ import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import fs from 'fs';
-import { checkTLSfiles, makeCertTLS } from './createCerts'
+import { checkTLSfiles, makeTLSfiles } from './create.certs'
 
 import AppModule from './app.module';
 
 
 async function bootstrap() {
 
-	if (checkTLSfiles(process.env.SSL_FOLDER) == false)
-		makeCertTLS(process.env.SSL_FOLDER);
+	if (checkTLSfiles() == false)
+		makeTLSfiles();
 
 	const app = await NestFactory.create(AppModule, {
 		httpsOptions: {
