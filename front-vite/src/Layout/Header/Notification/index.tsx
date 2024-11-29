@@ -11,26 +11,33 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClearIcon from '@mui/icons-material/Clear';
-import {NotificationStruct, getUserNotifications, removeNotificationDb, acceptFriendRequest, declineFriendRequest, acceptGameInvite, declineGameInvite ,NotificationType, NotificationStatus} from '../../../Providers/NotificationContext/Notification'
+import {NotificationStruct, 
+		getUserNotifications, 
+		removeNotificationDb, 
+		acceptFriendRequest, 
+		declineFriendRequest,
+		acceptGameInvite, 
+		declineGameInvite,
+		NotificationType} from '../../../Providers/NotificationContext/Notification'
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
 	const navigate = useNavigate();
 	const theme = useTheme();  
-	const [open, setOpen] = useState<Boolean>(false);
+	const [openDrawer, setOpenDrawer] = useState<Boolean>(false);
 	const [notificationDot, setNotificationDot] = useState<Boolean>(false);
 	const [messageArray, setMessageArray] = useState<NotificationStruct[] | null>(null);
 	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[] | null>(null);
 	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[] | null>(null);
 	const [notificationNumber, setNotificationNumber] = useState<number | null>(null);
 
-	const toggleDrawer = (newOpen: boolean) => () => {setOpen(newOpen)};
+	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)}
 
 
 	let removeNotification = (noti: NotificationStruct) =>
 	{
-		removeNotificationDb(noti.senderId.toString(), noti.receiverId.toString(), noti.type);
+		removeNotificationDb(noti.id.toString());
 	}
 
 	let initMessageNotification = (noti: NotificationStruct) =>
@@ -377,7 +384,7 @@ export const Notification: React.FC = () => {
 				)}
 				<Drawer
 					anchor={'right'}
-					open={open} 
+					open={openDrawer} 
 					onClose={toggleDrawer(false)}
 				>
 					{DrawerList()}
@@ -411,7 +418,7 @@ export const Notification: React.FC = () => {
 					}
 					messageArr.push(item);
 				}
-				else if (item.type == NotificationType.Request)
+				else if (item.type == NotificationType.friendRequest)
 				{
 					if (friendsArr == null)
 					{
@@ -429,7 +436,7 @@ export const Notification: React.FC = () => {
 				}
 			}
 			)
-			setNotificationDot(true);
+			//setNotificationDot(true);
 			setFriendRequestArray(friendsArr);
 			setMessageArray(messageArr);
 			setGameInviteArray(gameArr);
@@ -444,7 +451,11 @@ export const Notification: React.FC = () => {
 			{
 				setNotificationNumber(number);
 			});
-		}, [friendRequestArray, gameInviteArray, messageArray, notificationDot]);
+			if ((friendRequestArray == null) && (gameInviteArray == null) && (messageArray == null))
+				setNotificationDot(false);
+			else if (friendRequestArray != null || gameInviteArray != null || messageArray != null)
+				setNotificationDot(true);
+		}, [friendRequestArray, gameInviteArray, messageArray, notificationDot, openDrawer]);
 
 		if (notificationNumber === null) 
 			return <Stack>Loading...</Stack>;

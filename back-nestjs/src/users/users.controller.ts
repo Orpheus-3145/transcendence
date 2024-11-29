@@ -1,4 +1,4 @@
-import { Controller, Inject, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, forwardRef } from '@nestjs/common';
+import { Controller, Inject, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, forwardRef, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
@@ -22,7 +22,7 @@ export class UsersController {
 
 	@Post('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
-		var user = this.UserService.getUser(username);
+		var user = this.UserService.getUserId(username);
 		if (!user)
 			throw new HttpException('Not Found', 404);
 		return (user);
@@ -78,8 +78,8 @@ export class UsersController {
 		return (this.UserService.blockUser(username, id));
 	}
 
-	@Post('profile/:username/message/:id/:message')
-	async sendMessage(@Param('username') username:string, @Param('id') id: string, @Param('message') message:string) {
+	@Post('profile/:username/sendMessage/:id')
+	async sendMessage(@Param('username') username:string, @Param('id') id: string, @Body('message') message:string) {
 		return (this.UserService.sendMessage(username, id, message));
 	}
 

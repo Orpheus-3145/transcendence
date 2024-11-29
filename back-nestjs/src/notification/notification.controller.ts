@@ -19,7 +19,7 @@ export class NotificationController {
 	@Get('/getFromUser/:userid')
 	async getNotificationUser(@Param('userid') userid: string)
 	{
-		var user = this.userService.getUser(userid);
+		var user = this.userService.getUserId(userid);
 		if (!user)
 		{
 			console.log("nani da fuq!!");
@@ -58,9 +58,9 @@ export class NotificationController {
 		this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
 	}
 
-	@Post('removeNotification/:senderid/:receiverid/:type')
-	async rmvNotification(@Param('senderid') senderid: string, @Param('receiverid') receiverid: string, @Param('type') type: NotificationType)
+	@Post('removeNotification/:id')
+	async rmvNotification(@Param('id') id: string)
 	{
-		this.notificationService.findAndRmvNotification(senderid, receiverid, type);
+		this.notificationService.findAndRmvNotification(id);
 	}
 }

@@ -8,10 +8,10 @@ import { User } from 'src/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Notification]), forwardRef(() => UsersModule)],
-  controllers: [NotificationController],
-  providers: [NotificationService],
-  exports: [NotificationService, TypeOrmModule],
+	imports: [TypeOrmModule.forFeature([Notification]), forwardRef(() => UsersModule)],
+	controllers: [NotificationController],
+	providers: [NotificationService],
+	exports: [NotificationService, TypeOrmModule],
 })
 export class NotificationModule {}
 

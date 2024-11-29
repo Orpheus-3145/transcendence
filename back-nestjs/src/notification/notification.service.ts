@@ -23,13 +23,48 @@ export class NotificationService {
 		return (this.notificationRepository.find({where: {receiverId: tmp}}));
 	}
 
-	async findAndRmvNotification(sender:string, receiver:string, type:NotificationType)
+	async findAndRmvNotification(id:string)
 	{
-		var send = Number(sender);
-		var recv = Number(receiver);
-
-		const noti = await this.notificationRepository.find({ where: { receiverId: recv, senderId: send, type: type } });
+		var numb = Number(id);
+		const noti = await this.notificationRepository.find({ where: { id: numb} });
 		await this.notificationRepository.remove(noti);
+	}
+
+	async initRequest(sender:User, receiver:User, type:NotificationType)
+	{
+		var noti = new Notification();
+		noti.senderId = sender.id;
+		noti.senderName = sender.nameIntra;
+		noti.receiverId = receiver.id;
+		noti.receiverName = receiver.nameIntra;
+		noti.type = type;
+		noti.status = NotificationStatus.Pending;
+		noti.message = null;
+		this.notificationRepository.save(noti);
+		console.log(noti);
+	}
+
+	async initMessage(sender:User, receiver:User, message:string)
+	{
+		var noti = new Notification();
+		noti.senderId = sender.id;
+		noti.senderName = sender.nameIntra;
+		noti.receiverId = receiver.id;
+		noti.receiverName = receiver.nameIntra;
+		noti.type = NotificationType.Message;
+		noti.status = NotificationStatus.None;
+		noti.message = message;
+		this.notificationRepository.save(noti);
+		console.log(noti);
+	}
+
+	async removeNotification(id:number)
+	{
+	 	const notification: Notification = await this.notificationRepository.findOne({where: {id:id} });
+	 	if (!notification) {
+	 		throw new Error('Notification not found');
+	 	}
+	 	await this.notificationRepository.remove(notification);
 	}
 
 	async removeReq(sender:string, receiver:string, type:NotificationType)
@@ -44,40 +79,5 @@ export class NotificationService {
 				return ;
 			}
 		}
-	}
-
-	async initRequest(sender:User, receiver:User, type:NotificationType)
-	{
-		var noti = new Notification();
-		noti.senderId = sender.id;
-		noti.senderName = sender.nameIntra;
-		noti.receiverId = receiver.id;
-		noti.receiverName = receiver.nameIntra;
-		noti.type = type;
-		noti.status = NotificationStatus.Pending;
-		noti.message = null;
-		this.notificationRepository.save(noti);
-	}
-
-	async initMessage(sender:User, receiver:User, message:string)
-	{
-		var noti = new Notification();
-		noti.senderId = sender.id;
-		noti.senderName = sender.nameIntra;
-		noti.receiverId = receiver.id;
-		noti.receiverName = receiver.nameIntra;
-		noti.type = NotificationType.Message;
-		noti.status = NotificationStatus.None;
-		noti.message = message;
-		this.notificationRepository.save(noti);
-	}
-
-	async removeNotification(id:number)
-	{
-	 	const notification: Notification = await this.notificationRepository.findOne({where: {id:id} });
-	 	if (!notification) {
-	 		throw new Error('Notification not found');
-	 	}
-	 	await this.notificationRepository.remove(notification);
 	}
 }
