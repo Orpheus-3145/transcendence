@@ -235,6 +235,7 @@ const ChannelsPage: React.FC = () => {
 				  variant="contained"
 				  onClick={handleCreateChannel}
 				  fullWidth
+				  sx={{ textTransform: 'none', mt: 2 }}
 				>
 				  Create
 				</Button>
@@ -243,7 +244,7 @@ const ChannelsPage: React.FC = () => {
 					  color="primary"
 					  fullWidth
 					  onClick={handleCancelNewChannel}
-					  sx={{ fontWeight: 'bold', textTransform: 'none', mt: 2 }}
+					  sx={{ textTransform: 'none', mt: 2 }}
 					>
 					  Cancel
 					</Button>

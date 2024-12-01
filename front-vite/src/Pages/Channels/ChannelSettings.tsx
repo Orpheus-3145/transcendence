@@ -31,10 +31,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 		}
 	}
 
-	const handleRemoveFriend = (name: string) => {
-		console.log('"Remove Friend" clicked!');
-		const updatedUsers = settings.users.filter(user => user.name !== name);
-		setSettings({ ...settings, users: updatedUsers });
+	const handleKickFriend = (name: string) => {
+		console.log('"Kick Friend" clicked!');
+		// const updatedUsers = settings.users.filter(user => user.name !== name);
+		// setSettings({ ...settings, users: updatedUsers });
+	
+	};
+
+	const handleBanFriend = (name: string) => {
+		console.log('"Ban Friend" clicked!');
+		// const updatedUsers = settings.users.filter(user => user.name !== name);
+		// setSettings({ ...settings, users: updatedUsers });
+	
+	};
+
+	const handleBlockFriend = (name: string) => {
+		console.log('"Block Friend" clicked!');
+		// const updatedUsers = settings.users.filter(user => user.name !== name);
+		// setSettings({ ...settings, users: updatedUsers });
 	
 	};
 
@@ -52,7 +66,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 
 	return (
 		<Modal open={open} onClose={onClose}>
-		  <Box bgcolor={theme.palette.primary.light} p={3} width="400px" borderRadius={2} margin="auto" mt="10%">
+		  <Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
 			<Typography variant="h6">Channel Settings</Typography>
 			<Divider sx={{ my: 2 }} />
 	
@@ -87,17 +101,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 			</Button>
 	
 			{/* Friend List */}
-			<Stack spacing={1} mt={2}>
-			  {settings?.users.map(user => (
-				<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
-				  <Typography>{user.name}</Typography>
-				  <Stack direction="row" spacing={1}>
-					<Button variant="outlined" color="secondary" onClick={() => handleRoleChange(user.name, 'Admin')}>Make Admin</Button>
-					<Button variant="outlined" color="error" onClick={() => handleRemoveFriend(user.name)}>Remove</Button>
-				  </Stack>
+
+			<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
+				<Stack spacing={1} mt={2}>
+				  {settings?.users.map(user => (
+					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
+					  <Typography sx={{}} >{user.name.length > 10 ? user.name.slice(0, 9) + '...' : user.name}</Typography>
+					  <Stack direction="row" spacing={0.3}>
+						<Button variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, 'Admin')}>Make Admin</Button>
+						{/* <Button variant="outlined" color="error" onClick={() => handleRemoveFriend(user.name)}>Remove</Button> */}
+						<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
+						<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
+						<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(user.name)}>Block</Button>
+					  </Stack>
+					</Stack>
+				  ))}
 				</Stack>
-			  ))}
-			</Stack>
+			</Box>	
 		  </Box>
 		</Modal>
 	  );
