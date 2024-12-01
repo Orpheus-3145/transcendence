@@ -28,6 +28,7 @@ const ChannelsPage: React.FC = () => {
 	// State for channels, channel name input, settings modal, etc.
 	const [channelName, setChannelName] = useState('');
 	const [isAddingChannel, setIsAddingChannel] = useState(false);
+	const [isSettingsView, setIsSettingsView] = useState(false);
 	const [chatProps, setChatProps] = useState<ChatProps>({
 	  chatRooms: [
 		{
@@ -76,24 +77,49 @@ const ChannelsPage: React.FC = () => {
 	const joinedChannels = chatProps.chatRooms.slice(3); // Example for joined channels (you can adjust this logic)
   
 	// Functions to handle channel creation
+
+	// const handleCreateChannel = () => {
+	//   if (channelName.trim()) {
+	// 	const newChannel: ChatRoom = {
+	// 	  name: channelName,
+	// 	  icon: <GroupIcon />,
+	// 	  messages: [],
+	// 	  settings: newChannelSettings,
+	// 	};
+  
+	// 	setChatProps((prevState) => ({
+	// 	  ...prevState,
+	// 	  chatRooms: [...prevState.chatRooms, newChannel],
+	// 	}));
+	// 	setChannelName('');
+	// 	setIsAddingChannel(false); // Hide the input after creating the channel
+	//   }
+	// };
+  
 	const handleCreateChannel = () => {
-	  if (channelName.trim()) {
-		const newChannel: ChatRoom = {
-		  name: channelName,
-		  icon: <GroupIcon />,
-		  messages: [],
-		  settings: newChannelSettings,
-		};
-  
-		setChatProps((prevState) => ({
-		  ...prevState,
-		  chatRooms: [...prevState.chatRooms, newChannel],
-		}));
-		setChannelName('');
-		setIsAddingChannel(false); // Hide the input after creating the channel
-	  }
-	};
-  
+		if (channelName.trim()) {
+		  setChatProps((prevState) => ({
+			...prevState,
+			chatRooms: [
+			  ...prevState.chatRooms,
+			  {
+				name: channelName,
+				icon: <GroupIcon />,
+				messages: [],
+				settings: {
+				  type: 'public',
+				  password: null,
+				  users: [],
+				  owner: 'currentUser',
+				},
+			  },
+			],
+		  }));
+		  setChannelName('');
+		  setIsAddingChannel(false);
+		}
+	}
+
 	const handleCancelNewChannel = () => {
 		setIsAddingChannel(false);
 		setChannelName('');
@@ -101,13 +127,19 @@ const ChannelsPage: React.FC = () => {
 
 	const handleChannelClick = (channel: ChatRoom) => {
 	  setSelectedChannel(channel);
+	  setIsSettingsView(false);
 	};
   
 	const handleSettingsClick = (event: React.MouseEvent, channel: ChatRoom) => {
 	  event.stopPropagation(); // Prevent triggering the channel click
 	  setSelectedChannel(channel);
-	  setSettingsOpen(true);
+	//   setSettingsOpen(true);
+	  setIsSettingsView(true);
 	};
+
+	// const handleSaveChatSettings = () => {
+
+	// };
   
 	// Channel line component to render each channel in the list
 	const ChannelLine: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
@@ -153,115 +185,230 @@ const ChannelsPage: React.FC = () => {
   
 	// Function to render the list of channels
 	const renderChannels = (channels: ChatRoom[]) => (
-	  <Stack gap={1}>
+		<Stack gap={1}>
 		{channels.map((channel) => (
-		  <ChannelLine key={channel.name} channel={channel} />
+			<ChannelLine key={channel.name} channel={channel} />
 		))}
 	  </Stack>
 	);
-  
-	// Main container for the channels page
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
 		<Stack
-		  direction={'row'}
+		  direction="row"
 		  bgcolor={theme.palette.primary.dark}
-		  divider={<Divider orientation='vertical' flexItem />}
-		  padding={'1em'}
+		  divider={<Divider orientation="vertical" flexItem />}
+		  padding="1em"
 		>
-		  {/* Left Sidebar */}
+		  {/* Sidebar */}
 		  <Stack
-			padding={'1em'}
-			gap={1}
-			direction={'column'}
-			height={'80vh'}
+			padding="1em"
+			gap={2}
 			bgcolor={theme.palette.primary.light}
-			divider={<Divider flexItem />}
-			width={'250px'}
+			width="250px"
+			sx={{ height: '80vh', overflowY: 'auto' }}
 		  >
 			<Button
 			  variant="contained"
-			  color="primary"
-			  fullWidth
-			  startIcon={<AddIcon />}
-			  onClick={() => setIsAddingChannel(true)} // Show the input field when creating a channel
-			  sx={{
-				fontWeight: 'bold',
-				textTransform: 'none',
-			  }}
+			  onClick={() => setIsAddingChannel(true)}
+			  sx={{ textTransform: 'none' }}
 			>
 			  Create a Channel
 			</Button>
-			<Stack sx={{ overflowY: 'auto', maxHeight: '100%' }} divider={<Divider orientation='horizontal' flexItem />} gap={2}>
-			  <Typography variant="h6">Available Channels</Typography>
-			  {renderChannels(availableChannels)} {/* Render available channels */}
-			  <Divider />
-			  <Typography variant="h6">Joined Channels</Typography>
-			  {renderChannels(joinedChannels)} {/* Render joined channels */}
-			</Stack>
+  
+			<Typography variant="h6">Available Channels</Typography>
+			{renderChannels(chatProps.chatRooms)}
 		  </Stack>
-		  {/* Right Section */}
-		  <Stack width={'100%'} padding={'1em'} bgcolor={theme.palette.primary.light} borderRadius={2}>
+  
+		  {/* Main Content */}
+		  <Box flex={1} padding="1em" bgcolor={theme.palette.primary.light}>
 			{isAddingChannel ? (
-			  <>
+			  <Box>
 				<Typography variant="h6">Enter Channel Name</Typography>
 				<TextField
-				  label="New Channel Name"
+				  label="Channel Name"
 				  value={channelName}
 				  onChange={(e) => setChannelName(e.target.value)}
 				  fullWidth
-				  sx={{ marginBottom: '1em' }}
+				  sx={{ my: 2 }}
 				/>
 				<Button
 				  variant="contained"
-				  color="primary"
-				  fullWidth
 				  onClick={handleCreateChannel}
-				  disabled={!channelName.trim()}
-				  sx={{ fontWeight: 'bold', textTransform: 'none' }}
+				  fullWidth
 				>
-				  Create Channel
+				  Create
 				</Button>
 				<Button
-				  variant="contained"
-				  color="primary"
-				  fullWidth
-				  onClick={handleCancelNewChannel}
-				//   disabled={!channelName.trim()}
-				  sx={{ fontWeight: 'bold', textTransform: 'none', mt: 2 }}
-				>
-				  Cancel
-				</Button>
-				{/* <IconButton sx={{ color: theme.palette.secondary.main }} onClick={handleCancelNewChannel}>
-					<CloseIcon />
-          		</IconButton> */}
-			  </>
+					  variant="contained"
+					  color="primary"
+					  fullWidth
+					  onClick={handleCancelNewChannel}
+					  sx={{ fontWeight: 'bold', textTransform: 'none', mt: 2 }}
+					>
+					  Cancel
+					</Button>
+			  </Box>
 			) : selectedChannel ? (
-			  <>
-				<Typography variant="h6">{selectedChannel.name}</Typography>
-				<Stack divider={<Divider />} mt={2}>
-				  {selectedChannel.messages.map((msg, index) => (
-					<Box key={index}>
-					  <Typography>{msg.message}</Typography>
-					</Box>
-				  ))}
-				</Stack>
-			  </>
+			  isSettingsView ? (
+				// Render settings view inline
+				<SettingsModal
+				//   key={selectedChannel.settings.type}
+				  open={isSettingsView}
+				  onClose={() => setIsSettingsView(false)}
+				  settings={selectedChannel.settings}
+				  setSettings={(updatedSettings) => {
+					setChatProps((prevState) => ({
+					  ...prevState,
+					  chatRooms: prevState.chatRooms.map((room) =>
+						room.name === selectedChannel.name
+						  ? { ...room, settings: updatedSettings }
+						  : room
+					  ),
+					}));
+					setSelectedChannel((prevState) => ({
+						...prevState,
+						settings: updatedSettings,
+					}));
+				  }}
+				/>
+			  ) : (
+				// Render messages view
+				<Box>
+				  <Typography variant="h6">{selectedChannel.name}</Typography>
+				  <Stack mt={2}>
+					{selectedChannel.messages.map((msg, index) => (
+					  <Typography key={index}>{msg.message}</Typography>
+					))}
+				  </Stack>
+				</Box>
+			  )
 			) : (
-			  <Typography variant="h6">Select a channel to view messages</Typography>
+			  <Typography>Select a channel to view messages.</Typography>
 			)}
-		  </Stack>
+		  </Box>
 		</Stack>
-  
-		{/* Settings Modal */}
-		<SettingsModal
-		  open={settingsOpen}
-		  onClose={() => setSettingsOpen(false)}
-		  settings={newChannelSettings}
-		  setSettings={setNewChannelSettings}
-		/>
 	  </Container>
 	);
-  };
+	
+};
+
+export default ChannelsPage;
+
+
+
+// {/* Settings Modal */}
+// <SettingsModal
+//   open={settingsOpen}
+//   onClose={() => setSettingsOpen(false)}
+//   settings={newChannelSettings}
+//   setSettings={setNewChannelSettings}
+// />
+// // Main container for the channels page
+// return (
+// 	<Container sx={{ padding: theme.spacing(3) }}>
+// 	  <Stack
+// 		direction="row"
+// 		bgcolor={theme.palette.primary.dark}
+// 		divider={<Divider orientation="vertical" flexItem />}
+// 		padding="1em"
+// 	  >
+// 		{/* Left Sidebar */}
+// 		<Stack
+// 		  padding="1em"
+// 		  gap={1}
+// 		  direction="column"
+// 		  height="80vh"
+// 		  bgcolor={theme.palette.primary.light}
+// 		  divider={<Divider flexItem />}
+// 		  width="250px"
+// 		>
+// 		  <Button
+// 			variant="contained"
+// 			color="primary"
+// 			fullWidth
+// 			startIcon={<AddIcon />}
+// 			onClick={() => setIsAddingChannel(true)} // Show the input field when creating a channel
+// 			sx={{
+// 			  fontWeight: 'bold',
+// 			  textTransform: 'none',
+// 			}}
+// 		  >
+// 			Create a Channel
+// 		  </Button>
   
-  export default ChannelsPage;
+// 		  <Stack sx={{ overflowY: 'auto', maxHeight: '100%' }} divider={<Divider orientation="horizontal" flexItem />} gap={2}>
+// 			<Typography variant="h6">Available Channels</Typography>
+// 			{renderChannels(availableChannels)} {/* Render available channels */}
+// 			<Typography variant="h6">Joined Channels</Typography>
+// 			{renderChannels(joinedChannels)} {/* Render joined channels */}
+// 		  </Stack>
+// 		</Stack>
+  
+// 		{/* Right Section */}
+// 		<Stack width="100%" padding="1em" bgcolor={theme.palette.primary.light} borderRadius={2}>
+// 		  {isAddingChannel ? (
+// 			<Box>
+// 			  <Typography variant="h6">Enter Channel Name</Typography>
+// 			  <TextField
+// 				label="New Channel Name"
+// 				value={channelName}
+// 				onChange={(e) => setChannelName(e.target.value)}
+// 				fullWidth
+// 				sx={{ marginBottom: '1em' }}
+// 			  />
+// 			  <Button
+// 				variant="contained"
+// 				color="primary"
+// 				fullWidth
+// 				onClick={handleCreateChannel}
+// 				disabled={!channelName.trim()}
+// 				sx={{ fontWeight: 'bold', textTransform: 'none' }}
+// 			  >
+// 				Create Channel
+// 			  </Button>
+// 			  <Button
+// 				variant="contained"
+// 				color="primary"
+// 				fullWidth
+// 				onClick={handleCancelNewChannel}
+// 				sx={{ fontWeight: 'bold', textTransform: 'none', mt: 2 }}
+// 			  >
+// 				Cancel
+// 			  </Button>
+// 			</Box>
+// 		  ) : selectedChannel ? (
+// 			isSettingsView ? (
+// 			  <SettingsModal
+// 				open={true}
+// 				onClose={() => setIsSettingsView(false)}
+// 				settings={selectedChannel.settings}
+// 				setSettings={(updatedSettings) => {
+// 				  setChatProps((prevState) => ({
+// 					...prevState,
+// 					chatRooms: prevState.chatRooms.map((room) =>
+// 					  room.name === selectedChannel.name
+// 						? { ...room, settings: updatedSettings }
+// 						: room
+// 					),
+// 				  }));
+// 				}}
+// 			  />
+// 			) : (
+// 			  <Box>
+// 				<Typography variant="h6">{selectedChannel.name}</Typography>
+// 				<Stack divider={<Divider />} mt={2}>
+// 				  {selectedChannel.messages.map((msg, index) => (
+// 					<Box key={index}>
+// 					  <Typography>{msg.message}</Typography>
+// 					</Box>
+// 				  ))}
+// 				</Stack>
+// 			  </Box>
+// 			)
+// 		  ) : (
+// 			<Typography variant="h6">Select a channel to view messages</Typography>
+// 		  )}
+// 		</Stack>
+// 	  </Stack>
+// 	</Container>
+//   );

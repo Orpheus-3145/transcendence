@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState} from 'react';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
-import { Box, Stack, TextField, Button, Typography, Modal, Divider} from '@mui/material';
+import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme} from '@mui/material';
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
 
@@ -14,6 +14,7 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, settings, setSettings }) => {
 	const [friendName, setFriendName] = useState('');
+	const theme = useTheme();
 
 	const handleAddFriend = () => {
 		console.log('"Add Friend" clicked!');
@@ -51,7 +52,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 
 	return (
 		<Modal open={open} onClose={onClose}>
-		  <Box bgcolor="white" p={3} width="400px" borderRadius={2} margin="auto" mt="10%">
+		  <Box bgcolor={theme.palette.primary.light} p={3} width="400px" borderRadius={2} margin="auto" mt="10%">
 			<Typography variant="h6">Channel Settings</Typography>
 			<Divider sx={{ my: 2 }} />
 	
