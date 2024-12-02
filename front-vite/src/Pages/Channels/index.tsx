@@ -37,15 +37,15 @@ const ChannelsPage: React.FC = () => {
 		  messages: [
 			{
 			  message: <Typography>Whazuuuuuuuup!</Typography>,
-			  user: <Typography>'User1'</Typography>,
-			  userPP: <Typography>'User1PP'</Typography>,
-			  timestamp: <Typography>'20:00'</Typography>,
+			  user: <Typography>User1</Typography>,
+			  userPP: <Typography>img</Typography>,
+			  timestamp: <Typography>20:00</Typography>,
 			},
 			{
-			  message: <Typography>Whazuuuuuuuuuuuuuup/.</Typography>,
-			  user: <Typography>'User2'</Typography>,
-			  userPP: <Typography>'User2PP'</Typography>,
-			  timestamp: <Typography>'20:03'</Typography>,
+			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
+			  user: <Typography>User2</Typography>,
+			  userPP: <Typography>img</Typography>,
+			  timestamp: <Typography>20:03</Typography>,
 			},
 		  ],
 		  settings: {
@@ -274,12 +274,20 @@ const ChannelsPage: React.FC = () => {
 					{selectedChannel.messages.map((msg, index) => (
 					  <Box
 						key={index}
-						sx={{display: "flex", allignItems: "center", mb: 2}}
+						sx={{display: "flex", alignItems: "center", mb: 2}}
 					  >
 					  	<Avatar sx={{cursor: 'pointer', mr: 2}}>
 							{msg.userPP}
 						</Avatar>
-					  	<Typography key={index}>{msg.message}</Typography>
+					  	<Typography 
+							sx={{ whiteSpace: "normal",
+								overflowWrap: 'anywhere',
+								wordBreak: 'break-word',
+								maxWidth: "70%"}}
+							key={index}
+						>
+							{msg.message}
+						</Typography>
 					  </Box>
 					))}
 				  </Stack>
