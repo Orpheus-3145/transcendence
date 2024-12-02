@@ -5,7 +5,7 @@ import { SettingsModal } from './ChannelSettings';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField } from '@mui/material';
+import { Box, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar } from '@mui/material';
 import { styled } from '@mui/system';
 import {
   Add as AddIcon,
@@ -86,14 +86,14 @@ const ChannelsPage: React.FC = () => {
 			chatRooms: [
 			  ...prevState.chatRooms,
 			  {
-				name: channelName,
+				name: channelName, //--> CALL TO BACKEND <-- //
 				icon: <GroupIcon />,
 				messages: [],
 				settings: {
 				  type: 'public',
 				  password: null,
 				  users: [],
-				  owner: 'MYSELF',
+				  owner: 'MYSELF', //--> CALL TO BACKEND <-- //
 				},
 			  },
 			],
@@ -204,8 +204,11 @@ const ChannelsPage: React.FC = () => {
 			  Create a Channel
 			</Button>
   
+			<Typography variant="h6" sx={{ textAlign: 'center'}}>Joined Channels</Typography>
+			{/* --> CALL TO BACKEND <-- */}
+			{renderChannels(chatProps.chatRooms)} 
 			<Typography variant="h6" sx={{ textAlign: 'center'}}>Available Channels</Typography>
-			{renderChannels(chatProps.chatRooms)}
+			{/* --> CALL TO BACKEND <-- */}
 		  </Stack>
   
 		  {/* Main Content */}
@@ -269,9 +272,18 @@ const ChannelsPage: React.FC = () => {
 				  <Typography variant="h6">{selectedChannel.name}</Typography>
 				  <Stack mt={2}>
 					{selectedChannel.messages.map((msg, index) => (
-					  <Typography key={index}>{msg.message}</Typography>
+					  <Box
+						key={index}
+						sx={{display: "flex", allignItems: "center", mb: 2}}
+					  >
+					  	<Avatar sx={{cursor: 'pointer', mr: 2}}>
+							{msg.userPP}
+						</Avatar>
+					  	<Typography key={index}>{msg.message}</Typography>
+					  </Box>
 					))}
 				  </Stack>
+				  
 				  {(selectedChannel.settings.owner === 'MYSELF') &&
 				  <Button
 			  		variant="contained"
