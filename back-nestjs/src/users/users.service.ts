@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -32,39 +32,39 @@ export class UsersService {
 		user.status = UserStatus.Offline;
 		user.friends = [];
 		user.blocked = [];
-		// const tmp = new User();
-		// tmp.accessToken = access.access_token;
-		// tmp.intraId = 47328;
-		// tmp.nameNick = 'bald';
-		// tmp.nameIntra = 'baldwin';
-		// tmp.nameFirst = 'bal';
-		// tmp.nameLast = 'dwin';
-		// tmp.email = 'baldwin@student.codam.nl';
-		// tmp.image = userMe.image.link;
-		// tmp.greeting = 'Hello, I have just landed!';
-		// tmp.status = UserStatus.Offline;
-		// user.friends = [];
-		// user.blocked = [];
-		// const a = new User();
-		// a.accessToken = access.access_token;
-		// a.intraId = 58493;
-		// a.nameNick = 'nani';
-		// a.nameIntra = 'nanida';
-		// a.nameFirst = 'nani';
-		// a.nameLast = 'fuq';
-		// a.email = 'nanidafuq@student.codam.nl';
-		// a.image = userMe.image.link;
-		// a.greeting = 'Hello, I have just landed!';
-		// a.status = UserStatus.Offline;
-		// user.friends = [];
-		// user.blocked = [];
+		 const tmp = new User();
+		 tmp.accessToken = access.access_token;
+		 tmp.intraId = 47328;
+		 tmp.nameNick = 'bald';
+		 tmp.nameIntra = 'baldwin';
+		 tmp.nameFirst = 'bal';
+		 tmp.nameLast = 'dwin';
+		 tmp.email = 'baldwin@student.codam.nl';
+		 tmp.image = userMe.image.link;
+		 tmp.greeting = 'Hello, I have just landed!';
+		 tmp.status = UserStatus.Offline;
+		 user.friends = [];
+		 user.blocked = [];
+		 const a = new User();
+		 a.accessToken = access.access_token;
+		 a.intraId = 58493;
+		 a.nameNick = 'nani';
+		 a.nameIntra = 'nanida';
+		 a.nameFirst = 'nani';
+		 a.nameLast = 'fuq';
+		 a.email = 'nanidafuq@student.codam.nl';
+		 a.image = userMe.image.link;
+		 a.greeting = 'Hello, I have just landed!';
+		 a.status = UserStatus.Offline;
+		 user.friends = [];
+		 user.blocked = [];
 		try {
 		await user.validate();
-		// await tmp.validate();
-		// await a.validate();
+		 await tmp.validate();
+		 await a.validate();
 		await this.usersRepository.save(user);
-		// await this.usersRepository.save(tmp); //remove tmp when testing is done, it is an extra user to test
-		// await this.usersRepository.save(a);//remove tmp when testing is done, it is an extra user to test
+		 await this.usersRepository.save(tmp); //remove tmp when testing is done, it is an extra user to test
+		 await this.usersRepository.save(a);//remove tmp when testing is done, it is an extra user to test
 		return new UserDTO(user);
 		} catch (error) {
 		console.error('User validation error: ', error);
@@ -104,16 +104,10 @@ export class UsersService {
 		return (this.findOneIntra(numb));
 	}
 
-	async setNameNick(id: string, nameNick: string)
+	async setNameNick(user: User, nameNick: string)
 	{
-		var user = this.getUserId(id);
-		if (user == null)
-		{
-			//write error handeling
-			return ;
-		}
-		(await user).nameNick = nameNick;
-		this.usersRepository.save((await user));
+		user.nameNick = nameNick;
+		this.usersRepository.save(user);
 	}
   
 	async getFriend(code: string): Promise<User | null> 
@@ -122,17 +116,9 @@ export class UsersService {
 		return (this.findOneIntra(numb));
 	}
   
-	async addFriend(iduser: string, idother:string)
+	async addFriend(user: User, other: User)
 	{
-		var user = this.getUserId(iduser);
-		var otheruser = this.getUserId(idother);
-		if (user == null || otheruser == null)
-		{
-			//write error handeling
-			console.log("ERROR adding friend");
-			return ;
-		}
-		this.notificationService.initRequest((await user), (await otheruser), NotificationType.friendRequest);
+		this.notificationService.initRequest( user, other, NotificationType.friendRequest);
 	}
 
   	async friendRequestAccepted(iduser:string, idother:string)
@@ -141,9 +127,8 @@ export class UsersService {
 		var otheruser = this.getUserId(idother);
 		if (user == null || otheruser == null)
 		{
-			//write error handeling
 			console.log("ERROR accepting friendreq");
-			return ;
+			throw new HttpException('Not Found', 404);
 		}
 		(await user).friends.push((await otheruser).intraId.toString());
 		this.usersRepository.save((await user));
@@ -151,57 +136,36 @@ export class UsersService {
 		this.usersRepository.save((await otheruser));
   	}
 
-  	async removeFriend(iduser:string, idother:string)
+  	async removeFriend(user: User, other: User)
   	{
-		var user = this.getUserId(iduser);
-		var other = this.getUserIntraId(idother);
-		if (user == null || other == null)
-		{
-			//write error handeling
-			console.log("ERROR removing friend");
-			return ;
-		}
-		var newlist = (await user).friends.filter(friend => friend !== idother);
-		(await user).friends = newlist;
-		this.usersRepository.save((await user));
-		var userid = (await user).intraId.toString();
-		newlist = (await other).friends.filter(afriend => afriend !== userid);
-		(await other).friends = newlist;
-		this.usersRepository.save((await other));
+		var newlist = user.friends.filter(friend => friend !== other.intraId.toString());
+		user.friends = newlist;
+		this.usersRepository.save(user);
+		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
+		other.friends = newlist;
+		this.usersRepository.save(other);
   	}
 
-  	async blockUser(iduser:string, idother:string)
+  	async blockUser(user: User, other: User)
   	{
-		this.removeFriend(iduser, idother);
-		var user = this.getUserId(iduser);
-		(await user).blocked.push(idother);
-		this.usersRepository.save((await user));
+		this.removeFriend(user, other);
+		user.blocked.push(other.intraId.toString());
+		this.usersRepository.save(user);
   	}
   
-  	async changeProfilePic(id:string, image:string)
+  	async changeProfilePic(user: User, image:string)
   	{
-		var user = this.getUserId(id);
-		if (user == null)
-		{
-			//write error handeling
-			console.log("ERROR CHANGE PFP");
-			return ;
-		}
-		(await user).image = image;
-		this.usersRepository.save((await user));
+		user.image = image;
+		this.usersRepository.save(user);
   	}
 
-  	async inviteGame(iduser:string, idother:string)
+  	async inviteGame(user: User, other: User)
  	{	
-		var user = this.getUserId(iduser);
-		var otheruser = this.getUserId(idother);
-		this.notificationService.initRequest((await user), (await otheruser), NotificationType.gameInvite);
+		this.notificationService.initRequest(user, other, NotificationType.gameInvite);
  	}
 
-  	async sendMessage(iduser:string, idother:string, message:string)
+  	async sendMessage(user :User, other: User, message:string)
   	{
-		var user = this.getUserId(iduser);
-		var otheruser = this.getUserId(idother);
-		this.notificationService.initMessage((await user), (await otheruser), message);
+		this.notificationService.initMessage(user, other, message);
   	}
 }

@@ -25,42 +25,49 @@ export class NotificationController {
 			console.log("nani da fuq!!");
 			throw new HttpException('Not Found', 404);
 		}
-		var arr = this.notificationService.findUser(userid);
+		var arr = this.notificationService.findNotificationReceiver(userid);
 		if (!arr)
 			throw new HttpException('Not Found', 404);
 
 		return (arr);
 	}
 
-	@Post('/acceptNotiFR/:sender/:receiver')
+	@Get('/acceptNotiFR/:sender/:receiver')
 	async acceptNotificationFR(@Param('sender') sender: string, @Param('receiver') receiver: string)
 	{
 		this.userService.friendRequestAccepted(sender, receiver);
 		this.notificationService.removeReq(sender, receiver, NotificationType.friendRequest);
 	}
 
-	@Post('/declineNotiFR/:sender/:receiver')
+	@Get('/declineNotiFR/:sender/:receiver')
 	async declineNotificationFR(@Param('sender') sender: string, @Param('receiver') receiver: string)
 	{
 		this.notificationService.removeReq(sender, receiver, NotificationType.friendRequest);
 	}
 
-	@Post('/acceptNotiGI/:sender/:receiver')
+	@Get('/acceptNotiGI/:sender/:receiver')
 	async acceptNotificationGI(@Param('sender') sender: string, @Param('receiver') receiver: string)
 	{
 		//need to init a game session
 		this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
 	}
 
-	@Post('/declineNotiGI/:sender/:receiver')
+	@Get('/declineNotiGI/:sender/:receiver')
 	async declineNotificationGI(@Param('sender') sender: string, @Param('receiver') receiver: string)
 	{
 		this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
 	}
 
-	@Post('removeNotification/:id')
+	@Get('removeNotification/:id')
 	async rmvNotification(@Param('id') id: string)
 	{
-		this.notificationService.findAndRmvNotification(id);
+		var numb = Number(id);
+		const noti = await this.notificationService.findNotificationId(numb);
+		if (noti == null)
+		{
+			console.log("ERROR: notification not found in rmvNotification!");
+			throw new HttpException('Not Found', 404);
+		}
+		this.notificationService.removeNotification(await noti);
 	}
 }

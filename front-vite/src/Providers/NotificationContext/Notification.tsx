@@ -44,7 +44,6 @@ export async function getUserNotifications(user:User): Promise<Notification[] | 
 	}
 	catch (error)
 	{
-		console.error("NO NOTIFICATIONS FOUND!");
 		return (null);
 	}	
 }
@@ -52,68 +51,63 @@ export async function getUserNotifications(user:User): Promise<Notification[] | 
 export async function removeNotificationDb(id:string): Promise<void> 
 {
 	const request = new Request(BACKEND_URL + '/notification/removeNotification/' + id, {
-		method: "POST",
+		method: "GET",
 	});
 	
-	try
-	{
-		await fetch(request);
-	}
-	catch (error)
-	{
-		console.error("FAILED TO REMOVE NOTI");
-	}	
+	const response = await fetch(request);
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO REMOVE NOTIFICATION FROM DATABASE");
 }
 
 
 export async function acceptFriendRequest(senderid:string, receiverid: string) {
 	const request = new Request(BACKEND_URL + '/notification/acceptNotiFR/' + senderid + '/' + receiverid, {
-		method: "POST",
+		method: "GET",
 	  });
 		  
 	try {
 		await fetch(request);
 	} 
 	catch (error) {
-		console.log("zxcvcvxz");
+		console.log("ERROR: FAILED TO ACCEPT FRIEND REQUEST!");
 	}
 }
 
 export async function declineFriendRequest(senderid:string, receiverid: string) {
 	const request = new Request(BACKEND_URL + '/notification/declineNotiFR/' + senderid + '/' + receiverid, {
-		method: "POST",
+		method: "GET",
 	});
 
 	try {
 		await fetch(request);
 	} 
 	catch (error) {
-		console.log("ppoproewr");
+		console.log("ERROR: FAILED TO DECLINE FRIEND REQUEST!");
 	}
 }
 
 export async function acceptGameInvite(senderid:string, receiverid: string) {
 	const request = new Request(BACKEND_URL + '/notification/acceptNotiGI/' + senderid + '/' + receiverid, {
-		method: "POST",
+		method: "GET",
 	});
 
 	try {
 		await fetch(request);
 	} 
 	catch (error) {
-		console.log("nmnvmnb");
+		console.log("ERROR: FAILED TO ACCEPT GAME INVITE!");
 	}
 }
 
 export async function declineGameInvite(senderid:string, receiverid: string) {
 	const request = new Request(BACKEND_URL + '/notification/declineNotiGI/' + senderid + '/' + receiverid, {
-		method: "POST",
+		method: "GET",
 	});
 
 	try {
 		await fetch(request);
 	} 
 	catch (error) {
-		console.log("qewrerq");
+		console.log("ERROR: FAILED TO DECLINE GAME INVITE!");
 	}
 }

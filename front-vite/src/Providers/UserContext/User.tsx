@@ -11,7 +11,6 @@ export enum UserStatus {
 }
 
 export interface User {
-	friends: string[];
 	id: number;
 	intraId: number;
 	nameNick: string | null;
@@ -22,6 +21,8 @@ export interface User {
 	image: string | null;
 	greeting: string;
 	status: UserStatus;
+	friends: string[];
+	blocked: string[];
 }
 
 interface UserContextType {
@@ -88,8 +89,7 @@ export async function getAll(): Promise<User[]> {
 export async function getUserFromDatabase(username: string, navigate: (path: string) => void): Promise<User>
 {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username, {
-		method: "POST",
-		body: JSON.stringify({username}),
+		method: "GET",
 	});
 
 	try
@@ -107,19 +107,12 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 }
 
 export async function setNewNickname(username:string, nickname:string): Promise<Number> {
-	if (nickname.length == 0)
-		return (-1);
-	let i = Number(0);
-	while (i < nickname.length)
-	{
-		if (nickname[i] == '?' || nickname[i] == '/')
-			return (-1);
-		i++;
-	}
-
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick/' + nickname, {
+	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick', {
 		method: "POST",
-		body: JSON.stringify({username, nickname}),
+		headers: {
+		'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ newname: nickname }),
 	});
 
 	const response = await fetch(request)
@@ -130,8 +123,7 @@ export async function setNewNickname(username:string, nickname:string): Promise<
 
 export async function fetchFriend(friend:string): Promise<User> {
 	const request = new Request(BACKEND_URL + '/users/profile/username/friend/' + friend, {
-		method: "POST",
-		body: JSON.stringify({friend}),
+		method: "GET",
 	});
 
 	const response = await fetch(request)
@@ -143,35 +135,32 @@ export async function fetchFriend(friend:string): Promise<User> {
 
 export async function addFriend(username:string, friend:string): Promise<void> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/add/' + friend, {
-		method: "POST",
+		method: "GET",
 	});
 
 	const response = await fetch(request)
-		.then((raw) => raw.json())
-	if (!response)
-		console.log("M8 ADDING FRIEND FAILES FUCKIN HARD");
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO ADD FRIEND!");
 }
 
 export async function removeFriend(username:string, friend:string): Promise<void> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/remove/' + friend, {
-		method: "POST",
+		method: "GET",
 	});
 
 	const response = await fetch(request)
-		.then((raw) => raw.json())
-	if (!response)
-		console.log("M8 removing FRIEND FAILES FUCKIN HARD");
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO REMOVE FRIEND!");
 }
 
 export async function blockFriend(username:string, friend:string): Promise<void> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/block/' + friend, {
-		method: "POST",
+		method: "GET",
 	});
 
 	const response = await fetch(request)
-		.then((raw) => raw.json())
-	if (!response)
-		console.log("M8 BLOCKING FRIEND FAILES FUCKIN HARD");
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO BLOCK USER!");
 }
 
 export async function sendMessage(username:string, friend:string, message:string): Promise<void> {
@@ -183,24 +172,21 @@ export async function sendMessage(username:string, friend:string, message:string
 		body: JSON.stringify({ message: message }),
 	});
 
-	try 
-	{
-		await fetch(request);
-	} 
-	catch (error) {
-		console.log("error sending message");
-	}
+	const response = await fetch(request);
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO FIND USER IN SENDMESSAGE!");
+	if (response.status == 400)
+		console.log("ERROR: INVALID MESSAGE!");
 }
 
 export async function inviteToGame(username:string, friend:string): Promise<void> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/invitegame/' + friend, {
-		method: "POST",
+		method: "GET",
 	});
 
 	const response = await fetch(request)
-		.then((raw) => raw.json())
-		if (!response)
-		console.log("M8 INVITING TO GAME FAILES FUCKIN HARD");
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO FIND USER IN INVITETOGAME!");
 }
 
 export async function changePFP(username:string, image:FormData): Promise<void> {
@@ -210,7 +196,8 @@ export async function changePFP(username:string, image:FormData): Promise<void> 
 	});
 
 	const response = await fetch(request)
-		.then((raw) => raw.json())
-		if (!response)
-		console.log("M8 CHANGIN PFP FAILES FUCKIN HARD");
+	if (response.status == 400)
+		console.log("ERROR: INVALID IMAGE IN CHANGEPFP!");
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO FIND USER IN CHANGEPFP!");
 }

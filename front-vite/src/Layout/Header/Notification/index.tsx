@@ -42,6 +42,11 @@ export const Notification: React.FC = () => {
 
 	let initMessageNotification = (noti: NotificationStruct) =>
 	{
+		var notiMessage = noti.message;
+		if (noti.message?.length > 15)
+		{
+			notiMessage = noti.message?.slice(0, 15) + "...";
+		}
 		return (
 			<Stack
 				sx={{
@@ -87,10 +92,10 @@ export const Notification: React.FC = () => {
 							fontSize: '0.9rem',
 						}}    
 					>
-						<a href="" onClick={() => navToUser('/profile/' + noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
+						<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
 						send you a message:
 						<br />
-						{noti.message}
+						{notiMessage}
 					</Typography>
 				</Box>
 			</Stack>
@@ -436,7 +441,6 @@ export const Notification: React.FC = () => {
 				}
 			}
 			)
-			//setNotificationDot(true);
 			setFriendRequestArray(friendsArr);
 			setMessageArray(messageArr);
 			setGameInviteArray(gameArr);
@@ -451,10 +455,12 @@ export const Notification: React.FC = () => {
 			{
 				setNotificationNumber(number);
 			});
+
 			if ((friendRequestArray == null) && (gameInviteArray == null) && (messageArray == null))
 				setNotificationDot(false);
-			else if (friendRequestArray != null || gameInviteArray != null || messageArray != null)
+			else if ((friendRequestArray != null) || (gameInviteArray != null) || (messageArray != null))
 				setNotificationDot(true);
+		
 		}, [friendRequestArray, gameInviteArray, messageArray, notificationDot, openDrawer]);
 
 		if (notificationNumber === null) 

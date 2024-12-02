@@ -20,7 +20,7 @@ export class UsersController {
 		return (this.UserService.findAll());
 	}
 
-	@Post('/profile/:username')
+	@Get('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
 		var user = this.UserService.getUserId(username);
 		if (!user)
@@ -28,8 +28,9 @@ export class UsersController {
 		return (user);
 	}
 
-	@Post('/profile/:username/newnick/:newname')
-	async setNewNickname(@Param('username') username: string, @Param('newname') newname: string) {
+	@Post('/profile/:username/newnick')
+	async setNewNickname(@Param('username') username: string, @Body('newname') newname:string) 
+	{
 		if (newname.length == 0)
 		{
 			console.log("Invalid new nickname, to short!");
@@ -54,44 +55,106 @@ export class UsersController {
 			}
 			i++;
 		}
-		this.UserService.setNameNick(username, newname);
+		var user = this.UserService.getUserId(username);
+		if (user == null)
+		{
+			throw new HttpException('Not Found', 404);
+		}
+		this.UserService.setNameNick(await user, newname);
 		throw new HttpException('Ok', 200);
 	}
 
-	@Post('/profile/:username/friend/:id')
+	@Get('/profile/:username/friend/:id')
 	async fetchFriend(@Param('id') id: string) {
 		return (this.UserService.getFriend(id));
 	}
 
-	@Post('profile/:username/friend/add/:id')
-	async addFriend(@Param('username') username:string, @Param('id') id: string) {
-		return (this.UserService.addFriend(username, id));
+	@Get('profile/:username/friend/add/:id')
+	async addFriend(@Param('username') username:string, @Param('id') id: string) 
+	{
+		var user = this.UserService.getUserId(username);
+		var other = this.UserService.getUserId(id);
+		if (user == null || other == null)
+		{
+			console.log("ERROR: failed to get user in addFriend!");
+			throw new HttpException('Not Found', 404);
+		}
+		return (this.UserService.addFriend(await user, await other));
 	}
 
-	@Post('profile/:username/friend/remove/:id')
-	async removeFriend(@Param('username') username:string, @Param('id') id: string) {
-		return (this.UserService.removeFriend(username, id));
+	@Get('profile/:username/friend/remove/:id')
+	async removeFriend(@Param('username') username:string, @Param('id') id: string) 
+	{
+		var user = this.UserService.getUserId(username);
+		var other = this.UserService.getUserIntraId(id);
+		if (user == null || other == null)
+		{
+			console.log("ERROR: failed to get user in removeFriend!");
+			throw new HttpException('Not Found', 404);
+		}
+		return (this.UserService.removeFriend(await user, await other));
 	}
 
-	@Post('profile/:username/friend/block/:id')
-	async blockUser(@Param('username') username:string, @Param('id') id: string) {
-		return (this.UserService.blockUser(username, id));
+	@Get('profile/:username/friend/block/:id')
+	async blockUser(@Param('username') username:string, @Param('id') id: string) 
+	{
+		var user = this.UserService.getUserId(username);
+		var other = this.UserService.getUserIntraId(id);
+		if (user == null || other == null)
+		{
+			console.log("ERROR: failed to get user in blockUser!");
+			throw new HttpException('Not Found', 404);
+		}
+		return (this.UserService.blockUser(await user, await other));
 	}
 
 	@Post('profile/:username/sendMessage/:id')
-	async sendMessage(@Param('username') username:string, @Param('id') id: string, @Body('message') message:string) {
-		return (this.UserService.sendMessage(username, id, message));
+	async sendMessage(@Param('username') username:string, @Param('id') id: string, @Body('message') message:string) 
+	{
+		if (message.length == 0)
+		{
+			console.log("ERROR: message in sendMessage is invalid!");
+			throw new HttpException('Bad Request', 400);
+		}
+		var user = this.UserService.getUserId(username);
+		var other = this.UserService.getUserId(id);
+		if (user == null || other == null)
+		{
+			console.log("ERROR: failed to get user in sendMessage!");
+			throw new HttpException('Not Found', 404);
+		}
+		return (this.UserService.sendMessage(await user, await other, message));
 	}
 
-	@Post('profile/:username/invitegame/:id/')
-	async inviteGame(@Param('username') username:string, @Param('id') id: string) {
-		return (this.UserService.inviteGame(username, id));
+	@Get('profile/:username/invitegame/:id/')
+	async inviteGame(@Param('username') username:string, @Param('id') id: string) 
+	{
+		var user = this.UserService.getUserId(username);
+		var other = this.UserService.getUserId(id);
+		if (user == null || other == null)
+		{
+			console.log("ERROR: failed to get user in inviteGame!");
+			throw new HttpException('Not Found', 404);
+		}
+		return (this.UserService.inviteGame(await user, await other));
 	}
 
 	@Post('profile/:username/changepfp')
 	@UseInterceptors(FileInterceptor('file')) //instead of any the file should be Express.Multer.File,
-	async changePFP(@Param('username') username:string,  @UploadedFile() file: any,) {
+	async changePFP(@Param('username') username:string,  @UploadedFile() file: any,) 
+	{
 		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-		return (this.UserService.changeProfilePic(username, image));
+		if (!image)
+		{
+			console.log("ERROR: image is invalid!");
+			throw new HttpException('Bad Request', 400);
+		}
+		var user = this.UserService.getUserId(username);
+		if (user == null)
+		{
+			console.log("ERROR: getting user in changePFP!");
+			throw new HttpException('Not Found', 404);
+		}
+		return (this.UserService.changeProfilePic(await user, image));
 	}
 }

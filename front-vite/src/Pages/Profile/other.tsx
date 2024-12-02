@@ -409,7 +409,6 @@ const ProfilePageOther: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-150px',
-					left:'-10px',
 				}}
 			>
 				<Typography variant={'h2'}
@@ -458,7 +457,7 @@ const ProfilePageOther: React.FC = () => {
 							sx={{
 								fontSize: '30px',
 								top: '-130px',
-								left: '415px',
+								left: '425px',
 								width: '50px',
 								'&:hover': {
 									color: '#0c31df',
@@ -490,7 +489,7 @@ const ProfilePageOther: React.FC = () => {
 				sx={{
 					fontSize: '30px',
 					top: top,
-					left: '485px',
+					left: '495px',
 					width: '50px',
 					'&:hover': {
 						color: '#BF77F6',
@@ -550,7 +549,7 @@ const ProfilePageOther: React.FC = () => {
 						sx={{
 								fontSize: '30px',
 								top: top,
-								left: '570px',
+								left: '580px',
 								width: '50px',
 								'&:hover': {
 									color: '#09af07',
@@ -601,7 +600,7 @@ const ProfilePageOther: React.FC = () => {
 					sx={{
 						fontSize: '30px',
 						top: top,
-						left: '638px',
+						left: '648px',
 						width: '50px',
 						'&:hover': {
 							color: '#df310e',

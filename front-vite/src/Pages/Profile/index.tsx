@@ -500,7 +500,7 @@ const ProfilePage: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-210px',
-					left:'-10px',
+					left:'0px',
 				}}
 			>
 				<Typography variant={'h2'}
