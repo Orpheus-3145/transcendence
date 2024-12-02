@@ -53,7 +53,7 @@ const ChannelsPage: React.FC = () => {
 			type: 'public',
 			password: null,
 			users: [],
-			owner: 'currentUser',
+			owner: 'MYSELF',
 		  },
 		},
 	  ],
@@ -110,7 +110,7 @@ const ChannelsPage: React.FC = () => {
 				  type: 'public',
 				  password: null,
 				  users: [],
-				  owner: 'currentUser',
+				  owner: 'MYSELF',
 				},
 			  },
 			],
@@ -118,6 +118,10 @@ const ChannelsPage: React.FC = () => {
 		  setChannelName('');
 		  setIsAddingChannel(false);
 		}
+	}
+
+	const handleDeleteChannel = () => {
+		console.log("'Delete Channel' clicked!");
 	}
 
 	const handleCancelNewChannel = () => {
@@ -274,13 +278,23 @@ const ChannelsPage: React.FC = () => {
 				/>
 			  ) : (
 				// Render messages view
-				<Box>
+				<Box
+					sx={{display: 'flex', flexDirection: 'column'}}
+				>
 				  <Typography variant="h6">{selectedChannel.name}</Typography>
 				  <Stack mt={2}>
 					{selectedChannel.messages.map((msg, index) => (
 					  <Typography key={index}>{msg.message}</Typography>
 					))}
 				  </Stack>
+				  {(selectedChannel.settings.owner === 'MYSELF') &&
+				  <Button
+			  		variant="contained"
+			  		onClick={handleDeleteChannel}
+			  		sx={{ textTransform: 'none', alignSelf: 'flex-end' }}
+				  >
+			  		Delete Channel
+				  </Button>}
 				</Box>
 			  )
 			) : (
