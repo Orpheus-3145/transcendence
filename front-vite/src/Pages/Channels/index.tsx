@@ -122,6 +122,8 @@ const ChannelsPage: React.FC = () => {
 
 	const handleDeleteChannel = () => {
 		console.log("'Delete Channel' clicked!");
+		const updatedChannels = chatProps.chatRooms.filter((chat) => chat.name !== selectedChannel.name);
+		setChatProps({...chatProps, chatRooms: updatedChannels});
 	}
 
 	const handleCancelNewChannel = () => {
@@ -132,6 +134,7 @@ const ChannelsPage: React.FC = () => {
 	const handleChannelClick = (channel: ChatRoom) => {
 	  setSelectedChannel(channel);
 	  setIsSettingsView(false);
+	  setIsAddingChannel(false);
 	};
   
 	const handleSettingsClick = (event: React.MouseEvent, channel: ChatRoom) => {
@@ -139,6 +142,7 @@ const ChannelsPage: React.FC = () => {
 	  setSelectedChannel(channel);
 	//   setSettingsOpen(true);
 	  setIsSettingsView(true);
+	  setIsAddingChannel(false);
 	};
 
 	// const handleSaveChatSettings = () => {
