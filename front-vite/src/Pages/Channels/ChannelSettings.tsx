@@ -17,6 +17,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	const theme = useTheme();
 
 	const handleAddFriend = () => {
+		//--> CALL TO BACKEND <-- //
 		console.log('"Add Friend" clicked!');
 		if (friendName) {
 			const newUser: UserProps = {
@@ -32,6 +33,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	}
 
 	const handleKickFriend = (name: string) => {
+		//--> CALL TO BACKEND <-- //
 		console.log('"Kick Friend" clicked!');
 		// const updatedUsers = settings.users.filter(user => user.name !== name);
 		// setSettings({ ...settings, users: updatedUsers });
@@ -39,6 +41,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	};
 
 	const handleBanFriend = (name: string) => {
+		//--> CALL TO BACKEND <-- //
 		console.log('"Ban Friend" clicked!');
 		// const updatedUsers = settings.users.filter(user => user.name !== name);
 		// setSettings({ ...settings, users: updatedUsers });
@@ -46,6 +49,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	};
 
 	const handleBlockFriend = (name: string) => {
+		//--> CALL TO BACKEND <-- //
 		console.log('"Block Friend" clicked!');
 		// const updatedUsers = settings.users.filter(user => user.name !== name);
 		// setSettings({ ...settings, users: updatedUsers });
@@ -53,12 +57,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	};
 
 	const handleRoleChange = (name: string, role: string) => {
+		//--> CALL TO BACKEND <-- //
 		console.log('"Change Role" clicked!');
 		const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role } : user);
 		setSettings({ ...settings, users: updatedUsers });
 	};
 
 	const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
+		//--> CALL TO BACKEND <-- //
 		console.log('"Change Privacy" clicked!');
 		setSettings({ ...settings, type, password });
 	};
