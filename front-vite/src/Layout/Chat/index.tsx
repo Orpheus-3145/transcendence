@@ -27,7 +27,7 @@ export const Chat: React.FC = () => {
       timestamp: <Typography>10:00</Typography>,
       },
       {
-      message: <Typography>Hi</Typography>,
+      message: <Typography>Hiddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd</Typography>,
       user: <Typography>User2</Typography>,
       userPP: <Typography>User2PP</Typography>,
       timestamp: <Typography>10:01</Typography>,

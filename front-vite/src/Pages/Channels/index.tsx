@@ -5,7 +5,7 @@ import { SettingsModal } from './ChannelSettings';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar } from '@mui/material';
+import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar } from '@mui/material';
 import { styled } from '@mui/system';
 import {
   Add as AddIcon,
@@ -24,6 +24,7 @@ interface ChannelTypeEvent {
 
 const ChannelsPage: React.FC = () => {
 	const theme = useTheme();
+	const navigate = useNavigate();
   
 	// State for channels, channel name input, settings modal, etc.
 	const [channelName, setChannelName] = useState('');
@@ -159,7 +160,7 @@ const ChannelsPage: React.FC = () => {
 			{channel.name}
 		  </Typography>
 		  <IconButton
-			onClick={(event) => handleSettingsClick(event, channel)}
+			onClick={(event: React.MouseEvent) => handleSettingsClick(event, channel)}
 			sx={{
 			  minWidth: '10%',
 			  width: '40px',
@@ -219,7 +220,7 @@ const ChannelsPage: React.FC = () => {
 				<TextField
 				  label="Channel Name"
 				  value={channelName}
-				  onChange={(e) => setChannelName(e.target.value)}
+				  onChange={(event: React.KeyboardEvent) => setChannelName(event.target.value)}
 				  fullWidth
 				  sx={{ my: 2 }}
 				/>
@@ -267,16 +268,27 @@ const ChannelsPage: React.FC = () => {
 			  ) : (
 				// Render messages view
 				<Box
-					sx={{display: 'flex', flexDirection: 'column'}}
+					sx={{display: 'flex', flexDirection: 'column',  height: '100%'}}
 				>
 				  <Typography variant="h6">{selectedChannel.name}</Typography>
-				  <Stack mt={2}>
+				  <Stack 
+				  	mt={2}
+				  	sx={{
+						flexGrow: 1, // Ensures this takes up available vertical space
+						overflowY: 'auto', // Enables scrolling if content overflows
+						padding: '1em',
+					}
+					}     
+				  >
 					{selectedChannel.messages.map((msg, index) => (
 					  <Box
 						key={index}
-						sx={{display: "flex", alignItems: "center", mb: 2}}
+						sx={{display: "flex", alignItems: "top", mb: 4}}
 					  >
-					  	<Avatar sx={{cursor: 'pointer', mr: 2}}>
+					  	<Avatar
+							onClick={()=> (navigate(`/profile/${msg.user}`))}
+							sx={{cursor: 'pointer', mr: 2}}
+						>
 							{msg.userPP}
 						</Avatar>
 					  	<Typography 
@@ -286,20 +298,55 @@ const ChannelsPage: React.FC = () => {
 								maxWidth: "70%"}}
 							key={index}
 						>
+							{msg.user}
 							{msg.message}
 						</Typography>
 					  </Box>
 					))}
 				  </Stack>
-				  
-				  {(selectedChannel.settings.owner === 'MYSELF') &&
+				  {/* {(selectedChannel.settings.owner === 'MYSELF') &&
 				  <Button
 			  		variant="contained"
 			  		onClick={handleDeleteChannel}
 			  		sx={{ textTransform: 'none', alignSelf: 'flex-end' }}
 				  >
 			  		Delete Channel
-				  </Button>}
+				  </Button>} */}
+				  
+				  <Box
+				    sx={{
+				      display: 'flex',
+				      alignItems: 'center',
+					  borderTop: `1px solid ${theme.palette.primary.main}`,
+					  padding: '0.5em',
+					  width: '100%',
+					//   borderRadius: '5em',
+				    //   bgcolor: theme.palette.primary.dark,
+				    }}
+				  >
+				    <InputBase
+				      sx={{
+				        flexGrow: 1,
+				        border: '1px solid',
+				        padding: '0.5em',
+				        borderRadius: '0.5em',
+				        marginRight: '0.5em',
+						boxShadow: `0px -2px 5px rgba(0, 0, 0, 0.1)`,
+						
+						
+					}}
+					placeholder="Type a message..."
+				    />
+				    <Button
+				      variant="contained"
+				      color="primary"
+				      sx={{ textTransform: 'none' }}
+				    //   onClick={handleSendMessage}
+				    >
+				      Send
+				    </Button>
+				  </Box>
+
 				</Box>
 			  )
 			) : (
