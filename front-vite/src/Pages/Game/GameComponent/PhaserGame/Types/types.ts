@@ -26,8 +26,9 @@ export interface GameState {
 };
 
 export interface PlayerData {
-  playerId: number;
-  nameNick: string;
+	playerId: number;
+	sessionToken: string;
+	nameNick: string;
 };
 
 export interface InitData {

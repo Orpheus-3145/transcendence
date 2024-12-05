@@ -24,7 +24,7 @@ export default class SimulationService {
 	private ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
 	private waitingToStart = false;
 	private engineRunning = false;
-	
+
 	private gameStateInterval: NodeJS.Timeout = null;		// loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null;		// engine loop: data emitter to client(s)
 
@@ -111,6 +111,13 @@ export default class SimulationService {
 			score: 0,
 			posY: this.windowHeight / 2,
 		}
+		// // Check if the player is already in the game (this should happen in Matchmaking..)
+		// if ((this.player1 && playerId === this.player1.intraId) || 
+		// 	(this.player2 && playerId === this.player2.intraId)) {
+		// 	console.log(`The playerId ${newPlayer.intraId} is already in this game.`);
+		// 	client.emit('endGame', 'Fail'); // Notify the new connection about the failure
+		// 	return; // Exit the function to avoid adding the player again
+		// }
 
 		if (nameNick === this.botName)		// set bot, always player2
 			this.player2 = newPlayer;
@@ -287,6 +294,7 @@ export default class SimulationService {
 		setTimeout(() => this.clearGameData(), GAME.frameRate);
 	};
 
+
 	clearGameData(): void {
 
 		this.sessionToken = '';
@@ -295,5 +303,9 @@ export default class SimulationService {
 		this.player2 = null;
 		this.ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
 	};
+
+	checkClientId(clientId: string): boolean {
+		return (clientId == this.player1.clientSocket.id || clientId == this.player2.clientSocket.id);
+	}
 };
 

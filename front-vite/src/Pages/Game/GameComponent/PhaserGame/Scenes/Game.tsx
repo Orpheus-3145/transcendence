@@ -31,7 +31,7 @@ export default class Game extends Phaser.Scene {
 	private _gameStarted: boolean = false;
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private _gameState!: GameTypes.GameState;
-
+	private _addPlayerSuccess = false;
   constructor() {
 		
 		super({ key: 'Game' });
@@ -76,9 +76,15 @@ export default class Game extends Phaser.Scene {
 		this._field = new Field(this);
 
 		const initData: GameTypes.InitData = {sessionToken: this._sessionToken, mode: this._mode};
-		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick};
+		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick, sessionToken: this._sessionToken};
 
 		this.sendMsgToServer('initData', initData);
+
+		// this._addPlayerSuccess = this._socketIO.emit('playerData', playerData);
+		// if (this._addPlayerSuccess == false) {
+			
+
+		// }
 		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	};
 
@@ -109,6 +115,8 @@ export default class Game extends Phaser.Scene {
 
 	sendMsgToServer(msgType: string, content: any) {
 
+		// const data = {content, sessionToken: this._sessionToken};
+		console.log(`Sending data to BE: ${content}`);
 		this._socketIO.emit(msgType, content);
 	};
 
@@ -119,9 +127,9 @@ export default class Game extends Phaser.Scene {
 			return;
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
-			this.sendMsgToServer('playerMove', GameTypes.PaddleDirection.up);
+			this.sendMsgToServer('playerMove', {direction: GameTypes.PaddleDirection.up, sessionToken: this._sessionToken});
 		else if (this._keyS.isDown || this._cursors.down.isDown)
-			this.sendMsgToServer('playerMove', GameTypes.PaddleDirection.down);
+			this.sendMsgToServer('playerMove', {direction: GameTypes.PaddleDirection.down, sessionToken: this._sessionToken});
 
 		// Exit game with ESC
 		if (this._keyEsc.isDown)
