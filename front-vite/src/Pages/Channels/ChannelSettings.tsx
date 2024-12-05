@@ -10,9 +10,13 @@ interface SettingsModalProps {
     onClose: () => void;
     settings: ChatSettings;
     setSettings: (settings: ChatSettings) => void;
+	chatProps: ChatProps;
+	setChatProps: (chatProps: ChatProps) => void;
+	selectedChannel: ChatRoom;
+	setSelectedChannel: (selectedChannel: ChatRoom) => void;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, settings, setSettings }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, settings, setSettings, chatProps, setChatProps, selectedChannel, setSelectedChannel }) => {
 	const [friendName, setFriendName] = useState('');
 	const theme = useTheme();
 
@@ -69,6 +73,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 		setSettings({ ...settings, type, password });
 	};
 
+	const handleDeleteChannel = () => {
+		//--> CALL TO BACKEND <-- //
+		console.log("'Delete Channel' clicked!");
+		const updatedChannels = chatProps.chatRooms.filter((chat: ChatRoom) => chat.name !== selectedChannel.name);
+		setChatProps({...chatProps, chatRooms: updatedChannels});
+		setSelectedChannel(null);
+	}
+
 
 	return (
 		<Modal open={open} onClose={onClose}>
@@ -95,19 +107,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 			)}
 	
 			{/* Add Friend */}
-			<TextField
-			  label="Add Friend"
-			  value={friendName}
-			  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFriendName(e.target.value)}
-			  fullWidth
-			  sx={{ mt: 2 }}
-			/>
-			<Button variant="contained" color="primary" onClick={handleAddFriend} sx={{ mt: 1 }}>
-			  Add Friend
-			</Button>
-	
-			{/* Friend List */}
+  			<TextField
+  			  label="Add Friend"
+  			  value={friendName}
+  			  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFriendName(e.target.value)}
+  			  fullWidth
+  			  sx={{ mt: 2 }}
+  			/>
+  			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 
+  			  <Button
+  			    variant="contained"
+  			    onClick={handleAddFriend}
+  			    sx={{ mt: 1 }}
+  			  >
+  			    Add Friend
+  			  </Button>
+		  
+  			  <Button
+  			    variant="contained"
+  			    onClick={handleDeleteChannel}
+  			    sx={{ mt: 1 }}
+  			  >
+  			    Delete Channel
+  			  </Button>
+		  	</Box>
+			{/* Friend List */}
 			<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
 				<Stack spacing={1} mt={2}>
 				  {settings?.users.map(user => (

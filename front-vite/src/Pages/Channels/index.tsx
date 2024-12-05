@@ -43,7 +43,7 @@ const ChannelsPage: React.FC = () => {
 			  timestamp: <Typography>20:00</Typography>,
 			},
 			{
-			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
+			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
 			  user: <Typography>User2</Typography>,
 			  userPP: <Typography>img</Typography>,
 			  timestamp: <Typography>20:03</Typography>,
@@ -107,7 +107,7 @@ const ChannelsPage: React.FC = () => {
 	const handleDeleteChannel = () => {
 		//--> CALL TO BACKEND <-- //
 		console.log("'Delete Channel' clicked!");
-		const updatedChannels = chatProps.chatRooms.filter((chat) => chat.name !== selectedChannel.name);
+		const updatedChannels = chatProps.chatRooms.filter((chat: ChatRoom) => chat.name !== selectedChannel.name);
 		setChatProps({...chatProps, chatRooms: updatedChannels});
 		setSelectedChannel(null);
 	}
@@ -173,7 +173,7 @@ const ChannelsPage: React.FC = () => {
 	  );
 	};
   
-	// Function to render the list of channels
+	//---Function to render the list of channels---//
 	const renderChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
 		{channels.map((channel) => (
@@ -189,7 +189,7 @@ const ChannelsPage: React.FC = () => {
 		  divider={<Divider orientation="vertical" flexItem />}
 		  padding="1em"
 		>
-		  {/* Sidebar */}
+		  {/*---Sidebar---*/}
 		  <Stack
 			padding="1em"
 			gap={2}
@@ -244,7 +244,7 @@ const ChannelsPage: React.FC = () => {
 			  </Box>
 			) : selectedChannel ? (
 			  isSettingsView ? (
-				// Render settings view inline
+				//---Render Settings Modal---//
 				<SettingsModal
 				//   key={selectedChannel.settings.type}
 				  open={isSettingsView}
@@ -263,10 +263,14 @@ const ChannelsPage: React.FC = () => {
 						...prevState,
 						settings: updatedSettings,
 					}));
-				  }}
+				}}
+				  chatProps={chatProps}
+				  setChatProps={setChatProps}
+				  selectedChannel={selectedChannel}
+				  setSelectedChannel={setSelectedChannel}
 				/>
 			  ) : (
-				// Render messages view
+				//---Render Messages---//
 				<Box
 					sx={{display: 'flex', flexDirection: 'column',  height: '100%'}}
 				>
@@ -313,6 +317,7 @@ const ChannelsPage: React.FC = () => {
 			  		Delete Channel
 				  </Button>} */}
 				  
+				  {/*---Render Input Box---*/}
 				  <Box
 				    sx={{
 				      display: 'flex',
