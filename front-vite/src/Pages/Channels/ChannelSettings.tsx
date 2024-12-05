@@ -127,7 +127,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
   			  <Button
   			    variant="contained"
   			    onClick={handleDeleteChannel}
-  			    sx={{ mt: 1 }}
+  			    sx={{ mt: 1, color: 'rgb(247, 77, 57)' }}
   			  >
   			    Delete Channel
   			  </Button>
