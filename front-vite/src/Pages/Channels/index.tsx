@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Chat as ChatIcon } from '@mui/icons-material';
 import { SettingsModal } from './ChannelSettings';
-import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon,  AccountCircle as AccountCircleIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar } from '@mui/material';
@@ -173,6 +173,18 @@ const ChannelsPage: React.FC = () => {
 	  );
 	};
   
+
+	const PlayerLine: React.FC = () => {
+		return (
+			<Stack
+				direction='row'
+			>
+				<AccountCircleIcon/>
+				{'Player Name'}
+			</Stack>
+		);
+	};
+
 	//---Function to render the list of channels---//
 	const renderChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
@@ -181,6 +193,12 @@ const ChannelsPage: React.FC = () => {
 		))}
 	  </Stack>
 	);
+
+
+	const renderPlayerLine = () => {
+		
+	};
+
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
 		<Stack
@@ -210,6 +228,9 @@ const ChannelsPage: React.FC = () => {
 			{renderChannels(chatProps.chatRooms)} 
 			<Typography variant="h6" sx={{ textAlign: 'center'}}>Available Channels</Typography>
 			{/* --> CALL TO BACKEND <-- */}
+			<Typography variant="h6" sx={{ textAlign: 'center'}}>Online Players</Typography>
+			{/* --> CALL TO BACKEND <-- */}
+			{PlayerLine()}
 		  </Stack>
   
 		  {/* Main Content */}
