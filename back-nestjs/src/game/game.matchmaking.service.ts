@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Scope, Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import { UserDTO } from '../dto/user.dto';
+import AppLoggerService from 'src/log/log.service';
 
 export interface Player {
 	clientSocket: Socket;
@@ -10,10 +11,15 @@ export interface Player {
 	nameNick: string;
 }
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export default class MatchmakingService {
 	private _waitingPlayersIP: Array<Player> = new Array();
 	private _checker = null;
+
+	constructor(private logger: AppLoggerService) {
+
+    this.logger.setContext(MatchmakingService.name);
+	};
 
 	addPlayerToQueue(clientSocket: Socket, intra42data: UserDTO): void {
 		const newPlayer: Player = {
@@ -25,41 +31,43 @@ export default class MatchmakingService {
 		this._waitingPlayersIP.push(newPlayer);
 
 		if (this._checker === null)
-			this._checker = setInterval(() => {
-				this.checkNewGame();
-			}, 1000);
+			this._checker = setInterval(() => this.checkNewGame(), 1000);
 
-		console.log(
-			`player ${newPlayer.nameNick} [${newPlayer.clientSocket.handshake.address}] joined queue`,
-		);
-	}
+		this.logger.log(`player ${newPlayer.nameNick} [${newPlayer.clientSocket.handshake.address}] joined queue`);
+	};
 
-	removePlayerFromQueue(...players: Socket[]) {
-		const tmpWaitingPlayers: Player[] = [];
+	removePlayerFromQueue(leaver: Socket) {
+
+		const tmpPlayers: Array<Player> = [];
 
 		while (this._waitingPlayersIP.length > 0) {
 			const currentPlayer: Player = this._waitingPlayersIP.shift();
-			if (players.includes(currentPlayer.clientSocket))
-				console.log(`player ${currentPlayer.nameNick} left queue `);
-			else tmpWaitingPlayers.unshift(currentPlayer);
+			if (leaver.id === currentPlayer.clientSocket.id)
+				this.logger.log(`player ${currentPlayer.nameNick} [${currentPlayer.clientSocket.handshake.address}] left queue`);
+			else 
+				tmpPlayers.unshift(currentPlayer);
 		}
+		this._waitingPlayersIP = tmpPlayers;
 
 		if (this._waitingPlayersIP.length === 0) {
 			clearInterval(this._checker);
 			this._checker = null;
 		}
-	}
+	};
 
 	checkNewGame(): void {
-		var index = 0;
 
-		while (index + 1 < this._waitingPlayersIP.length) {
-			const player1: Player = this._waitingPlayersIP[index++];
-			const player2: Player = this._waitingPlayersIP[index++];
-			const sessionToken: string = uuidv4();
+		while (this._waitingPlayersIP.length > 1)
+			this.startNewGame(this._waitingPlayersIP.shift(), this._waitingPlayersIP.shift());
+	};
 
-			player1.clientSocket.emit('ready', sessionToken); // message player1
-			player2.clientSocket.emit('ready', sessionToken); // message player2
-		}
-	}
+	startNewGame(p1: Player, p2: Player): void {
+		
+		const sessionToken: string = uuidv4();
+
+		p1.clientSocket.emit('ready', sessionToken);
+		p2.clientSocket.emit('ready', sessionToken);
+
+		this.logger.log(`starting new multiplayer match between ${p1.nameNick} and ${p2.nameNick}`);
+	};
 }

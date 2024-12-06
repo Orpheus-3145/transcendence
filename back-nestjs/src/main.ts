@@ -5,6 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 import fs from 'fs';
 
 import AppModule from './app.module';
+import AppLoggerService from './log/log.service';
+
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule, {
@@ -13,6 +15,7 @@ async function bootstrap() {
 			cert: fs.readFileSync(process.env.SSL_CERT_PATH),
 			ca: [fs.readFileSync(process.env.SSL_CERT_PATH)],
 		},
+		bufferLogs: true,
 	});
 	const configService = app.get(ConfigService);
 	const port = configService.get<number>('PORT_BACKEND', 4000);
@@ -22,6 +25,11 @@ async function bootstrap() {
 		methods: ['GET', 'POST'],
 		credentials: true,
 	});
+	
+	// set logging
+	const appLogger = new AppLoggerService();
+	appLogger.setContext('NestJS engine');
+	app.useLogger(appLogger);
 
 	// Enables req.cookies
 	app.use(cookieParser());
