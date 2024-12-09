@@ -1,6 +1,5 @@
 import { ConsoleLogger, LogLevel, ConsoleLoggerOptions, Injectable, Scope } from '@nestjs/common';
 import * as fs from 'fs';
-// import * as path from 'path';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -32,7 +31,7 @@ export default class AppLoggerService extends ConsoleLogger {
     super.setContext(context);
   };
   
-  isLogLevelEnabled(level: LogLevel): boolean {
+  isLevelEnabled(level: LogLevel): boolean {
     
     return this.options.logLevels.includes(level);
   }
@@ -42,7 +41,7 @@ export default class AppLoggerService extends ConsoleLogger {
     if (this.isLevelEnabled('debug') === false)
       return ;
 
-    super.debug(message, this.context);    // <-- CHECK
+    super.debug(message, this.context);
     this.writeNewEntry('debug', message);
   };
 

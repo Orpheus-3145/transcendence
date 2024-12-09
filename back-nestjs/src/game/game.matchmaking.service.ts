@@ -18,7 +18,7 @@ export default class MatchmakingService {
 
 	constructor(private logger: AppLoggerService) {
 
-    this.logger.setContext(MatchmakingService.name);
+    	this.logger.setContext(MatchmakingService.name);
 	};
 
 	addPlayerToQueue(clientSocket: Socket, intra42data: UserDTO): void {

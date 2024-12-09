@@ -25,7 +25,7 @@ async function bootstrap() {
 		methods: ['GET', 'POST'],
 		credentials: true,
 	});
-	
+
 	// set logging
 	const appLogger = new AppLoggerService();
 	appLogger.setContext('NestJS engine');
