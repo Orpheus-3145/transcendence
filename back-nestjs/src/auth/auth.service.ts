@@ -5,6 +5,7 @@ import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { UsersService as UserService } from '../users/users.service';
 import { AccessTokenDTO } from '../dto/auth.dto';
 import { UserDTO } from '../dto/user.dto';
+import AppLoggerService from 'src/log/log.service';
 // import { User } from '../entities/user.entity';
 
 @Injectable()
@@ -12,7 +13,11 @@ export class AuthService {
 	constructor(
 		private configService: ConfigService,
 		private userService: UserService,
-	) {}
+		private logger: AppLoggerService,
+	) {
+
+    	this.logger.setContext(AuthService.name);
+	}
 
 	handleRedir(res: Response, clear: boolean, redir?: string, mess?: string) {
 		if (clear) res.clearCookie('auth_token');
@@ -28,7 +33,7 @@ export class AuthService {
 			return null;
 		}
 		try {
-			const response = await fetch('https://api.intra.42.fr/oauth/token', {
+			const response = await fetch(this.configService.get<string>('URL_INTRA_TOKEN'), {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 				body: new URLSearchParams({
@@ -56,7 +61,7 @@ export class AuthService {
 			return null;
 		}
 		try {
-			const response = await fetch('https://api.intra.42.fr/v2/me', {
+			const response = await fetch(this.configService.get<string>('URL_INTRA_USERME'), {
 				method: 'GET',
 				headers: {
 					Authorization: `Bearer ${access_token}`,
@@ -83,7 +88,7 @@ export class AuthService {
 
 		const userMe = await this.getUserMe(access.access_token);
 		if (userMe === null) return null;
-
+		
 		const signedToken = sign({ intraId: userMe.id }, this.configService.get<string>('SECRET_KEY'));
 
 		res.cookie('auth_token', signedToken, {
@@ -94,9 +99,11 @@ export class AuthService {
 		try {
 			const userDTOreturn = await this.userService.createUser(access, userMe);
 			res.redirect(this.configService.get<string>('URL_FRONTEND'));
+			// this.logger.log(`Successful login with user: ${userDTOreturn.nameNick}`)
 			return userDTOreturn;
 		} catch (error) {
 			console.error('Error creating user:', error);
+			// this.logger.error(`Login failed with user: ${userMe.login}`)
 			res.redirect(this.configService.get<string>('URL_FRONTEND') + '/login');
 			return null;
 		}

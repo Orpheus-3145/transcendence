@@ -31,7 +31,7 @@ class Game extends Phaser.Scene {
 
 	// Initialize players and key bindings
 	init(data: { id: string; bot: boolean }): void {
-		this._socketIO = io(import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION, {
+		this._socketIO = io(import.meta.env.URL_WEBSOCKET + '/' + import.meta.env.WS_NS_SIMULATION, {
 			withCredentials: true, // Include cookies, if necessary
 			transports: ['websocket'],
 		});

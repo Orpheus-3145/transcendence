@@ -1,16 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, TopologyClosedEvent } from 'typeorm';
+
 import { User } from '../entities/user.entity';
 import { UserStatus, UserDTO } from '../dto/user.dto';
 import { AccessTokenDTO } from '../dto/auth.dto';
+import AppLoggerService from 'src/log/log.service';
 
 @Injectable()
 export class UsersService {
+
 	constructor(
-		@InjectRepository(User)
-		private usersRepository: Repository<User>,
-	) {}
+		@InjectRepository(User) private usersRepository: Repository<User>,
+		private logger: AppLoggerService) {
+    
+		this.logger.setContext(UsersService.name);
+	}
 
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
 		const user = new User();
