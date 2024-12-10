@@ -5,6 +5,7 @@ import { RouterModule } from '@nestjs/core';
 import { User } from './entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ChatModule } from './chat/chat.module';
 import GameModule from './game/game.module';
 
 @Module({
@@ -28,6 +29,7 @@ import GameModule from './game/game.module';
     AuthModule,
     GameModule,
     UsersModule,
+    ChatModule,
   ],
 })
 export default class AppModule {};

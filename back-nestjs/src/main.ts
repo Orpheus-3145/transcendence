@@ -29,7 +29,7 @@ async function bootstrap() {
 		// Enables req.cookies
 		app.use(cookieParser());
 		app.useGlobalPipes(new ValidationPipe({
-				transform: true,
+			transform: true,
 		}));
 
 		await app.listen(port).catch(() => {
