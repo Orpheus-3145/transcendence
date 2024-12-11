@@ -37,7 +37,7 @@ const ChannelsPage: React.FC = () => {
 		  icon: <GroupIcon />,
 		  messages: [
 			{
-			  message: <Typography>Whazuuuuuuuup!</Typography>,
+			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
 			  user: <Typography>User1</Typography>,
 			  userPP: <Typography>img</Typography>,
 			  timestamp: <Typography>20:00</Typography>,
@@ -234,7 +234,7 @@ const ChannelsPage: React.FC = () => {
 		  </Stack>
   
 		  {/* Main Content */}
-		  <Box flex={1} padding="1em" bgcolor={theme.palette.primary.light}>
+		  <Box flex={1} padding="1em" bgcolor={theme.palette.primary.light} sx={{height: '80vh', overflowY: 'auto'}}>
 			{isAddingChannel ? (
 			  <Box>
 				<Typography variant="h6">Enter Channel Name</Typography>
@@ -357,7 +357,7 @@ const ChannelsPage: React.FC = () => {
 				        padding: '0.5em',
 				        borderRadius: '0.5em',
 				        marginRight: '0.5em',
-						boxShadow: `0px -2px 5px rgba(0, 0, 0, 0.1)`,
+						boxShadow: `0px -2px 5px rgba(0, 0, 0, 0.2)`,
 						
 						
 					}}
