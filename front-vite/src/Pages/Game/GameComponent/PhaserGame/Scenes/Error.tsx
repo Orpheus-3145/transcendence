@@ -1,6 +1,7 @@
-class Error extends Phaser.Scene {
-	// error info
-	private _errorData: string = '';
+export default class Error extends Phaser.Scene {
+  
+  // error info
+  private _errorData: string = '';
 
 	constructor() {
 		super({ key: 'Error' });
@@ -29,5 +30,3 @@ class Error extends Phaser.Scene {
 	// run every frame update
 	upload(): void {}
 }
-
-export default Error;

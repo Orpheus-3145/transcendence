@@ -14,27 +14,25 @@ class Field {
 	constructor(scene: Game) {
 		this._scene = scene;
 
-		// Initialize the score display at the top center of the game screen
-		this._scoreText = scene.add
-			.text(GAME.width / 2, 50, `${this._leftScore} : ${this._rightScore}`, {
-				fontSize: '32px',
-				align: 'center',
-				color: '#0f0',
-			})
-			.setOrigin(0.5, 0.5);
-	}
+    // Initialize the score display at the top center of the game screen
+    this._scoreText = scene.add.text(
+      GAME.width / 2,
+      50,
+      `${this._leftScore} : ${this._rightScore}`, 
+      {
+        fontSize: '32px',
+        align: 'center',
+        color: '#0f0',
+      }
+    ).setOrigin(0.5, 0.5);
+  };
 
-	// Sets the score and updates the display immediately
-	setScore(left: number, right: number): void {
-		this._leftScore = left;
-		this._rightScore = right;
-		this.updateScore(); // Update the score text whenever the score changes
-	}
-
-	// Updates the score text on the screen
-	updateScore(): void {
-		this._scoreText.text = `${this._leftScore} : ${this._rightScore}`;
-	}
+  // Sets the score and updates the display immediately
+  updateScore(left: number, right: number): void {
+    this._leftScore = left;
+    this._rightScore = right;
+    this._scoreText.text = `${this._leftScore} : ${this._rightScore}`;
+  };
 }
 
 export default Field;

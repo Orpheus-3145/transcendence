@@ -1,19 +1,12 @@
 import { Scope, Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-
-import { UserDTO } from '../dto/user.dto';
 import AppLoggerService from 'src/log/log.service';
 
-export interface Player {
-	clientSocket: Socket;
-	intraId: number;
-	nameNick: string;
-}
 
 @Injectable({ scope: Scope.TRANSIENT })
 export default class MatchmakingService {
-	private _waitingPlayersIP: Array<Player> = new Array();
+	private _waitingPlayersIP: Array<Socket> = new Array();
 	private _checker = null;
 
 	constructor(private logger: AppLoggerService) {
@@ -21,33 +14,29 @@ export default class MatchmakingService {
     	this.logger.setContext(MatchmakingService.name);
 	};
 
-	addPlayerToQueue(clientSocket: Socket, intra42data: UserDTO): void {
-		const newPlayer: Player = {
-			clientSocket: clientSocket,
-			intraId: intra42data.id,
-			nameNick: intra42data.nameNick,
-		};
+	addPlayerToQueue(clientSocket: Socket): void {
 
-		this._waitingPlayersIP.push(newPlayer);
+		this._waitingPlayersIP.push(clientSocket);
 
 		if (this._checker === null)
 			this._checker = setInterval(() => this.checkNewGame(), 1000);
 
-		this.logger.log(`player ${newPlayer.nameNick} [${newPlayer.clientSocket.handshake.address}] joined queue`);
+		this.logger.log(`client ${clientSocket.handshake.address} joined queue`);
 	};
 
 	removePlayerFromQueue(leaver: Socket) {
 
-		const tmpPlayers: Array<Player> = [];
+		const tmpWaitingPlayers: Socket[] = [];
 
 		while (this._waitingPlayersIP.length > 0) {
-			const currentPlayer: Player = this._waitingPlayersIP.shift();
-			if (leaver.id === currentPlayer.clientSocket.id)
-				this.logger.log(`player ${currentPlayer.nameNick} [${currentPlayer.clientSocket.handshake.address}] left queue`);
-			else 
-				tmpPlayers.unshift(currentPlayer);
+
+			const currentPlayer: Socket = this._waitingPlayersIP.shift();
+			if (leaver.id == currentPlayer.id)
+				this.logger.log(`client ${currentPlayer.handshake.address} left queue`);
+			else
+				tmpWaitingPlayers.unshift(currentPlayer);
 		}
-		this._waitingPlayersIP = tmpPlayers;
+		this._waitingPlayersIP = tmpWaitingPlayers;
 
 		if (this._waitingPlayersIP.length === 0) {
 			clearInterval(this._checker);
@@ -57,17 +46,18 @@ export default class MatchmakingService {
 
 	checkNewGame(): void {
 
-		while (this._waitingPlayersIP.length > 1)
-			this.startNewGame(this._waitingPlayersIP.shift(), this._waitingPlayersIP.shift());
-	};
+		var index = 0;
 
-	startNewGame(p1: Player, p2: Player): void {
-		
-		const sessionToken: string = uuidv4();
+		while (index + 1 < this._waitingPlayersIP.length) {
+			
+			// NB: also removed sockets from list
+			const player1: Socket = this._waitingPlayersIP[index++];
+			const player2: Socket = this._waitingPlayersIP[index++];
+			const sessionToken: string = uuidv4();
 
-		p1.clientSocket.emit('ready', sessionToken);
-		p2.clientSocket.emit('ready', sessionToken);
-
-		this.logger.log(`starting new multiplayer match between ${p1.nameNick} and ${p2.nameNick}`);
+			player1.emit('ready', sessionToken);  // message player1
+			player2.emit('ready', sessionToken);  // message player2
+			this.logger.log(`starting new multiplayer match between ${player1.id} and ${player2.id}`);
+		}
 	};
 }

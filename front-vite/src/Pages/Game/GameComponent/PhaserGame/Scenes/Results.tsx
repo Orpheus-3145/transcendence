@@ -1,20 +1,23 @@
 import { GAME } from '../Game.data';
 
-class Results extends Phaser.Scene {
-	// id of the winner of the game
-	private _idWinner: string = '';
+export default class Results extends Phaser.Scene {
 
-	constructor() {
-		super({ key: 'Results' });
-	}
+  // id of the winner of the game
+  private _winner: string = '';
 
-	// fired then scene.start('Results') is called, sets the id
-	init(data: { idWinner: string }): void {
-		this._idWinner = data.idWinner;
-	}
+  constructor () {
+    
+    super({ key: 'Results' });
+  }
+
+  // fired then scene.start('Results') is called, sets the id
+  init( data: {winner: string} ): void {
+
+    this._winner = data.winner;
+  }
 
 	// loading graphic assets, fired after init()
-	preload(): void {}
+  preload(): void {};
 
 	// run after preload(), shows a basic info of the error
 	create(): void {
@@ -26,14 +29,18 @@ class Results extends Phaser.Scene {
 			})
 			.setOrigin(0.5, 0.5);
 
-		// button for going home
-		const goHomeButton = this.add
-			.text(GAME.width - 150, GAME.height - 100, 'Home', {
-				fontSize: '32px',
-				align: 'center',
-				color: '#fff',
-			})
-			.setInteractive();
+    this.add.text(GAME.width / 2, 40, `Player: ${this._winner} won!`, {
+			fontSize: '50px',
+			align: 'center',
+			color: '#0f0',
+		}).setOrigin(0.5, 0.5);
+
+    // button for going home
+		const goHomeButton = this.add.text(GAME.width - 150, GAME.height - 100, 'Home', {
+			fontSize: '32px',
+			align: 'center',
+			color: '#fff',
+		}).setInteractive();
 		// Change color on hover
 		goHomeButton.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' }));
 		// Change color back when not hovered
@@ -45,5 +52,3 @@ class Results extends Phaser.Scene {
 	// run every frame update
 	update(): void {}
 }
-
-export default Results;

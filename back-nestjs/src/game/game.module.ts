@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule} from '@nestjs/config';
 
 import MatchmakingGateway from './game.matchmaking.gateway';
 import SimulationGateway from './game.simulation.gateway';
@@ -8,7 +9,11 @@ import AppLoggerModule from 'src/log/log.module';
 
 
 @Module({
-	providers: [MatchmakingGateway, MatchmakingService, SimulationGateway, SimulationService],
-	imports: [AppLoggerModule]
+  imports: [ConfigModule,
+            AppLoggerModule],
+  providers: [MatchmakingGateway,
+              MatchmakingService,
+              SimulationGateway,
+              SimulationService],
 })
 export default class MatchmakingModule {}

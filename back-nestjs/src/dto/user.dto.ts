@@ -1,6 +1,7 @@
 import { IsEmail, IsEnum, IsNumber, IsString, Length } from 'class-validator';
 import { User } from '../entities/user.entity';
 
+
 export enum UserStatus {
 	Online = 'online',
 	Offline = 'offline',

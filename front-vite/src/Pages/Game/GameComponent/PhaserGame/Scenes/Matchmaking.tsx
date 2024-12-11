@@ -1,29 +1,28 @@
 import { GAME } from '../Game.data';
 import { io, Socket } from 'socket.io-client';
 
-class Matchmaking extends Phaser.Scene {
+import * as GameTypes from '../Types/types';
+
+
+export default class Matchmaking extends Phaser.Scene {
+
 	private _background!: Phaser.GameObjects.Image;
 	private _socketIO!: Socket;
 
-	constructor() {
+  private _keyEsc!: Phaser.Input.Keyboard.Key;
+
+	constructor () {
+
 		super({ key: 'Matchmaking' });
 	}
 
 	// executed when scene.start('Matchmaking') is called
-	init(): void {
-		this._socketIO = io(import.meta.env.URL_WEBSOCKET + '/' + import.meta.env.WS_NS_MATCHMAKING, {
-			withCredentials: true,
-			transports: ['websocket'],
-		});
+  init(): void {
 
-		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
-
-		this._socketIO.on('ready', (sessionId) => {
-			console.log(`token: ${sessionId}`);
-			this.scene.start('Game', { id: 'id1', bot: true });
-		});
-		this._socketIO.emit('waiting', this.registry.get('user42data'));
-	}
+		this._keyEsc = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
+		
+		this.setupSocket();
+	};
 
 	// loading graphic assets, fired after init()
 	preload(): void {}
@@ -53,10 +52,34 @@ class Matchmaking extends Phaser.Scene {
 		goHomeButton.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }));
 		// Start the main game
 		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
-	}
 
-	// run every frame update
-	update(): void {}
-}
+		this._socketIO.emit('waiting');
+  };
 
-export default Matchmaking;
+  // run every frame update
+  update(): void {
+	
+		// Exit game with ESC
+		if (this._keyEsc.isDown)
+			this.scene.start('MainMenu');
+	};
+
+	setupSocket(): void {
+
+		this._socketIO = io(
+			import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_MATCHMAKING, 
+			{
+				withCredentials: true,
+				transports: ['websocket'],
+			},
+		);
+		
+		this._socketIO.on('ready', (sessionId: string) => {
+			
+			const sessionData: GameTypes.InitData = {sessionToken: sessionId, mode: GameTypes.GameMode.multi};
+			this.scene.start('Game', sessionData);
+		});
+
+		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
+	};
+};

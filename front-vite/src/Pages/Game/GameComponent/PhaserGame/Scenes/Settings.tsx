@@ -1,8 +1,9 @@
 import { GAME } from '../Game.data';
 
-class Settings extends Phaser.Scene {
-	// background texture
-	private _background!: Phaser.GameObjects.Image;
+export default class Settings extends Phaser.Scene {
+  
+  // background texture
+  private _background!: Phaser.GameObjects.Image;
 
 	constructor() {
 		super({ key: 'Settings' });
@@ -48,5 +49,3 @@ class Settings extends Phaser.Scene {
 	// run every frame update
 	update(): void {}
 }
-
-export default Settings;

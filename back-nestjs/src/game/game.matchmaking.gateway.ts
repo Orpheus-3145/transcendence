@@ -3,13 +3,11 @@ import {
 	WebSocketServer,
 	OnGatewayDisconnect,
 	SubscribeMessage,
-	MessageBody,
 	ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 import MatchmakingService from './game.matchmaking.service';
-import { UserDTO } from '../dto/user.dto';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_MATCHMAKING,
@@ -26,12 +24,14 @@ export default class MatchmakingGateway implements OnGatewayDisconnect {
 
 	constructor(private matchmakingService: MatchmakingService) {}
 
-	handleDisconnect(client: Socket): void {
+	handleDisconnect(@ConnectedSocket() client: Socket): void {
+		
 		this.matchmakingService.removePlayerFromQueue(client);
 	}
 
 	@SubscribeMessage('waiting')
-	clientWaitingAdd(@MessageBody() data: UserDTO, @ConnectedSocket() client: Socket) {
-		this.matchmakingService.addPlayerToQueue(client, data);
-	}
-}
+  clientWaitingAdd(@ConnectedSocket() client: Socket): void {
+
+    this.matchmakingService.addPlayerToQueue(client);
+  };
+};
