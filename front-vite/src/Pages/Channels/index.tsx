@@ -234,7 +234,7 @@ const ChannelsPage: React.FC = () => {
 		  </Stack>
   
 		  {/* Main Content */}
-		  <Box flex={1} padding="1em" bgcolor={theme.palette.primary.light} sx={{height: '80vh', overflowY: 'auto'}}>
+		  <Box flex={1} padding="1em" bgcolor={theme.palette.primary.light} sx={{height: '80vh'}}>
 			{isAddingChannel ? (
 			  <Box>
 				<Typography variant="h6">Enter Channel Name</Typography>
@@ -302,6 +302,8 @@ const ChannelsPage: React.FC = () => {
 						flexGrow: 1, // Ensures this takes up available vertical space
 						overflowY: 'auto', // Enables scrolling if content overflows
 						padding: '1em',
+						// scrollbarWidth: 'thin',
+						scrollbarColor: (theme) => `${theme.palette.primary.dark} transparent`, 
 					}
 					}     
 				  >
@@ -341,6 +343,7 @@ const ChannelsPage: React.FC = () => {
 				  {/*---Render Input Box---*/}
 				  <Box
 				    sx={{
+					//   marginTop: '1em',
 				      display: 'flex',
 				      alignItems: 'center',
 					  borderTop: `1px solid ${theme.palette.primary.main}`,
@@ -352,6 +355,7 @@ const ChannelsPage: React.FC = () => {
 				  >
 				    <InputBase
 				      sx={{
+						// marginTop: '0.5em',
 				        flexGrow: 1,
 				        border: '1px solid',
 				        padding: '0.5em',
