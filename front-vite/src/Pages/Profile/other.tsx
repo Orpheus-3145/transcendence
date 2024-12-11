@@ -344,12 +344,8 @@ const ProfilePageOther: React.FC = () => {
 						alignItems: 'center',
 						justifyContent: 'center',
 						display: 'flex',
-						width: '100%',
-						height: 'auto',
-						minWidth: '115px',
-						minHeight: '115px',
-						maxHeight: '200px',
-						maxWidth: '200px',
+						width: '200px',
+						height: '200px',
 						bgcolor: theme.palette.success.main,
 					}}
 					src={userProfile.image}
@@ -579,7 +575,7 @@ const ProfilePageOther: React.FC = () => {
 	}
 
 	let BlockUser = () => {
-		blockFriend(user.id, userProfile.intraid);
+		blockFriend(user.id, userProfile.intraid.toString());
 	}
 
 	let BlockUserIcon = () =>

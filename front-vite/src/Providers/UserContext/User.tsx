@@ -163,6 +163,16 @@ export async function blockFriend(username:string, friend:string): Promise<void>
 		console.log("ERROR: FAILED TO BLOCK USER!");
 }
 
+export async function unBlockFriend(username:string, friend:string): Promise<void> {
+	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/block/' + friend, {
+		method: "GET",
+	});
+
+	const response = await fetch(request)
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO BLOCK USER!");
+}
+
 export async function sendMessage(username:string, friend:string, message:string): Promise<void> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/sendMessage/' + friend, {
 		method: "POST",

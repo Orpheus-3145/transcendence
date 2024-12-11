@@ -18,6 +18,14 @@ export class UsersService {
 			private readonly notificationService: NotificationService,
  	) { }
 
+	async userAlreadyExist(user: User): Promise<Boolean>
+	{
+		var tmp: User | null = await this.findOne(user.intraId);
+		if (tmp == null)
+			return (false);
+		return (true);
+	}
+
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
 		const user = new User();
 		user.accessToken = access.access_token;
@@ -32,43 +40,46 @@ export class UsersService {
 		user.status = UserStatus.Offline;
 		user.friends = [];
 		user.blocked = [];
-		 const tmp = new User();
-		 tmp.accessToken = access.access_token;
-		 tmp.intraId = 47328;
-		 tmp.nameNick = 'bald';
-		 tmp.nameIntra = 'baldwin';
-		 tmp.nameFirst = 'bal';
-		 tmp.nameLast = 'dwin';
-		 tmp.email = 'baldwin@student.codam.nl';
-		 tmp.image = userMe.image.link;
-		 tmp.greeting = 'Hello, I have just landed!';
-		 tmp.status = UserStatus.Offline;
-		 user.friends = [];
-		 user.blocked = [];
-		 const a = new User();
-		 a.accessToken = access.access_token;
-		 a.intraId = 58493;
-		 a.nameNick = 'nani';
-		 a.nameIntra = 'nanida';
-		 a.nameFirst = 'nani';
-		 a.nameLast = 'fuq';
-		 a.email = 'nanidafuq@student.codam.nl';
-		 a.image = userMe.image.link;
-		 a.greeting = 'Hello, I have just landed!';
-		 a.status = UserStatus.Offline;
-		 user.friends = [];
-		 user.blocked = [];
+		//  const tmp = new User();
+		//  tmp.accessToken = access.access_token;
+		//  tmp.intraId = 47328;
+		//  tmp.nameNick = 'bald';
+		//  tmp.nameIntra = 'baldwin';
+		//  tmp.nameFirst = 'bal';
+		//  tmp.nameLast = 'dwin';
+		//  tmp.email = 'baldwin@student.codam.nl';
+		//  tmp.image = userMe.image.link;
+		//  tmp.greeting = 'Hello, I have just landed!';
+		//  tmp.status = UserStatus.Offline;
+		//  user.friends = [];
+		//  user.blocked = [];
+		//  const a = new User();
+		//  a.accessToken = access.access_token;
+		//  a.intraId = 58493;
+		//  a.nameNick = 'nani';
+		//  a.nameIntra = 'nanida';
+		//  a.nameFirst = 'nani';
+		//  a.nameLast = 'fuq';
+		//  a.email = 'nanidafuq@student.codam.nl';
+		//  a.image = userMe.image.link;
+		//  a.greeting = 'Hello, I have just landed!';
+		//  a.status = UserStatus.Offline;
+		//  user.friends = [];
+		//  user.blocked = [];
 		try {
-		await user.validate();
-		 await tmp.validate();
-		 await a.validate();
-		await this.usersRepository.save(user);
-		 await this.usersRepository.save(tmp); //remove tmp when testing is done, it is an extra user to test
-		 await this.usersRepository.save(a);//remove tmp when testing is done, it is an extra user to test
-		return new UserDTO(user);
-		} catch (error) {
-		console.error('User validation error: ', error);
-		throw error;
+			if (await this.userAlreadyExist(user) == true)
+				return (new UserDTO(user));
+			await user.validate();
+			// await tmp.validate();
+			// await a.validate();
+			await this.usersRepository.save(user);
+			// await this.usersRepository.save(tmp); //remove tmp when testing is done, it is an extra user to test
+			// await this.usersRepository.save(a);//remove tmp when testing is done, it is an extra user to test
+			return new UserDTO(user);
+		} 
+		catch (error) {
+			console.error('User validation error: ', error);
+			throw error;
 		}
 	}
 
@@ -153,7 +164,14 @@ export class UsersService {
 		this.usersRepository.save(user);
   	}
   
-  	async changeProfilePic(user: User, image:string)
+	async unBlockUser(user: User, other: User)
+	{
+		var newlist = user.blocked.filter(blocked => blocked !== other.intraId.toString());
+		user.blocked = newlist;
+		this.usersRepository.save(user);
+	}
+
+	async changeProfilePic(user: User, image:string)
   	{
 		user.image = image;
 		this.usersRepository.save(user);

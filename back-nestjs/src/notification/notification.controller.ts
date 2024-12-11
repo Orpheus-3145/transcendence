@@ -68,6 +68,6 @@ export class NotificationController {
 			console.log("ERROR: notification not found in rmvNotification!");
 			throw new HttpException('Not Found', 404);
 		}
-		this.notificationService.removeNotification(await noti);
+		this.notificationService.removeNotification(noti);
 	}
 }

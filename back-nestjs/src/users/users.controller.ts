@@ -108,6 +108,19 @@ export class UsersController {
 		return (this.UserService.blockUser(await user, await other));
 	}
 
+	@Get('profile/:username/friend/unBlock/:id')
+	async unBlockUser(@Param('username') username:string, @Param('id') id: string) 
+	{
+		var user = this.UserService.getUserId(username);
+		var other = this.UserService.getUserIntraId(id);
+		if (user == null || other == null)
+		{
+			console.log("ERROR: failed to get user in blockUser!");
+			throw new HttpException('Not Found', 404);
+		}
+		return (this.UserService.blockUser(await user, await other));
+	}
+
 	@Post('profile/:username/sendMessage/:id')
 	async sendMessage(@Param('username') username:string, @Param('id') id: string, @Body('message') message:string) 
 	{

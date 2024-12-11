@@ -18,18 +18,19 @@ import {NotificationStruct,
 		declineFriendRequest,
 		acceptGameInvite, 
 		declineGameInvite,
-		NotificationType} from '../../../Providers/NotificationContext/Notification'
+		NotificationType,
+		NotificationStatus} from '../../../Providers/NotificationContext/Notification'
+import { posix } from 'path';
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
 	const navigate = useNavigate();
 	const theme = useTheme();  
 	const [openDrawer, setOpenDrawer] = useState<Boolean>(false);
-	const [notificationDot, setNotificationDot] = useState<Boolean>(false);
+	const [showNotificationDot, setShowNotificationDot] = useState<Boolean>(false);
 	const [messageArray, setMessageArray] = useState<NotificationStruct[] | null>(null);
 	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[] | null>(null);
 	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[] | null>(null);
-	const [notificationNumber, setNotificationNumber] = useState<number | null>(null);
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)}
@@ -43,9 +44,9 @@ export const Notification: React.FC = () => {
 	let initMessageNotification = (noti: NotificationStruct) =>
 	{
 		var notiMessage = noti.message;
-		if (noti.message?.length > 15)
+		if (noti.message?.length > 23)
 		{
-			notiMessage = noti.message?.slice(0, 15) + "...";
+			notiMessage = noti.message?.slice(0, 23) + "...";
 		}
 		return (
 			<Stack
@@ -60,9 +61,9 @@ export const Notification: React.FC = () => {
 						p: 5, 
 						border: 1, 
 						borderWidth: '4px', 
-						borderColor: 'blue', 
+						borderColor: theme.palette.secondary.dark, 
 						borderRadius: '16px',
-						backgroundColor: '#2c2c2c',
+						backgroundColor: 'black',
 					}}
 				>
 					<Tooltip title="Clear Notification" arrow>
@@ -78,7 +79,7 @@ export const Notification: React.FC = () => {
 								fontSize: '20px',
 								color: theme.palette.secondary.main,
 								'&:hover': {
-									color: theme.palette.error.main,
+									color: theme.palette.error.dark,
 								},
 							}}				
 						>
@@ -107,21 +108,36 @@ export const Notification: React.FC = () => {
 		if (messageArray == null)
 		{
 			return (
-				<Typography
+				<Box
+					component="section"         
 					sx={{
 						position: 'relative',
-						left: '50px',
-					color: 'green',
+						left: '45px',
+						top :'5px',
+						width: 260,
+						height: 40,
+						borderRadius: 1,
+						bgcolor: 'black',
 					}}
-				>	
-					<br />
-					You have no incoming messages!
-				</Typography>
+				>
+					<Typography
+						sx={{
+							position: 'relative',
+							left: '10px',
+							top: '-15px',
+							color: 'green',
+						}}
+					>	
+						<br />
+						You have no incoming messages!
+					</Typography>
+				</Box>
 			);
 		}
 		
 		return (
 			<Stack>
+				<br />
 				{messageArray.map((item: NotificationStruct) => initMessageNotification(item))}
 			</Stack>
 		);
@@ -147,7 +163,9 @@ export const Notification: React.FC = () => {
 	{
 		var message = "has sent you a friend request!";
 		if (noti.type == NotificationType.gameInvite)
+		{
 			message = "has sent you a game invite!"; 
+		}
 
 		return (
 			<Stack
@@ -162,9 +180,9 @@ export const Notification: React.FC = () => {
 						p: 5, 
 						border: 1, 
 						borderWidth: '4px', 
-						borderColor: 'blue', 
+						borderColor: theme.palette.secondary.dark, 
 						borderRadius: '16px',
-						backgroundColor: '#2c2c2c',
+						backgroundColor: 'black',
 					}}
 				>
 					<Tooltip title="Clear Notification" arrow>
@@ -180,7 +198,7 @@ export const Notification: React.FC = () => {
 								fontSize: '20px',
 								color: theme.palette.secondary.main,
 								'&:hover': {
-									color: theme.palette.error.main,
+									color: theme.palette.error.dark,
 								},
 							}}				
 						>
@@ -202,7 +220,7 @@ export const Notification: React.FC = () => {
 						variant="contained"
 						sx={{
 							position: 'relative',
-							left: '30px',
+							left: '25px',
 							top: '10px',
 						}}
 					>
@@ -239,21 +257,36 @@ export const Notification: React.FC = () => {
 		if (friendRequestArray == null)
 		{
 			return (
-				<Typography
-				sx={{
-					position: 'relative',
-					left: '35px',
-					color: 'green',
-				}}
+				<Box
+					component="section"         
+					sx={{
+						position: 'relative',
+						left: '23px',
+						top :'5px',
+						width: 300,
+						height: 40,
+						borderRadius: 1,
+						bgcolor: 'black',
+					}}
 				>
-					<br />
-					You have no incoming friend requests!
-				</Typography>
+					<Typography
+						sx={{
+							position: 'relative',
+							left: '13px',
+							top: '-15px',
+							color: 'green',
+						}}
+					>
+						<br />
+						You have no incoming friend requests!
+					</Typography>
+				</Box>
 			);
 		}
 	
 		return (
 			<Stack>
+				<br />
 				{friendRequestArray.map((item: NotificationStruct) => initRequestNotification(item))}
 			</Stack>
 		);
@@ -264,24 +297,126 @@ export const Notification: React.FC = () => {
 		if (gameInviteArray == null)
 			{
 				return (
-					<Typography
-					sx={{
-						position: 'relative',
-						left: '45px',
-						color: 'green',
-					}}
+					<Box
+						component="section"         
+						sx={{
+							position: 'relative',
+							left: '33px',
+							top :'5px',
+							width: 280,
+							height: 40,
+							borderRadius: 1,
+							bgcolor: 'black',
+						}}
 					>
-						<br />
-						You have no incoming game invites!
-					</Typography>
+						<Typography
+							sx={{
+								position: 'relative',
+								left: '10px',
+								top: '-15px',
+								color: 'green',
+							}}
+						>
+							<br />
+							You have no incoming game invites!
+						</Typography>
+					</Box>
 				);
 			}
-		
-			return (
-				<Stack>
-					{gameInviteArray.map((item: NotificationStruct) => initRequestNotification(item))}
-				</Stack>
-			);		
+
+		return (
+			<Stack>
+				<br />
+				{gameInviteArray.map((item: NotificationStruct) => initRequestNotification(item))}
+			</Stack>
+		);		
+	}
+
+	let messageBox = () =>
+	{
+		return (
+			<Box
+				component="section"         
+				sx={{
+					position: 'relative',
+					left: '100px',
+					width: 140,
+					height: 40,
+					borderRadius: 1,
+					bgcolor: 'black',
+				}}
+			>
+				<Typography variant="h5"
+					sx={{	
+						position: 'relative',
+						left: '20px',
+						top: '2px',
+						fontFamily: 'Georgia, serif',
+						color: theme.palette.secondary.main,
+					}}
+				>
+					Messages:
+				</Typography>
+			</Box>
+		);
+	}
+
+	let friendReqBox = () =>
+	{
+		return (
+			<Box
+				component="section"
+				sx={{
+					position: 'relative',
+					left: '63px',
+					width: 220,
+					height: 40,
+					borderRadius: 1,
+					bgcolor: 'black',
+				}}
+			>	
+				<Typography variant="h5"
+					sx={{
+						position: 'relative',
+						left: '32px',
+						top: '2px',	
+						fontFamily: 'Georgia, serif',
+						color: theme.palette.secondary.main,
+					}}
+				>
+					Friend Requests:
+				</Typography>
+			</Box>
+		);
+	}
+
+	let gameReqBox = () =>
+	{
+		return (
+			<Box
+				component="section"         
+				sx={{
+					position: 'relative',
+					left: '73px',
+					width: 200,
+					height: 40,
+					borderRadius: 1,
+					bgcolor: 'black',
+				}}
+			>
+				<Typography variant="h5"
+					sx={{
+						position: 'relative',
+						left: '35px',
+						top: '2px',
+						fontFamily: 'Georgia, serif',
+						color: theme.palette.secondary.main,
+					}}
+				>
+					Game Invites:
+				</Typography>
+			</Box>
+		);
 	}
 
 	let DrawerList = () =>
@@ -292,67 +427,45 @@ export const Notification: React.FC = () => {
 					overflowX: 'hidden',
 				}}
 				width={'350px'}
+				minHeight={'600px'}
 			>
-				<Stack
+				<Box 
+					component="section"         
 					sx={{
 						position: 'relative',
-						left: '70px',
+						left: '56px',
+						top: '10px',
+						width: 220,
+						height: 50,
+						borderRadius: 1,
+						bgcolor: 'black',
 					}}
 				>
 					<Typography variant="h4"
 						sx={{	
 							color: theme.palette.secondary.main,
+							position: 'relative',
+							left: '22px',
+							top: '3px',
+							fontFamily: 'Georgia, serif',
 						}}
 					>
 						Notifications
 					</Typography>
-				</Stack>
-				<br />
-				<Box>
-					<Typography variant="h5"
-						sx={{	
-							position: 'relative',
-							left: '120px',	
-							fontFamily: 'Georgia, serif',
-							color: theme.palette.secondary.main,
-						}}
-					>
-						Messages:
-					</Typography>
-					{getNotificationMessages()}
-
-					<br />
-					<Divider />
-					<br />
-
-					<Typography variant="h5"
-						sx={{
-							position: 'relative',
-							left: '85px',	
-							fontFamily: 'Georgia, serif',
-							color: theme.palette.secondary.main,
-						}}
-					>
-						Friend Requests:
-					</Typography>
-					{getNotificationFrRequests()}
-
-					<br />
-					<Divider />
-					<br />
-
-					<Typography variant="h5"
-						sx={{
-							position: 'relative',
-							left: '100px',	
-							fontFamily: 'Georgia, serif',
-							color: theme.palette.secondary.main,
-						}}
-					>
-						Game Invites:
-					</Typography>
-					{getGameInvites()}
 				</Box>
+				<br />
+				{messageBox()}
+				{getNotificationMessages()}
+				<br />
+				<Divider />
+				<br />
+				{friendReqBox()}
+				{getNotificationFrRequests()}
+				<br />
+				<Divider />
+				<br />
+				{gameReqBox()}
+				{getGameInvites()}
 			</Stack>
 		);
 	}
@@ -365,6 +478,7 @@ export const Notification: React.FC = () => {
 					<IconButton
 						onClick={toggleDrawer(true)}
 						sx={{
+							position: 'absolute',
 							left: '30px',
 							'&:hover': {
 								color: 'orange',
@@ -374,23 +488,11 @@ export const Notification: React.FC = () => {
 						<NotificationsIcon />
 					</IconButton>
 				</Tooltip>
-				{notificationDot && (
-					<Box
-						sx={{
-							width: 12,
-							height: 12,
-							backgroundColor: 'red',
-							borderRadius: '50%',
-							position: 'relative',
-							left: '60px',
-							top: '-30px',
-						}}
-					/>
-				)}
 				<Drawer
 					anchor={'right'}
 					open={openDrawer} 
 					onClose={toggleDrawer(false)}
+					sx={{color: '#000000'}}
 				>
 					{DrawerList()}
 				</Drawer>
@@ -403,10 +505,11 @@ export const Notification: React.FC = () => {
 		let arr = await getUserNotifications(user);
 		if (arr?.length === 0)
 		{
-			setNotificationDot(false);
+			setShowNotificationDot(false);
 			setFriendRequestArray(null);
 			setMessageArray(null);
 			setGameInviteArray(null);
+			setShowNotificationDot(false);
 		}
 		else
 		{
@@ -444,6 +547,7 @@ export const Notification: React.FC = () => {
 			setFriendRequestArray(friendsArr);
 			setMessageArray(messageArr);
 			setGameInviteArray(gameArr);
+			setShowNotificationDot(true);
 		}
 	}
 
@@ -451,20 +555,9 @@ export const Notification: React.FC = () => {
   	{
 		useEffect(() => 
 		{
-			getNotificationUser().then((number) => 
-			{
-				setNotificationNumber(number);
-			});
-
-			if ((friendRequestArray == null) && (gameInviteArray == null) && (messageArray == null))
-				setNotificationDot(false);
-			else if ((friendRequestArray != null) || (gameInviteArray != null) || (messageArray != null))
-				setNotificationDot(true);
+			getNotificationUser();
 		
-		}, [friendRequestArray, gameInviteArray, messageArray, notificationDot, openDrawer]);
-
-		if (notificationNumber === null) 
-			return <Stack>Loading...</Stack>;
+		}, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);
 
 		return (notificationBar());
   	}

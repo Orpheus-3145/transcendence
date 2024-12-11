@@ -7,6 +7,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { themeOptions } from './Styles/themeOptions';
 import { useUser } from './Providers/UserContext/User';
 import { Chat } from './Layout/Chat/index';
+import { Notification } from '../src/Layout/Header/Notification/index';
 import './mainAppComponent.css';
 
 const MainAppComponent: React.FC = () => {
