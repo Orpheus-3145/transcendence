@@ -144,7 +144,7 @@ const ChannelsPage: React.FC = () => {
 		  justifyContent={'space-between'}
 		  alignItems={'center'}
 		  textAlign={'center'}
-		  minWidth={'218px'}
+		//   minWidth={'218px'}
 		  sx={{
 			cursor: 'pointer',
 			transition: 'padding-left ease-in-out 0.3s, padding-right ease-in-out 0.3s, border-radius ease-in-out 0.3s, background-color ease-in-out 0.3s',
@@ -177,9 +177,16 @@ const ChannelsPage: React.FC = () => {
 	const PlayerLine: React.FC = () => {
 		return (
 			<Stack
+				onClick={() => {(navigate(`/profile/1`))}} // TO BE REPLACED!
 				direction='row'
+				sx={{
+					cursor: 'pointer',
+					padding: '0.3em',
+					borderRadius: '10px',
+					backgroundColor: theme => theme.palette.primary.main,
+				}}
 			>
-				<AccountCircleIcon/>
+				<AccountCircleIcon sx={{marginRight: 1}}/>
 				{'Player Name'}
 			</Stack>
 		);
@@ -228,19 +235,25 @@ const ChannelsPage: React.FC = () => {
 			<Divider sx={{}} />
 			{/* Joined Channels Section */}
 			<Box sx={{ marginBottom: 1}}>
-				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>Joined Channels</Typography>
+				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
+					Joined Channels
+				</Typography>
 				{/* --> CALL TO BACKEND <-- */}
 				{renderChannels(chatProps.chatRooms)} 
 			</Box>
 			<Divider/>
 			<Box sx={{ marginBottom: 1}}>
-				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>Available Channels</Typography>
+				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
+					Available Channels
+				</Typography>
 				{/* --> CALL TO BACKEND <-- */}
 				{renderChannels(chatProps.chatRooms)} 
 			</Box>
 			<Divider/>
 			<Box sx={{ }}>
-				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>Online Players</Typography>
+				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
+					Online Players
+				</Typography>
 				{/* --> CALL TO BACKEND <-- */}
 				{renderPlayers()}
 			</Box>
@@ -308,7 +321,7 @@ const ChannelsPage: React.FC = () => {
 				<Box
 					sx={{display: 'flex', flexDirection: 'column',  height: '100%'}}
 				>
-				  <Typography variant="h6">{selectedChannel.name}</Typography>
+				  {/* <Typography variant="h6">{selectedChannel.name}</Typography> */}
 				  <Stack 
 				  	mt={2}
 				  	sx={{
