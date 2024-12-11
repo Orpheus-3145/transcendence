@@ -15,6 +15,7 @@ import {
   Login as LoginIcon,
 } from '@mui/icons-material';
 import { timeStamp } from 'console';
+import { index } from 'cheerio/dist/commonjs/api/traversing';
 
 interface ChannelTypeEvent {
   component: React.ReactNode;
@@ -173,7 +174,6 @@ const ChannelsPage: React.FC = () => {
 	  );
 	};
   
-
 	const PlayerLine: React.FC = () => {
 		return (
 			<Stack
@@ -185,6 +185,14 @@ const ChannelsPage: React.FC = () => {
 		);
 	};
 
+	const renderPlayers = () => (
+		<Stack gap={1}>
+			{Array.from({ length: 20 }).map((_, index) => (
+				<PlayerLine key={index} />	
+			))}
+		</Stack>
+	);
+
 	//---Function to render the list of channels---//
 	const renderChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
@@ -193,11 +201,6 @@ const ChannelsPage: React.FC = () => {
 		))}
 	  </Stack>
 	);
-
-
-	const renderPlayerLine = () => {
-		
-	};
 
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
@@ -212,8 +215,8 @@ const ChannelsPage: React.FC = () => {
 			padding="1em"
 			gap={2}
 			bgcolor={theme.palette.primary.light}
-			width="250px"
-			sx={{ height: '80vh', overflowY: 'auto' }}
+			width="251px"
+			sx={{ height: '80vh', overflowY: 'auto', scrollbarColor: (theme) => `${theme.palette.primary.main} transparent` }}
 		  >
 			<Button
 			  variant="contained"
@@ -228,9 +231,10 @@ const ChannelsPage: React.FC = () => {
 			{renderChannels(chatProps.chatRooms)} 
 			<Typography variant="h6" sx={{ textAlign: 'center'}}>Available Channels</Typography>
 			{/* --> CALL TO BACKEND <-- */}
+			{renderChannels(chatProps.chatRooms)} 
 			<Typography variant="h6" sx={{ textAlign: 'center'}}>Online Players</Typography>
 			{/* --> CALL TO BACKEND <-- */}
-			{PlayerLine()}
+			{renderPlayers()}
 		  </Stack>
   
 		  {/* Main Content */}
@@ -303,7 +307,7 @@ const ChannelsPage: React.FC = () => {
 						overflowY: 'auto', // Enables scrolling if content overflows
 						padding: '1em',
 						// scrollbarWidth: 'thin',
-						scrollbarColor: (theme) => `${theme.palette.primary.dark} transparent`, 
+						scrollbarColor: (theme) => `${theme.palette.primary.main} transparent`, 
 					}
 					}     
 				  >
