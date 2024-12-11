@@ -5,7 +5,7 @@ build:
 	@docker compose build --progress=auto
 
 run:
-	@docker compose up
+	@docker compose up --no-build
 
 re: down run
 

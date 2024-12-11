@@ -2,5 +2,8 @@
   "dependencies": {
     "uuid": "^11.0.3",
     "uuidv4": "^6.2.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "^1.2.0"
   }
 }
