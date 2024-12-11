@@ -6,19 +6,18 @@ all: build
 build:
 	@$(COMPOSE) build 
 
-run:
-	@$(COMPOSE) up --no-build
-
-re: down run
-
 # re-build images from scratch
 build_debug:
 	@$(COMPOSE) build --no-cache --pull
 
-run_debug:
-	@$(COMPOSE) up --build
+run:
+	@$(COMPOSE) up --no-build
 
-re_debug: clean run
+restart: down run
+
+re: down build run
+
+re_debug: clean build_debug run
 
 down:
 	@$(COMPOSE) down
@@ -26,4 +25,4 @@ down:
 clean:
 	@$(COMPOSE) down --remove-orphans --volumes --rmi all
 
-.PHONY: all build run re build_debug run_debug re_debug down clean
+.PHONY: all build build_debug run restart re re_debug down clean
