@@ -1,7 +1,7 @@
 export enum GameMode {
   single = 'single',
   multi = 'multi',
-  unset = 'unset',
+  unset = 'unset', // This is only the case when the variable is initialised, it is always overwritten with 'single' or 'multi'
 };
 
 export enum PaddleDirection {
@@ -26,8 +26,9 @@ export interface GameState {
 };
 
 export interface PlayerData {
-  playerId: number;
-  nameNick: string;
+	playerId: number;
+	sessionToken: string;
+	nameNick: string;
 };
 
 export interface InitData {

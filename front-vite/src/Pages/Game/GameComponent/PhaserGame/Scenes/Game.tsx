@@ -31,7 +31,7 @@ export default class Game extends Phaser.Scene {
 	private _gameStarted: boolean = false;
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private _gameState!: GameTypes.GameState;
-
+	private _addPlayerSuccess = false;
   constructor() {
 		
 		super({ key: 'Game' });
@@ -47,6 +47,7 @@ export default class Game extends Phaser.Scene {
 
 		// Key bindings
 		this._cursors = this.input.keyboard!.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
+		// this._keyArrowUp = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.UP) as Phaser.Input.Keyboard.Key;
 		this._keyW = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W) as Phaser.Input.Keyboard.Key;
 		this._keyS = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S) as Phaser.Input.Keyboard.Key;
 		this._keyEsc = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
@@ -75,10 +76,10 @@ export default class Game extends Phaser.Scene {
 		this._field = new Field(this);
 
 		const initData: GameTypes.InitData = {sessionToken: this._sessionToken, mode: this._mode};
-		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick};
+		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick, sessionToken: this._sessionToken};
 
 		this.sendMsgToServer('initData', initData);
-		this.sendMsgToServer('playerData', playerData);
+		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	};
 
 	setupSocket() {
@@ -101,13 +102,12 @@ export default class Game extends Phaser.Scene {
 		
 		this._socketIO.on('endGame', (winner: string) => this.scene.start('Results', {winner}));
 
-		this._socketIO.on('PlayerDisconnected', (trace: string) => this.scene.start('Errors', {trace}));
+		this._socketIO.on('PlayerDisconnected', (trace: string) => this.scene.start('Error', {trace}));
 		
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	};
 
 	sendMsgToServer(msgType: string, content: any) {
-
 		this._socketIO.emit(msgType, content);
 	};
 
@@ -118,13 +118,16 @@ export default class Game extends Phaser.Scene {
 			return;
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
-			this.sendMsgToServer('playerMove', GameTypes.PaddleDirection.up);
-		else if (this._keyS.isDown || this._cursors.up.isDown)
-			this.sendMsgToServer('playerMove', GameTypes.PaddleDirection.down);
+			this.sendMsgToServer('playerMove', {direction: GameTypes.PaddleDirection.up, sessionToken: this._sessionToken});
+		else if (this._keyS.isDown || this._cursors.down.isDown)
+			this.sendMsgToServer('playerMove', {direction: GameTypes.PaddleDirection.down, sessionToken: this._sessionToken});
 
 		// Exit game with ESC
-		if (this._keyEsc.isDown)
+		if (this._keyEsc.isDown) {
+			this.sendMsgToServer('playerLeft', {sessionToken: this._sessionToken});
 			this.scene.start('MainMenu');
+			// this.scene.start('Error', "random!")
+		}
 		
 		this.updateGame();
   };

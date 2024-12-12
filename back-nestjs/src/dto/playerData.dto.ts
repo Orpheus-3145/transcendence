@@ -7,4 +7,7 @@ export default class PlayerDataDTO {
 
     @IsString()
     nameNick: string;
+
+	@IsString()
+	sessionToken: string;
 };

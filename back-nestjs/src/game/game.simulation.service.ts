@@ -24,7 +24,7 @@ export default class SimulationService {
 	private ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
 	private waitingToStart = false;
 	private engineRunning = false;
-	
+
 	private gameStateInterval: NodeJS.Timeout = null;		// loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null;		// engine loop: data emitter to client(s)
 
@@ -40,7 +40,7 @@ export default class SimulationService {
 
 	startWaiting(): void {
 
-		this.gameSetupInterval = setInterval(() => {
+		this.gameSetupInterval = setInterval(() => { // Why is this in an interval? Should it not be called once?
 			
 			if ((this.player1 === null) || (this.player2 === null) || (this.mode === GameTypes.GameMode.unset))
 				return;		// missing info, not ready to play yet
@@ -105,12 +105,20 @@ export default class SimulationService {
 	addPlayer(client: Socket, playerId: number, nameNick: string): void {
 
 		const newPlayer: GameTypes.Player = {
-			clientSocket: client,
+			clientSocket: client, // socket created for each client
 			intraId: playerId,
 			nameNick: nameNick,
 			score: 0,
 			posY: this.windowHeight / 2,
 		}
+
+		// // Check if the player is already in the game (this should happen in Matchmaking..)
+		// if ((this.player1 && playerId === this.player1.intraId) || 
+		// 	(this.player2 && playerId === this.player2.intraId)) {
+		// 	console.log(`The playerId ${newPlayer.intraId} is already in this game.`);
+		// 	client.emit('endGame', 'Fail'); // Notify the new connection about the failure
+		// 	return; // Exit the function to avoid adding the player again
+		// }
 
 		if (nameNick === this.botName)		// set bot, always player2
 			this.player2 = newPlayer;
@@ -185,7 +193,8 @@ export default class SimulationService {
 				this.endGame(this.player2);
 			else
 				this.resetBall();  // Reset position and give random velocity
-		} else if (this.ball.x >= this.windowWidth) {	// point for player1
+		}
+		else if (this.ball.x >= this.windowWidth) {	// point for player1
 			this.player1.score += 1;
 			if (this.player1.score === this.maxScore)
 				this.endGame(this.player1);
@@ -235,7 +244,8 @@ export default class SimulationService {
 		if (isLeftPaddle) {
 			if (this.ball.x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - this.ball.y;  // Return offset
-		} else {
+		}
+		else {
 			if (this.ball.x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - this.ball.y;  // Return offset
 		}
@@ -243,22 +253,19 @@ export default class SimulationService {
 	};
 
 	handleDisconnect(client: Socket): void {
-
 		if (this.isRunning() === false)
 			return;
-
+		
 		this.stopEngine();
-
+		
 		if (this.mode === GameTypes.GameMode.multi) { // force to disconnect the other client, only in multi-player mode
-
+			
 			if (this.player1.clientSocket.id === client.id) {
-
-				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player2.nameNick} left the game`);
-				this.player2.clientSocket.disconnect(true);    
+				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
+				this.player2.clientSocket.disconnect(true);
 			}
 			else if (this.player2.clientSocket.id === client.id) {
-
-				this.player1.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player1.nameNick} left the game`);
+				this.player1.clientSocket.emit('PlayerDisconnected', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
 				this.player1.clientSocket.disconnect(true);
 			}
 		}
@@ -272,8 +279,10 @@ export default class SimulationService {
 		
 		this.stopEngine();
 		
-		this.player1.clientSocket.emit('endGame', winner.nameNick)
-		this.player1.clientSocket.disconnect(true);
+		if (this.player1 !== null) { // This can happen sometimes when the intra name/id is the same
+			this.player1.clientSocket.emit('endGame', winner.nameNick) 
+			this.player1.clientSocket.disconnect(true);
+		}
 		if (this.mode === GameTypes.GameMode.multi) {
 
 			this.player2.clientSocket.emit('endGame', winner.nameNick)
@@ -285,6 +294,7 @@ export default class SimulationService {
 		setTimeout(() => this.clearGameData(), GAME.frameRate);
 	};
 
+
 	clearGameData(): void {
 
 		this.sessionToken = '';
@@ -293,5 +303,9 @@ export default class SimulationService {
 		this.player2 = null;
 		this.ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
 	};
+
+	checkClientId(clientId: string): boolean {
+		return (clientId == this.player1.clientSocket.id || clientId == this.player2.clientSocket.id);
+	}
 };
 
