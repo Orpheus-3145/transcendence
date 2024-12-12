@@ -111,7 +111,7 @@ export default class SimulationService {
 			score: 0,
 			posY: this.windowHeight / 2,
 		}
-		console.log("Add player function is called!");
+
 		// // Check if the player is already in the game (this should happen in Matchmaking..)
 		// if ((this.player1 && playerId === this.player1.intraId) || 
 		// 	(this.player2 && playerId === this.player2.intraId)) {
@@ -193,7 +193,8 @@ export default class SimulationService {
 				this.endGame(this.player2);
 			else
 				this.resetBall();  // Reset position and give random velocity
-		} else if (this.ball.x >= this.windowWidth) {	// point for player1
+		}
+		else if (this.ball.x >= this.windowWidth) {	// point for player1
 			this.player1.score += 1;
 			if (this.player1.score === this.maxScore)
 				this.endGame(this.player1);
@@ -243,7 +244,8 @@ export default class SimulationService {
 		if (isLeftPaddle) {
 			if (this.ball.x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - this.ball.y;  // Return offset
-		} else {
+		}
+		else {
 			if (this.ball.x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - this.ball.y;  // Return offset
 		}
@@ -259,13 +261,10 @@ export default class SimulationService {
 		if (this.mode === GameTypes.GameMode.multi) { // force to disconnect the other client, only in multi-player mode
 			
 			if (this.player1.clientSocket.id === client.id) {
-				
-				console.log("Comes here 1");
 				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
 				this.player2.clientSocket.disconnect(true);
 			}
 			else if (this.player2.clientSocket.id === client.id) {
-				console.log("Comes here 2");
 				this.player1.clientSocket.emit('PlayerDisconnected', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
 				this.player1.clientSocket.disconnect(true);
 			}

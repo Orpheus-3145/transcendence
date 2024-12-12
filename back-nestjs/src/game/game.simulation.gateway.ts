@@ -8,10 +8,15 @@ import {
 	OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+<<<<<<< HEAD
 import { PaddleDirection, GameMode } from './game.types';
+=======
+import { GameMode } from './game.types';
+>>>>>>> ccdfdd04d252bbba4c344734e370dec249fccba3
 
 import InitDataDTO from 'src/dto/initData.dto';
 import PlayerDataDTO from 'src/dto/playerData.dto';
+import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import { RoomManager  } from './game.roommanager'; // logic for managing the rooms
 
 @WebSocketGateway(
@@ -24,22 +29,24 @@ import { RoomManager  } from './game.roommanager'; // logic for managing the roo
   },
 	transports: ['websocket'],
 })
+
 export default class SimulationGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	@WebSocketServer()
 	server: Server;
 
 	constructor(
-	private roomManager: RoomManager // Keeps a Map of SimulationService instances
+	private roomManager: RoomManager // Keeps a Map of SimulationService instances, one per game simulation
 	) {}
 
-	handleConnection(): void { // Called by default everytime a client connecs to the websocket
+	handleConnection(): void { // Called by default everytime a client connects to the websocket
 	};
 
-	handleDisconnect(@ConnectedSocket() client: Socket): void {
+	handleDisconnect(@ConnectedSocket() client: Socket): void { // Called by default everytime a client disconnects to the websocket
 		this.roomManager.handleDisconnect(client); 
 	};
 
+		// Potential dead-end: can there be a situation where the playerData is sent before initData? This should not happen
 	@SubscribeMessage('initData')
 	setInitData(@MessageBody() data: InitDataDTO): void {
 		this.roomManager.createRoom(data.sessionToken, data.mode);
@@ -52,13 +59,13 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 	};
 
 	@SubscribeMessage('playerData')
-  addPlayer(@MessageBody() data: PlayerDataDTO,
+	addPlayer(@MessageBody() data: PlayerDataDTO,
 						@ConnectedSocket() client: Socket, mode: GameMode): void {
 		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
 	};
 
 	@SubscribeMessage('playerMove')
-	movePaddle( @MessageBody() data: { sessionToken: string; direction: PaddleDirection },
+	movePaddle( @MessageBody() data: PaddleDirectionDTO,
 							@ConnectedSocket() client: Socket): void {
 		this.roomManager.movePaddle(data.sessionToken, client.id, data.direction);
 	};

@@ -5,7 +5,6 @@ import { WebSocketGateway,
 	ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-
 import MatchmakingService from './game.matchmaking.service';
 
 
@@ -31,8 +30,7 @@ export default class MatchmakingGateway implements OnGatewayDisconnect{
 	};
 
 	@SubscribeMessage('waiting')
-  clientWaitingAdd(@ConnectedSocket() client: Socket): void {
-
-    this.matchmakingService.addPlayerToQueue(client);
-  };
+	clientWaitingAdd(@ConnectedSocket() client: Socket): void {
+		this.matchmakingService.addPlayerToQueue(client);
+	};
 };

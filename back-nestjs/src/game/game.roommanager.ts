@@ -11,6 +11,7 @@ export class RoomManager {
 			console.log(`Room with ID ${sessionToken} already exists.`);
 		}
 		else {
+			console.log(`Creating room with sessionToken: ${sessionToken}`);
 			this.rooms.set(sessionToken, new SimulationService()); // create a new session (as instance of a service) in the rooms array 
 		}
 		const room = this.rooms.get(sessionToken);
