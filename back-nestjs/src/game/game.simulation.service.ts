@@ -192,7 +192,8 @@ export default class SimulationService {
 				this.endGame(this.player2);
 			else
 				this.resetBall();  // Reset position and give random velocity
-		} else if (this.ball.x >= this.windowWidth) {	// point for player1
+		}
+		else if (this.ball.x >= this.windowWidth) {	// point for player1
 			this.player1.score += 1;
 			if (this.player1.score === this.maxScore)
 				this.endGame(this.player1);
@@ -242,7 +243,8 @@ export default class SimulationService {
 		if (isLeftPaddle) {
 			if (this.ball.x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - this.ball.y;  // Return offset
-		} else {
+		}
+		else {
 			if (this.ball.x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - this.ball.y;  // Return offset
 		}

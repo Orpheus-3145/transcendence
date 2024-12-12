@@ -13,6 +13,7 @@ export class RoomManager {
 			console.log(`Room with ID ${sessionToken} already exists.`);
 		}
 		else {
+			console.log(`Creating room with sessionToken: ${sessionToken}`);
 			this.rooms.set(sessionToken, new SimulationService()); // create a new session (as instance of a service) in the rooms array 
 		}
 		const room = this.rooms.get(sessionToken);
@@ -21,13 +22,8 @@ export class RoomManager {
 			room.startWaiting();
 	}
 
-getRoom(sessionToken: string): SimulationService | undefined {
-    const room = this.rooms.get(sessionToken);
-    if (!room) {
-        console.error(`No room found for sessionToken: ${sessionToken}`);
-        return undefined;
-    }
-    return room;
+getRoom(sessionToken: string): SimulationService {
+    return (this.rooms.get(sessionToken));
 }
 
 

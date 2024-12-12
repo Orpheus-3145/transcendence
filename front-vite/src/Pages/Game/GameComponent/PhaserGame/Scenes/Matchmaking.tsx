@@ -79,6 +79,8 @@ export default class Matchmaking extends Phaser.Scene {
 			this.scene.start('Game', sessionData);
 		});
 
+		// this._socketIO.on('PlayerAlreadyPlaying', (trace: string) => this.scene.start('Errors', {trace})); // Adding check on the same player logging in twice?
+
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	};
 };

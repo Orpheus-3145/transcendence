@@ -79,12 +79,6 @@ export default class Game extends Phaser.Scene {
 		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick, sessionToken: this._sessionToken};
 
 		this.sendMsgToServer('initData', initData);
-
-		// this._addPlayerSuccess = this._socketIO.emit('playerData', playerData);
-		// if (this._addPlayerSuccess == false) {
-			
-
-		// }
 		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	};
 
@@ -115,7 +109,6 @@ export default class Game extends Phaser.Scene {
 
 	sendMsgToServer(msgType: string, content: any) {
 
-		// const data = {content, sessionToken: this._sessionToken};
 		console.log(`Sending data to BE: ${content}`);
 		this._socketIO.emit(msgType, content);
 	};
