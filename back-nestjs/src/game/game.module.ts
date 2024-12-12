@@ -5,7 +5,7 @@ import MatchmakingGateway from './game.matchmaking.gateway';
 import SimulationGateway from './game.simulation.gateway';
 import MatchmakingService from './game.matchmaking.service';
 import SimulationService from './game.simulation.service';
-import { RoomManagerService } from './game.roommanager';
+import { RoomManagerService } from './game.roomManager.service';
 import AppLoggerModule from 'src/log/log.module';
 
 @Module({

@@ -8,7 +8,6 @@ import AppLoggerService from 'src/log/log.service';
 
 @Injectable()
 export class RoomManagerService {
-	// data_races with the room manager? 
 	private rooms: Map<string, SimulationService> = new Map();
 
 	constructor(private logger: AppLoggerService) {

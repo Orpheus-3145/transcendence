@@ -81,10 +81,25 @@ export default class SimulationService {
 	sendUpdateToPlayers(msgType: string) {
 
 		// throw excp if engine is not running
-		this.player1.clientSocket.emit(msgType, this.getGameState());
+		const dataPlayer1: GameStateDTO = {
+			ball: {x: this.ball.x, y: this.ball.y},
+			p1: {y: this.player1.posY},
+			p2: {y: this.player2.posY},
+			score: {p1: this.player1.score, p2: this.player2.score},
+		}
 
-		if (this.mode === GameTypes.GameMode.multi)
-			this.player2.clientSocket.emit(msgType, this.getGameState());
+		this.player1.clientSocket.emit(msgType, dataPlayer1);
+
+		if (this.mode === GameTypes.GameMode.multi) {
+
+			const dataPlayer2: GameStateDTO = {
+				ball: {x: this.windowWidth - this.ball.x, y: this.ball.y},
+				p1: {y: this.player2.posY},
+				p2: {y: this.player1.posY},
+				score: {p1: this.player2.score, p2: this.player1.score},
+			}
+		this.player2.clientSocket.emit(msgType, dataPlayer2);
+		}
 	};
 
 	setInitData(sessionToken: string, mode: GameTypes.GameMode): void {
@@ -261,7 +276,7 @@ export default class SimulationService {
 		if (this.mode === GameTypes.GameMode.multi) { // force to disconnect the other client, only in multi-player mode
 			
 			if (this.player1.clientSocket.id === client.id) {
-				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
+				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted\nPlayer ${this.player1.nameNick} left the game`);
 				this.player2.clientSocket.disconnect(true);
 			}
 			else if (this.player2.clientSocket.id === client.id) {
