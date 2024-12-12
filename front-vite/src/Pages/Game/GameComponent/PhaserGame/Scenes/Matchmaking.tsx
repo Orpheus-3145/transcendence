@@ -1,4 +1,4 @@
-import { GAME } from '../Game.data'
+import { GAME } from '../Game.data';
 import { io, Socket } from 'socket.io-client';
 
 import * as GameTypes from '../Types/types';
@@ -25,31 +25,32 @@ export default class Matchmaking extends Phaser.Scene {
 	};
 
 	// loading graphic assets, fired after init()
-  preload(): void {};
+	preload(): void {}
 
 	// run after preload(), creation of the elements of the menu
-  create(): void {
-
+	create(): void {
 		// sets the background
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
 		this.add.text(400, 150, 'Waiting for playerz ...', {
-      fontSize: '32px',
-      align: 'center',
-      color: '#fff',
-    });
-    // button for going home
-		const goHomeButton = this.add.text(GAME.width - 150, GAME.height - 100, 'Home', {
 			fontSize: '32px',
 			align: 'center',
 			color: '#fff',
-		}).setInteractive();
+		});
+		// button for going home
+		const goHomeButton = this.add
+			.text(GAME.width - 150, GAME.height - 100, 'Home', {
+				fontSize: '32px',
+				align: 'center',
+				color: '#fff',
+			})
+			.setInteractive();
 		// Change color on hover
 		goHomeButton.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' }));
 		// Change color back when not hovered
 		goHomeButton.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }));
-		 // Start the main game
+		// Start the main game
 		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
 
 		this._socketIO.emit('waiting');

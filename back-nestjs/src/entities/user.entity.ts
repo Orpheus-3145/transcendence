@@ -4,51 +4,51 @@ import { UserStatus } from '../dto/user.dto';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+	@PrimaryGeneratedColumn()
+	id: number;
 
-  @Column({ nullable: false })
-  accessToken: string;
-  
-  @Column({ nullable: false })
-  intraId: number;
+	@Column({ nullable: false })
+	accessToken: string;
 
-  @Column({ nullable: true, length: 20 })
-  @IsAscii()
-  @Length(0, 20)
-  nameNick: string | null;
-  
-  @Column({ nullable: false })
-  nameFirst: string;
-  
-  @Column({ nullable: false })
-  nameLast: string;
-  
-  @Column({ nullable: false })
-  email: string;
+	@Column({ nullable: false })
+	intraId: number;
 
-  @Column({ nullable: true, default: 'default_profile_photo.png' })
-  image: string | null;
+	@Column({ nullable: true, length: 20 })
+	@IsAscii()
+	@Length(0, 20)
+	nameNick: string | null;
 
-  @Column({ nullable: true, default: 'Hello, I have just landed!', length: 100 })
-  @IsAscii()
-  @Length(0, 100)
-  greeting: string | null;
+	@Column({ nullable: false })
+	nameFirst: string;
 
-  @Column({ nullable: true, default: null })
-  auth2F: string | null;
+	@Column({ nullable: false })
+	nameLast: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserStatus,
-    default: UserStatus.Offline,
-  })
-  status: UserStatus;
+	@Column({ nullable: false })
+	email: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+	@Column({ nullable: true, default: 'default_profile_photo.png' })
+	image: string | null;
 
-  async validate() {
-    await validateOrReject(this);
-  }
+	@Column({ nullable: true, default: 'Hello, I have just landed!', length: 100 })
+	@IsAscii()
+	@Length(0, 100)
+	greeting: string | null;
+
+	@Column({ nullable: true, default: null })
+	auth2F: string | null;
+
+	@Column({
+		type: 'enum',
+		enum: UserStatus,
+		default: UserStatus.Offline,
+	})
+	status: UserStatus;
+
+	@CreateDateColumn()
+	createdAt: Date;
+
+	async validate() {
+		await validateOrReject(this);
+	}
 }

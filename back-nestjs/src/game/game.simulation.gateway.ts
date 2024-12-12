@@ -15,6 +15,7 @@ import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import { RoomManager  } from './game.roommanager'; // logic for managing the rooms
 
+
 @WebSocketGateway(
 { 
 	namespace: process.env.WS_NS_SIMULATION, 

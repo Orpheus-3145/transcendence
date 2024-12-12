@@ -175,15 +175,15 @@ export default class SimulationService {
 
 		if (leftPaddleOffset !== null) {
 			// Calculate new `dy` based on the offset from the center of the paddle
-			const normalizedOffset = leftPaddleOffset / (this.paddleHeight / 2);  // -1 to 1 range
+			const normalizedOffset = leftPaddleOffset / (this.paddleHeight / 2); // -1 to 1 range
 			const angle = normalizedOffset * maxAngle;
-			this.ball.dx = Math.abs(this.ball.dx);  // Move right
-			this.ball.dy = Math.tan(angle) * Math.abs(this.ball.dx);  // Set dy based on angle
+			this.ball.dx = Math.abs(this.ball.dx); // Move right
+			this.ball.dy = Math.tan(angle) * Math.abs(this.ball.dx); // Set dy based on angle
 		} else if (rightPaddleOffset !== null) {
-			const normalizedOffset = rightPaddleOffset / (this.paddleHeight / 2);  // -1 to 1 range
+			const normalizedOffset = rightPaddleOffset / (this.paddleHeight / 2); // -1 to 1 range
 			const angle = normalizedOffset * maxAngle;
-			this.ball.dx = -Math.abs(this.ball.dx);  // Move left
-			this.ball.dy = Math.tan(angle) * Math.abs(this.ball.dx);  // Set dy based on angle
+			this.ball.dx = -Math.abs(this.ball.dx); // Move left
+			this.ball.dy = Math.tan(angle) * Math.abs(this.ball.dx); // Set dy based on angle
 		}
 
 		// Check for scoring

@@ -18,4 +18,3 @@ export default class Ball extends Phaser.GameObjects.Graphics {
     this.fillCircle(0, 0, this.radius);  // Redraw the ball with the same radius
   };
 };
-

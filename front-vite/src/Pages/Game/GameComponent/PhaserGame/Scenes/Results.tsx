@@ -1,4 +1,4 @@
-import { GAME } from '../Game.data'
+import { GAME } from '../Game.data';
 
 export default class Results extends Phaser.Scene {
 
@@ -37,7 +37,7 @@ export default class Results extends Phaser.Scene {
 		goHomeButton.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' }));
 		// Change color back when not hovered
 		goHomeButton.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }));
-		 // Start the main game
+		// Start the main game
 		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
 	}
 

@@ -1,4 +1,4 @@
-import { GAME } from '../Game.data'
+import { GAME } from '../Game.data';
 
 import * as GameTypes from '../Types/types';
 
@@ -6,9 +6,8 @@ export default class MainMenu extends Phaser.Scene {
 	
 	// background texture
 	private _background!: Phaser.GameObjects.Image;
-	
-	constructor () {
 
+	constructor() {
 		super({ key: 'MainMenu' });
 	};
 	
@@ -22,8 +21,7 @@ export default class MainMenu extends Phaser.Scene {
 	};
 
 	// run after preload(), creation of the elements of the menu
-	create (): void {
-
+	create(): void {
 		// sets the background
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);

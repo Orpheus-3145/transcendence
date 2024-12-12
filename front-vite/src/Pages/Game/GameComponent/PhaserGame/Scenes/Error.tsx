@@ -16,10 +16,7 @@ export default class Error extends Phaser.Scene {
 	}
 
 	// loading graphic assets, fired after init()
-	preload(): void {
-
-	}
-
+	preload(): void {}
 
 	// run after preload(), shows a basic info of the error
 	create(): void {

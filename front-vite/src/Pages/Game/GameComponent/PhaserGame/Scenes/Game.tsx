@@ -14,14 +14,14 @@ export default class Game extends Phaser.Scene {
   private _righPaddle!: Paddle;
   private _field!: Field;
 
-  // Background image
-  private _background!: Phaser.GameObjects.Image;
+	// Background image
+	private _background!: Phaser.GameObjects.Image;
 
-  // Key listeners
-  private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private _keyW!: Phaser.Input.Keyboard.Key;
-  private _keyS!: Phaser.Input.Keyboard.Key;
-  private _keyEsc!: Phaser.Input.Keyboard.Key;
+	// Key listeners
+	private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+	private _keyW!: Phaser.Input.Keyboard.Key;
+	private _keyS!: Phaser.Input.Keyboard.Key;
+	private _keyEsc!: Phaser.Input.Keyboard.Key;
 
   // Player references
 	private _id: number = -1;
@@ -111,7 +111,7 @@ export default class Game extends Phaser.Scene {
 		this._socketIO.emit(msgType, content);
 	};
 
-  // Frame-by-frame update
+	// Frame-by-frame update
 	update(): void {
 
 		if (this._gameStarted == false)
