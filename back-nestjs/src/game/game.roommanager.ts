@@ -19,15 +19,6 @@ export class RoomManager {
 			room.startWaiting();
 	}
 
-	getRoom(sessionToken: string): SimulationService | undefined {
-		const room = this.rooms.get(sessionToken);
-		if (!room) {
-			console.error(`No room found for sessionToken: ${sessionToken}`);
-			return undefined;
-		}
-		return room;
-	}
-
 	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
 		const room = this.rooms.get(sessionToken);
 		if (!room) {
