@@ -5,7 +5,7 @@ import MatchmakingGateway from './game.matchmaking.gateway';
 import SimulationGateway from './game.simulation.gateway';
 import MatchmakingService from './game.matchmaking.service';
 import SimulationService from './game.simulation.service';
-import { RoomManager } from './game.roommanager';
+import { RoomManagerService } from './game.roommanager';
 import AppLoggerModule from 'src/log/log.module';
 
 @Module({
@@ -15,6 +15,6 @@ import AppLoggerModule from 'src/log/log.module';
               MatchmakingService,
               SimulationGateway,
               SimulationService,
-			  RoomManager],
+			        RoomManagerService],
 })
 export default class MatchmakingModule {}

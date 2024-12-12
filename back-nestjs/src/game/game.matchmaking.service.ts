@@ -1,10 +1,10 @@
-import { Scope, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import AppLoggerService from 'src/log/log.service';
 
 
-@Injectable({ scope: Scope.TRANSIENT })
+@Injectable()
 export default class MatchmakingService {
 	private _waitingPlayersIP: Array<Socket> = new Array();
 	private _checker = null;

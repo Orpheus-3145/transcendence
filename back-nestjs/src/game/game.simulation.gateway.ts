@@ -13,7 +13,7 @@ import { PaddleDirection, GameMode } from './game.types';
 import InitDataDTO from 'src/dto/initData.dto';
 import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
-import { RoomManager  } from './game.roommanager'; // logic for managing the rooms
+import { RoomManagerService  } from './game.roommanager'; // logic for managing the rooms
 
 
 @WebSocketGateway(
@@ -33,7 +33,7 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 	server: Server;
 
 	constructor(
-	private roomManager: RoomManager // Keeps a Map of SimulationService instances, one per game simulation
+	private roomManager: RoomManagerService // Keeps a Map of SimulationService instances, one per game simulation
 	) {}
 
 	handleConnection(): void { // Called by default everytime a client connects to the websocket
@@ -51,7 +51,6 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 
 	@SubscribeMessage('playerLeft')
 	handlePlayerLeft(@ConnectedSocket() client: Socket): void {
-		console.log(`Received message that player left`);
 		this.roomManager.handleDisconnect(client);
 	};
 

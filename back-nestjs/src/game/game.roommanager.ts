@@ -1,17 +1,27 @@
+import { Injectable } from '@nestjs/common';
+
 import SimulationService from './game.simulation.service';
 import { GameMode, PaddleDirection } from './game.types';
 import { Server, Socket } from 'socket.io';
+import AppLoggerService from 'src/log/log.service';
 
-export class RoomManager {
+
+@Injectable()
+export class RoomManagerService {
 	// data_races with the room manager? 
 	private rooms: Map<string, SimulationService> = new Map();
+
+	constructor(private logger: AppLoggerService) {
+
+    	this.logger.setContext(RoomManagerService.name);
+	};
 
 	createRoom(sessionToken: string, mode: GameMode): void {
 		if (this.rooms.has(sessionToken)) { // This should never happen
 			console.log(`Room with ID ${sessionToken} already exists.`);
 		}
 		else {
-			console.log(`Creating room with sessionToken: ${sessionToken}`);
+			this.logger.log(`Creating room with sessionToken: ${sessionToken}`);
 			this.rooms.set(sessionToken, new SimulationService()); // create a new session (as instance of a service) in the rooms array 
 		}
 		const room = this.rooms.get(sessionToken);
@@ -39,6 +49,7 @@ export class RoomManager {
 				break;
 			}
 		}
+		this.logger.log(`Received message that player left`);
 	}
 
 	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection,) {
