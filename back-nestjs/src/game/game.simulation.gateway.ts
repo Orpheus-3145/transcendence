@@ -8,11 +8,7 @@ import {
 	OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-<<<<<<< HEAD
 import { PaddleDirection, GameMode } from './game.types';
-=======
-import { GameMode } from './game.types';
->>>>>>> ccdfdd04d252bbba4c344734e370dec249fccba3
 
 import InitDataDTO from 'src/dto/initData.dto';
 import PlayerDataDTO from 'src/dto/playerData.dto';
