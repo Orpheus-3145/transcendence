@@ -108,15 +108,12 @@ export default class Game extends Phaser.Scene {
 		
 		this._socketIO.on('endGame', (winner: string) => this.scene.start('Results', {winner}));
 
-		this._socketIO.on('PlayerDisconnected', (trace: string) => this.scene.start('Errors', {trace}));
+		this._socketIO.on('PlayerDisconnected', (trace: string) => this.scene.start('Error', {trace}));
 		
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	};
 
 	sendMsgToServer(msgType: string, content: any) {
-
-		// const data = {content, sessionToken: this._sessionToken};
-		console.log(`Sending data to BE: ${content}`);
 		this._socketIO.emit(msgType, content);
 	};
 
@@ -132,8 +129,11 @@ export default class Game extends Phaser.Scene {
 			this.sendMsgToServer('playerMove', {direction: GameTypes.PaddleDirection.down, sessionToken: this._sessionToken});
 
 		// Exit game with ESC
-		if (this._keyEsc.isDown)
+		if (this._keyEsc.isDown) {
+			this.sendMsgToServer('playerLeft', {sessionToken: this._sessionToken});
 			this.scene.start('MainMenu');
+			// this.scene.start('Error', "random!")
+		}
 		
 		this.updateGame();
   };

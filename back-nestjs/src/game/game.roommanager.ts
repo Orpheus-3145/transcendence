@@ -3,8 +3,6 @@ import { GameMode, PaddleDirection } from './game.types';
 import { Server, Socket } from 'socket.io';
 
 export class RoomManager {
-	// sessionToken can be the identifier string
-
 	// data_races with the room manager? 
 	private rooms: Map<string, SimulationService> = new Map();
 
@@ -21,14 +19,23 @@ export class RoomManager {
 			room.startWaiting();
 	}
 
-getRoom(sessionToken: string): SimulationService | undefined {
-    const room = this.rooms.get(sessionToken);
-    if (!room) {
-        console.error(`No room found for sessionToken: ${sessionToken}`);
-        return undefined;
-    }
-    return room;
-}
+	getRoom(sessionToken: string): SimulationService | undefined {
+		const room = this.rooms.get(sessionToken);
+		if (!room) {
+			console.error(`No room found for sessionToken: ${sessionToken}`);
+			return undefined;
+		}
+		return room;
+	}
+
+	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
+		const room = this.rooms.get(sessionToken);
+		if (!room) {
+			console.log(`Error adding player to room, room with sessionToken ${sessionToken} not found`);
+			return ;
+		}
+		room.addPlayer(client, playerId, nameNick);
+	}
 
 
 	// When someone disconnets from the socket

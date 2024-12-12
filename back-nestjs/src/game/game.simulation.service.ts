@@ -111,6 +111,7 @@ export default class SimulationService {
 			score: 0,
 			posY: this.windowHeight / 2,
 		}
+		console.log("Add player function is called!");
 		// // Check if the player is already in the game (this should happen in Matchmaking..)
 		// if ((this.player1 && playerId === this.player1.intraId) || 
 		// 	(this.player2 && playerId === this.player2.intraId)) {
@@ -250,22 +251,22 @@ export default class SimulationService {
 	};
 
 	handleDisconnect(client: Socket): void {
-
 		if (this.isRunning() === false)
 			return;
-
+		
 		this.stopEngine();
-
+		
 		if (this.mode === GameTypes.GameMode.multi) { // force to disconnect the other client, only in multi-player mode
-
+			
 			if (this.player1.clientSocket.id === client.id) {
-
-				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player2.nameNick} left the game`);
-				this.player2.clientSocket.disconnect(true);    
+				
+				console.log("Comes here 1");
+				this.player2.clientSocket.emit('PlayerDisconnected', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
+				this.player2.clientSocket.disconnect(true);
 			}
 			else if (this.player2.clientSocket.id === client.id) {
-
-				this.player1.clientSocket.emit('PlayerDisconnected', `Game interrupted, player: ${this.player1.nameNick} left the game`);
+				console.log("Comes here 2");
+				this.player1.clientSocket.emit('PlayerDisconnected', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
 				this.player1.clientSocket.disconnect(true);
 			}
 		}

@@ -5,9 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export default class MatchmakingService {
-  
+
 	private _waitingPlayersIP: Array<Socket> = new Array();
-  private _checker = null;
+	private _checker = null;
 
 	addPlayerToQueue(clientSocket: Socket): void {
 
