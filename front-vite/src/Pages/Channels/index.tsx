@@ -27,10 +27,33 @@ const ChannelsPage: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
   
-	// State for channels, channel name input, settings modal, etc.
 	const [channelName, setChannelName] = useState('');
 	const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
+	const [onlinePlayers, setOnlinePlayers] = useState<UserProps[]>([
+		{
+			name: 'Thor',
+			role: 'Guest',
+			email: 'thor@avengers.com',
+			password: '',
+			icon: React.ReactElement ,
+		},
+		{
+			name: 'Fury',
+			role: 'Guest',
+			email: 'nick@fury.com',
+			password: '',
+			icon: React.ReactElement ,
+		},
+		{
+			name: 'Loki',
+			role: 'Guest',
+			email: 'loki@avengers.com',
+			password: '',
+			icon: React.ReactElement ,
+		},
+	]);
+	
 	const [chatProps, setChatProps] = useState<ChatProps>({
 	  chatRooms: [
 		{
@@ -54,7 +77,32 @@ const ChannelsPage: React.FC = () => {
 			icon: <PersonAddIcon />,
 			type: 'public',
 			password: null,
-			users: [],
+			users: [
+				{
+					name: 'Groot',
+					role: 'Guest',
+					email: 'iamgroot@avengers.com',
+					password: '',
+					icon: React.ReactElement ,
+
+				},
+				{
+					name: 'Cap',
+					role: 'Guest',
+					email: 'cap@avengers.com',
+					password: '',
+					icon: React.ReactElement ,
+
+				},
+				{
+					name: 'Hulk',
+					role: 'Guest',
+					email: 'hulk@avengers.com',
+					password: '',
+					icon: React.ReactElement ,
+
+				},
+			],
 			owner: 'MYSELF',
 		  },
 		},
@@ -132,6 +180,12 @@ const ChannelsPage: React.FC = () => {
 	  setIsAddingChannel(false);
 	};
 
+	const handleSendGameInvite = (event: React.MouseEvent) => {
+		event.stopPropagation();
+
+
+	};
+
 	// Channel line component to render each channel in the list
 	const ChannelLine: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
 	  return (
@@ -195,12 +249,19 @@ const ChannelsPage: React.FC = () => {
 			>
 				<AccountCircleIcon sx={{marginRight: 1}}/>
 				{'Player Name'}
+				<IconButton
+					onClick={(event: React.MouseEvent) => handleSendGameInvite(event)}
+
+				>
+
+				</IconButton>
 			</Stack>
 		);
 	};
 
 	const renderPlayers = () => (
 		<Stack gap={1}>
+			{}
 			{Array.from({ length: 20 }).map((_, index) => (
 				<PlayerLine key={index} />	
 			))}

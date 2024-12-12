@@ -60,13 +60,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	
 	};
 
-	// const handleRoleChange = (name: string, role: string) => {
-	// 	//--> CALL TO BACKEND <-- //
-	// 	console.log('"Change Role" clicked!');
-	// 	const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role } : user);
-	// 	setSettings({ ...settings, users: updatedUsers });
-	// };
-
 	const handleRoleChange = (name: string, role: string) => {
 		//--> CALL TO BACKEND <-- //
 		console.log('"Change Role" clicked!');
