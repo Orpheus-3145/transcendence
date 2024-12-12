@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState} from 'react';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
-import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme} from '@mui/material';
+import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl} from '@mui/material';
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
 
@@ -60,10 +60,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	
 	};
 
+	// const handleRoleChange = (name: string, role: string) => {
+	// 	//--> CALL TO BACKEND <-- //
+	// 	console.log('"Change Role" clicked!');
+	// 	const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role } : user);
+	// 	setSettings({ ...settings, users: updatedUsers });
+	// };
+
 	const handleRoleChange = (name: string, role: string) => {
 		//--> CALL TO BACKEND <-- //
 		console.log('"Change Role" clicked!');
-		const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role } : user);
+		const newRole = role === 'Guest' ? 'Admin' : 'Guest';
+		const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role: newRole } : user);
 		setSettings({ ...settings, users: updatedUsers });
 	};
 
@@ -139,8 +147,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
 					  <Typography sx={{}} >{user.name.length > 10 ? user.name.slice(0, 9) + '...' : user.name}</Typography>
 					  <Stack direction="row" spacing={0.3}>
-						<Button variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, 'Admin')}>Make Admin</Button>
+						<Button variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
+							{user.role === 'Guest' ? 'Make Admin' : 'Make Guest' }
+						</Button>
 						{/* <Button variant="outlined" color="error" onClick={() => handleRemoveFriend(user.name)}>Remove</Button> */}
+						
 						<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(user.name)}>Block</Button>

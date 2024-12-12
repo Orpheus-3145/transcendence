@@ -184,6 +184,13 @@ const ChannelsPage: React.FC = () => {
 					padding: '0.3em',
 					borderRadius: '10px',
 					backgroundColor: theme => theme.palette.primary.main,
+					transition: 'padding-left ease-in-out 0.3s, padding-right ease-in-out 0.3s, border-radius ease-in-out 0.3s, background-color ease-in-out 0.3s',
+					'&:hover': {
+					  bgcolor: theme.palette.primary.dark,
+					//   borderRadius: '2em',
+					  paddingLeft: '1em',
+					  paddingRight: '0.02em',
+					},
 				}}
 			>
 				<AccountCircleIcon sx={{marginRight: 1}}/>
@@ -250,7 +257,7 @@ const ChannelsPage: React.FC = () => {
 				{renderChannels(chatProps.chatRooms)} 
 			</Box>
 			<Divider/>
-			<Box sx={{ }}>
+			<Box sx={{ marginBottom: 1}}>
 				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
 					Online Players
 				</Typography>
