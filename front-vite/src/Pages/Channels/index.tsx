@@ -6,6 +6,7 @@ import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIco
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar } from '@mui/material';
+import SportsEsportsRoundedIcon from '@mui/icons-material/SportsEsportsRounded';
 import { styled } from '@mui/system';
 import {
   Add as AddIcon,
@@ -182,7 +183,7 @@ const ChannelsPage: React.FC = () => {
 
 	const handleSendGameInvite = (event: React.MouseEvent) => {
 		event.stopPropagation();
-
+		console.log("'Send Game Invite' clicked!");
 
 	};
 
@@ -198,8 +199,10 @@ const ChannelsPage: React.FC = () => {
 		  justifyContent={'space-between'}
 		  alignItems={'center'}
 		  textAlign={'center'}
+		//   height={'3em'}
 		//   minWidth={'218px'}
 		  sx={{
+			borderRadius: '5px',
 			cursor: 'pointer',
 			transition: 'padding-left ease-in-out 0.3s, padding-right ease-in-out 0.3s, border-radius ease-in-out 0.3s, background-color ease-in-out 0.3s',
 			'&:hover': {
@@ -216,11 +219,7 @@ const ChannelsPage: React.FC = () => {
 		  </Typography>
 		  <IconButton
 			onClick={(event: React.MouseEvent) => handleSettingsClick(event, channel)}
-			sx={{
-			  minWidth: '10%',
-			  width: '40px',
-			  height: '40px',
-			}}
+			sx={{  }}
 		  >
 			<SettingsIcon />
 		  </IconButton>
@@ -228,15 +227,20 @@ const ChannelsPage: React.FC = () => {
 	  );
 	};
   
-	const PlayerLine: React.FC = () => {
+	const PlayerLine: React.FC<{player: UserProps}> = ({player}) => {
 		return (
 			<Stack
 				onClick={() => {(navigate(`/profile/1`))}} // TO BE REPLACED!
-				direction='row'
+				direction={'row'}
+				paddingX={'0.5em'}
+				justifyContent={'center'}
+				alignItems= {'center'}
+				textAlign={'center'}
+				height={'2em'}
 				sx={{
 					cursor: 'pointer',
-					padding: '0.3em',
-					borderRadius: '10px',
+					// padding: '0.3em',
+					borderRadius: '5px',
 					backgroundColor: theme => theme.palette.primary.main,
 					transition: 'padding-left ease-in-out 0.3s, padding-right ease-in-out 0.3s, border-radius ease-in-out 0.3s, background-color ease-in-out 0.3s',
 					'&:hover': {
@@ -247,13 +251,16 @@ const ChannelsPage: React.FC = () => {
 					},
 				}}
 			>
-				<AccountCircleIcon sx={{marginRight: 1}}/>
-				{'Player Name'}
+				<AccountCircleIcon sx={{ marginRight: 1}}/>
+				<Typography noWrap sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+					{player.name}
+		 		 </Typography>
+				<Box sx={{ flexGrow: 1 }} />
 				<IconButton
 					onClick={(event: React.MouseEvent) => handleSendGameInvite(event)}
-
+					sx={{  }}
 				>
-
+					<SportsEsportsRoundedIcon sx={{ }}/>
 				</IconButton>
 			</Stack>
 		);
@@ -261,10 +268,13 @@ const ChannelsPage: React.FC = () => {
 
 	const renderPlayers = () => (
 		<Stack gap={1}>
-			{}
-			{Array.from({ length: 20 }).map((_, index) => (
-				<PlayerLine key={index} />	
+			{onlinePlayers.map((player) => (
+				<PlayerLine key={player.name} player={player} />	
 			))}
+			
+			{/* {Array.from({ length: 20 }).map((_, index) => (
+				<PlayerLine key={index} />	
+			))} */}
 		</Stack>
 	);
 
