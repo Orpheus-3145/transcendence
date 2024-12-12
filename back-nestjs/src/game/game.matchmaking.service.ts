@@ -11,32 +11,24 @@ export default class MatchmakingService {
 
 	constructor(private logger: AppLoggerService) {
 
-    	this.logger.setContext(MatchmakingService.name);
+		this.logger.setContext(MatchmakingService.name);
 	};
 
 	addPlayerToQueue(clientSocket: Socket): void {
 
 		this._waitingPlayersIP.push(clientSocket);
-
-		if (this._checker === null)
-			this._checker = setInterval(() => this.checkNewGame(), 1000);
+		this.startCheck()
 
 		this.logger.log(`client ${clientSocket.handshake.address} joined queue`);
 	};
 
-	removePlayerFromQueue(leaver: Socket) {
+	startCheck(): void {
 
-		const tmpWaitingPlayers: Socket[] = [];
+		if (this._checker === null)
+			this._checker = setInterval(() => this.checkNewGame(), 1000);
+	};
 
-		while (this._waitingPlayersIP.length > 0) {
-
-			const currentPlayer: Socket = this._waitingPlayersIP.shift();
-			if (leaver.id == currentPlayer.id)
-				this.logger.log(`client ${currentPlayer.handshake.address} left queue`);
-			else
-				tmpWaitingPlayers.unshift(currentPlayer);
-		}
-		this._waitingPlayersIP = tmpWaitingPlayers;
+	stopCheck(): void {
 
 		if (this._waitingPlayersIP.length === 0) {
 			clearInterval(this._checker);
@@ -44,19 +36,40 @@ export default class MatchmakingService {
 		}
 	};
 
+	removePlayerFromQueue(leaver: Socket) {
+
+		if (!this._waitingPlayersIP.includes(leaver))
+			return ;
+
+		const tmpWaitingPlayers: Socket[] = [];
+
+		while (this._waitingPlayersIP.length > 0) {
+
+			const currentPlayer: Socket = this._waitingPlayersIP.shift();
+
+			if (leaver.id == currentPlayer.id)
+				this.logger.log(`client ${currentPlayer.handshake.address} left queue`);
+			else
+				tmpWaitingPlayers.unshift(currentPlayer);
+		}
+
+		this._waitingPlayersIP = tmpWaitingPlayers;
+		this.stopCheck();
+	};
+
 	checkNewGame(): void {
 
-		var index = 0;
+		while (this._waitingPlayersIP.length > 1) {
 
-		while (index + 1 < this._waitingPlayersIP.length) {
-			
-			// NB: also removed sockets from list
-			const player1: Socket = this._waitingPlayersIP[index++];
-			const player2: Socket = this._waitingPlayersIP[index++];
+			const player1: Socket = this._waitingPlayersIP.shift();
+			const player2: Socket = this._waitingPlayersIP.shift();
 			const sessionToken: string = uuidv4();
 
 			player1.emit('ready', sessionToken);  // message player1
 			player2.emit('ready', sessionToken);  // message player2
+
+			this.stopCheck();
+
 			this.logger.log(`starting new multiplayer match between ${player1.id} and ${player2.id}`);
 		}
 	};
