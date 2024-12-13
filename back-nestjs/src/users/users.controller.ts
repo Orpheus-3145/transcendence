@@ -33,12 +33,10 @@ export class UsersController {
 	{
 		if (newname.length == 0)
 		{
-			console.log("Invalid new nickname, to short!");
 			throw new HttpException('Bad Request', 400);
 		}
 		if (newname.length > 27)
 		{
-			console.log("Invalid new nickname, to long!");
 			throw new HttpException('Bad Request', 400);
 		}
 
@@ -49,7 +47,6 @@ export class UsersController {
 			{
 				if (newname[i] != ' ')
 				{
-					console.log("Invalid character in the new nickname");
 					throw new HttpException('Bad Request', 400);
 				}
 			}
@@ -118,7 +115,7 @@ export class UsersController {
 			console.log("ERROR: failed to get user in blockUser!");
 			throw new HttpException('Not Found', 404);
 		}
-		return (this.UserService.blockUser(await user, await other));
+		return (this.UserService.unBlockUser(await user, await other));
 	}
 
 	@Post('profile/:username/sendMessage/:id')
@@ -154,7 +151,7 @@ export class UsersController {
 
 	@Post('profile/:username/changepfp')
 	@UseInterceptors(FileInterceptor('file')) //instead of any the file should be Express.Multer.File,
-	async changePFP(@Param('username') username:string,  @UploadedFile() file: any,) 
+	async changePFP(@Param('username') username:string,  @UploadedFile() file: any) 
 	{
 		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 		if (!image)

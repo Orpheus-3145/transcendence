@@ -37,7 +37,7 @@ const ProfilePage: React.FC = () => {
 	const [ownPage, showOwnPage] = useState(false);
 	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
-	const [showMessageNickname, setShowMessageNickname] = useState(false);
+	const [showMessage, setShowMessage] = useState(false);
 	const messageErrorNickname = "Invalid nickname! Maximum of 27 chars and only letters, numbers and spaces are allowed!";
 	const [profileImage, setProfileImage] = useState();
 	const [friendsList, setFriendsList] = useState<string[]>([]);
@@ -500,7 +500,7 @@ const ProfilePage: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-210px',
-					left:'0px',
+					left:'10px',
 				}}
 			>
 				<Typography variant={'h2'}
@@ -527,8 +527,8 @@ const ProfilePage: React.FC = () => {
 		if (showInputMessage)
 			setShowInputMessage(false);
 		
-		if (showMessageNickname)
-			setShowMessageNickname(false);
+		if (showMessage)
+			setShowMessage(false);
 		
 		setShowInput((prev) => !prev);
 	};
@@ -545,11 +545,11 @@ const ProfilePage: React.FC = () => {
 				userProfile.nameNick = inputValue;
 				setInputValue("");
 				setShowInput(false);
-				setShowMessageNickname(false);
+				setShowMessage(false);
 			} 
 			else 
 			{
-				setShowMessageNickname(true);
+				setShowMessage(true);
 			}
 		}
 	}
@@ -565,7 +565,7 @@ const ProfilePage: React.FC = () => {
 						sx={{
 								fontSize: '30px',
 								top: '-190px',
-								left: '530px',
+								left: '545px',
 								width: '50px',
 								'&:hover': {
 									color: '#09af07',
@@ -583,13 +583,13 @@ const ProfilePage: React.FC = () => {
 					placeholder="Type new nickname..."
 					sx={{
 						top: '-180px',
-						left: '465px',
+						left: '480px',
 						width: '200px',
 						height: '40px',
 					}}
 					/>
 				)}
-				{showMessageNickname && (	
+				{showMessage && (	
 					<Stack
 					sx={{
 						position: 'relative',
@@ -612,7 +612,7 @@ const ProfilePage: React.FC = () => {
 		if (showInput)
 		{
 			top = '-330px';
-			if (showMessageNickname)
+			if (showMessage)
 				top = '-357px';
 		}
 
@@ -694,7 +694,7 @@ const ProfilePage: React.FC = () => {
 		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;
-		
+
 		return ownPage ? pageWrapperUser() : <ProfilePageOther />;
 	}
 

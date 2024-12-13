@@ -40,41 +40,41 @@ export class UsersService {
 		user.status = UserStatus.Offline;
 		user.friends = [];
 		user.blocked = [];
-		//  const tmp = new User();
-		//  tmp.accessToken = access.access_token;
-		//  tmp.intraId = 47328;
-		//  tmp.nameNick = 'bald';
-		//  tmp.nameIntra = 'baldwin';
-		//  tmp.nameFirst = 'bal';
-		//  tmp.nameLast = 'dwin';
-		//  tmp.email = 'baldwin@student.codam.nl';
-		//  tmp.image = userMe.image.link;
-		//  tmp.greeting = 'Hello, I have just landed!';
-		//  tmp.status = UserStatus.Offline;
-		//  user.friends = [];
-		//  user.blocked = [];
-		//  const a = new User();
-		//  a.accessToken = access.access_token;
-		//  a.intraId = 58493;
-		//  a.nameNick = 'nani';
-		//  a.nameIntra = 'nanida';
-		//  a.nameFirst = 'nani';
-		//  a.nameLast = 'fuq';
-		//  a.email = 'nanidafuq@student.codam.nl';
-		//  a.image = userMe.image.link;
-		//  a.greeting = 'Hello, I have just landed!';
-		//  a.status = UserStatus.Offline;
-		//  user.friends = [];
-		//  user.blocked = [];
+		 const tmp = new User();
+		 tmp.accessToken = access.access_token;
+		 tmp.intraId = 47328;
+		 tmp.nameNick = 'bald';
+		 tmp.nameIntra = 'baldwin';
+		 tmp.nameFirst = 'bal';
+		 tmp.nameLast = 'dwin';
+		 tmp.email = 'baldwin@student.codam.nl';
+		 tmp.image = userMe.image.link;
+		 tmp.greeting = 'Hello, I have just landed!';
+		 tmp.status = UserStatus.Offline;
+		 user.friends = [];
+		 user.blocked = [];
+		 const a = new User();
+		 a.accessToken = access.access_token;
+		 a.intraId = 58493;
+		 a.nameNick = 'nani';
+		 a.nameIntra = 'nanida';
+		 a.nameFirst = 'nani';
+		 a.nameLast = 'fuq';
+		 a.email = 'nanidafuq@student.codam.nl';
+		 a.image = userMe.image.link;
+		 a.greeting = 'Hello, I have just landed!';
+		 a.status = UserStatus.Offline;
+		 user.friends = [];
+		 user.blocked = [];
 		try {
 			if (await this.userAlreadyExist(user) == true)
 				return (new UserDTO(user));
 			await user.validate();
-			// await tmp.validate();
-			// await a.validate();
+			await tmp.validate();
+			await a.validate();
 			await this.usersRepository.save(user);
-			// await this.usersRepository.save(tmp); //remove tmp when testing is done, it is an extra user to test
-			// await this.usersRepository.save(a);//remove tmp when testing is done, it is an extra user to test
+			await this.usersRepository.save(tmp); //remove tmp when testing is done, it is an extra user to test
+			await this.usersRepository.save(a);//remove tmp when testing is done, it is an extra user to test
 			return new UserDTO(user);
 		} 
 		catch (error) {
@@ -136,7 +136,7 @@ export class UsersService {
   	{
 		var user = this.getUserId(iduser);
 		var otheruser = this.getUserId(idother);
-		if (user == null || otheruser == null)
+		if ((user == null) || (otheruser == null))
 		{
 			console.log("ERROR accepting friendreq");
 			throw new HttpException('Not Found', 404);
@@ -159,6 +159,9 @@ export class UsersService {
 
   	async blockUser(user: User, other: User)
   	{
+		var str: string = other.intraId.toString();
+		if (user.blocked.find((blockedId) => blockedId === str))
+			return ;
 		this.removeFriend(user, other);
 		user.blocked.push(other.intraId.toString());
 		this.usersRepository.save(user);

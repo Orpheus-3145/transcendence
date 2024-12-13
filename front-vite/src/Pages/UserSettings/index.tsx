@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Container, Typography, TextField, Button, Box, Avatar, Switch, FormControlLabel } from '@mui/material';
 import { Stack, Divider, Grid, IconButton } from '@mui/material';
 import { styled, useTheme } from '@mui/system';
-import { fetchFriend, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
+import { fetchFriend, getUserFromDatabase, User, useUser, unBlockFriend } from '../../Providers/UserContext/User';
 import { useNavigate } from 'react-router-dom';
 
 const SettingsContainer = styled(Container)(({ theme }) => ({
@@ -30,19 +30,41 @@ const UserSettings: React.FC = () => {
   const navigate = useNavigate();
   const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
 	const [blockedList, setBlockedList] = useState<string[]>([]);
-	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
+	const [blockedDetails, setBlockedDetails] = useState<Map<string, User>>(new Map());
 	
-	const fetchFriendDetails = async (friendId: string) => {
-		const friend = await fetchFriend(friendId);
-		setFriendDetails((prev) => new Map(prev).set(friendId, friend));
+	const fetchBlockedDetails = async (blockedId: string) => {
+		const blocked = await fetchFriend(blockedId);
+		setBlockedDetails((prev) => new Map(prev).set(blockedId, blocked));
 	};
+
+	let redirectUser = (id:number) =>
+	{
+		navigate('/profile/' + id.toString());
+		
+	}
+
+	let unBlockUser = (id:string) =>
+	{
+		unBlockFriend(user.id, id);
+	}
+
+	let buttonUnblockUser = (id:string) =>
+	{
+		return (
+			<Button variant="contained"
+				onClick={() => unBlockUser(id)}
+			>
+				UNBLOCK
+			</Button>
+		);
+	} 
 
 	let blockUser = (id:string) =>
 	{
-		const friend = friendDetails.get(id);
+		const blocked = blockedDetails.get(id);
 
-		if (!friend) {
-			fetchFriendDetails(id);
+		if (!blocked) {
+			fetchBlockedDetails(id);
 			return <Stack></Stack>;
 		}
 
@@ -69,7 +91,7 @@ const UserSettings: React.FC = () => {
 							left: '-5px',
 							bgcolor: theme.palette.primary.light,
 						}}
-						src={friend.image}
+						src={blocked.image}
 						>
 						</Avatar>
 						<Typography 
@@ -83,12 +105,31 @@ const UserSettings: React.FC = () => {
 								},
 							}}
 						>
-							<a href="" onClick={() => redirectFriend(friend.id)}>{friend.nameNick}</a>
+							<a href="" onClick={() => redirectUser(blocked.id)}>{blocked.nameNick}</a>
 						</Typography>
+						{buttonUnblockUser(id)}
 					</Stack>
 				</Stack>
 			</Box>
 		);		
+	}
+
+	let blockedWrapper = () =>
+	{
+		console.log(blockedList.length);
+		if (blockedList.length == 0)
+		{
+			return (
+				<Stack>
+					<Typography variant="h7">
+						You have no blocked users, how friendly!
+					</Typography>
+				</Stack>
+			);
+		}
+		return (
+			blockedList.map((blockedId:string) => blockUser(blockedId))
+		);
 	}
 
 	let pageWrapper = () =>
@@ -99,7 +140,7 @@ const UserSettings: React.FC = () => {
 			User Settings
 			</Typography>
 
-			<SettingsSection>
+			{/* <SettingsSection>
 			<Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
 				User Account
 			</Typography>
@@ -118,7 +159,7 @@ const UserSettings: React.FC = () => {
 				Upload Avatar
 				<input type="file" hidden />
 			</Button>
-			</SettingsSection>
+			</SettingsSection> */}
 
 			<SettingsSection>
 			<Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
@@ -131,7 +172,7 @@ const UserSettings: React.FC = () => {
 				style={{ marginLeft: 0 }}
 			/>
 			</SettingsSection>
-			<SettingsSection>
+			{/* <SettingsSection>
 			<Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
 				Status
 			</Typography>
@@ -148,13 +189,13 @@ const UserSettings: React.FC = () => {
 			</SettingsSection>
 			<Button variant="contained" color="primary">
 			Save Changes
-			</Button>
+			</Button> */}
 
 			<SettingsSection>
 			<Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
 				Blocked Users:
 			</Typography>
-			{blockedList.map((blockedId:string) => blockUser(blockedId))}
+			{blockedWrapper()}
 			</SettingsSection>
 		</SettingsContainer>
 		);
