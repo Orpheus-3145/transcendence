@@ -63,9 +63,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	const handleRoleChange = (name: string, role: string) => {
 		//--> CALL TO BACKEND <-- //
 		console.log('"Change Role" clicked!');
-		const newRole = role === 'Guest' ? 'Admin' : 'Guest';
-		const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role: newRole } : user);
-		setSettings({ ...settings, users: updatedUsers });
+		// if (selectedChannel.settings.owner === 'MSELF') { 
+			const newRole = role === 'Guest' ? 'Admin' : 'Guest';
+			const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role: newRole } : user);
+			setSettings({ ...settings, users: updatedUsers });
+		// } 
+		// else {
+		// 	alert('Only channel owners can change user permissions!');
+		// }
 	};
 
 	const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
@@ -77,9 +82,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	const handleDeleteChannel = () => {
 		//--> CALL TO BACKEND <-- //
 		console.log("'Delete Channel' clicked!");
-		const updatedChannels = chatProps.chatRooms.filter((chat: ChatRoom) => chat.name !== selectedChannel.name);
-		setChatProps({...chatProps, chatRooms: updatedChannels});
-		setSelectedChannel(null);
+		if (selectedChannel.settings.owner === 'MYSELF') {
+			const updatedChannels = chatProps.chatRooms.filter((chat: ChatRoom) => chat.name !== selectedChannel.name);
+			setChatProps({...chatProps, chatRooms: updatedChannels});
+			setSelectedChannel(null);
+		}
 	}
 
 
@@ -124,14 +131,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
   			  >
   			    Add Friend
   			  </Button>
-		  
-  			  <Button
-  			    variant="contained"
-  			    onClick={handleDeleteChannel}
-  			    sx={{ mt: 1, color: 'rgb(247, 77, 57)' }}
-  			  >
-  			    Delete Channel
-  			  </Button>
+			  {(selectedChannel.settings.owner === 'MYSELF') &&
+				<Button
+					variant="contained"
+					onClick={handleDeleteChannel}
+					sx={{ mt: 1, color: 'rgb(247, 77, 57)' }}
+				>
+					Delete Channel
+				</Button>
+
+			  }
 		  	</Box>
 			{/* Friend List */}
 			<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
@@ -144,7 +153,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 							{user.role === 'Guest' ? 'Make Admin' : 'Make Guest' }
 						</Button>
 						{/* <Button variant="outlined" color="error" onClick={() => handleRemoveFriend(user.name)}>Remove</Button> */}
-						
+						{/* ONLY RENDER IF ROLE IS ADMIN */}
 						<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(user.name)}>Block</Button>

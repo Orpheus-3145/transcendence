@@ -31,6 +31,7 @@ const ChannelsPage: React.FC = () => {
 	const [channelName, setChannelName] = useState('');
 	const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
+	const [newMessage, setNewMessage] = useState('');
 	const [onlinePlayers, setOnlinePlayers] = useState<UserProps[]>([
 		{
 			name: 'Thor',
@@ -62,13 +63,13 @@ const ChannelsPage: React.FC = () => {
 		  icon: <GroupIcon />,
 		  messages: [
 			{
-			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
+			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
 			  user: <Typography>User1</Typography>,
 			  userPP: <Typography>img</Typography>,
 			  timestamp: <Typography>20:00</Typography>,
 			},
 			{
-			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
+			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
 			  user: <Typography>User2</Typography>,
 			  userPP: <Typography>img</Typography>,
 			  timestamp: <Typography>20:03</Typography>,
@@ -81,7 +82,7 @@ const ChannelsPage: React.FC = () => {
 			users: [
 				{
 					name: 'Groot',
-					role: 'Guest',
+					role: 'Admin',
 					email: 'iamgroot@avengers.com',
 					password: '',
 					icon: React.ReactElement ,
@@ -187,6 +188,37 @@ const ChannelsPage: React.FC = () => {
 
 	};
 
+	const handleSetMessage = (message: string) => {
+		setNewMessage(message);
+	};
+	
+	const handleSendMessage = () => {
+		if (newMessage) {
+			const newChatMessage: ChatMessage = {
+				message: newMessage,
+				user: <Typography>User1</Typography>,
+				userPP: <Typography>img</Typography>,
+				timestamp: <Typography>20:00</Typography>,
+			};
+			setSelectedChannel((prevState) => ({
+				...prevState,
+				messages: [...prevState.messages, newChatMessage]
+			}));
+			setNewMessage('');		
+		}
+	};
+
+	const handleEnterPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			handleSendMessage();
+		}
+	}
+
+	const MessageInput: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
+		console.log('d');
+	};
+
 	// Channel line component to render each channel in the list
 	const ChannelLine: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
 	  return (
@@ -257,7 +289,7 @@ const ChannelsPage: React.FC = () => {
 		 		 </Typography>
 				<Box sx={{ flexGrow: 1 }} />
 				<IconButton
-					onClick={(event: React.MouseEvent) => handleSendGameInvite(event)}
+					onClick={handleSendGameInvite}
 					sx={{  }}
 				>
 					<SportsEsportsRoundedIcon sx={{ }}/>
@@ -414,7 +446,7 @@ const ChannelsPage: React.FC = () => {
 					{selectedChannel.messages.map((msg, index) => (
 					  <Box
 						key={index}
-						sx={{display: "flex", alignItems: "top", mb: 4}}
+						sx={{display: "flex", alignItems: "center", mb: 4}}
 					  >
 					  	<Avatar
 							onClick={()=> (navigate(`/profile/${msg.user}`))}
@@ -458,7 +490,10 @@ const ChannelsPage: React.FC = () => {
 				    }}
 				  >
 				    <InputBase
-				      sx={{
+					  value = {newMessage}
+					  onChange={(event: React.ChangeEvent<HTMLInputElement>) => handleSetMessage(event.target.value)} 
+				      onKeyDown={handleEnterPress}
+					  sx={{
 						// marginTop: '0.5em',
 				        flexGrow: 1,
 				        border: '1px solid',
@@ -472,10 +507,10 @@ const ChannelsPage: React.FC = () => {
 					placeholder="Type a message..."
 				    />
 				    <Button
-				      variant="contained"
+					  variant="contained"
 				      color="primary"
 				      sx={{ textTransform: 'none' }}
-				    //   onClick={handleSendMessage}
+				      onClick={handleSendMessage}
 				    >
 				      Send
 				    </Button>
