@@ -48,7 +48,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 			  users: [
 				  {
 					  name: 'Groot',
-					  role: 'Admin',
+					  role: 'Guest',
 					  email: 'iamgroot@avengers.com',
 					  password: '',
 					  icon: React.ReactElement ,
