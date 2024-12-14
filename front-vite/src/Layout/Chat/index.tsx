@@ -7,11 +7,11 @@ import ContentDrawer from './ContentDrawer';
 import ContentChat from './ContentChat';
 import ContentSettings from './ContentSettings';
 
-interface ChatRoom {
-  id: number;
-  name: string;
-  avatar: string;
-}
+// interface ChatRoom {
+//   id: number;
+//   name: string;
+//   avatar: string;
+// }
 
 export const Chat: React.FC = () => {
   const [chatProps, setChatProps] = useState<ChatProps>({

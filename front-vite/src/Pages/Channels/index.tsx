@@ -188,8 +188,8 @@ const ChannelsPage: React.FC = () => {
 
 	};
 
-	const handleSetMessage = (message: string) => {
-		setNewMessage(message);
+	const handleSetMessage = (event: React.KeyboardEvent) => {
+		setNewMessage(event.target.value);
 	};
 	
 	const handleSendMessage = () => {
@@ -446,7 +446,7 @@ const ChannelsPage: React.FC = () => {
 					{selectedChannel.messages.map((msg, index) => (
 					  <Box
 						key={index}
-						sx={{display: "flex", alignItems: "center", mb: 4}}
+						sx={{display: "flex", alignItems: "center", mb: 3}}
 					  >
 					  	<Avatar
 							onClick={()=> (navigate(`/profile/${msg.user}`))}
@@ -461,7 +461,7 @@ const ChannelsPage: React.FC = () => {
 								maxWidth: "70%"}}
 							key={index}
 						>
-							{msg.user}
+							{/* {msg.user} */}
 							{msg.message}
 						</Typography>
 					  </Box>
@@ -491,7 +491,7 @@ const ChannelsPage: React.FC = () => {
 				  >
 				    <InputBase
 					  value = {newMessage}
-					  onChange={(event: React.ChangeEvent<HTMLInputElement>) => handleSetMessage(event.target.value)} 
+					  onChange={handleSetMessage} 
 				      onKeyDown={handleEnterPress}
 					  sx={{
 						// marginTop: '0.5em',
