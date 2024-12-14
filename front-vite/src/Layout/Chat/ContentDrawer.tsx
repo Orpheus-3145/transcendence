@@ -6,6 +6,8 @@ import { darken, alpha, useTheme } from '@mui/material/styles';
 import { Add as AddIcon, Settings as SettingsIcon, Logout as LogoutIcon, Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import { Chat as ChatIcon } from '@mui/icons-material';
 import ContentSettings from './ContentSettings';
+import { useNavigate } from 'react-router-dom';
+
 
 interface ContentDrawerProps {
   chatProps: ChatProps;
@@ -14,6 +16,8 @@ interface ContentDrawerProps {
 
 const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
+
 
 	// Add state for controlling new chat creation
 	const [isAddingNewChat, setIsAddingNewChat] = useState(false);
@@ -93,12 +97,13 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
         },
       }}
     >
-      <Stack
+		
+      {/* <Stack
         direction="row"
         justifyContent="center"
       >
         <IconButton sx={{ color: theme.palette.secondary.main }} edge="start" onClick={handleSearchClick} aria-label="search">
-          {/* <AddIcon /> */}
+          <AddIcon />
         </IconButton>
 		<IconButton sx={{ color: theme.palette.secondary.main }} edge="start" onClick={handleAddChatClick} aria-label="add chat">
           <AddIcon />
@@ -106,10 +111,13 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
         <Divider sx={{ marginY: '0.3em' }} orientation="vertical" flexItem />
         <InputBase value={chatProps.searchPrompt} onChange={handleInputChange} sx={{ marginLeft: '8px', color: theme.palette.secondary.main }} placeholder="Search..." />
       </Stack>
+	  
       <Box sx={{ height: '0', color: 'transparent', bgcolor: 'transparent' }}>
         <Divider orientation="horizontal" />
       </Box>
-	   {/* Render the input field for adding a new chat */}
+	  
+	   Render the input field for adding a new chat
+
 	   {isAddingNewChat && (
         <Stack direction="row" spacing={2} alignItems="center" marginY={theme.spacing(1)}>
           <InputBase
@@ -125,7 +133,8 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
             <CloseIcon />
           </IconButton>
         </Stack>
-      )}
+      )} */}
+
       {chatProps.chatRooms.map((chatRoom, index) => (
         <Stack key={index} direction={'row'} onClick={() => toggleChatStatus(ChatStatus.Chatbox, chatRoom)}
           sx={{
@@ -141,17 +150,19 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
               {chatRoom.name}
             </Typography>
           </Stack>
+
           <Stack direction={'row'} spacing={2} alignContent='center' alignItems={'center'} marginY={theme.spacing(.5)}>
+			  {/* <Stack onClick={(event) => { event.stopPropagation(); navigate(`/channels`); }} */}
             <Stack onClick={(event) => { event.stopPropagation(); toggleChatStatus(ChatStatus.Settings, chatRoom); }}
-              sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.secondary.dark } }}
+			  sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.secondary.dark } }}
             >
               <SettingsIcon />
             </Stack>
-            <Stack onClick={(event) => { event.stopPropagation(); toggleChatStatus(ChatStatus.Bubble, null); }}
+            {/* <Stack onClick={(event) => { event.stopPropagation(); toggleChatStatus(ChatStatus.Bubble, null); }}
               sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.error.dark } }}
             >
               <LogoutIcon />
-            </Stack>
+            </Stack> */}
           </Stack>
         </Stack>
       ))}
