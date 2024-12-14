@@ -9,6 +9,8 @@ import { PersonAdd as PersonAddIcon} from '@mui/icons-material';
 interface ChatContextType {
 	chatProps: ChatProps;
 	setChatProps: React.Dispatch<React.SetStateAction<ChatProps>>;
+	// newMessage: string;
+	// setNewMessage: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -22,6 +24,7 @@ export const useChatContext = (): ChatContextType => {
 };
 
 export const ChatProvider: React.FC = ({ children }) => {
+	const [newMessage, setNewMessage] = useState('');
 	const [chatProps, setChatProps] = useState<ChatProps>({
 		chatRooms: [
 		  {
@@ -81,7 +84,8 @@ export const ChatProvider: React.FC = ({ children }) => {
 	  });
 
 	return (
-		<ChatContext.Provider value={{ chatProps, setChatProps }} >
+		// <ChatContext.Provider value={{ chatProps, setChatProps, newMessage, setNewMessage }} >
+		<ChatContext.Provider value={{ chatProps, setChatProps, }} >
 			{children}
 		</ChatContext.Provider>
 	)

@@ -8,15 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar } from '@mui/material';
 import SportsEsportsRoundedIcon from '@mui/icons-material/SportsEsportsRounded';
 import { styled } from '@mui/system';
-import {
-  Add as AddIcon,
-  Group as GroupIcon,
-  Cancel as CancelIcon,
-  Logout as LogoutIcon,
-  Login as LoginIcon,
-} from '@mui/icons-material';
+import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as LogoutIcon, Login as LoginIcon,} from '@mui/icons-material';
 import { timeStamp } from 'console';
 import { index } from 'cheerio/dist/commonjs/api/traversing';
+import { useChatContext } from '../../Layout/Chat/ChatContext';
 
 interface ChannelTypeEvent {
   component: React.ReactNode;
@@ -31,7 +26,6 @@ const ChannelsPage: React.FC = () => {
 	const [channelName, setChannelName] = useState('');
 	const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
-	const [newMessage, setNewMessage] = useState('');
 	const [onlinePlayers, setOnlinePlayers] = useState<UserProps[]>([
 		{
 			name: 'Thor',
@@ -55,65 +49,71 @@ const ChannelsPage: React.FC = () => {
 			icon: React.ReactElement ,
 		},
 	]);
+
+	// const {newMessage, setNewMessage} = useChatContext();
+	const [newMessage, setNewMessage] = useState('');
+	const {chatProps, setChatProps} = useChatContext();
+
 	
-	const [chatProps, setChatProps] = useState<ChatProps>({
-	  chatRooms: [
-		{
-		  name: 'test channel',
-		  icon: <GroupIcon />,
-		  messages: [
-			{
-			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
-			  user: <Typography>User1</Typography>,
-			  userPP: <Typography>img</Typography>,
-			  timestamp: <Typography>20:00</Typography>,
-			},
-			{
-			  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
-			  user: <Typography>User2</Typography>,
-			  userPP: <Typography>img</Typography>,
-			  timestamp: <Typography>20:03</Typography>,
-			},
-		  ],
-		  settings: {
-			icon: <PersonAddIcon />,
-			type: 'public',
-			password: null,
-			users: [
-				{
-					name: 'Groot',
-					role: 'Admin',
-					email: 'iamgroot@avengers.com',
-					password: '',
-					icon: React.ReactElement ,
+	// const [chatProps, setChatProps] = useState<ChatProps>({
+	//   chatRooms: [
+	// 	{
+	// 	  name: 'test channel',
+	// 	  icon: <GroupIcon />,
+	// 	  messages: [
+	// 		{
+	// 		  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
+	// 		  user: <Typography>User1</Typography>,
+	// 		  userPP: <Typography>img</Typography>,
+	// 		  timestamp: <Typography>20:00</Typography>,
+	// 		},
+	// 		{
+	// 		  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
+	// 		  user: <Typography>User2</Typography>,
+	// 		  userPP: <Typography>img</Typography>,
+	// 		  timestamp: <Typography>20:03</Typography>,
+	// 		},
+	// 	  ],
+	// 	  settings: {
+	// 		icon: <PersonAddIcon />,
+	// 		type: 'public',
+	// 		password: null,
+	// 		users: [
+	// 			{
+	// 				name: 'Groot',
+	// 				role: 'Admin',
+	// 				email: 'iamgroot@avengers.com',
+	// 				password: '',
+	// 				icon: React.ReactElement ,
 
-				},
-				{
-					name: 'Cap',
-					role: 'Guest',
-					email: 'cap@avengers.com',
-					password: '',
-					icon: React.ReactElement ,
+	// 			},
+	// 			{
+	// 				name: 'Cap',
+	// 				role: 'Guest',
+	// 				email: 'cap@avengers.com',
+	// 				password: '',
+	// 				icon: React.ReactElement ,
 
-				},
-				{
-					name: 'Hulk',
-					role: 'Guest',
-					email: 'hulk@avengers.com',
-					password: '',
-					icon: React.ReactElement ,
+	// 			},
+	// 			{
+	// 				name: 'Hulk',
+	// 				role: 'Guest',
+	// 				email: 'hulk@avengers.com',
+	// 				password: '',
+	// 				icon: React.ReactElement ,
 
-				},
-			],
-			owner: 'MYSELF',
-		  },
-		},
-	  ],
-	  chatStatus: ChatStatus.ChannelsPage,
-	  selected: null,
-	  searchPrompt: null,
-	});
+	// 			},
+	// 		],
+	// 		owner: 'MYSELF',
+	// 	  },
+	// 	},
+	//   ],
+	//   chatStatus: ChatStatus.ChannelsPage,
+	//   selected: null,
+	//   searchPrompt: null,
+	// });
   
+
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [selectedChannel, setSelectedChannel] = useState<ChatRoom | null>(null);
 	const [newChannelSettings, setNewChannelSettings] = useState<ChatSettings>({
@@ -200,6 +200,15 @@ const ChannelsPage: React.FC = () => {
 				userPP: <Typography>img</Typography>,
 				timestamp: <Typography>20:00</Typography>,
 			};
+
+			setChatProps((prevProps) => ({
+				...prevProps,
+				chatRooms: prevProps.chatRooms.map(room => 
+					room.name === selectedChannel?.name
+						? {...room, messages: [...room.messages, newChatMessage]}
+						: room
+				),
+			}));
 			setSelectedChannel((prevState) => ({
 				...prevState,
 				messages: [...prevState.messages, newChatMessage]
