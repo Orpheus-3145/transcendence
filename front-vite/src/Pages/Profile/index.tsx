@@ -381,7 +381,7 @@ const ProfilePage: React.FC = () => {
 				{GetProfilePic()}
 				{SetChangePfpButton()}
 				{GetUserStatus()}
-				{GetNickName()}
+				{putNickName()}
 				{EditNickName()}
 				{OtherInfo()}
 			</Stack>
@@ -481,7 +481,7 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let GetNickName = () => 
+	let putNickName = () => 
 	{
 		let size = '4rem';
 		if (userProfile.nameNick.length > 10)
@@ -500,7 +500,6 @@ const ProfilePage: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-210px',
-					left:'10px',
 				}}
 			>
 				<Typography variant={'h2'}
@@ -565,7 +564,7 @@ const ProfilePage: React.FC = () => {
 						sx={{
 								fontSize: '30px',
 								top: '-190px',
-								left: '545px',
+								left: '535px',
 								width: '50px',
 								'&:hover': {
 									color: '#09af07',
@@ -583,7 +582,7 @@ const ProfilePage: React.FC = () => {
 					placeholder="Type new nickname..."
 					sx={{
 						top: '-180px',
-						left: '480px',
+						left: '470px',
 						width: '200px',
 						height: '40px',
 					}}
@@ -649,7 +648,7 @@ const ProfilePage: React.FC = () => {
 		return (
 			<Container sx={{ padding: theme.spacing(3) }}>
 				<Stack
-						maxWidth={'100%'}
+						width={'100%'}
 						overflow={'hidden'}
 				>
 					{userInfo()}

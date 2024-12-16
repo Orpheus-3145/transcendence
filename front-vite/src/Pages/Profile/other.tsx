@@ -416,7 +416,6 @@ const ProfilePageOther: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-150px',
-					left: '10px',
 				}}
 			>
 				<Typography variant={'h2'}

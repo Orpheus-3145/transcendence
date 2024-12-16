@@ -41,7 +41,7 @@ export const Notification: React.FC = () => {
 		removeNotificationDb(noti.id.toString());
 	}
 
-	let initMessageNotification = (noti: NotificationStruct) =>
+	let initMessage = (noti: NotificationStruct) =>
 	{
 		var notiMessage = noti.message;
 		if (noti.message?.length > 23)
@@ -103,7 +103,7 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-	let getNotificationMessages = () =>
+	let putMessages = () =>
 	{
 		if (messageArray == null)
 		{
@@ -138,7 +138,7 @@ export const Notification: React.FC = () => {
 		return (
 			<Stack>
 				<br />
-				{messageArray.map((item: NotificationStruct) => initMessageNotification(item))}
+				{messageArray.map((item: NotificationStruct) => initMessage(item))}
 			</Stack>
 		);
 	}
@@ -159,7 +159,7 @@ export const Notification: React.FC = () => {
 			declineGameInvite(noti.senderId.toString(), noti.receiverId.toString());
 	}
 
-	let initRequestNotification = (noti: NotificationStruct) =>
+	let initRequest = (noti: NotificationStruct) =>
 	{
 		var message = "has sent you a friend request!";
 		if (noti.type == NotificationType.gameInvite)
@@ -252,7 +252,7 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-	let getNotificationFrRequests = () =>
+	let putFiendRequests = () =>
 	{
 		if (friendRequestArray == null)
 		{
@@ -287,12 +287,12 @@ export const Notification: React.FC = () => {
 		return (
 			<Stack>
 				<br />
-				{friendRequestArray.map((item: NotificationStruct) => initRequestNotification(item))}
+				{friendRequestArray.map((item: NotificationStruct) => initRequest(item))}
 			</Stack>
 		);
 	}
 
-	let getGameInvites = () =>
+	let putGameInvites = () =>
 	{
 		if (gameInviteArray == null)
 			{
@@ -327,7 +327,7 @@ export const Notification: React.FC = () => {
 		return (
 			<Stack>
 				<br />
-				{gameInviteArray.map((item: NotificationStruct) => initRequestNotification(item))}
+				{gameInviteArray.map((item: NotificationStruct) => initRequest(item))}
 			</Stack>
 		);		
 	}
@@ -455,17 +455,17 @@ export const Notification: React.FC = () => {
 				</Box>
 				<br />
 				{messageBox()}
-				{getNotificationMessages()}
+				{putMessages()}
 				<br />
 				<Divider />
 				<br />
 				{friendReqBox()}
-				{getNotificationFrRequests()}
+				{putFiendRequests()}
 				<br />
 				<Divider />
 				<br />
 				{gameReqBox()}
-				{getGameInvites()}
+				{putGameInvites()}
 			</Stack>
 		);
 	}
@@ -513,33 +513,21 @@ export const Notification: React.FC = () => {
 		}
 		else
 		{
-			var friendsArr: NotificationStruct[] | null = null;
-			var messageArr: NotificationStruct[] | null = null;
-			var gameArr: NotificationStruct[] | null = null;
+			var friendsArr: NotificationStruct[]  = [];
+			var messageArr: NotificationStruct[]  = [];
+			var gameArr: NotificationStruct[]  = [];
 			arr?.map((item: NotificationStruct) =>
 			{
 				if (item.type == NotificationType.Message)
 				{
-					if (messageArr == null)
-					{
-						messageArr = [];
-					}
 					messageArr.push(item);
 				}
 				else if (item.type == NotificationType.friendRequest)
 				{
-					if (friendsArr == null)
-					{
-						friendsArr = [];
-					}
 					friendsArr.push(item);
 				}
 				else if (item.type == NotificationType.gameInvite)
 				{
-					if (gameArr == null)
-					{
-						gameArr = [];
-					}
 					gameArr.push(item);
 				}
 			}

@@ -15,7 +15,7 @@ export const Bar: React.FC = () => {
 	const { user } = useUser();
 	const navigate = useNavigate();
 	const theme = useTheme();  
-	const [showNotificationDot, setShowNotificationDot] = useState<Boolean>(false);
+	// const [showNotificationDot, setShowNotificationDot] = useState<Boolean>(false);
 
 	const navToProfile = () => { user && user.id && navigate(`/profile/${user.id}`) }
 	const navToAll = () => {navigate('/viewusers')}
@@ -26,10 +26,10 @@ export const Bar: React.FC = () => {
 		return (
 			<Tooltip title="View Users!" arrow>
 				<IconButton
-					onClick={navToAll}
+					onClick={() => navToAll()}
 					sx={{
 						position: 'absolute',
-						left: '-40px',
+						left: '-80px',
 						'&:hover': {
 						color: '#0c31df',
 						},
@@ -84,25 +84,25 @@ export const Bar: React.FC = () => {
 		);
 	}
 
-	let showNotiDot = () =>
-	{
-		if (showNotificationDot == true)
-		{
-			return (
-				<Box
-					sx={{
-						width: 12,
-						height: 12,
-						backgroundColor: 'red',
-						borderRadius: '50%',
-						position: 'relative',
-						left: '-10px',
-						top: '10px',
-					}}
-				/>
-			);
-		}	
-	} 
+	// let showNotiDot = () =>
+	// {
+	// 	if (showNotificationDot == true)
+	// 	{
+	// 		return (
+	// 			<Box
+	// 				sx={{
+	// 					width: 12,
+	// 					height: 12,
+	// 					backgroundColor: 'red',
+	// 					borderRadius: '50%',
+	// 					position: 'relative',
+	// 					left: '-10px',
+	// 					top: '10px',
+	// 				}}
+	// 			/>
+	// 		);
+	// 	}	
+	// } 
 
 
 	let headerBar = () =>
@@ -144,26 +144,21 @@ export const Bar: React.FC = () => {
 		);
 	}
 
-	let getNotificationUser = async () : Promise<void> =>
-	{
-		let arr = await getUserNotifications(user);
-		if (arr?.length === 0)
-		{
-			setShowNotificationDot(false);
-		}
-		else
-		{
-			setShowNotificationDot(true);
-		}
-	}
+	// let getNotificationUser = async () : Promise<void> =>
+	// {
+	// 	let arr = await getUserNotifications(user);
+	// 	if (arr?.length === 0)
+	// 	{
+	// 		setShowNotificationDot(false);
+	// 	}
+	// 	else
+	// 	{
+	// 		setShowNotificationDot(true);
+	// 	}
+	// }
 	
 	let pageWrapper = () =>
 	{
-		useEffect(() => 
-		{
-			getNotificationUser();
-		
-		}, [showNotificationDot]);
 		
 
 		return (headerBar());
