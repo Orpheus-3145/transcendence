@@ -25,6 +25,16 @@ export interface GameState {
 		p2: number}
 };
 
+export interface extras {
+	speedBall: powerUp
+}
+
+export interface PowerUp {
+	x: number,
+	y: number,
+	active: boolean
+}
+
 export interface PlayerData {
 	playerId: number;
 	sessionToken: string;
@@ -32,6 +42,7 @@ export interface PlayerData {
 };
 
 export interface InitData {
-  sessionToken: string;
-  mode: GameMode;
+	sessionToken: string;
+	mode: GameMode;
+	extras: boolean;
 };

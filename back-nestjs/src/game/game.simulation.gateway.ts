@@ -46,7 +46,7 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 		// Potential dead-end: can there be a situation where the playerData is sent before initData? This should not happen
 	@SubscribeMessage('initData')
 	setInitData(@MessageBody() data: InitDataDTO): void {
-		this.roomManager.createRoom(data.sessionToken, data.mode);
+		this.roomManager.createRoom(data.sessionToken, data.mode, data.extras);
 	};
 
 	@SubscribeMessage('playerLeft')

@@ -3,16 +3,18 @@ import { io, Socket } from 'socket.io-client';
 import { GAME, GAME_BALL, GAME_BAR } from '../Game.data';
 import * as GameTypes from '../Types/types';
 import Ball from '../GameObjects/Ball';
+import SpeedBall from '../GameObjects/SpeedBall';
 import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
 
 export default class Game extends Phaser.Scene {
 
 	// Game objects
-  private _ball!: Ball;
-  private _leftPaddle!: Paddle;
-  private _righPaddle!: Paddle;
-  private _field!: Field;
+	private _ball!: Ball;
+	private _leftPaddle!: Paddle;
+	private _righPaddle!: Paddle;
+	private _field!: Field;
+	private _speedBall!: SpeedBall | null;
 
 	// Background image
 	private _background!: Phaser.GameObjects.Image;
@@ -30,6 +32,7 @@ export default class Game extends Phaser.Scene {
 	private _socketIO!: Socket;
 	private _gameStarted: boolean = false;
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
+	private _extras: boolean = false;
 	private _gameState!: GameTypes.GameState;
 	private _addPlayerSuccess = false;
   constructor() {
@@ -44,6 +47,7 @@ export default class Game extends Phaser.Scene {
 		this._nameNick = this.registry.get("user42data").nameNick;
 		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
+		this._extras = data.extras;
 
 		// Key bindings
 		this._cursors = this.input.keyboard!.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
@@ -75,7 +79,7 @@ export default class Game extends Phaser.Scene {
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
 
-		const initData: GameTypes.InitData = {sessionToken: this._sessionToken, mode: this._mode};
+		const initData: GameTypes.InitData = {sessionToken: this._sessionToken, mode: this._mode, extras: this._extras};
 		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick, sessionToken: this._sessionToken};
 
 		this.sendMsgToServer('initData', initData);
@@ -104,7 +108,34 @@ export default class Game extends Phaser.Scene {
 
 		this._socketIO.on('PlayerDisconnected', (trace: string) => this.scene.start('Error', {trace}));
 		
+		// Handle SpeedBall appearance
+		this._socketIO.on('speedBallUpdate', (state: GameTypes.PowerUp) => {
+		if (!this._speedBall) {
+			// Create the SpeedBall object if it doesn't already exist
+			this._speedBall = new SpeedBall(this, state.x, state.y);
+		} else {
+			// Update the SpeedBall position
+			this._speedBall.updatePosition(state.x, state.y);
+		}
+		});
+
+		    // Handle SpeedBall deactivation
+		this._socketIO.on('speedBallDeactivated', () => {
+		if (this._speedBall) {
+			this._speedBall.destroy(); // Remove the SpeedBall from the scene
+			this._speedBall = null; // Reset the reference
+		}
+		});
+		this._socketIO.on('powerUpActivated', (state: boolean) => {
+			if (state == true) {
+				this._leftPaddle.changeColor(0xffff00);
+			}
+			else {
+				this._leftPaddle.changeColor(0x0000ff);
+			}
+		});
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
+
 	};
 
 	sendMsgToServer(msgType: string, content: any) {

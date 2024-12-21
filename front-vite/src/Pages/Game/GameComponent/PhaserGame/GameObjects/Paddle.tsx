@@ -34,4 +34,9 @@ export default class Paddle {
   resetPos(): void {
     this._graphic.setPosition(this._startPos.x, this._startPos.y);
   };
+
+  // Change the color of the paddle
+  changeColor(color: number): void {
+    this._graphic.setFillStyle(color); // Set the new color using a hexadecimal color value
+  }
 };

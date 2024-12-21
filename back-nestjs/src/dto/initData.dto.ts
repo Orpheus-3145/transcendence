@@ -1,4 +1,4 @@
-import { IsString, IsEnum } from 'class-validator';
+import { IsString, IsEnum , IsBoolean} from 'class-validator';
 import { GameMode } from '../game/game.types';
 
 export default class InitDataDTO {
@@ -7,4 +7,7 @@ export default class InitDataDTO {
     
     @IsString()
     sessionToken: string;
+
+	@IsBoolean()
+	extras: boolean
 };

@@ -15,16 +15,16 @@ export class RoomManagerService {
     	this.logger.setContext(RoomManagerService.name);
 	};
 
-	createRoom(sessionToken: string, mode: GameMode): void {
-		if (this.rooms.has(sessionToken)) { // This should never happen
-			console.log(`Room with ID ${sessionToken} already exists.`);
+	createRoom(sessionToken: string, mode: GameMode, extras: boolean): void {
+		if (this.rooms.has(sessionToken)) { // Should happen once when the second player is joining the room
+			console.log(`Room with ID ${sessionToken} already exists. Player 2 joining.`);
 		}
 		else {
 			this.logger.log(`Creating room with sessionToken: ${sessionToken}`);
 			this.rooms.set(sessionToken, new SimulationService()); // create a new session (as instance of a service) in the rooms array 
 		}
 		const room = this.rooms.get(sessionToken);
-		room.setInitData(sessionToken, mode) // set init data in the game service
+		room.setInitData(sessionToken, mode, extras) // set init data in the game service
 		if (room.isWaiting() === false) // do the game init stuff here
 			room.startWaiting();
 	}
