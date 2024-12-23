@@ -40,56 +40,11 @@ export class UsersService {
 		user.status = UserStatus.Offline;
 		user.friends = [];
 		user.blocked = [];
-		//  const tmp = new User();
-		//  tmp.accessToken = access.access_token;
-		//  tmp.intraId = 47328;
-		//  tmp.nameNick = 'bald';
-		//  tmp.nameIntra = 'baldwin';
-		//  tmp.nameFirst = 'bal';
-		//  tmp.nameLast = 'dwin';
-		//  tmp.email = 'baldwin@student.codam.nl';
-		//  tmp.image = userMe.image.link;
-		//  tmp.greeting = 'Hello, I have just landed!';
-		//  tmp.status = UserStatus.Offline;
-		//  tmp.friends = [];
-		//  tmp.blocked = [];
-		//  const a = new User();
-		//  a.accessToken = access.access_token;
-		//  a.intraId = 58493;
-		//  a.nameNick = 'nani';
-		//  a.nameIntra = 'nanida';
-		//  a.nameFirst = 'nani';
-		//  a.nameLast = 'fuq';
-		//  a.email = 'nanidafuq@student.codam.nl';
-		//  a.image = userMe.image.link;
-		//  a.greeting = 'Hello, I have just landed!';
-		//  a.status = UserStatus.Offline;
-		//  a.friends = [];
-		//  a.blocked = [];
-		//  const herb = new User();
-		//  herb.accessToken = access.access_token;
-		//  herb.intraId = 86512;
-		//  herb.nameNick = 'herb';
-		//  herb.nameIntra = 'herbda';
-		//  herb.nameFirst = 'herb';
-		//  herb.nameLast = 'fuq';
-		//  herb.email = 'herbdafuq@student.codam.nl';
-		//  herb.image = userMe.image.link;
-		//  herb.greeting = 'Hello, I have just landed!';
-		//  herb.status = UserStatus.Offline;
-		//  herb.friends = [];
-		//  herb.blocked = [];
 		try {
 			if (await this.userAlreadyExist(user) == true)
 				return (new UserDTO(user));
 			await user.validate();
-			// await tmp.validate();
-			// await a.validate();
-			// await herb.validate();
 			await this.usersRepository.save(user);
-			// await this.usersRepository.save(tmp); //remove tmp when testing is done, it is an extra user to test
-			// await this.usersRepository.save(a);//remove tmp when testing is done, it is an extra user to test
-			// await this.usersRepository.save(herb);
 			return new UserDTO(user);
 		} 
 		catch (error) {
