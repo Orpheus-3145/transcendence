@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar } from '@mui/material';
 import SportsEsportsRoundedIcon from '@mui/icons-material/SportsEsportsRounded';
 import { styled } from '@mui/system';
-import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as LogoutIcon, Login as LoginIcon,} from '@mui/icons-material';
+import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as LogoutIcon, Login as LoginIcon, VideogameAsset as GameIcon} from '@mui/icons-material';
 import { timeStamp } from 'console';
 import { index } from 'cheerio/dist/commonjs/api/traversing';
 import { useChatContext } from '../../Layout/Chat/ChatContext';
@@ -301,7 +301,7 @@ const ChannelsPage: React.FC = () => {
 					onClick={handleSendGameInvite}
 					sx={{  }}
 				>
-					<SportsEsportsRoundedIcon sx={{ }}/>
+					<GameIcon sx={{ }}/>
 				</IconButton>
 			</Stack>
 		);
@@ -366,7 +366,7 @@ const ChannelsPage: React.FC = () => {
 					Available Channels
 				</Typography>
 				{/* --> CALL TO BACKEND <-- */}
-				{renderChannels(chatProps.chatRooms)} 
+				{/* {renderChannels(chatProps.chatRooms)}  */}
 			</Box>
 			<Divider/>
 			<Box sx={{ marginBottom: 1}}>
