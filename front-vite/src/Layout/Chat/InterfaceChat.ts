@@ -17,7 +17,7 @@ export interface ChatMessage {
 }
 
 export enum UserRoles {
-  Administrator = 'Administrator',
+  Admin = 'Admin',
   Guest = 'Guest',
   Owner = 'Owner',
 }

@@ -147,7 +147,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 				<Stack spacing={1} mt={2}>
 				  {settings?.users.map(user => (
 					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
-					  <Typography sx={{}} >{user.name.length > 10 ? user.name.slice(0, 9) + '...' : user.name}</Typography>
+					  <Typography sx={{whiteSpace: 'pre-line'}} >
+							{user.name.length > 10 ? user.name.slice(0, 9) + '...' : user.name}
+					  		{'\n'}{`(${user.role})`}
+					  </Typography>
 					  <Stack direction="row" spacing={0.3}>
 						<Button variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
 							{user.role === 'Guest' ? 'Make Admin' : 'Make Guest' }

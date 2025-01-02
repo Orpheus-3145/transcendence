@@ -59,7 +59,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 				  },
 				  {
 					  name: 'Cap',
-					  role: 'Guest',
+					  role: 'Admin',
 					  email: 'cap@avengers.com',
 					  password: '',
 					  icon: React.ReactElement ,

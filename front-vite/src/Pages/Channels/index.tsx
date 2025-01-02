@@ -53,80 +53,57 @@ const ChannelsPage: React.FC = () => {
 	// const {newMessage, setNewMessage} = useChatContext();
 	const [newMessage, setNewMessage] = useState('');
 	const {chatProps, setChatProps} = useChatContext();
-
-	
-	// const [chatProps, setChatProps] = useState<ChatProps>({
-	//   chatRooms: [
-	// 	{
-	// 	  name: 'test channel',
-	// 	  icon: <GroupIcon />,
-	// 	  messages: [
-	// 		{
-	// 		  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
-	// 		  user: <Typography>User1</Typography>,
-	// 		  userPP: <Typography>img</Typography>,
-	// 		  timestamp: <Typography>20:00</Typography>,
-	// 		},
-	// 		{
-	// 		  message: <Typography>Whazuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuup!</Typography>,
-	// 		  user: <Typography>User2</Typography>,
-	// 		  userPP: <Typography>img</Typography>,
-	// 		  timestamp: <Typography>20:03</Typography>,
-	// 		},
-	// 	  ],
-	// 	  settings: {
-	// 		icon: <PersonAddIcon />,
-	// 		type: 'public',
-	// 		password: null,
-	// 		users: [
-	// 			{
-	// 				name: 'Groot',
-	// 				role: 'Admin',
-	// 				email: 'iamgroot@avengers.com',
-	// 				password: '',
-	// 				icon: React.ReactElement ,
-
-	// 			},
-	// 			{
-	// 				name: 'Cap',
-	// 				role: 'Guest',
-	// 				email: 'cap@avengers.com',
-	// 				password: '',
-	// 				icon: React.ReactElement ,
-
-	// 			},
-	// 			{
-	// 				name: 'Hulk',
-	// 				role: 'Guest',
-	// 				email: 'hulk@avengers.com',
-	// 				password: '',
-	// 				icon: React.ReactElement ,
-
-	// 			},
-	// 		],
-	// 		owner: 'MYSELF',
-	// 	  },
-	// 	},
-	//   ],
-	//   chatStatus: ChatStatus.ChannelsPage,
-	//   selected: null,
-	//   searchPrompt: null,
-	// });
-  
-
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [selectedChannel, setSelectedChannel] = useState<ChatRoom | null>(null);
 	const [newChannelSettings, setNewChannelSettings] = useState<ChatSettings>({
-	  icon: <PersonAddIcon />,
-	  type: 'public',
-	  password: null,
-	  users: [],
-	  owner: 'currentUser',
+		icon: <PersonAddIcon />,
+		type: 'public',
+		password: null,
+		users: [],
+		owner: 'currentUser',
 	});
+	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([
+		{
+			name: 'channel1',
+			icon: <GroupIcon />,
+			messages: [],
+			settings: {
+				icon: <PersonAddIcon />,
+				type: 'public',
+				password: null,
+				users: [],
+				owner: 'MYSELF',
+			  },
+		},
+		{
+			name: 'channel2',
+			icon: <GroupIcon />,
+			messages: [],
+			settings: {
+				icon: <PersonAddIcon />,
+				type: 'private',
+				password: null,
+				users: [],
+				owner: 'MYSELF',
+			  },
+		},
+		{
+			name: 'channel3',
+			icon: <GroupIcon />,
+			messages: [],
+			settings: {
+				icon: <PersonAddIcon />,
+				type: 'password',
+				password: 'pass',
+				users: [],
+				owner: 'MYSELF',
+			  },
+		},
+	]);
   
 	// Separate available and joined channels
-	const availableChannels = chatProps.chatRooms.slice(0, 3); // Example for available channels
-	const joinedChannels = chatProps.chatRooms.slice(3); // Example for joined channels (you can adjust this logic)
+	// const availableChannels = chatProps.chatRooms.slice(0, 3); // Example for available channels
+	// const joinedChannels = chatProps.chatRooms.slice(3); // Example for joined channels (you can adjust this logic)
   
 	// Functions to handle channel creation //
   
@@ -172,6 +149,17 @@ const ChannelsPage: React.FC = () => {
 	  setSelectedChannel(channel);
 	  setIsSettingsView(false);
 	  setIsAddingChannel(false);
+	  
+	};
+
+	const handleAvailableChannelClick = (channel: ChatRoom) => {
+		alert('Available channel clicked!');
+		setSelectedChannel(channel);
+		setIsSettingsView(false);
+	  	setIsAddingChannel(false);
+
+
+
 	};
   
 	const handleSettingsClick = (event: React.MouseEvent, channel: ChatRoom) => {
@@ -229,17 +217,17 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	// Channel line component to render each channel in the list
-	const ChannelLine: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
+	const ChannelLine: React.FC<{ channel: ChatRoom}> = ({ channel }) => {
 	  return (
 		<Stack
 		  direction={'row'}
 		  gap={2}
 		  paddingX={'0.5em'}
-		  onClick={() => handleChannelClick(channel)}
 		  bgcolor={theme.palette.primary.main}
 		  justifyContent={'space-between'}
 		  alignItems={'center'}
 		  textAlign={'center'}
+		  onClick={() => handleChannelClick(channel)}
 		//   height={'3em'}
 		//   minWidth={'218px'}
 		  sx={{
@@ -266,6 +254,40 @@ const ChannelsPage: React.FC = () => {
 		  </IconButton>
 		</Stack>
 	  );
+	};
+
+	const AvailableChannelLine : React.FC<{channel: ChatRoom}> = ({channel}) => {
+		return (
+			<Stack
+			  direction={'row'}
+			  gap={2}
+			  paddingX={'0.5em'}
+			  bgcolor={theme.palette.primary.main}
+			  height={'2em'}
+			//   justifyContent={'space-between'}
+			  alignItems={'center'}
+			  textAlign={'center'}
+			  onClick={() => handleAvailableChannelClick(channel)}
+			//   height={'3em'}
+			//   minWidth={'218px'}
+			  sx={{
+				borderRadius: '5px',
+				cursor: 'pointer',
+				transition: 'padding-left ease-in-out 0.3s, padding-right ease-in-out 0.3s, border-radius ease-in-out 0.3s, background-color ease-in-out 0.3s',
+				'&:hover': {
+				  bgcolor: theme.palette.primary.dark,
+				  borderRadius: '2em',
+				  paddingLeft: '1em',
+				  paddingRight: '0.02em',
+				},
+			  }}
+			>
+			  <GroupIcon sx={{ width: '10%' }} />
+			  <Typography noWrap sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+				{channel.name}
+			  </Typography>
+			</Stack>
+		  );
 	};
   
 	const PlayerLine: React.FC<{player: UserProps}> = ({player}) => {
@@ -328,6 +350,15 @@ const ChannelsPage: React.FC = () => {
 	  </Stack>
 	);
 
+	const renderAvailableChannels = (channels: ChatRoom[]) => (
+		<Stack gap={1}>
+		{channels.map((channel) => (
+			channel.settings.type !== 'private' && 
+			<AvailableChannelLine key={channel.name} channel={channel} />
+		))}
+	  </Stack>
+	);
+
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
 		<Stack
@@ -366,7 +397,7 @@ const ChannelsPage: React.FC = () => {
 					Available Channels
 				</Typography>
 				{/* --> CALL TO BACKEND <-- */}
-				{/* {renderChannels(chatProps.chatRooms)}  */}
+				{renderAvailableChannels(availableChannels)} 
 			</Box>
 			<Divider/>
 			<Box sx={{ marginBottom: 1}}>
@@ -476,14 +507,6 @@ const ChannelsPage: React.FC = () => {
 					  </Box>
 					))}
 				  </Stack>
-				  {/* {(selectedChannel.settings.owner === 'MYSELF') &&
-				  <Button
-			  		variant="contained"
-			  		onClick={handleDeleteChannel}
-			  		sx={{ textTransform: 'none', alignSelf: 'flex-end' }}
-				  >
-			  		Delete Channel
-				  </Button>} */}
 				  
 				  {/*---Render Input Box---*/}
 				  <Box
