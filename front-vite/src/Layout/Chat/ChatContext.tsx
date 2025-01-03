@@ -28,7 +28,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 	const [chatProps, setChatProps] = useState<ChatProps>({
 		chatRooms: [
 		  {
-			name: 'test channel',
+			name: 'test chaaaaaannel',
 			icon: <GroupIcon />,
 			messages: [
 			  {

@@ -5,7 +5,7 @@ import { SettingsModal } from './ChannelSettings';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon,  AccountCircle as AccountCircleIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar } from '@mui/material';
+import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SportsEsportsRoundedIcon from '@mui/icons-material/SportsEsportsRounded';
 import { styled } from '@mui/system';
 import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as LogoutIcon, Login as LoginIcon, VideogameAsset as GameIcon} from '@mui/icons-material';
@@ -26,16 +26,18 @@ const ChannelsPage: React.FC = () => {
 	const [channelName, setChannelName] = useState('');
 	const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
+	const [isPasswordModal, setIsPasswordModal] = useState(false);
+	const [enteredChannelPass, setEnteredChannelPass] = useState('');
 	const [onlinePlayers, setOnlinePlayers] = useState<UserProps[]>([
 		{
-			name: 'Thor',
+			name: 'Thooooooooooooooooooooooor',
 			role: 'Guest',
 			email: 'thor@avengers.com',
 			password: '',
 			icon: React.ReactElement ,
 		},
 		{
-			name: 'Fury',
+			name: 'Fuuuuuuury',
 			role: 'Guest',
 			email: 'nick@fury.com',
 			password: '',
@@ -49,6 +51,7 @@ const ChannelsPage: React.FC = () => {
 			icon: React.ReactElement ,
 		},
 	]);
+	
 
 	// const {newMessage, setNewMessage} = useChatContext();
 	const [newMessage, setNewMessage] = useState('');
@@ -64,7 +67,7 @@ const ChannelsPage: React.FC = () => {
 	});
 	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([
 		{
-			name: 'channel1',
+			name: 'chaaaaaaaaaaaaaaaaannel1',
 			icon: <GroupIcon />,
 			messages: [],
 			settings: {
@@ -153,13 +156,13 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	const handleAvailableChannelClick = (channel: ChatRoom) => {
-		alert('Available channel clicked!');
+		console.log('Available channel clicked!');
 		setSelectedChannel(channel);
 		setIsSettingsView(false);
 	  	setIsAddingChannel(false);
-
-
-
+		if (channel.settings.type === 'password') {
+			setIsPasswordModal(true);
+		}
 	};
   
 	const handleSettingsClick = (event: React.MouseEvent, channel: ChatRoom) => {
@@ -210,7 +213,24 @@ const ChannelsPage: React.FC = () => {
 			event.preventDefault();
 			handleSendMessage();
 		}
-	}
+	};
+
+	const handleChannelPasswordSubmit = (event: React.MouseEvent) => {
+		event.preventDefault();
+
+		if (enteredChannelPass !== selectedChannel?.settings.password) {
+			alert("Incorrect password!");
+		} else {
+			// alert('Correct passord!');
+			setIsPasswordModal(false);
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: [...prevState.chatRooms, selectedChannel],
+			}));
+				
+		}
+		setEnteredChannelPass('');
+	};
 
 	const MessageInput: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
 		console.log('d');
@@ -554,6 +574,32 @@ const ChannelsPage: React.FC = () => {
 			  <Typography>Select a channel to view messages.</Typography>
 			)}
 		  </Box>
+		  <Dialog
+		  	open={isPasswordModal}
+			onClose={() => setIsPasswordModal(false)}
+		  >
+			<DialogTitle>Enter Channel Password</DialogTitle>
+			<DialogContent>
+				<TextField
+					type='password'
+					label='Password'
+					value={enteredChannelPass}
+					onChange={(e) => setEnteredChannelPass(e.target.value)}
+					fullWidth
+				/>
+			</DialogContent>
+			<DialogActions>
+				<Button 
+					onClick={() => {
+						setIsPasswordModal(false);
+						setEnteredChannelPass('');
+					}}
+				>
+					Cancel
+				</Button>
+				<Button onClick={handleChannelPasswordSubmit}>Submit</Button>
+			</DialogActions>
+		  </Dialog>
 		</Stack>
 	  </Container>
 	);
