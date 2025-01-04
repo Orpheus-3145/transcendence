@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { Server, Socket } from 'socket.io';
 
 import SimulationService from './game.simulation.service';
 import { GameMode, PaddleDirection } from './game.types';
-import { Server, Socket } from 'socket.io';
 import AppLoggerService from 'src/log/log.service';
+import SimulationException from '../errors/SimulationException';
 
 
 @Injectable()
@@ -16,28 +17,42 @@ export class RoomManagerService {
 	};
 
 	createRoom(sessionToken: string, mode: GameMode): void {
-		if (this.rooms.has(sessionToken)) { // This should never happen
-			console.log(`Room with ID ${sessionToken} already exists.`);
-		}
-		else {
-			this.logger.log(`Creating room with sessionToken: ${sessionToken}`);
-			this.rooms.set(sessionToken, new SimulationService()); // create a new session (as instance of a service) in the rooms array 
-		}
-		const room = this.rooms.get(sessionToken);
-		room.setInitData(sessionToken, mode) // set init data in the game service
-		if (room.isWaiting() === false) // do the game init stuff here
-			room.startWaiting();
+
+		if (this.rooms.has(sessionToken))
+			return;
+			// throw new SimulationException(`Internal - room with ID ${sessionToken} already exists`)
+
+		this.logger.log(`creating room with sessionToken: ${sessionToken}`);
+		this.rooms.set(sessionToken, new SimulationService(mode)); // create a new session (as instance of a service) in the rooms array 
+
+		// const room = this.rooms.get(sessionToken);
+		// room.setInitData(sessionToken, mode) // set init data in the game service
+		// if (room.isWaiting() === false) // do the game init stuff here
+		// 	room.startWaiting();
 	}
+
+	// addNewRoom(sessionToken: string, mode: GameMode): void {
+
+	// 	if (this.rooms.has(sessionToken))
+	// 		throw new SimulationException(`Internal - room with ID ${sessionToken} already exists`)
+
+	// 	this.logger.log(`creating room with ID ${sessionToken}`);
+	// 	this.rooms.set(sessionToken, new SimulationService(mode)); // create a new session (as instance of a service) in the rooms array 
+
+	// 	// const room = this.rooms.get(sessionToken);
+	// 	// // room.setInitData(sessionToken, mode) // set init data in the game service
+	// 	// room.setMode(mode)
+	// 	// if (room.isWaiting() === false) // do the game init stuff here
+	// 	// 	room.startWaiting();
+	// }
 
 	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
 		const room = this.rooms.get(sessionToken);
-		if (!room) {
-			console.log(`Error adding player to room, room with sessionToken ${sessionToken} not found`);
-			return ;
-		}
+		if (!room)
+			throw new SimulationException(`Internal - error adding player to room, with sessionToken ${sessionToken} not found`)
+		
 		room.addPlayer(client, playerId, nameNick);
 	}
-
 
 	// When someone disconnets from the socket
 	handleDisconnect(client: Socket): void {
@@ -53,8 +68,8 @@ export class RoomManagerService {
 
 	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection,) {
 		const simulationService = this.rooms.get(sessionToken);
-		if (simulationService) {
+
+		if (simulationService)
 			simulationService.movePaddle(clientId, data)
-		}
 	}
 }

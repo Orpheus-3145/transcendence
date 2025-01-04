@@ -15,7 +15,6 @@ export class AuthService {
 		private userService: UserService,
 		private logger: AppLoggerService,
 	) {
-
     	this.logger.setContext(AuthService.name);
 	}
 
@@ -29,7 +28,7 @@ export class AuthService {
 
 	async getUserAccessToken(code: string): Promise<AccessTokenDTO | null> {
 		if (!code) {
-			console.error('No code');
+			this.logger.error(`Login failed, no code provided`)
 			return null;
 		}
 		try {
@@ -50,14 +49,14 @@ export class AuthService {
 			const token_info: AccessTokenDTO = await response.json();
 			return token_info;
 		} catch (error) {
-			console.error('Error fetching user access token:', error);
+			this.logger.error(`Error fetching user access token - trace: ${error.message}`)
 		}
 		return null;
 	}
 
 	async getUserMe(access_token: string): Promise<Record<string, any> | null> {
 		if (!access_token) {
-			console.error('No access token');
+			this.logger.error('No access token provided')
 			return null;
 		}
 		try {
@@ -71,7 +70,7 @@ export class AuthService {
 			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 			return response.json();
 		} catch (error) {
-			console.error('Error fetching data:', error);
+			this.logger.error(`Error fetching data - trace: ${error.message}`)
 		}
 		return null;
 	}
@@ -99,11 +98,10 @@ export class AuthService {
 		try {
 			const userDTOreturn = await this.userService.createUser(access, userMe);
 			res.redirect(this.configService.get<string>('URL_FRONTEND'));
-			// this.logger.log(`Successful login with user: ${userDTOreturn.nameNick}`)
+			this.logger.log(`Successful login with user: ${userDTOreturn.nameNick}`)
 			return userDTOreturn;
 		} catch (error) {
-			console.error('Error creating user:', error);
-			// this.logger.error(`Login failed with user: ${userMe.login}`)
+			this.logger.error(`Login failed with user: ${userMe.login} - trace: ${error.message}`)
 			res.redirect(this.configService.get<string>('URL_FRONTEND') + '/login');
 			return null;
 		}

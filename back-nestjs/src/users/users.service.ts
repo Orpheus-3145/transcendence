@@ -7,6 +7,7 @@ import { UserStatus, UserDTO } from '../dto/user.dto';
 import { AccessTokenDTO } from '../dto/auth.dto';
 import AppLoggerService from 'src/log/log.service';
 
+
 @Injectable()
 export class UsersService {
 
@@ -32,7 +33,6 @@ export class UsersService {
 			await user.validate();
 			// TODO check user not exists in table, if so, inserts into it
 			await this.usersRepository.save(user);
-			// thi
 			return new UserDTO(user);
 		} catch (error) {
 			console.error('User validation error: ', error);
