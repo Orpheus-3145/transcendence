@@ -69,7 +69,7 @@ const ChannelsPage: React.FC = () => {
 		{
 			name: 'chaaaaaaaaaaaaaaaaannel1',
 			icon: <GroupIcon />,
-			messages: [],
+			messages:  [],
 			settings: {
 				icon: <PersonAddIcon />,
 				type: 'public',
@@ -93,7 +93,13 @@ const ChannelsPage: React.FC = () => {
 		{
 			name: 'channel3',
 			icon: <GroupIcon />,
-			messages: [],
+			messages: [
+				{
+				  message: <Typography>Whazuuuuuuuuuuup!</Typography>,
+				  user: <Typography>User1</Typography>,
+				  userPP: <Typography>img</Typography>,
+				  timestamp: <Typography>20:00</Typography>,
+				}],
 			settings: {
 				icon: <PersonAddIcon />,
 				type: 'password',
@@ -191,7 +197,6 @@ const ChannelsPage: React.FC = () => {
 				userPP: <Typography>img</Typography>,
 				timestamp: <Typography>20:00</Typography>,
 			};
-
 			setChatProps((prevProps) => ({
 				...prevProps,
 				chatRooms: prevProps.chatRooms.map(room => 
@@ -215,19 +220,21 @@ const ChannelsPage: React.FC = () => {
 		}
 	};
 
-	const handleChannelPasswordSubmit = (event: React.MouseEvent) => {
+	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
 		event.preventDefault();
 
 		if (enteredChannelPass !== selectedChannel?.settings.password) {
 			alert("Incorrect password!");
 		} else {
-			// alert('Correct passord!');
+			// Move the channel to the joined channels secion //
 			setIsPasswordModal(false);
 			setChatProps((prevState) => ({
 				...prevState,
 				chatRooms: [...prevState.chatRooms, selectedChannel],
 			}));
-				
+
+			const updatedAvailableChannels = availableChannels.filter((channel) => channel.name !== selectedChannel.name);
+			setAvailableChannels(updatedAvailableChannels);
 		}
 		setEnteredChannelPass('');
 	};
@@ -597,7 +604,7 @@ const ChannelsPage: React.FC = () => {
 				>
 					Cancel
 				</Button>
-				<Button onClick={handleChannelPasswordSubmit}>Submit</Button>
+				<Button onClick={handleAvailableChannelPasswordSubmit}>Submit</Button>
 			</DialogActions>
 		  </Dialog>
 		</Stack>

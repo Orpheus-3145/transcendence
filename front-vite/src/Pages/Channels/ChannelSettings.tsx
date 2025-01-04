@@ -83,7 +83,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 		//--> CALL TO BACKEND <-- //
 		console.log("'Delete Channel' clicked!");
 		if (selectedChannel.settings.owner === 'MYSELF') {
-			const updatedChannels = chatProps.chatRooms.filter((chat: ChatRoom) => chat.name !== selectedChannel.name);
+			const updatedChannels = chatProps.chatRooms.filter((chat) => chat.name !== selectedChannel.name);
 			setChatProps({...chatProps, chatRooms: updatedChannels});
 			setSelectedChannel(null);
 		}
