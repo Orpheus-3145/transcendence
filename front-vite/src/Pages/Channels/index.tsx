@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Chat as ChatIcon } from '@mui/icons-material';
 import { SettingsModal } from './ChannelSettings';
@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SportsEsportsRoundedIcon from '@mui/icons-material/SportsEsportsRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { styled } from '@mui/system';
 import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as LogoutIcon, Login as LoginIcon, VideogameAsset as GameIcon} from '@mui/icons-material';
 import { timeStamp } from 'console';
@@ -20,9 +21,12 @@ interface ChannelTypeEvent {
 }
 
 const ChannelsPage: React.FC = () => {
+	
 	const theme = useTheme();
 	const navigate = useNavigate();
   
+	
+
 	const [channelName, setChannelName] = useState('');
 	const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
@@ -58,6 +62,7 @@ const ChannelsPage: React.FC = () => {
 	const {chatProps, setChatProps} = useChatContext();
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [selectedChannel, setSelectedChannel] = useState<ChatRoom | null>(null);
+	const [selectedAvailableChannel, setSelectedAvailableChannel] = useState<ChatRoom | null>(null);
 	const [newChannelSettings, setNewChannelSettings] = useState<ChatSettings>({
 		icon: <PersonAddIcon />,
 		type: 'public',
@@ -110,6 +115,13 @@ const ChannelsPage: React.FC = () => {
 		},
 	]);
   
+	useEffect(() => {
+		if (selectedAvailableChannel &&
+			selectedAvailableChannel.settings.type === 'public') {
+			moveSelectedChToJoinedCh();
+		}
+	}, [selectedAvailableChannel]);
+
 	// Separate available and joined channels
 	// const availableChannels = chatProps.chatRooms.slice(0, 3); // Example for available channels
 	// const joinedChannels = chatProps.chatRooms.slice(3); // Example for joined channels (you can adjust this logic)
@@ -161,22 +173,29 @@ const ChannelsPage: React.FC = () => {
 	  
 	};
 
-	const handleAvailableChannelClick = (channel: ChatRoom) => {
+
+
+	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
+		event.stopPropagation();
+		// event.preventDefault();
 		console.log('Available channel clicked!');
-		setSelectedChannel(channel);
+		setSelectedAvailableChannel(channel);
 		setIsSettingsView(false);
 	  	setIsAddingChannel(false);
 		if (channel.settings.type === 'password') {
 			setIsPasswordModal(true);
 		}
+		//  else {
+		// 	moveSelectedChToJoinedCh();
+		// }
+
 	};
   
 	const handleSettingsClick = (event: React.MouseEvent, channel: ChatRoom) => {
 	  event.stopPropagation(); // Prevent triggering the channel click
 	  setSelectedChannel(channel);
-	//   setSettingsOpen(true);
-	  setIsSettingsView(true);
 	  setIsAddingChannel(false);
+	  setIsSettingsView(true);
 	};
 
 	const handleSendGameInvite = (event: React.MouseEvent) => {
@@ -220,21 +239,35 @@ const ChannelsPage: React.FC = () => {
 		}
 	};
 
+	const moveSelectedChToJoinedCh = () => {
+		if (!selectedAvailableChannel)
+			return;
+		setIsPasswordModal(false);
+		
+		const updatedChannel = { ...selectedAvailableChannel }; 
+		
+		setChatProps((prevState) => ({
+		  ...prevState,
+		  chatRooms: [...prevState.chatRooms, updatedChannel],
+		}));
+		
+		setAvailableChannels((prevState) => 
+		  prevState.filter((channel) => channel.name !== updatedChannel.name)
+		);
+		
+		setSelectedChannel(null);
+		
+	  };
+	  
+
 	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
 		event.preventDefault();
 
-		if (enteredChannelPass !== selectedChannel?.settings.password) {
+		if (enteredChannelPass !== selectedAvailableChannel?.settings.password) {
 			alert("Incorrect password!");
 		} else {
 			// Move the channel to the joined channels secion //
-			setIsPasswordModal(false);
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: [...prevState.chatRooms, selectedChannel],
-			}));
-
-			const updatedAvailableChannels = availableChannels.filter((channel) => channel.name !== selectedChannel.name);
-			setAvailableChannels(updatedAvailableChannels);
+			moveSelectedChToJoinedCh();
 		}
 		setEnteredChannelPass('');
 	};
@@ -254,7 +287,7 @@ const ChannelsPage: React.FC = () => {
 		  justifyContent={'space-between'}
 		  alignItems={'center'}
 		  textAlign={'center'}
-		  onClick={() => handleChannelClick(channel)}
+		  onClick={() => {handleChannelClick(channel)}}
 		//   height={'3em'}
 		//   minWidth={'218px'}
 		  sx={{
@@ -271,7 +304,7 @@ const ChannelsPage: React.FC = () => {
 		>
 		  <GroupIcon sx={{ width: '10%' }} />
 		  <Typography noWrap sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-			{channel.name}
+			{channel?.name}
 		  </Typography>
 		  <IconButton
 			onClick={(event: React.MouseEvent) => handleSettingsClick(event, channel)}
@@ -291,10 +324,10 @@ const ChannelsPage: React.FC = () => {
 			  paddingX={'0.5em'}
 			  bgcolor={theme.palette.primary.main}
 			  height={'2em'}
-			//   justifyContent={'space-between'}
+			  justifyContent={'space-between'}
 			  alignItems={'center'}
 			  textAlign={'center'}
-			  onClick={() => handleAvailableChannelClick(channel)}
+			//   onClick={() => handleAvailableChannelClick(channel)}
 			//   height={'3em'}
 			//   minWidth={'218px'}
 			  sx={{
@@ -313,6 +346,12 @@ const ChannelsPage: React.FC = () => {
 			  <Typography noWrap sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
 				{channel.name}
 			  </Typography>
+			  <IconButton
+					onClick={(event: React.MouseEvent) => handleAvailableChannelClick(event, channel)}
+					sx={{  }}
+		  	>
+				<AddRoundedIcon />
+		 	 </IconButton>
 			</Stack>
 		  );
 	};
@@ -372,7 +411,7 @@ const ChannelsPage: React.FC = () => {
 	const renderChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
 		{channels.map((channel) => (
-			<ChannelLine key={channel.name} channel={channel} />
+			<ChannelLine key={channel?.name} channel={channel} />
 		))}
 	  </Stack>
 	);
@@ -381,7 +420,7 @@ const ChannelsPage: React.FC = () => {
 		<Stack gap={1}>
 		{channels.map((channel) => (
 			channel.settings.type !== 'private' && 
-			<AvailableChannelLine key={channel.name} channel={channel} />
+			<AvailableChannelLine key={channel?.name} channel={channel} />
 		))}
 	  </Stack>
 	);
@@ -600,6 +639,7 @@ const ChannelsPage: React.FC = () => {
 					onClick={() => {
 						setIsPasswordModal(false);
 						setEnteredChannelPass('');
+						setSelectedAvailableChannel(null);
 					}}
 				>
 					Cancel
