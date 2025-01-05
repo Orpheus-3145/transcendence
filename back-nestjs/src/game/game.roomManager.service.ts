@@ -4,72 +4,83 @@ import { Server, Socket } from 'socket.io';
 import SimulationService from './game.simulation.service';
 import { GameMode, PaddleDirection } from './game.types';
 import AppLoggerService from 'src/log/log.service';
-import SimulationException from '../errors/SimulationException';
+import GameException from '../errors/GameException';
 
 
 @Injectable()
 export class RoomManagerService {
+
 	private rooms: Map<string, SimulationService> = new Map();
 
-	constructor(private logger: AppLoggerService) {
+	constructor(public logger: AppLoggerService) {
 
     	this.logger.setContext(RoomManagerService.name);
+			this.logger.setLogLevels(['log', 'debug', 'warn', 'error', 'fatal'])
 	};
 
 	createRoom(sessionToken: string, mode: GameMode): void {
 
-		if (this.rooms.has(sessionToken))
-			return;
-			// throw new SimulationException(`Internal - room with ID ${sessionToken} already exists`)
-
-		this.logger.log(`creating room with sessionToken: ${sessionToken}`);
-		this.rooms.set(sessionToken, new SimulationService(mode)); // create a new session (as instance of a service) in the rooms array 
-
-		// const room = this.rooms.get(sessionToken);
-		// room.setInitData(sessionToken, mode) // set init data in the game service
-		// if (room.isWaiting() === false) // do the game init stuff here
-		// 	room.startWaiting();
+		this._setRoom(sessionToken, mode);
+		
+		this.logger.log(`creating room with sessionToken: ${sessionToken} mode: ${mode}`);
 	}
 
-	// addNewRoom(sessionToken: string, mode: GameMode): void {
+	dropRoom(sessionToken: string, trace: string): void {
 
-	// 	if (this.rooms.has(sessionToken))
-	// 		throw new SimulationException(`Internal - room with ID ${sessionToken} already exists`)
+		this._getRoom(sessionToken).interruptGame(trace);
+		this._deleteRoom(sessionToken);
 
-	// 	this.logger.log(`creating room with ID ${sessionToken}`);
-	// 	this.rooms.set(sessionToken, new SimulationService(mode)); // create a new session (as instance of a service) in the rooms array 
-
-	// 	// const room = this.rooms.get(sessionToken);
-	// 	// // room.setInitData(sessionToken, mode) // set init data in the game service
-	// 	// room.setMode(mode)
-	// 	// if (room.isWaiting() === false) // do the game init stuff here
-	// 	// 	room.startWaiting();
-	// }
+		this.logger.log(`session [${sessionToken}] - removing room, trace: ${trace}`);
+	}
 
 	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
-		const room = this.rooms.get(sessionToken);
-		if (!room)
-			throw new SimulationException(`Internal - error adding player to room, with sessionToken ${sessionToken} not found`)
 		
-		room.addPlayer(client, playerId, nameNick);
+		this._getRoom(sessionToken).addPlayer(client, playerId, nameNick);
+		
+		this.logger.debug(`session [${sessionToken}] - player ${nameNick} [id client ${client.id}] added to game`);
 	}
 
 	// When someone disconnets from the socket
 	handleDisconnect(client: Socket): void {
+		
 		for (const [sessionToken, simulationService] of this.rooms.entries()) {
 			if (simulationService.checkClientId(client.id)) {
+
 				simulationService.handleDisconnect(client);
-				this.rooms.delete(sessionToken); // Cleanup room
+				this._deleteRoom(sessionToken); // Cleanup room
+				
 				break;
 			}
 		}
-		this.logger.log(`Received message that player left`);
+		// this.logger.log(`Received message that player left`);
 	}
 
 	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection,) {
-		const simulationService = this.rooms.get(sessionToken);
 
-		if (simulationService)
-			simulationService.movePaddle(clientId, data)
+		this._getRoom(sessionToken).movePaddle(clientId, data)
+		this.logger.debug(`session [${sessionToken}] - update from client ${clientId} , move '${data}'`);
+	}
+
+	_getRoom(sessionToken: string): SimulationService {
+		
+		const room = this.rooms.get(sessionToken);
+		if (!room)
+			throw new GameException(`Internal - room with ID ${sessionToken} not found`)
+
+		return (room);
+	}
+
+	_setRoom(sessionToken: string, mode: GameMode, notOverWrite = true): void {
+
+		if (notOverWrite && this.rooms.get(sessionToken))
+			throw new GameException(`Internal - room with ID ${sessionToken} already exists`)
+		
+		// create a new session (as instance of a service) in the rooms array 
+		this.rooms.set(sessionToken, new SimulationService(sessionToken, mode, this.logger));
+	}
+
+	_deleteRoom(sessionToken: string): void {
+
+		this.rooms.delete(sessionToken);
 	}
 }

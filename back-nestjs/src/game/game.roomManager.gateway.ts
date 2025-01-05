@@ -8,15 +8,15 @@ import {
 	OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseFilters } from '@nestjs/common';
+import { UseFilters, UseInterceptors } from '@nestjs/common';
 
 import { PaddleDirection, GameMode } from './game.types';
-import InitDataDTO from 'src/dto/initData.dto';
+// import InitDataDTO from 'src/dto/initData.dto';
 import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import { RoomManagerService  } from './game.roomManager.service'; // logic for managing the rooms
-import CustomExceptionFilter from '../errors/CustomExceptionFilter';
-
+import GameExceptionFilter from '../errors/GameExceptionFilter';
+import LoggerInterceptor from '../log/log.interceptor'
 
 @WebSocketGateway(
 { 
@@ -28,8 +28,9 @@ import CustomExceptionFilter from '../errors/CustomExceptionFilter';
   },
 	transports: ['websocket'],
 })
-@UseFilters(CustomExceptionFilter)
-export default class SimulationGateway implements OnGatewayConnection, OnGatewayDisconnect{
+@UseFilters(GameExceptionFilter)
+// @UseInterceptors(LoggerInterceptor)
+export default class RoomManagerGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	@WebSocketServer()
 	server: Server;
@@ -45,12 +46,12 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 	};
 
 	// Potential dead-end: can there be a situation where the playerData is sent before initData? This should not happen
-	@SubscribeMessage('initData')
-	setInitData(@MessageBody() data: InitDataDTO): void {
-		this.roomManager.createRoom(data.sessionToken, data.mode);
+	@SubscribeMessage('createRoomSinglePlayer')
+	setInitData(@MessageBody() data: {sessionToken: string}): void {
+		this.roomManager.createRoom(data.sessionToken, GameMode.single);
 	};
 
-	@SubscribeMessage('playerLeft')
+	@SubscribeMessage('playerLeftGame')
 	handlePlayerLeft(@ConnectedSocket() client: Socket): void {
 		this.roomManager.handleDisconnect(client);
 	};
@@ -61,7 +62,7 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
 	};
 
-	@SubscribeMessage('playerMove')
+	@SubscribeMessage('playerMovedPaddle')
 	movePaddle( @MessageBody() data: PaddleDirectionDTO,
 							@ConnectedSocket() client: Socket): void {
 		this.roomManager.movePaddle(data.sessionToken, client.id, data.direction);

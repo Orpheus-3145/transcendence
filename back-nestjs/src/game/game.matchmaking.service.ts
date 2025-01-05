@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import AppLoggerService from 'src/log/log.service';
+import { RoomManagerService } from './game.roomManager.service';
+import { GameMode } from './game.types';
 
 
 @Injectable()
@@ -9,7 +11,10 @@ export default class MatchmakingService {
 	private _waitingPlayersIP: Array<Socket> = new Array();
 	private _checker = null;
 
-	constructor(private logger: AppLoggerService) {
+	constructor(
+		private logger: AppLoggerService,
+		private roomManager: RoomManagerService,
+	) {
 
 		this.logger.setContext(MatchmakingService.name);
 	};
@@ -17,23 +22,11 @@ export default class MatchmakingService {
 	addPlayerToQueue(clientSocket: Socket): void {
 
 		this._waitingPlayersIP.push(clientSocket);
-		this.startCheck()
-
-		this.logger.log(`client ${clientSocket.handshake.address} joined queue`);
-	};
-
-	startCheck(): void {
-
+		
 		if (this._checker === null)
 			this._checker = setInterval(() => this.checkNewGame(), 1000);
-	};
 
-	stopCheck(): void {
-
-		if (this._waitingPlayersIP.length === 0) {
-			clearInterval(this._checker);
-			this._checker = null;
-		}
+		this.logger.debug(`client ${clientSocket.handshake.address} joined the queue`);
 	};
 
 	removePlayerFromQueue(leaver: Socket) {
@@ -48,13 +41,14 @@ export default class MatchmakingService {
 			const currentPlayer: Socket = this._waitingPlayersIP.shift();
 
 			if (leaver.id == currentPlayer.id)
-				this.logger.log(`client ${currentPlayer.handshake.address} left queue`);
+				this.logger.debug(`client ${currentPlayer.handshake.address} left the queue`);
 			else
 				tmpWaitingPlayers.unshift(currentPlayer);
 		}
-
 		this._waitingPlayersIP = tmpWaitingPlayers;
-		this.stopCheck();
+		
+		clearInterval(this._checker);
+		this._checker = null;
 	};
 
 	checkNewGame(): void {
@@ -68,9 +62,13 @@ export default class MatchmakingService {
 			player1.emit('ready', sessionToken);  // message player1
 			player2.emit('ready', sessionToken);  // message player2
 
-			this.stopCheck();
-
-			this.logger.log(`starting new multiplayer match between ${player1.id} and ${player2.id}`);
+			this.logger.log(`found players ${player1.id}, ${player2.id} - sessionToken: ${sessionToken}`);
+			this.roomManager.createRoom(sessionToken, GameMode.multi);
+		}
+		
+		if (this._waitingPlayersIP.length === 0) {
+			clearInterval(this._checker);
+			this._checker = null;
 		}
 	};
 }

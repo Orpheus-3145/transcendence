@@ -9,7 +9,7 @@ import { UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 import MatchmakingService from './game.matchmaking.service';
-import CustomExceptionFilter from '../errors/CustomExceptionFilter';
+import GameExceptionFilter from '../errors/GameExceptionFilter';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_MATCHMAKING,
@@ -20,7 +20,7 @@ import CustomExceptionFilter from '../errors/CustomExceptionFilter';
 	},
 	transports: ['websocket'],
 })
-@UseFilters(CustomExceptionFilter)
+@UseFilters(GameExceptionFilter)
 export default class MatchmakingGateway implements OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;

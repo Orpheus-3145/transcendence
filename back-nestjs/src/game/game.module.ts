@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule} from '@nestjs/config';
+// import { APP_FILTER } from '@nestjs/core';
 
 import MatchmakingGateway from './game.matchmaking.gateway';
-import SimulationGateway from './game.simulation.gateway';
+import RoomManagerGateway from './game.roomManager.gateway';
 import MatchmakingService from './game.matchmaking.service';
-import SimulationService from './game.simulation.service';
+// import SimulationService from './game.simulation.service';
 import { RoomManagerService } from './game.roomManager.service';
+import GameExceptionFilter from 'src/errors/GameExceptionFilter';
 import AppLoggerModule from 'src/log/log.module';
 
 @Module({
@@ -13,8 +15,8 @@ import AppLoggerModule from 'src/log/log.module';
             AppLoggerModule],
   providers: [MatchmakingGateway,
               MatchmakingService,
-              SimulationGateway,
-              SimulationService,
-			        RoomManagerService],
+              RoomManagerGateway,
+			        RoomManagerService,
+            ],
 })
-export default class MatchmakingModule {}
+export default class GameModule {}

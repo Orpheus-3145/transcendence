@@ -7,7 +7,7 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 
-export default class SimulationException extends HttpException {
+export default class GameException extends HttpException {
 
   constructor(trace: string, code?: number) {
 
