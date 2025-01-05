@@ -22,11 +22,15 @@ interface ChannelTypeEvent {
 
 const ChannelsPage: React.FC = () => {
 	
+	const myself: UserProps =  {
+		name: 'raanghel',
+		role: 'Guest',
+		email: 'raanghel@student.codam.nl',
+		password: '',
+		icon: React.ReactElement ,
+	};
 	const theme = useTheme();
 	const navigate = useNavigate();
-  
-	
-
 	const [channelName, setChannelName] = useState('');
 	const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
@@ -56,7 +60,6 @@ const ChannelsPage: React.FC = () => {
 		},
 	]);
 	
-
 	// const {newMessage, setNewMessage} = useChatContext();
 	const [newMessage, setNewMessage] = useState('');
 	const {chatProps, setChatProps} = useChatContext();
@@ -80,7 +83,7 @@ const ChannelsPage: React.FC = () => {
 				type: 'public',
 				password: null,
 				users: [],
-				owner: 'MYSELF',
+				owner: 'Groot',
 			  },
 		},
 		{
@@ -92,7 +95,7 @@ const ChannelsPage: React.FC = () => {
 				type: 'private',
 				password: null,
 				users: [],
-				owner: 'MYSELF',
+				owner: 'Cap',
 			  },
 		},
 		{
@@ -244,7 +247,14 @@ const ChannelsPage: React.FC = () => {
 			return;
 		setIsPasswordModal(false);
 		
-		const updatedChannel = { ...selectedAvailableChannel }; 
+		// const updatedChannel = { ...selectedAvailableChannel }; 
+		const updatedChannel: ChatRoom = {
+			...selectedAvailableChannel,
+			settings: {
+				...selectedAvailableChannel.settings,
+				users: [...selectedAvailableChannel.settings.users, myself],
+			},
+		}; 
 		
 		setChatProps((prevState) => ({
 		  ...prevState,

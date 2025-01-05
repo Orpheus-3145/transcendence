@@ -28,7 +28,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 	const [chatProps, setChatProps] = useState<ChatProps>({
 		chatRooms: [
 		  {
-			name: 'test chaaaaaannel',
+			name: 'public_channel',
 			icon: <GroupIcon />,
 			messages: [
 			  {
@@ -66,7 +66,7 @@ export const ChatProvider: React.FC = ({ children }) => {
   
 				  },
 				  {
-					  name: 'Hulk',
+					  name: 'raanghel',
 					  role: 'Guest',
 					  email: 'hulk@avengers.com',
 					  password: '',
@@ -74,9 +74,111 @@ export const ChatProvider: React.FC = ({ children }) => {
   
 				  },
 			  ],
-			  owner: 'MYSELF',
+			  owner: 'Hulk',
 			},
 		  },
+		  {
+			name: 'private_channel',
+			icon: <GroupIcon />,
+			messages: [
+			  {
+				message: <Typography>Yooooooo!</Typography>,
+				user: <Typography>User1</Typography>,
+				userPP: <Typography>img</Typography>,
+				timestamp: <Typography>20:00</Typography>,
+			  },
+			  {
+				message: <Typography>Yoooooooo!</Typography>,
+				user: <Typography>User2</Typography>,
+				userPP: <Typography>img</Typography>,
+				timestamp: <Typography>20:03</Typography>,
+			  },
+			],
+			settings: {
+			  icon: <PersonAddIcon />,
+			  type: 'private',
+			  password: null,
+			  users: [
+				  {
+					  name: 'raanghel',
+					  role: 'Guest',
+					  email: 'iamgroot@avengers.com',
+					  password: '',
+					  icon: React.ReactElement ,
+  
+				  },
+				  {
+					name: 'Cap',
+					role: 'Admin',
+					email: 'cap@avengers.com',
+					password: '',
+					icon: React.ReactElement ,
+
+				},
+				{
+					name: 'raanghel',
+					role: 'Guest',
+					email: 'hulk@avengers.com',
+					password: '',
+					icon: React.ReactElement ,
+
+				},
+			  ],
+			  owner: 'Cap',
+			},
+		  },
+		  {
+			name: 'password_channel',
+			icon: <GroupIcon />,
+			messages: [
+			  {
+				message: <Typography>egegeggeg!</Typography>,
+				user: <Typography>User1</Typography>,
+				userPP: <Typography>img</Typography>,
+				timestamp: <Typography>20:00</Typography>,
+			  },
+			  {
+				message: <Typography>egwegwegeg!</Typography>,
+				user: <Typography>User2</Typography>,
+				userPP: <Typography>img</Typography>,
+				timestamp: <Typography>20:03</Typography>,
+			  },
+			],
+			settings: {
+			  icon: <PersonAddIcon />,
+			  type: 'password',
+			  password: 'pass',
+			  users: [
+				  {
+					  name: 'Hulk',
+					  role: 'Guest',
+					  email: 'iamgroot@avengers.com',
+					  password: '',
+					  icon: React.ReactElement ,
+  
+				  },
+				  {
+					name: 'Cap',
+					role: 'Admin',
+					email: 'cap@avengers.com',
+					password: '',
+					icon: React.ReactElement ,
+
+				},
+				{
+					name: 'raanghel',
+					role: 'Admin',
+					email: 'hulk@avengers.com',
+					password: '',
+					icon: React.ReactElement ,
+
+				},
+			  ],
+			  owner: 'raanghel',
+			},
+		  },
+
+
 		],
 		chatStatus: ChatStatus.ChannelsPage,
 		selected: null,
