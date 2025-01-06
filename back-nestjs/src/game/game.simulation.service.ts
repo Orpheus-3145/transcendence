@@ -95,10 +95,15 @@ export default class SimulationService {
 
 	engineIteration(): void {
 
-		if (this.engineRunning === false)
-			throw new GameException('Internal - simulation is not running');
+		if (this.engineRunning === false) {
+
+			this.interruptGame('Internal - simulation is not running');
+			return;
+		}
 
 		this._updateBall();
+		if (this.mode === GameTypes.GameMode.single)
+			this._updateBotPaddle();
 			
 		if (this.gameOver) {
 			
@@ -107,13 +112,8 @@ export default class SimulationService {
 			else
 				this.endGame(this.player1);
 		}
-		else {
-			
-			if (this.mode === GameTypes.GameMode.single)
-				this._updateBotPaddle();
-	
+		else
 			this._sendUpdateToPlayers('gameState');
-		}
 	}
 
 	addPlayer(client: Socket, playerId: number, nameNick: string): void {
@@ -300,18 +300,18 @@ export default class SimulationService {
 		
 		if (this.engineRunning === false)
 			return;
-		
+
 		if (this.player1 && this.player1.clientSocket.id === client.id) {
-			
+
 			this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`);
-			
+
 			if (this.mode === GameTypes.GameMode.multi)
 				this._sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted\nPlayer ${this.player1.nameNick} left the game`);
 		}
 		else if (this.player2 && this.player2.clientSocket.id === client.id) {
 
 			this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`);
-			
+
 			if (this.mode === GameTypes.GameMode.multi)
 				this._sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
 		}
@@ -348,7 +348,7 @@ export default class SimulationService {
 		// this.player1.clientSocket.disconnect(true);
 		
 		if (this.mode === GameTypes.GameMode.multi) {	
-			
+
 			this._sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game error - ${trace}`);
 			// this.player2.clientSocket.disconnect(true);
 		}

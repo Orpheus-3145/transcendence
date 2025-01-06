@@ -10,7 +10,6 @@ import {
 import GameException from './GameException';
 import { RoomManagerService } from 'src/game/game.roomManager.service';
 
-// @Catch() // Cattura tutte le eccezioni
 @Catch(GameException)
 export default class GameExceptionFilter implements ExceptionFilter {
 	constructor(private roomManager: RoomManagerService) {}

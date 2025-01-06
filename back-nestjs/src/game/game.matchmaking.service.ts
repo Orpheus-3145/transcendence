@@ -22,7 +22,7 @@ export default class MatchmakingService {
 	addPlayerToQueue(clientSocket: Socket): void {
 
 		this._waitingPlayersIP.push(clientSocket);
-		
+
 		if (this._checker === null)
 			this._checker = setInterval(() => this.checkNewGame(), 1000);
 
@@ -65,7 +65,7 @@ export default class MatchmakingService {
 			this.logger.log(`found players ${player1.id}, ${player2.id} - sessionToken: ${sessionToken}`);
 			this.roomManager.createRoom(sessionToken, GameMode.multi);
 		}
-		
+
 		if (this._waitingPlayersIP.length === 0) {
 			clearInterval(this._checker);
 			this._checker = null;

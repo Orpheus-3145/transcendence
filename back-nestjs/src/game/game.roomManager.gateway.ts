@@ -38,14 +38,12 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	// Keeps a Map of SimulationService instances, one per game simulation
 	constructor(private roomManager: RoomManagerService) {}
 	
-	// Called by default everytime a client connects to the websocket
 	handleConnection(): void {};
 
 	handleDisconnect(@ConnectedSocket() client: Socket): void { // Called by default everytime a client disconnects to the websocket
 		this.roomManager.handleDisconnect(client); 
 	};
 
-	// Potential dead-end: can there be a situation where the playerData is sent before initData? This should not happen
 	@SubscribeMessage('createRoomSinglePlayer')
 	setInitData(@MessageBody() data: {sessionToken: string}): void {
 		this.roomManager.createRoom(data.sessionToken, GameMode.single);

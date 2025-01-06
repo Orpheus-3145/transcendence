@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 
 import SimulationService from './game.simulation.service';
 import { GameMode, PaddleDirection } from './game.types';
@@ -15,7 +15,7 @@ export class RoomManagerService {
 	constructor(public logger: AppLoggerService) {
 
     	this.logger.setContext(RoomManagerService.name);
-			this.logger.setLogLevels(['log', 'debug', 'warn', 'error', 'fatal'])
+			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal'])
 	};
 
 	createRoom(sessionToken: string, mode: GameMode): void {
@@ -40,7 +40,6 @@ export class RoomManagerService {
 		this.logger.debug(`session [${sessionToken}] - player ${nameNick} [id client ${client.id}] added to game`);
 	}
 
-	// When someone disconnets from the socket
 	handleDisconnect(client: Socket): void {
 		
 		for (const [sessionToken, simulationService] of this.rooms.entries()) {
@@ -52,7 +51,6 @@ export class RoomManagerService {
 				break;
 			}
 		}
-		// this.logger.log(`Received message that player left`);
 	}
 
 	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection,) {
