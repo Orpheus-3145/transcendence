@@ -4,6 +4,7 @@ import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons
 import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl} from '@mui/material';
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
+import { myself, userIsAdmin } from '.';
 
 interface SettingsModalProps {
     open: boolean;
@@ -89,13 +90,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 		}
 	}
 
+	const handleLeaveChannel = () => {
+
+	};
+
 
 	return (
 		<Modal open={open} onClose={onClose}>
 		  <Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
-			<Typography variant="h6">Channel Settings</Typography>
+			<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
 			<Divider sx={{ my: 2 }} />
-	
+			{(selectedChannel.settings.owner === myself.name || userIsAdmin(myself.name, selectedChannel)) && (
+			<>
 			{/* Privacy Options */}
 			<Stack direction="row" spacing={2}>
 			  <Button variant={settings?.type === 'public' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('public', null)}>Public</Button>
@@ -131,17 +137,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
   			  >
   			    Add Friend
   			  </Button>
-			  {(selectedChannel.settings.owner === 'MYSELF') &&
+			  {(selectedChannel.settings.owner === myself.name) &&
 				<Button
 					variant="contained"
 					onClick={handleDeleteChannel}
-					sx={{ mt: 1, color: 'rgb(247, 77, 57)' }}
-				>
+					sx={{ mt: 1, minWidth: '155px', color: 'rgb(247, 77, 57)' }}
+					>
 					Delete Channel
 				</Button>
-
 			  }
+			  {(selectedChannel.settings.owner !== myself.name) &&
+				<Button
+					variant="contained"
+					onClick={handleLeaveChannel}
+					sx={{ mt: 1, marginLeft: 'auto', minWidth: '155px' }}
+				  >
+					Leave Channel
+				  </Button>
+				}	
 		  	</Box>
+			  {(selectedChannel.settings.owner === myself.name) &&
+				<Box sx={{display: 'flex'}}>
+				<Button
+					variant="contained"
+					onClick={handleLeaveChannel}
+					sx={{ mt: 1, marginLeft: 'auto', minWidth: '155px' }}
+				>
+					Leave Channel
+				</Button>
+
+				</Box>
+			}
+			</>
+			)}
 			{/* Friend List */}
 			<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
 				<Stack spacing={1} mt={2}>
@@ -157,6 +185,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 						</Button>
 						{/* <Button variant="outlined" color="error" onClick={() => handleRemoveFriend(user.name)}>Remove</Button> */}
 						{/* ONLY RENDER IF ROLE IS ADMIN */}
+
 						<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(user.name)}>Block</Button>

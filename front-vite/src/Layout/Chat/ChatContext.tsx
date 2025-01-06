@@ -100,7 +100,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 			  password: null,
 			  users: [
 				  {
-					  name: 'raanghel',
+					  name: 'Groot',
 					  role: 'Guest',
 					  email: 'iamgroot@avengers.com',
 					  password: '',
@@ -117,7 +117,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 				},
 				{
 					name: 'raanghel',
-					role: 'Guest',
+					role: 'Admin',
 					email: 'hulk@avengers.com',
 					password: '',
 					icon: React.ReactElement ,

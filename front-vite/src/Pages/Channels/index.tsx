@@ -20,15 +20,26 @@ interface ChannelTypeEvent {
   clickEvent: () => void;
 }
 
+export const myself: UserProps =  {
+	name: 'raanghel',
+	role: 'Guest',
+	email: 'raanghel@student.codam.nl',
+	password: '',
+	icon: React.ReactElement ,
+};
+
+export const userIsAdmin = (userName: string, channel: ChatRoom): boolean => {
+	const found = channel.settings.users.find((user) => user.name === userName);
+	return found?.role === 'Admin';
+};
+
+export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
+	const found = channel.settings.users.find((user) => user.name === userName);
+	return found ? true : false;
+};
+
 const ChannelsPage: React.FC = () => {
 	
-	const myself: UserProps =  {
-		name: 'raanghel',
-		role: 'Guest',
-		email: 'raanghel@student.codam.nl',
-		password: '',
-		icon: React.ReactElement ,
-	};
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const [channelName, setChannelName] = useState('');
@@ -145,8 +156,8 @@ const ChannelsPage: React.FC = () => {
 				settings: {
 				  type: 'public',
 				  password: null,
-				  users: [],
-				  owner: 'MYSELF', //--> CALL TO BACKEND <-- //
+				  users: [{...myself, role: 'admin'}],
+				  owner: myself.name, //--> CALL TO BACKEND <-- //
 				},
 			  },
 			],
@@ -267,7 +278,7 @@ const ChannelsPage: React.FC = () => {
 		
 		setSelectedChannel(null);
 		
-	  };
+	};
 	  
 
 	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
@@ -281,6 +292,9 @@ const ChannelsPage: React.FC = () => {
 		}
 		setEnteredChannelPass('');
 	};
+
+
+
 
 	const MessageInput: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
 		console.log('d');
@@ -418,7 +432,7 @@ const ChannelsPage: React.FC = () => {
 	);
 
 	//---Function to render the list of channels---//
-	const renderChannels = (channels: ChatRoom[]) => (
+	const renderJoinedChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
 		{channels.map((channel) => (
 			<ChannelLine key={channel?.name} channel={channel} />
@@ -429,7 +443,7 @@ const ChannelsPage: React.FC = () => {
 	const renderAvailableChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
 		{channels.map((channel) => (
-			channel.settings.type !== 'private' && 
+			(channel.settings.type !== 'private') && 
 			<AvailableChannelLine key={channel?.name} channel={channel} />
 		))}
 	  </Stack>
@@ -465,7 +479,7 @@ const ChannelsPage: React.FC = () => {
 					Joined Channels
 				</Typography>
 				{/* --> CALL TO BACKEND <-- */}
-				{renderChannels(chatProps.chatRooms)} 
+				{renderJoinedChannels(chatProps.chatRooms)} 
 			</Box>
 			<Divider/>
 			<Box sx={{ marginBottom: 1}}>
