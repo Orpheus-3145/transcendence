@@ -106,7 +106,7 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 	}
 }
 
-export async function setNewNickname(username:string, nickname:string): Promise<Number> {
+export async function setNewNickname(username:string, nickname:string): Promise<string> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick', {
 		method: "POST",
 		headers: {
@@ -116,9 +116,13 @@ export async function setNewNickname(username:string, nickname:string): Promise<
 	});
 
 	const response = await fetch(request)
-	if (response.status == 400)
-		return (-1);
-	return (1);
+		.then((x) => x.text())
+
+	var str: string = "";
+
+	if (response != "")
+		str = "Error: " + response;
+	return (str);
 }
 
 export async function fetchFriend(friend:string): Promise<User> {
@@ -157,9 +161,7 @@ export async function blockFriend(username:string, friend:string): Promise<void>
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/block/' + friend, {
 		method: "GET",
 	});
-	console.log("hdsa");
-	console.log(username);
-	console.log(friend);
+
 	const response = await fetch(request)
 	if (response.status == 404)
 		console.log("ERROR: FAILED TO BLOCK USER!");

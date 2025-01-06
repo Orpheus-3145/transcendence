@@ -38,7 +38,8 @@ const ProfilePage: React.FC = () => {
 	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
 	const [showMessage, setShowMessage] = useState(false);
-	const messageErrorNickname = "Invalid nickname! Maximum of 27 chars and only letters, numbers and spaces are allowed!";
+	// const messageErrorNickname = "Invalid nickname! Maximum of 27 chars and only letters, numbers and spaces are allowed!";
+	const [messageErrorNickname, setMessageErrorNickname] = useState<string>("");
 	const [profileImage, setProfileImage] = useState();
 	const [friendsList, setFriendsList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
@@ -539,7 +540,7 @@ const ProfilePage: React.FC = () => {
 		{
 			const result = await setNewNickname(userProfile.id, inputValue);
 	  
-			if (result === 1) 
+			if (result === "") 
 			{
 				userProfile.nameNick = inputValue;
 				setInputValue("");
@@ -548,6 +549,7 @@ const ProfilePage: React.FC = () => {
 			} 
 			else 
 			{
+				setMessageErrorNickname(result);
 				setShowMessage(true);
 			}
 		}
@@ -591,11 +593,11 @@ const ProfilePage: React.FC = () => {
 				{showMessage && (	
 					<Stack
 					sx={{
+						alignItems: "center",
 						position: 'relative',
 						color: 'red',
 						fontSize: '18px',
 						top: '-163px',
-						left: '200px',
 					}}
 					>
 						{messageErrorNickname}

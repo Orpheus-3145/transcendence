@@ -4,6 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/entities/notification.entity';
+import {User} from '../entities/user.entity'
 
 @Controller('users')
 export class UsersController {
@@ -29,15 +30,18 @@ export class UsersController {
 	}
 
 	@Post('/profile/:username/newnick')
-	async setNewNickname(@Param('username') username: string, @Body('newname') newname:string) 
+	async setNewNickname(@Param('username') username: string, @Body('newname') newname:string) : Promise<string>
 	{
 		if (newname.length == 0)
 		{
-			throw new HttpException('Bad Request', 400);
+			console.log("lenght is 0, add chars!");
+			return ("lenght is 0, add chars!");
 		}
 		if (newname.length > 27)
 		{
-			throw new HttpException('Bad Request', 400);
+			// throw new HttpException('Bad Request', 400);
+			console.log("Lenght is bigger then 27 chars, make it shorter!");
+			return ("lenght is bigger then 27 chars, make it shorter!");
 		}
 
 		let i = Number(0);
@@ -47,18 +51,41 @@ export class UsersController {
 			{
 				if (newname[i] != ' ')
 				{
-					throw new HttpException('Bad Request', 400);
+					console.log("only letters, numbers and spaces are allowed!");
+					return ("only letters, numbers and spaces are allowed!");
+					// throw new HttpException('Bad Request', 400);
 				}
 			}
 			i++;
 		}
+		i = 0;
+		while (i < newname.length)
+		{
+			if (newname[i] != ' ')
+			{
+				break ;
+			}
+			i++;
+		}
+		if (i == newname.length)
+		{	
+			console.log("Name needs atleast 1 letter or number!");
+			return ("name needs atleast 1 letter or number!");
+		}
 		var user = this.UserService.getUserId(username);
 		if (user == null)
 		{
-			throw new HttpException('Not Found', 404);
+			console.log("error");
+			return ("error");
+		}
+
+		var tmp: User | null = await this.UserService.findOneNick(newname);
+		if (tmp)
+		{
+			return ("name already exists!");
 		}
 		this.UserService.setNameNick(await user, newname);
-		throw new HttpException('Ok', 200);
+		return ("");
 	}
 
 	@Get('/profile/:username/friend/:id')

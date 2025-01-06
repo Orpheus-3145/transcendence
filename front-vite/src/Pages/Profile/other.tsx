@@ -416,6 +416,7 @@ const ProfilePageOther: React.FC = () => {
 					alignItems: 'center',
 					position: 'relative',
 					top: '-150px',
+					left:'10px',
 				}}
 			>
 				<Typography variant={'h2'}
@@ -559,9 +560,12 @@ const ProfilePageOther: React.FC = () => {
 	let InviteToGameIcon = () => 
 	{
 		var top = '-175px';
+		var topMessage = '-110px';
 		if (isFriend)
 		{
 			top = '-130px';
+			if (showMessageGR)
+				topMessage = '-67px';
 		}
 		if (showMessageFR || showMessageUserBlocked)
 		{
@@ -593,7 +597,7 @@ const ProfilePageOther: React.FC = () => {
 					position: 'relative',
 					color: 'green',
 					fontSize: '18px',
-					top: '-110px',
+					top: topMessage,
 					left: '445px',
 				}}
 				>
