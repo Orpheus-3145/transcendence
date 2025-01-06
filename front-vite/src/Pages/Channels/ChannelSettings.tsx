@@ -100,7 +100,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 		  <Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
 			<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
 			<Divider sx={{ my: 2 }} />
-			{(selectedChannel.settings.owner === myself.name || userIsAdmin(myself.name, selectedChannel)) && (
+			{(selectedChannel.settings.owner === myself.name) && (
 			<>
 			{/* Privacy Options */}
 			<Stack direction="row" spacing={2}>
@@ -137,6 +137,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
   			  >
   			    Add Friend
   			  </Button>
+
 			  {(selectedChannel.settings.owner === myself.name) &&
 				<Button
 					variant="contained"
@@ -146,50 +147,55 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 					Delete Channel
 				</Button>
 			  }
-			  {(selectedChannel.settings.owner !== myself.name) &&
-				<Button
-					variant="contained"
-					onClick={handleLeaveChannel}
-					sx={{ mt: 1, marginLeft: 'auto', minWidth: '155px' }}
-				  >
-					Leave Channel
-				  </Button>
-				}	
 		  	</Box>
-			  {(selectedChannel.settings.owner === myself.name) &&
-				<Box sx={{display: 'flex'}}>
-				<Button
-					variant="contained"
-					onClick={handleLeaveChannel}
-					sx={{ mt: 1, marginLeft: 'auto', minWidth: '155px' }}
-				>
-					Leave Channel
-				</Button>
-
-				</Box>
-			}
 			</>
+			)}
+			{(selectedChannel.settings.owner === myself.name) ? (
+				<Box sx={{display: 'flex'}}>
+					<Button
+						variant="contained"
+						onClick={handleLeaveChannel}
+						sx={{ mt: 1, marginLeft: 'auto', minWidth: '155px' }}
+						>
+						Leave Channel
+					</Button> 
+				</Box>) : (
+				<Box sx={{display: 'flex'}}>
+					<Button
+						variant="contained"
+						onClick={handleLeaveChannel}
+						sx={{ mt: 1, minWidth: '200px', mx: 'auto' }}
+					>
+						Leave Channel
+					</Button>
+				</Box>
 			)}
 			{/* Friend List */}
 			<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
 				<Stack spacing={1} mt={2}>
+				  <Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
+				  <Divider />
 				  {settings?.users.map(user => (
 					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
 					  <Typography sx={{whiteSpace: 'pre-line'}} >
 							{user.name.length > 10 ? user.name.slice(0, 9) + '...' : user.name}
-					  		{'\n'}{`(${user.role})`}
+					  		{(userIsAdmin(myself.name, selectedChannel) ||
+					  			selectedChannel.settings.owner === myself.name) ? 
+									'\n' :
+									' '}
+							{`(${user.role})`}
 					  </Typography>
+					  {(userIsAdmin(myself.name, selectedChannel) ||
+					  	selectedChannel.settings.owner === myself.name) && (
 					  <Stack direction="row" spacing={0.3}>
-						<Button variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
+						<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
 							{user.role === 'Guest' ? 'Make Admin' : 'Make Guest' }
 						</Button>
-						{/* <Button variant="outlined" color="error" onClick={() => handleRemoveFriend(user.name)}>Remove</Button> */}
-						{/* ONLY RENDER IF ROLE IS ADMIN */}
-
 						<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(user.name)}>Block</Button>
 					  </Stack>
+					)}
 					</Stack>
 				  ))}
 				</Stack>
