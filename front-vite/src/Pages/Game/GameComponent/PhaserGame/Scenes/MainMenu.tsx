@@ -75,7 +75,6 @@ export default class MainMenu extends Phaser.Scene {
 			this._extrasEnabled = !this._extrasEnabled;
 			toggleBtn.setText(this._extrasEnabled ? onText : offText);
 			toggleBtn.setStyle({ fill: this._extrasEnabled ? '#0f0' : '#fff' }); // Green for ON, White for OFF
-			this.sound.play('clickSound'); // Optional: play a sound on toggle
 		});
 
 		// Initial color based on default state

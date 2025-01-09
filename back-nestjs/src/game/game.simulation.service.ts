@@ -208,6 +208,7 @@ export default class SimulationService {
 		// Bounce off top and bottom walls
 		if (this.ball.y <= 0 || this.ball.y >= this.windowHeight) {
 			this.ball.dy = -this.ball.dy;
+			
 		}
 
 		// Collision detection with paddles
@@ -279,6 +280,7 @@ export default class SimulationService {
 		const randomDelta = this.randomDelta();
 		this.ball.dx = randomDelta.dx;
 		this.ball.dy = randomDelta.dy
+		this.ballSpeed = GAME_BALL.speed;
 	};
 
 	// Check collision of item
@@ -356,14 +358,13 @@ export default class SimulationService {
 	// Extras / Power Ups
 
 	startSpeedBallTimer(): void {
-    if (!this.extras) return; // Only enable if extras are active
+    // if (!this.extras) return; // Only enable if extras are active
 
     this.speedBallInterval = setInterval(() => {
-        if (!this.engineRunning) return;
+        // if (!this.engineRunning) return;
 
         this.spawnSpeedBall();
-    }, 1000 / 10); // Spawn every 10 seconds
-// 1000 / 30,
+    }, 10000);
 }
 
 spawnSpeedBall(): void {
@@ -374,14 +375,14 @@ spawnSpeedBall(): void {
     // Randomly determine where to spawn the speed ball on the X-axis (near the center)
 	// x: GAME.width / 2, y: GAME.height / 2
     const spawnX = GAME.width / 2
-    // const spawnY = Math.random() * (this.windowHeight - 50) + 25; // Random Y position within bounds
-	const spawnY = GAME.width / 2
-	const randomDelta = this.randomDelta();
+    const spawnY = Math.random() * (this.windowHeight - 50) + 25; // Random Y position within bounds
+	// const spawnY = GAME.width / 2
+	// const randomDelta = this.randomDelta();
 
     // this.speedBallPosition = { x: spawnX, y: spawnY, dx: Math.random() * 2 - 1, dy: Math.random() * 2 - 1 }; // Speed ball random direction
-	this.speedBallPosition = { x: spawnX, y: spawnY, dx: randomDelta.dx, dy: randomDelta.dy};
-    this.speedBallActive = true;
-
+	// this.speedBallPosition = { x: spawnX, y: spawnY, dx: randomDelta.dx, dy: randomDelta.dy};
+    this.speedBallPosition = { x: spawnX, y: spawnY, dx: -1, dy: 0};
+	this.speedBallActive = true;
 
     // Send the speed ball data to players
 };
@@ -389,8 +390,8 @@ spawnSpeedBall(): void {
 sendSpeedBallUpdate(): void {
     if (this.speedBallActive) {
         // Move the speed ball
-        this.speedBallPosition.x += this.speedBallPosition.dx * 2;
-        this.speedBallPosition.y += this.speedBallPosition.dy * 2;
+        this.speedBallPosition.x += this.speedBallPosition.dx * 5;
+        this.speedBallPosition.y += this.speedBallPosition.dy * 5;
         const speedBallData = {
             x: this.speedBallPosition.x,
             y: this.speedBallPosition.y,
@@ -410,6 +411,9 @@ sendSpeedBallUpdate(): void {
 		}
 		else if (rightPaddle != null) {
 			this.handleSpeedBallCollisionWithPaddle(this.player2, 2);
+		}
+		if (this.speedBallPosition.x <= 0 || this.speedBallPosition.x >= GAME.width){
+			this.deactivateSpeedBall()
 		}
     }
 }
@@ -439,9 +443,6 @@ handleSpeedBallCollisionWithPaddle(player: GameTypes.Player, player_no: number):
 	if (player_no == 2 && this.mode == GameTypes.GameMode.multi)
 		player.clientSocket.emit('powerUpActivated', { active: true }); // FE should make the paddle yellow for 10 seconds temporarily
 
-	// Increase the ball speed for the player for a limited time
-	this.increaseBallSpeedForPlayer(player);
-
 	// Set a timer to remove the power-up after the duration
 	setTimeout(() => {
 		this.removePowerUp(player, player_no);
@@ -466,8 +467,10 @@ removePowerUp(player: GameTypes.Player, player_no: number): void {
     // Remove the power-up status
     this.powerUpActive[player_no - 1] = false;
 
-    // Notify player about the power-up deactivation
-    player.clientSocket.emit('powerUpActivated', { active: false }); // Color turns back to original paddle colour
+	if (player_no == 2 && this.mode == GameTypes.GameMode.multi) {
+		// Notify player about the power-up deactivation
+		player.clientSocket.emit('powerUpActivated', { active: false }); // Color turns back to original paddle colour
+	}
 }
 
 

@@ -127,6 +127,7 @@ export default class Game extends Phaser.Scene {
 		}
 		});
 		this._socketIO.on('powerUpActivated', (state: boolean) => {
+			console.log("Power-up state received:", state);
 			if (state == true) {
 				this._leftPaddle.changeColor(0xffff00);
 			}
