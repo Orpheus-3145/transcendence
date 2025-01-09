@@ -9,7 +9,7 @@ import { UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 import MatchmakingService from './game.matchmaking.service';
-import GameExceptionFilter from '../errors/GameExceptionFilter';
+import { GameExceptionFilter } from '../errors/exceptionFilters';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_MATCHMAKING,

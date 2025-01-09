@@ -3,9 +3,9 @@ import { Socket } from 'socket.io';
 import GameStateDTO from '../dto/gameState.dto';
 import * as GameTypes from './game.types';
 import { GAME, GAME_BALL, GAME_PADDLE } from './game.data';
-import GameException from '../errors/GameException';
+import { GameException } from '../errors/exceptions';
 import AppLoggerService from 'src/log/log.service';
-
+import { ExceptionFactory } from 'src/errors/exceptionFactory';
 
 export default class SimulationService {
 
@@ -17,28 +17,33 @@ export default class SimulationService {
 	private readonly paddleHeight: number = GAME_PADDLE.height;
 	private readonly ballSpeed: number = GAME_BALL.speed;
 
-	private sessionToken: string;
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private player1: GameTypes.Player = null;
 	private player2: GameTypes.Player = null;
 	private ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
-	private engineRunning = false;
-	private gameOver = false;
-	private _hardDebug = false;
+	private sessionToken: string;
+	private _hardDebug: boolean;				// prints every message sent to clients, every framerate
+	private _forbidAutoPlay: boolean;	// if true the same user cannot play against themself
+	private engineRunning: boolean = false;
+	private gameOver: boolean = false;
 
 	private gameStateInterval: NodeJS.Timeout = null;		// loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null;		// engine loop: data emitter to client(s)
 
 	constructor(
 		sessionToken: string,
-		mode: GameTypes.GameMode, 
-		private logger: AppLoggerService) {
+		mode: GameTypes.GameMode,
+		private readonly logger: AppLoggerService,
+		private readonly thrower: ExceptionFactory,
+		hardDebug = false,
+		forbidAutoPlay = false) {
 
 			this.sessionToken = sessionToken;
 			this.mode = mode;
-			this._hardDebug = true;
+			this._hardDebug = hardDebug;
+			this._forbidAutoPlay = forbidAutoPlay;
 
-			// adding bot if single player
+			// add bot if single mode
 			if (this.mode === GameTypes.GameMode.single)
 				this.addPlayer(null, -1, this.botName)
 
@@ -47,9 +52,11 @@ export default class SimulationService {
 				// missing info, not ready to play yet
 				if (!this.player1 || !this.player2)
 					return;
-
-				// this.waitingToStart = false;
-				this.startEngine();
+				
+				if (this._forbidAutoPlay && this.player1.nameNick == this.player2.nameNick)
+					this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
+				else
+					this.startEngine();
 			}, GAME.frameRate);
 	};
 
@@ -59,12 +66,14 @@ export default class SimulationService {
 			return;
 
 		this.engineRunning = true;
-
+		
 		clearInterval(this.gameSetupInterval);
 		this.gameSetupInterval = null;
 
-		this.gameStateInterval = setInterval(() => this.engineIteration(), GAME.frameRate);
-		this.logger.debug(`session [${this.sessionToken}] - ready for game, engine started`);
+		this.gameStateInterval = setInterval(() => this.gameIteration(), GAME.frameRate);
+		this.logger.log(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
+		this.logger.log(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
+		this.logger.log(`session [${this.sessionToken}] - game started`);
 
 		this._resetBall();
 		this._sendUpdateToPlayers('gameStart');
@@ -93,33 +102,34 @@ export default class SimulationService {
 		this.logger.debug(`session [${this.sessionToken}] - engine stopped`);
 	};
 
-	engineIteration(): void {
-
-		if (this.engineRunning === false) {
-
-			this.interruptGame('Internal - simulation is not running');
-			return;
-		}
-
-		this._updateBall();
-		if (this.mode === GameTypes.GameMode.single)
-			this._updateBotPaddle();
+	gameIteration(): void {
+		
+	try {
+			this._updateBall();
 			
-		if (this.gameOver) {
-			
-			if (this.player2.score === this.maxScore)
-				this.endGame(this.player2);
+			if (this.mode === GameTypes.GameMode.single)
+				this._updateBotPaddle();
+				
+			if (this.gameOver) {
+				
+				if (this.player2.score === this.maxScore)
+					this.endGame(this.player2);
+				else
+					this.endGame(this.player1);
+			}
 			else
-				this.endGame(this.player1);
+				this._sendUpdateToPlayers('gameState');
 		}
-		else
-			this._sendUpdateToPlayers('gameState');
+		catch (error){
+
+			this.interruptGame(error.message);
+		}
 	}
 
 	addPlayer(client: Socket, playerId: number, nameNick: string): void {
 
 		if (this.engineRunning)
-			throw new GameException('Internal - simulation is running already (addPlayer)');
+			this.thrower.throwGameExcp(`tried to add player ${playerId}, but game has started already`, this.sessionToken, `${SimulationService.name}.${this.constructor.prototype.addPlayer.name}()`);
 
 		const newPlayer: GameTypes.Player = {
 			clientSocket: client, // socket created for each client
@@ -136,10 +146,11 @@ export default class SimulationService {
 		else if (this.player2 === null)
 			this.player2 = newPlayer;
 		else {
-			if (playerId === this.player1.intraId || playerId === this.player2.intraId)
-				throw new GameException(`Internal - playerId ${newPlayer.intraId} is already in this game`);
-			else
-				throw new GameException('Internal - room filled already');
+			const context = `${SimulationService.name}.${this.constructor.prototype.addPlayer.name}`;
+			if (playerId === this.player1.intraId || playerId === this.player2.intraId)	// already inside game
+				this.thrower.throwGameExcp(`player ${playerId} is already in this game`, this.sessionToken, context);
+			else		// unknown player
+				this.thrower.throwGameExcp(`room full, failed to add player ${playerId}`, this.sessionToken, context);
 		}
 	};
 
@@ -147,7 +158,7 @@ export default class SimulationService {
 	movePaddle(idClient: string, direction: GameTypes.PaddleDirection): void {
 		
 		if (this.engineRunning === false)
-			throw new GameException('Internal - simulation is not running (movePaddle)');
+			this.thrower.throwGameExcp(`received input from client but game is not running`, this.sessionToken, `${SimulationService.name}.${this.constructor.prototype.movePaddle.name}()`);
 
 		const delta = direction === GameTypes.PaddleDirection.up ? -10 : 10;
 
@@ -171,6 +182,9 @@ export default class SimulationService {
 	};
 
 	_sendUpdateToPlayers(msgType: string) {
+
+		if (this.engineRunning === false)
+			this.thrower.throwGameExcp(`simulation is not running`, this.sessionToken, `${SimulationService.name}._sendUpdateToPlayers()`);
 
 		const dataPlayer1: GameStateDTO = {
 			ball: {x: this.ball.x, y: this.ball.y},
@@ -196,6 +210,8 @@ export default class SimulationService {
 
 	// Callback ball
 	_updateBall(): void {
+		if (this.engineRunning === false)
+			this.thrower.throwGameExcp(`simulation is not running`, this.sessionToken, `${SimulationService.name}._updateBall()`);
 
 		// Move the ball
 		this.ball.x += this.ball.dx * this.ballSpeed;
@@ -244,6 +260,9 @@ export default class SimulationService {
 	// Callback opponent paddle
 	_updateBotPaddle(): void {
 
+		if (this.engineRunning === false)
+			this.thrower.throwGameExcp(`simulation is not running`, this.sessionToken, `${SimulationService.name}._updateBotPaddle()`);
+
 		if (this.ball.x > this.windowWidth / 2) {
 
 			if (this.ball.y < this.player2.posY - 30)
@@ -268,6 +287,7 @@ export default class SimulationService {
 
 		this.ball.x = this.windowWidth / 2;  // Reset to center of the screen
 		this.ball.y = this.windowHeight / 2;
+		
 		const randomDelta = this._randomDelta();
 		this.ball.dx = randomDelta.dx;
 		this.ball.dy = randomDelta.dy
@@ -321,40 +341,36 @@ export default class SimulationService {
 
 	// if the game ends gracefully
 	endGame(winner: GameTypes.Player): void {
+
+		if (this.engineRunning === false)
+			this.thrower.throwGameExcp(`simulation is not running`, this.sessionToken, `${SimulationService.name}.endGame()`);
 		
-		if (this.player1 !== null) { // This can happen sometimes when the intra name/id is the same (?)
+		this.logger.log(`session [${this.sessionToken}] - game over, winner: ${winner.nameNick}`);
+		
+		if (this.player1 !== null)
 			
 			this._sendMsgToPlayer(this.player1.clientSocket, 'endGame', {winner: winner.nameNick});
-			// this.player1.clientSocket.disconnect(true);
-		}
-		if (this.mode === GameTypes.GameMode.multi) {
+		if (this.mode === GameTypes.GameMode.multi)
 
 			this._sendMsgToPlayer(this.player2.clientSocket, 'endGame', {winner: winner.nameNick});
-			// this.player2.clientSocket.disconnect(true);
-		}
-		this.logger.log(`session [${this.sessionToken}] - game over winner: ${winner.nameNick}`);
-		
 		this.stopEngine();
-
-		// do not clear data immediately because there can be loops of the engine
-		// scheduled before it stops but that happens after
-		// setTimeout(() => this.clearGameData(), GAME.frameRate);
 	};
 
 	// for server error
 	interruptGame(trace: string): void {
 
-		this._sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game error - ${trace}`);
-		// this.player1.clientSocket.disconnect(true);
-		
-		if (this.mode === GameTypes.GameMode.multi) {	
-
-			this._sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game error - ${trace}`);
-			// this.player2.clientSocket.disconnect(true);
-		}
 		this.logger.error(`session [${this.sessionToken}] - server error, trace: ${trace}`);
-
+		
+		if (this.player1)
+			this._sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game error - ${trace}`);
+			
+		if (this.player2 && this.mode === GameTypes.GameMode.multi)
+			this._sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game error - ${trace}`);
+			
 		this.stopEngine();
+
+		if (this.gameSetupInterval)
+			clearInterval(this.gameSetupInterval);
 	}
 
 	checkClientId(clientId: string): boolean {

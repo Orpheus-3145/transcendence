@@ -8,15 +8,13 @@ import {
 	OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseFilters, UseInterceptors } from '@nestjs/common';
+import { UseFilters } from '@nestjs/common';
 
-import { PaddleDirection, GameMode } from './game.types';
-// import InitDataDTO from 'src/dto/initData.dto';
+import { GameMode } from './game.types';
 import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import { RoomManagerService  } from './game.roomManager.service'; // logic for managing the rooms
-import GameExceptionFilter from '../errors/GameExceptionFilter';
-import LoggerInterceptor from '../log/log.interceptor'
+import { GameExceptionFilter } from '../errors/exceptionFilters';
 
 @WebSocketGateway(
 { 
@@ -29,7 +27,6 @@ import LoggerInterceptor from '../log/log.interceptor'
 	transports: ['websocket'],
 })
 @UseFilters(GameExceptionFilter)
-// @UseInterceptors(LoggerInterceptor)
 export default class RoomManagerGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	@WebSocketServer()

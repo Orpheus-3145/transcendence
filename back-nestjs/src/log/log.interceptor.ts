@@ -11,7 +11,10 @@ import AppLoggerService from 'src/log/log.service';
 @Injectable()
 export default class LoggerInterceptor implements NestInterceptor {
 	
-	constructor( private readonly logger: AppLoggerService) {}
+	constructor( private logger: AppLoggerService) {
+
+		this.logger.setContext(LoggerInterceptor.name);
+	}
 	
 	intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		

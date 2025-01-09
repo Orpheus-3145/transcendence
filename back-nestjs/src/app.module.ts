@@ -6,6 +6,9 @@ import { User } from './entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import GameModule from './game/game.module';
+import ExceptionModule from './errors/exception.module';
+import AppLoggerModule from './log/log.module';
+
 
 @Module({
 	imports: [
@@ -28,6 +31,8 @@ import GameModule from './game/game.module';
 		AuthModule,
 		GameModule,
 		UsersModule,
+		AppLoggerModule,
+		ExceptionModule,
 	],
 })
 export default class AppModule {}
