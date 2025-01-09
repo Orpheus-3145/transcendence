@@ -8,16 +8,17 @@ import {
 	HttpStatus,
 } from '@nestjs/common';
 
-import { GameException, SessionException, ChatException} from './exceptions';
-import RoomManagerService from 'src/game/game.roomManager.service';
+import { GameException,
+					SessionException,
+					ChatException} from 'src/errors/exceptions';
+import MatchmakingService from 'src/game/matchmaking/matchmaking.service';
+import RoomManagerService from 'src/game/session/roomManager.service';
 import AppLoggerService from 'src/log/log.service';
 
 @Catch(GameException)
 export class GameExceptionFilter implements ExceptionFilter {
-	constructor(@Inject(forwardRef(() => RoomManagerService))
-							private roomManager: RoomManagerService,
-							@Inject(forwardRef(() => AppLoggerService))
-							private logger: AppLoggerService) {
+	constructor(@Inject(forwardRef(() => RoomManagerService)) private readonly roomManager: RoomManagerService,
+							private readonly logger: AppLoggerService) {
 
 		this.logger.setContext(GameExceptionFilter.name);
 	}
@@ -35,7 +36,7 @@ export class GameExceptionFilter implements ExceptionFilter {
 
 			client.emit('gameError', `Internal error: ${exception.message}`);
 			client.disconnect(true);
-			this.logger.error(`session [${data.sessionToken}] - Exception, trace: ${exception.message} - client ${client.id} forced to disconnect`)
+			this.logger.error(`Exception, trace: ${exception.message} - client ${client.id} forced to disconnect`)
 		}
 	}
 };

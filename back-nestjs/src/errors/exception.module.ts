@@ -1,13 +1,15 @@
 import { Module, forwardRef } from '@nestjs/common';
 
-import { GameExceptionFilter, ChatExceptionFilter, SessionExceptionFilter } from './exceptionFilters';
-import ExceptionFactory from './exceptionFactory';
-import GameModule from '../game/game.module';
-import AppLoggerModule from '../log/log.module';
+import { GameExceptionFilter,
+          ChatExceptionFilter,
+          SessionExceptionFilter } from 'src/errors/exceptionFilters';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import RoomManagerModule from 'src/game/session/roomManager.module';
+import AppLoggerModule from 'src/log/log.module';
 
 
 @Module({
-  imports: [forwardRef(() => GameModule), AppLoggerModule],
+  imports: [forwardRef(() => RoomManagerModule), AppLoggerModule],
   providers: [GameExceptionFilter, ChatExceptionFilter, SessionExceptionFilter, ExceptionFactory],
   exports: [GameExceptionFilter, ChatExceptionFilter, SessionExceptionFilter, ExceptionFactory],
 })

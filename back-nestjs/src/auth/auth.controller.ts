@@ -1,8 +1,12 @@
-import { Controller, Get, Query, Req, Res, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res, UseFilters } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 
+import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
+
+
 @Controller('auth')
+@UseFilters(SessionExceptionFilter)
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 

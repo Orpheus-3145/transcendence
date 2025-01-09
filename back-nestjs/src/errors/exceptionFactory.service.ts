@@ -1,13 +1,12 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 
 import AppLoggerService from 'src/log/log.service';
-import { GameException, SessionException, ChatException} from './exceptions';
+import { GameException, SessionException, ChatException} from 'src/errors/exceptions';
 
 
 @Injectable()
 export default class ExceptionFactory {
-	constructor(@Inject(forwardRef(() => AppLoggerService))
-                private logger: AppLoggerService) {
+	constructor(@Inject(forwardRef(() => AppLoggerService)) private logger: AppLoggerService) {
 
 		this.logger.setContext(ExceptionFactory.name);
 	}

@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
+
 import AppLoggerService from 'src/log/log.service';
-import RoomManagerService from './game.roomManager.service';
-import { GameMode } from './game.types';
+import { GameMode } from '../game.types';
+import RoomManagerService from '../session/roomManager.service';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
 
 
 @Injectable()
@@ -14,6 +16,7 @@ export default class MatchmakingService {
 	constructor(
 		private logger: AppLoggerService,
 		private roomManager: RoomManagerService,
+		@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
 	) {
 
 		this.logger.setContext(MatchmakingService.name);
@@ -25,25 +28,25 @@ export default class MatchmakingService {
 
 		if (this._checker === null)
 			this._checker = setInterval(() => this.checkNewGame(), 1000);
-
+			
 		this.logger.debug(`client ${clientSocket.handshake.address} joined the queue`);
 	};
 
 	removePlayerFromQueue(leaver: Socket) {
 
-		if (!this._waitingPlayersIP.includes(leaver))
+		if (!this.isPlayerWaiting(leaver))
 			return ;
 
 		const tmpWaitingPlayers: Socket[] = [];
 
 		while (this._waitingPlayersIP.length > 0) {
 
-			const currentPlayer: Socket = this._waitingPlayersIP.shift();
+			const currentPlayer: Socket = this._waitingPlayersIP.pop();
 
 			if (leaver.id == currentPlayer.id)
 				this.logger.debug(`client ${currentPlayer.handshake.address} left the queue`);
 			else
-				tmpWaitingPlayers.unshift(currentPlayer);
+				tmpWaitingPlayers.push(currentPlayer);
 		}
 		this._waitingPlayersIP = tmpWaitingPlayers;
 		
@@ -51,7 +54,7 @@ export default class MatchmakingService {
 		this._checker = null;
 	};
 
-	async checkNewGame(): Promise<void> {
+	checkNewGame(): void {
 
 		while (this._waitingPlayersIP.length > 1) {
 
@@ -63,7 +66,7 @@ export default class MatchmakingService {
 			player2.emit('ready', sessionToken);  // message player2
 
 			this.logger.log(`found players ${player1.id}, ${player2.id} - sessionToken: ${sessionToken}`);
-			await this.roomManager.createRoom(sessionToken, GameMode.multi);
+			this.roomManager.createRoom(sessionToken, GameMode.multi);
 		}
 
 		if (this._waitingPlayersIP.length === 0) {
@@ -71,4 +74,9 @@ export default class MatchmakingService {
 			this._checker = null;
 		}
 	};
+
+	isPlayerWaiting(client: Socket) {
+
+		return this._waitingPlayersIP.includes(client);
+	}
 }

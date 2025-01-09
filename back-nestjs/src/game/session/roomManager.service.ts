@@ -2,10 +2,10 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 
-import SimulationService from './game.simulation.service';
-import { GameMode, PaddleDirection } from './game.types';
+import SimulationService from './simulation.service';
+import { GameMode, PaddleDirection } from '../game.types';
 import AppLoggerService from 'src/log/log.service';
-import ExceptionFactory from 'src/errors/exceptionFactory';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
 
 
 @Injectable()

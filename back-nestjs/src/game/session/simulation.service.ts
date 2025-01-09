@@ -6,7 +6,7 @@ import GameStateDTO from 'src/dto/gameState.dto';
 import * as GameTypes from 'src/game/game.types';
 import { GAME, GAME_BALL, GAME_PADDLE } from 'src/game/game.data';
 import AppLoggerService from 'src/log/log.service';
-import ExceptionFactory from 'src/errors/exceptionFactory';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import { Console } from 'console';
 
 
