@@ -5,9 +5,7 @@ import { GameException, SessionException, ChatException} from './exceptions';
 
 
 @Injectable()
-export class ExceptionFactory {
-  private errorContext: string;
-
+export default class ExceptionFactory {
 	constructor(@Inject(forwardRef(() => AppLoggerService))
                 private logger: AppLoggerService) {
 
@@ -40,11 +38,4 @@ export class ExceptionFactory {
 
     throw new ChatException(trace);
   }
-
-  // _printLog(trace: string, excpName: string, functionContext=ExceptionFactory.name) {
-
-  //   this.errorContext = functionContext;
-  //   this.logger.error(`Throwing ${excpName} - trace: ${trace}`);
-
-  // }
 }

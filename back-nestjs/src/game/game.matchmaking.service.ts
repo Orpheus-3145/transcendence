@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import AppLoggerService from 'src/log/log.service';
-import { RoomManagerService } from './game.roomManager.service';
+import RoomManagerService from './game.roomManager.service';
 import { GameMode } from './game.types';
 
 
@@ -51,7 +51,7 @@ export default class MatchmakingService {
 		this._checker = null;
 	};
 
-	checkNewGame(): void {
+	async checkNewGame(): Promise<void> {
 
 		while (this._waitingPlayersIP.length > 1) {
 
@@ -63,7 +63,7 @@ export default class MatchmakingService {
 			player2.emit('ready', sessionToken);  // message player2
 
 			this.logger.log(`found players ${player1.id}, ${player2.id} - sessionToken: ${sessionToken}`);
-			this.roomManager.createRoom(sessionToken, GameMode.multi);
+			await this.roomManager.createRoom(sessionToken, GameMode.multi);
 		}
 
 		if (this._waitingPlayersIP.length === 0) {

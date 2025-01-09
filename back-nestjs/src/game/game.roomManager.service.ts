@@ -5,29 +5,34 @@ import { ConfigService } from '@nestjs/config';
 import SimulationService from './game.simulation.service';
 import { GameMode, PaddleDirection } from './game.types';
 import AppLoggerService from 'src/log/log.service';
-import { ExceptionFactory } from 'src/errors/exceptionFactory';
+import ExceptionFactory from 'src/errors/exceptionFactory';
 
 
 @Injectable()
-export class RoomManagerService {
+export default class RoomManagerService {
 
 	private rooms: Map<string, SimulationService> = new Map();
 
-	constructor(@Inject(forwardRef(() => AppLoggerService))
-							private logger: AppLoggerService,
-							@Inject(forwardRef(() => ExceptionFactory))
-							private thrower: ExceptionFactory,
-							private config: ConfigService,
+	constructor(@Inject(forwardRef(() => AppLoggerService)) private readonly logger: AppLoggerService,
+							@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
+							@Inject('GAME_SPAWN') private readonly gameRoomFactory: (
+									sessionToken: string,
+									mode: GameMode
+								) => SimulationService ,
+							private readonly configFile: ConfigService
 						) {
 
-    	this.logger.setContext(RoomManagerService.name);
-			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal'])
+			if (this.configFile.get<number>('GAME_DEBUG_MODE', 0) === 1)
+				this.logger.setLogLevels(['debug', 'log', 'warn', 'error', 'fatal']);
+			else
+				this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
+			this.logger.setContext(RoomManagerService.name);
 	};
 
 	createRoom(sessionToken: string, mode: GameMode): void {
 
-		this._setRoom(sessionToken, mode);
-		
+		this.rooms.set(sessionToken, this.gameRoomFactory(sessionToken, mode)); 
+
 		this.logger.log(`session [${sessionToken}] - creating new room, mode: ${mode}`);
 	}
 
@@ -43,7 +48,7 @@ export class RoomManagerService {
 		
 		this._getRoom(sessionToken).addPlayer(client, playerId, nameNick);
 		
-		this.logger.debug(`session [${sessionToken}] - player ${nameNick} [id client ${client.id}] added to game`);
+		this.logger.log(`session [${sessionToken}] - player ${nameNick} [id client ${client.id}] added to game`);
 	}
 
 	handleDisconnect(client: Socket): void {
@@ -73,20 +78,6 @@ export class RoomManagerService {
 			this.thrower.throwGameExcp('room not found', sessionToken, `${RoomManagerService.name}.${this.constructor.prototype._getRoom.name}()`);
 
 		return (room);
-	}
-
-	_setRoom(sessionToken: string, mode: GameMode, notOverWrite = true): void {
-
-		if (notOverWrite && this.rooms.get(sessionToken))
-			this.thrower.throwGameExcp('room already exists', sessionToken, `${RoomManagerService.name}.${this.constructor.prototype._setRoom.name}()`)
-		
-		// create a new session (as instance of a service) in the rooms array 
-		this.rooms.set(sessionToken, new SimulationService(sessionToken, 
-																												mode,
-																												this.logger,
-																												this.thrower,
-																												this.config.get<boolean>('HARD_DEBUG_GAME_BACKEND', false),
-																												this.config.get<boolean>('FORBID_AUTO_PLAY', false)));
 	}
 
 	_deleteRoom(sessionToken: string): void {

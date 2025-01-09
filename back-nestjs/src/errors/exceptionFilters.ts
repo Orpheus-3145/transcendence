@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 
 import { GameException, SessionException, ChatException} from './exceptions';
-import { RoomManagerService } from 'src/game/game.roomManager.service';
+import RoomManagerService from 'src/game/game.roomManager.service';
 import AppLoggerService from 'src/log/log.service';
 
 @Catch(GameException)

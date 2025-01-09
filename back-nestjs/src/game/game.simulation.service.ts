@@ -1,12 +1,16 @@
+import { Injectable, Scope } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Socket } from 'socket.io';
 
-import GameStateDTO from '../dto/gameState.dto';
-import * as GameTypes from './game.types';
-import { GAME, GAME_BALL, GAME_PADDLE } from './game.data';
-import { GameException } from '../errors/exceptions';
+import GameStateDTO from 'src/dto/gameState.dto';
+import * as GameTypes from 'src/game/game.types';
+import { GAME, GAME_BALL, GAME_PADDLE } from 'src/game/game.data';
 import AppLoggerService from 'src/log/log.service';
-import { ExceptionFactory } from 'src/errors/exceptionFactory';
+import ExceptionFactory from 'src/errors/exceptionFactory';
+import { Console } from 'console';
 
+
+@Injectable({ scope: Scope.TRANSIENT })
 export default class SimulationService {
 
 	private readonly maxScore: number = GAME.maxScore;
@@ -17,33 +21,42 @@ export default class SimulationService {
 	private readonly paddleHeight: number = GAME_PADDLE.height;
 	private readonly ballSpeed: number = GAME_BALL.speed;
 
+	private sessionToken: string;
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
+	private forbidAutoPlay: number;	// if true the same user cannot play against themself
+	
+	private engineRunning: boolean = false;
+	private gameOver: boolean = false;
 	private player1: GameTypes.Player = null;
 	private player2: GameTypes.Player = null;
 	private ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
-	private sessionToken: string;
-	private _hardDebug: boolean;				// prints every message sent to clients, every framerate
-	private _forbidAutoPlay: boolean;	// if true the same user cannot play against themself
-	private engineRunning: boolean = false;
-	private gameOver: boolean = false;
 
 	private gameStateInterval: NodeJS.Timeout = null;		// loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null;		// engine loop: data emitter to client(s)
 
-	constructor(
-		sessionToken: string,
-		mode: GameTypes.GameMode,
+	constructor (
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
-		hardDebug = false,
-		forbidAutoPlay = false) {
+		private readonly configFile: ConfigService) {
+
+			this.forbidAutoPlay = this.configFile.get<number>('FORBID_AUTO_PLAY', 0);
+			
+			if (this.configFile.get<number>('GAME_DEBUG_MODE', 0) === 1)
+				this.logger.setLogLevels(['debug', 'log', 'warn', 'error', 'fatal']);
+			else
+				this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
+		
+			this.logger.setContext(SimulationService.name);
+		}
+
+	setInitInfo (
+		sessionToken: string,
+		mode: GameTypes.GameMode) {
 
 			this.sessionToken = sessionToken;
 			this.mode = mode;
-			this._hardDebug = hardDebug;
-			this._forbidAutoPlay = forbidAutoPlay;
-
-			// add bot if single mode
+			
+				// add bot if single mode
 			if (this.mode === GameTypes.GameMode.single)
 				this.addPlayer(null, -1, this.botName)
 
@@ -53,7 +66,7 @@ export default class SimulationService {
 				if (!this.player1 || !this.player2)
 					return;
 				
-				if (this._forbidAutoPlay && this.player1.nameNick == this.player2.nameNick)
+				if (this.forbidAutoPlay === 1 && this.player1.nameNick == this.player2.nameNick)
 					this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
 				else
 					this.startEngine();
@@ -158,7 +171,7 @@ export default class SimulationService {
 	movePaddle(idClient: string, direction: GameTypes.PaddleDirection): void {
 		
 		if (this.engineRunning === false)
-			this.thrower.throwGameExcp(`received input from client but game is not running`, this.sessionToken, `${SimulationService.name}.${this.constructor.prototype.movePaddle.name}()`);
+			return;
 
 		const delta = direction === GameTypes.PaddleDirection.up ? -10 : 10;
 
@@ -309,8 +322,9 @@ export default class SimulationService {
 
 	_sendMsgToPlayer(client: Socket, msg: string, data?: any) {
 
-		if (this._hardDebug)
-			this.logger.debug(`session [${this.sessionToken}] - emitting to client ${client.id} data: ${JSON.stringify(data)}`);
+		// console.log(this.logger.isLevelEnabled('log'));
+		// console.log(this.logger.isLevelEnabled('debug'));
+		this.logger.debug(`session [${this.sessionToken}] - emitting to client ${client.id} data: ${JSON.stringify(data)}`);
 
 		client.emit(msg, data);
 	}
@@ -321,19 +335,22 @@ export default class SimulationService {
 		if (this.engineRunning === false)
 			return;
 
-		if (this.player1 && this.player1.clientSocket.id === client.id) {
+		if (this.mode === GameTypes.GameMode.multi) {
 
-			this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`);
-
-			if (this.mode === GameTypes.GameMode.multi)
-				this._sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted\nPlayer ${this.player1.nameNick} left the game`);
-		}
-		else if (this.player2 && this.player2.clientSocket.id === client.id) {
-
-			this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`);
-
-			if (this.mode === GameTypes.GameMode.multi)
-				this._sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
+			if (this.player1 && this.player1.clientSocket.id === client.id) {
+	
+				this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`);
+	
+				if (this.mode === GameTypes.GameMode.multi)
+					this._sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted\nPlayer ${this.player1.nameNick} left the game`);
+			}
+			else if (this.player2 && this.player2.clientSocket.id === client.id) {
+	
+				this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`);
+	
+				if (this.mode === GameTypes.GameMode.multi)
+					this._sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
+			}
 		}
 
 		this.stopEngine();
@@ -347,20 +364,18 @@ export default class SimulationService {
 		
 		this.logger.log(`session [${this.sessionToken}] - game over, winner: ${winner.nameNick}`);
 		
-		if (this.player1 !== null)
-			
+		if (this.player1)
 			this._sendMsgToPlayer(this.player1.clientSocket, 'endGame', {winner: winner.nameNick});
-		if (this.mode === GameTypes.GameMode.multi)
-
+		
+		if (this.player2 && this.mode === GameTypes.GameMode.multi)
 			this._sendMsgToPlayer(this.player2.clientSocket, 'endGame', {winner: winner.nameNick});
+		
 		this.stopEngine();
 	};
 
 	// for server error
 	interruptGame(trace: string): void {
 
-		this.logger.error(`session [${this.sessionToken}] - server error, trace: ${trace}`);
-		
 		if (this.player1)
 			this._sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game error - ${trace}`);
 			

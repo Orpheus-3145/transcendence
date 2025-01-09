@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 
 import { GameExceptionFilter, ChatExceptionFilter, SessionExceptionFilter } from './exceptionFilters';
-import { ExceptionFactory } from './exceptionFactory';
+import ExceptionFactory from './exceptionFactory';
 import GameModule from '../game/game.module';
 import AppLoggerModule from '../log/log.module';
 

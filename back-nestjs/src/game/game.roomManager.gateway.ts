@@ -13,7 +13,7 @@ import { UseFilters } from '@nestjs/common';
 import { GameMode } from './game.types';
 import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
-import { RoomManagerService  } from './game.roomManager.service'; // logic for managing the rooms
+import RoomManagerService from './game.roomManager.service';
 import { GameExceptionFilter } from '../errors/exceptionFilters';
 
 @WebSocketGateway(
