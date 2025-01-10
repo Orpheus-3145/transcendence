@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "type-check": "tsc --noEmit",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts*\"",
     "preview": "vite preview"
   },
   "dependencies": {

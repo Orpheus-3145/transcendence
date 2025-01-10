@@ -3,17 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import fs from 'fs';
-import { checkTLSfiles, makeTLSfiles } from './create.certs'
+import { checkTLSfiles, makeTLSfiles } from './create.certs';
 
 import AppModule from './app.module';
 import AppLoggerService from './log/log.service';
 
-
 async function bootstrap() {
-
 	// creating TLS files if necessary
-	if (checkTLSfiles() == false)
-		makeTLSfiles();
+	if (checkTLSfiles() == false) makeTLSfiles();
 
 	const app = await NestFactory.create(AppModule, {
 		httpsOptions: {
@@ -31,12 +28,12 @@ async function bootstrap() {
 		methods: ['GET', 'POST'],
 		credentials: true,
 	});
-	
+
 	// set logging
 	const appLogger = new AppLoggerService();
 	appLogger.setContext('NestJS engine');
 	app.useLogger(appLogger);
-	
+
 	// Enables req.cookies
 	app.use(cookieParser());
 	app.useGlobalPipes(
@@ -44,7 +41,7 @@ async function bootstrap() {
 			transform: true,
 		}),
 	);
-	
+
 	const port = configService.get<number>('PORT_BACKEND', 4000);
 	await app.listen(port).catch(() => {
 		console.log(`listen to ${port} failed`);
