@@ -6,8 +6,8 @@ import { GameException, SessionException, ChatException} from 'src/errors/except
 
 @Injectable()
 export default class ExceptionFactory {
-	// NB: remove [@Inject(forwardRef(() => AppLoggerService))] afterwards
-	constructor(@Inject(forwardRef(() => AppLoggerService)) private logger: AppLoggerService) {
+
+	constructor(private readonly logger: AppLoggerService) {
 
 		this.logger.setContext(ExceptionFactory.name);
 	}

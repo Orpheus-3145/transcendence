@@ -47,7 +47,7 @@ export default class RoomManagerService {
 		
 		this._getRoom(sessionToken).addPlayer(client, playerId, nameNick);
 		
-		this.logger.log(`session [${sessionToken}] - player ${nameNick} [id client ${client.id}] added to game`);
+		this.logger.debug(`session [${sessionToken}] - player ${nameNick} [id client ${client.id}] added to game`);
 	}
 
 	handleDisconnect(client: Socket): void {

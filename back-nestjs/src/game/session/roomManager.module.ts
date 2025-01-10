@@ -1,5 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 
 import RoomManagerGateway from 'src/game/session/roomManager.gateway';
 import RoomManagerService from 'src/game/session/roomManager.service';
@@ -11,8 +11,7 @@ import SimulationService from 'src/game/session/simulation.service';
 import AppLoggerService from 'src/log/log.service';
 
 @Module({
-	imports: [ConfigModule,
-						AppLoggerModule,
+	imports: [AppLoggerModule,
 						forwardRef(() => ExceptionModule)],
 	providers: [RoomManagerGateway, RoomManagerService,
 							//SimulationService, needs a factory to create a new instance every time

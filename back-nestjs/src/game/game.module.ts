@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 
-import MatchmakingModule from './matchmaking/matchmaking.module';
-import RoomManagerModule from './session/roomManager.module';
+import MatchmakingModule from 'src/game/matchmaking/matchmaking.module';
+import RoomManagerModule from 'src/game/session/roomManager.module';
 
 
 @Module({

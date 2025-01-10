@@ -22,7 +22,7 @@ export default class SimulationService {
 
 	private sessionToken: string;
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
-	private forbidAutoPlay = this.config.get<boolean>('FORBID_AUTO_PLAY', false);	// if true the same user cannot play against themself
+	private forbidAutoPlay: boolean = this.config.get<boolean>('FORBID_AUTO_PLAY', false);	// if true the same user cannot play against themself
 	
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
@@ -61,7 +61,7 @@ export default class SimulationService {
 				if (!this.player1 || !this.player2)
 					return;
 				
-				if (this.forbidAutoPlay && this.player1.nameNick == this.player2.nameNick)
+				if (this.forbidAutoPlay == true && this.player1.nameNick == this.player2.nameNick)
 					this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
 				else
 					this.startEngine();
@@ -79,8 +79,8 @@ export default class SimulationService {
 		this.gameSetupInterval = null;
 
 		this.gameStateInterval = setInterval(() => this.gameIteration(), GAME.frameRate);
-		this.logger.log(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
-		this.logger.log(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
+		this.logger.debug(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
+		this.logger.debug(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
 		this.logger.log(`session [${this.sessionToken}] - game started`);
 
 		this._resetBall();
@@ -113,20 +113,20 @@ export default class SimulationService {
 	gameIteration(): void {
 		
 	try {
-			this._updateBall();
+		this._updateBall();
+		
+		if (this.mode === GameTypes.GameMode.single)
+			this._updateBotPaddle();
 			
-			if (this.mode === GameTypes.GameMode.single)
-				this._updateBotPaddle();
-				
-			if (this.gameOver) {
-				
-				if (this.player2.score === this.maxScore)
-					this.endGame(this.player2);
-				else
-					this.endGame(this.player1);
-			}
+		if (this.gameOver) {
+			
+			if (this.player2.score === this.maxScore)
+				this.endGame(this.player2);
 			else
-				this._sendUpdateToPlayers('gameState');
+				this.endGame(this.player1);
+		}
+		else
+			this._sendUpdateToPlayers('gameState');
 		}
 		catch (error){
 
@@ -337,14 +337,14 @@ export default class SimulationService {
 				this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`);
 	
 				if (this.mode === GameTypes.GameMode.multi)
-					this._sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted\nPlayer ${this.player1.nameNick} left the game`);
+					this._sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted, player ${this.player1.nameNick} left the game`);
 			}
 			else if (this.player2 && this.player2.clientSocket.id === client.id) {
 	
 				this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`);
 	
 				if (this.mode === GameTypes.GameMode.multi)
-					this._sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted\nPlayer ${this.player2.nameNick} left the game`);
+					this._sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted, player ${this.player2.nameNick} left the game`);
 			}
 		}
 

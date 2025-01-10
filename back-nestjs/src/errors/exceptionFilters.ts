@@ -11,14 +11,15 @@ import {
 import { ConfigService } from '@nestjs/config';
 
 import { GameException,
-					SessionException,
-					ChatException} from 'src/errors/exceptions';
+	SessionException,
+	ChatException} from 'src/errors/exceptions';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import AppLoggerService from 'src/log/log.service';
 
 
 @Catch(GameException)
 export class GameExceptionFilter implements ExceptionFilter {
+	
 	constructor(private readonly logger: AppLoggerService,
 							private readonly config: ConfigService,
 							@Inject(forwardRef(() => RoomManagerService)) private readonly roomManager: RoomManagerService,) {
@@ -49,6 +50,7 @@ export class GameExceptionFilter implements ExceptionFilter {
 
 @Catch(SessionException)
 export class SessionExceptionFilter implements ExceptionFilter {
+	
 	constructor(private readonly logger: AppLoggerService,
 							private readonly config: ConfigService) {
 
@@ -79,7 +81,8 @@ export class SessionExceptionFilter implements ExceptionFilter {
 
 @Catch(ChatException)
 export class ChatExceptionFilter implements ExceptionFilter {
-	constructor(private logger: AppLoggerService,
+	
+	constructor(private readonly logger: AppLoggerService,
 							private readonly config: ConfigService) {
 
 		this.logger.setContext(ChatExceptionFilter.name);

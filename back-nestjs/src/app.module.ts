@@ -14,7 +14,6 @@ import AppLoggerModule from 'src/log/log.module';
 	imports: [
 		ConfigModule.forRoot({ 
 			isGlobal: true,
-			envFilePath: '.env',
 		 }),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
