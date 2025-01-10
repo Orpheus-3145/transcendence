@@ -1,0 +1,19 @@
+{
+	"devDependencies": {
+		"husky": "^9.1.7"
+	},
+	"lint-staged": {
+		"*.js": [
+			"npm run --prefix back-nestjs/ format",
+			"npm run --prefix front-vite/ format"
+		],
+		"*.ts": [
+			"npm run --prefix back-nestjs/ format",
+			"npm run --prefix front-vite/ format"
+		],
+		"*.tsx": [
+			"npm run --prefix back-nestjs/ format",
+			"npm run --prefix front-vite/ format"
+		]
+	}
+}

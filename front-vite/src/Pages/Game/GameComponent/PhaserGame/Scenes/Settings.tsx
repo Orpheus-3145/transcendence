@@ -1,9 +1,8 @@
 import { GAME } from '../Game.data';
 
 export default class Settings extends Phaser.Scene {
-  
-  // background texture
-  private _background!: Phaser.GameObjects.Image;
+	// background texture
+	private _background!: Phaser.GameObjects.Image;
 
 	constructor() {
 		super({ key: 'Settings' });

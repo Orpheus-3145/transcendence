@@ -28,12 +28,11 @@ export default class MatchmakingGateway implements OnGatewayDisconnect {
 	constructor(private matchmakingService: MatchmakingService) {}
 
 	handleDisconnect(@ConnectedSocket() client: Socket): void {
-		
 		this.matchmakingService.removePlayerFromQueue(client);
 	}
 
 	@SubscribeMessage('waiting')
 	clientWaitingAdd(@ConnectedSocket() client: Socket): void {
 		this.matchmakingService.addPlayerToQueue(client);
-	};
-};
+	}
+}

@@ -9,12 +9,11 @@ import GameModule from 'src/game/game.module';
 import ExceptionModule from 'src/errors/exception.module';
 import AppLoggerModule from 'src/log/log.module';
 
-
 @Module({
 	imports: [
-		ConfigModule.forRoot({ 
+		ConfigModule.forRoot({
 			isGlobal: true,
-		 }),
+		}),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],

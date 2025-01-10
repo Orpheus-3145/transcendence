@@ -7,8 +7,8 @@ import AppLoggerModule from 'src/log/log.module';
 import RoomManagerModule from 'src/game/session/roomManager.module';
 
 @Module({
-  imports: [AppLoggerModule, RoomManagerModule, forwardRef(() => ExceptionModule)],
-  providers: [MatchmakingGateway, MatchmakingService],
-  exports: [MatchmakingService]
+	imports: [AppLoggerModule, RoomManagerModule, forwardRef(() => ExceptionModule)],
+	providers: [MatchmakingGateway, MatchmakingService],
+	exports: [MatchmakingService],
 })
 export default class MatchmakingModule {}

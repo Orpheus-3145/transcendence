@@ -4,7 +4,6 @@ import { Request, Response } from 'express';
 import { AuthService } from 'src/auth/auth.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 
-
 @Controller('auth')
 @UseFilters(SessionExceptionFilter)
 export class AuthController {
