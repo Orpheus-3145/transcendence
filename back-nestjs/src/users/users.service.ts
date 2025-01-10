@@ -1,18 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, TopologyClosedEvent } from 'typeorm';
 
-import { User } from '../entities/user.entity';
-import { UserStatus, UserDTO } from '../dto/user.dto';
-import { AccessTokenDTO } from '../dto/auth.dto';
+import User from 'src/entities/user.entity';
+import { UserStatus, UserDTO } from 'src/dto/user.dto';
+import AccessTokenDTO from 'src/dto/auth.dto';
 import AppLoggerService from 'src/log/log.service';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
+
 
 @Injectable()
-export class UsersService {
+export default class UsersService {
 
 	constructor(
-		@InjectRepository(User) private usersRepository: Repository<User>,
-		private logger: AppLoggerService) {
+		@InjectRepository(User) private readonly usersRepository: Repository<User>,
+		private readonly logger: AppLoggerService,
+		private readonly thrower: ExceptionFactory) {
     
 		this.logger.setContext(UsersService.name);
 	}
@@ -28,15 +31,15 @@ export class UsersService {
 		user.image = userMe.image.link;
 		user.greeting = 'Hello, I have just landed!';
 		user.status = UserStatus.Offline;
+		
+		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			await user.validate();
-			// TODO check user not exists in table, if so, inserts into it
 			await this.usersRepository.save(user);
-			// thi
 			return new UserDTO(user);
 		} catch (error) {
-			console.error('User validation error: ', error);
-			throw error;
+
+			this.thrower.throwSessionExcp(`User validation error: ${error}`, `${UsersService.name}.${this.constructor.prototype.createUser.name}()`, HttpStatus.INTERNAL_SERVER_ERROR)
 		}
 	}
 

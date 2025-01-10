@@ -31,8 +31,8 @@ export default class Game extends Phaser.Scene {
 	private _gameStarted: boolean = false;
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private _gameState!: GameTypes.GameState;
-	private _addPlayerSuccess = false;
-  constructor() {
+  
+	constructor() {
 		
 		super({ key: 'Game' });
   };
@@ -75,10 +75,11 @@ export default class Game extends Phaser.Scene {
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
 
-		const initData: GameTypes.InitData = {sessionToken: this._sessionToken, mode: this._mode};
 		const playerData: GameTypes.PlayerData = {playerId: this._id, nameNick: this._nameNick, sessionToken: this._sessionToken};
-
-		this.sendMsgToServer('initData', initData);
+		
+		if (this._mode === GameTypes.GameMode.single)
+			this.sendMsgToServer('createRoomSinglePlayer', {sessionToken: this._sessionToken});
+		
 		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	};
 
@@ -100,14 +101,14 @@ export default class Game extends Phaser.Scene {
 
 		this._socketIO.on('gameState', (state: GameTypes.GameState) => this._gameState = state);
 		
-		this._socketIO.on('endGame', (winner: string) => this.scene.start('Results', {winner}));
+		this._socketIO.on('endGame', (data: {winner: string}) => this.scene.start('Results', data));
 
-		this._socketIO.on('PlayerDisconnected', (trace: string) => this.scene.start('Error', {trace}));
+		this._socketIO.on('gameError', (trace: string) => this.scene.start('Error', {trace}));
 		
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	};
 
-	sendMsgToServer(msgType: string, content: any) {
+	sendMsgToServer(msgType: string, content?: any) {
 		this._socketIO.emit(msgType, content);
 	};
 
@@ -118,13 +119,13 @@ export default class Game extends Phaser.Scene {
 			return;
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
-			this.sendMsgToServer('playerMove', {direction: GameTypes.PaddleDirection.up, sessionToken: this._sessionToken});
+			this.sendMsgToServer('playerMovedPaddle', {direction: GameTypes.PaddleDirection.up, sessionToken: this._sessionToken});
 		else if (this._keyS.isDown || this._cursors.down.isDown)
-			this.sendMsgToServer('playerMove', {direction: GameTypes.PaddleDirection.down, sessionToken: this._sessionToken});
+			this.sendMsgToServer('playerMovedPaddle', {direction: GameTypes.PaddleDirection.down, sessionToken: this._sessionToken});
 
 		// Exit game with ESC
 		if (this._keyEsc.isDown) {
-			this.sendMsgToServer('playerLeft', {sessionToken: this._sessionToken});
+			this.sendMsgToServer('playerLeftGame');
 			this.scene.start('MainMenu');
 			// this.scene.start('Error', "random!")
 		}

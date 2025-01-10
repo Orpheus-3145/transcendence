@@ -8,13 +8,13 @@ import {
 	OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { PaddleDirection, GameMode } from './game.types';
+import { UseFilters } from '@nestjs/common';
 
-import InitDataDTO from 'src/dto/initData.dto';
+import { GameMode } from '../game.types';
 import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
-import { RoomManagerService  } from './game.roomManager.service'; // logic for managing the rooms
-
+import RoomManagerService from './roomManager.service';
+import { GameExceptionFilter } from '../../errors/exceptionFilters';
 
 @WebSocketGateway(
 { 
@@ -26,30 +26,27 @@ import { RoomManagerService  } from './game.roomManager.service'; // logic for m
   },
 	transports: ['websocket'],
 })
-
-export default class SimulationGateway implements OnGatewayConnection, OnGatewayDisconnect{
+@UseFilters(GameExceptionFilter)
+export default class RoomManagerGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	@WebSocketServer()
 	server: Server;
 
-	constructor(
-	private roomManager: RoomManagerService // Keeps a Map of SimulationService instances, one per game simulation
-	) {}
-
-	handleConnection(): void { // Called by default everytime a client connects to the websocket
-	};
+	// Keeps a Map of SimulationService instances, one per game simulation
+	constructor(private roomManager: RoomManagerService) {}
+	
+	handleConnection(): void {};
 
 	handleDisconnect(@ConnectedSocket() client: Socket): void { // Called by default everytime a client disconnects to the websocket
 		this.roomManager.handleDisconnect(client); 
 	};
 
-		// Potential dead-end: can there be a situation where the playerData is sent before initData? This should not happen
-	@SubscribeMessage('initData')
-	setInitData(@MessageBody() data: InitDataDTO): void {
-		this.roomManager.createRoom(data.sessionToken, data.mode);
+	@SubscribeMessage('createRoomSinglePlayer')
+	setInitData(@MessageBody() data: {sessionToken: string}): void {
+		this.roomManager.createRoom(data.sessionToken, GameMode.single);
 	};
 
-	@SubscribeMessage('playerLeft')
+	@SubscribeMessage('playerLeftGame')
 	handlePlayerLeft(@ConnectedSocket() client: Socket): void {
 		this.roomManager.handleDisconnect(client);
 	};
@@ -60,7 +57,7 @@ export default class SimulationGateway implements OnGatewayConnection, OnGateway
 		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
 	};
 
-	@SubscribeMessage('playerMove')
+	@SubscribeMessage('playerMovedPaddle')
 	movePaddle( @MessageBody() data: PaddleDirectionDTO,
 							@ConnectedSocket() client: Socket): void {
 		this.roomManager.movePaddle(data.sessionToken, client.id, data.direction);

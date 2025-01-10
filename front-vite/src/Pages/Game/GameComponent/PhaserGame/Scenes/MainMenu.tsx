@@ -1,4 +1,5 @@
 import { GAME } from '../Game.data';
+import { v4 as uuidv4 } from 'uuid';
 
 import * as GameTypes from '../Types/types';
 
@@ -27,7 +28,7 @@ export default class MainMenu extends Phaser.Scene {
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
 		this.createBtn(400, 100, 'Play [single player]').on(
-			'pointerup', () => this.scene.start('Game', {sessionToken: 'singlePlayerToken', mode: GameTypes.GameMode.single}));
+			'pointerup', () => this.scene.start('Game', {sessionToken: uuidv4(), mode: GameTypes.GameMode.single}));
 		this.createBtn(400, 150, 'Play [multi player]').on(
 			'pointerup', () => this.scene.start('Matchmaking'));
 		this.createBtn(400, 200, 'Settings').on(
