@@ -60,23 +60,20 @@ export class SessionExceptionFilter implements ExceptionFilter {
 		this.logger.error(`Exception caught - trace: ${exception.message}`);
 		
 		const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
-    const request = ctx.getRequest();
+		const response = ctx.getResponse();
+		const request = ctx.getRequest();
 
-    const status = exception.getStatus();
-    const errorTrace = exception.message || 'Unexpected error';
+		const status = exception.getStatus();
+		const errorTrace = exception.message || 'Unexpected error';
 		
 		response.clearCookie('auth_token');
-		// responseData.message = message;
-	// 	responseData.redirectTo = redirectTo;
-	// 	res.clearCookie('auth_token');
 		response.status(status).json({
-      statusCode: status,
+			statusCode: status,
 			redirectTo: this.config.get<string>('URL_FRONTEND_LOGIN'),
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      message: errorTrace,
-    });
+			timestamp: new Date().toISOString(),
+			path: request.url,
+			message: errorTrace,
+		});
 	}
 };
 

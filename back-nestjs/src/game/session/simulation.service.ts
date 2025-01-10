@@ -7,7 +7,6 @@ import * as GameTypes from 'src/game/game.types';
 import { GAME, GAME_BALL, GAME_PADDLE } from 'src/game/game.data';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import { Console } from 'console';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -23,7 +22,7 @@ export default class SimulationService {
 
 	private sessionToken: string;
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
-	private forbidAutoPlay: number;	// if true the same user cannot play against themself
+	private forbidAutoPlay = this.config.get<boolean>('FORBID_AUTO_PLAY', false);	// if true the same user cannot play against themself
 	
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
@@ -37,16 +36,12 @@ export default class SimulationService {
 	constructor (
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
-		private readonly configFile: ConfigService) {
+		private readonly config: ConfigService) {
 
-			this.forbidAutoPlay = this.configFile.get<number>('FORBID_AUTO_PLAY', 0);
-			
-			if (this.configFile.get<number>('GAME_DEBUG_MODE', 0) === 1)
-				this.logger.setLogLevels(['debug', 'log', 'warn', 'error', 'fatal']);
-			else
-				this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
-		
 			this.logger.setContext(SimulationService.name);
+			// do not log all the emits to clients if not really necessary
+			if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
+				this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 		}
 
 	setInitInfo (
@@ -66,7 +61,7 @@ export default class SimulationService {
 				if (!this.player1 || !this.player2)
 					return;
 				
-				if (this.forbidAutoPlay === 1 && this.player1.nameNick == this.player2.nameNick)
+				if (this.forbidAutoPlay && this.player1.nameNick == this.player2.nameNick)
 					this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
 				else
 					this.startEngine();

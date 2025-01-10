@@ -31,6 +31,8 @@ export default class UsersService {
 		user.image = userMe.image.link;
 		user.greeting = 'Hello, I have just landed!';
 		user.status = UserStatus.Offline;
+		
+		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			await user.validate();
 			await this.usersRepository.save(user);

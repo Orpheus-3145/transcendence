@@ -22,6 +22,6 @@ export class AuthController {
 
 	@Get('logout')
 	async logout(@Res() res: Response) {
-		this.authService.handleRedir(res, true, '/login', 'Logged out successfully');
+		this.authService.logout(res);
 	}
 }

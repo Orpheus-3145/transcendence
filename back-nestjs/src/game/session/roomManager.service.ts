@@ -13,20 +13,19 @@ export default class RoomManagerService {
 
 	private rooms: Map<string, SimulationService> = new Map();
 
-	constructor(@Inject(forwardRef(() => AppLoggerService)) private readonly logger: AppLoggerService,
+	constructor(private readonly config: ConfigService,
+							private readonly logger: AppLoggerService,
 							@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
 							@Inject('GAME_SPAWN') private readonly gameRoomFactory: (
 									sessionToken: string,
 									mode: GameMode
 								) => SimulationService ,
-							private readonly configFile: ConfigService
 						) {
-
-			if (this.configFile.get<number>('GAME_DEBUG_MODE', 0) === 1)
-				this.logger.setLogLevels(['debug', 'log', 'warn', 'error', 'fatal']);
-			else
-				this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
+							
 			this.logger.setContext(RoomManagerService.name);
+			// do not log all the emits to clients if not really necessary
+			if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
+				this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	};
 
 	createRoom(sessionToken: string, mode: GameMode): void {
