@@ -15,8 +15,5 @@
 			"npm run --prefix back-nestjs/ format",
 			"npm run --prefix front-vite/ format"
 		]
-	},
-	"scripts": {
-		"prepare": "husky"
 	}
 }

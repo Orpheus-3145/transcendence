@@ -14,6 +14,7 @@ export interface User {
 	nameNick?: string | null;
 	nameFirst?: string;
 	nameLast?: string;
+
 	email?: string;
 	image?: string | null;
 	greeting?: string;
