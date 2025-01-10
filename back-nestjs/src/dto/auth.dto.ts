@@ -1,6 +1,6 @@
 import { IsString, IsNumber } from 'class-validator';
 
-export class AccessTokenDTO {
+export default class AccessTokenDTO {
 	constructor(data: Partial<AccessTokenDTO>) {
 		Object.assign(this, data);
 	}

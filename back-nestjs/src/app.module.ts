@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import GameModule from './game/game.module';
-import ExceptionModule from './errors/exception.module';
-import AppLoggerModule from './log/log.module';
+
+import User from 'src/entities/user.entity';
+import { AuthModule } from 'src/auth/auth.module';
+import UsersModule from 'src/users/users.module';
+import GameModule from 'src/game/game.module';
+import ExceptionModule from 'src/errors/exception.module';
+import AppLoggerModule from 'src/log/log.module';
 
 
 @Module({

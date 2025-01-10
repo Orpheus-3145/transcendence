@@ -1,93 +1,89 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
-import { UsersService as UserService } from '../users/users.service';
-import { AccessTokenDTO } from '../dto/auth.dto';
-import { UserDTO } from '../dto/user.dto';
+
+import UsersService from 'src/users/users.service';
+import AccessTokenDTO from 'src/dto/auth.dto';
+import { UserDTO } from 'src/dto/user.dto';
 import AppLoggerService from 'src/log/log.service';
-// import { User } from '../entities/user.entity';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
 
 @Injectable()
 export class AuthService {
 	constructor(
-		private configService: ConfigService,
-		private userService: UserService,
-		private logger: AppLoggerService,
+		private readonly configService: ConfigService,
+		private readonly userService: UsersService,
+		private readonly logger: AppLoggerService,
+		private readonly thrower: ExceptionFactory,
 	) {
     	this.logger.setContext(AuthService.name);
 	}
 
 	handleRedir(res: Response, clear: boolean, redir?: string, mess?: string) {
-		if (clear) res.clearCookie('auth_token');
+	
+		if (clear)
+			res.clearCookie('auth_token');
+	
 		const responseObj: any = {};
-		if (mess) responseObj.message = mess;
-		if (redir) responseObj.redirectTo = redir;
+
+		if (mess)
+			responseObj.message = mess;
+		if (redir)
+			responseObj.redirectTo = redir;
+
 		res.json(responseObj);
 	}
 
 	async getUserAccessToken(code: string): Promise<AccessTokenDTO | null> {
-		if (!code) {
-			this.logger.error(`Login failed, no code provided`)
-			return null;
-		}
-		try {
-			const response = await fetch(this.configService.get<string>('URL_INTRA_TOKEN'), {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: new URLSearchParams({
-					grant_type: 'authorization_code',
-					client_id: this.configService.get<string>('SECRET_UID'),
-					client_secret: this.configService.get<string>('SECRET_PWD'),
-					code: code,
-					redirect_uri: this.configService.get<string>('URL_BACKEND_LOGIN'),
-				}),
-			});
-			if (!response.ok) {
-				throw new Error('Problem with 42 temp key fetching.');
-			}
-			const token_info: AccessTokenDTO = await response.json();
-			return token_info;
-		} catch (error) {
-			this.logger.error(`Error fetching user access token - trace: ${error.message}`)
-		}
-		return null;
+
+		if (!code) 
+			this.thrower.throwSessionExcp(`Login failed, no code provided`, `${AuthService.name}.${this.constructor.prototype.getUserAccessToken.name}()`, HttpStatus.UNAUTHORIZED)
+
+		const response = await fetch(this.configService.get<string>('URL_INTRA_TOKEN'), {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: new URLSearchParams({
+				grant_type: 'authorization_code',
+				client_id: this.configService.get<string>('SECRET_UID'),
+				client_secret: this.configService.get<string>('SECRET_PWD'),
+				code: code,
+				redirect_uri: this.configService.get<string>('URL_BACKEND_LOGIN'),
+			}),
+		});
+		
+		if (!response.ok)
+			this.thrower.throwSessionExcp(`Problem with Intra42 temp key fetching, response: ${response.body}`, `${AuthService.name}.${this.constructor.prototype.getUserAccessToken.name}()`, HttpStatus.UNAUTHORIZED)
+
+		return response.json();
 	}
 
 	async getUserMe(access_token: string): Promise<Record<string, any> | null> {
-		if (!access_token) {
-			this.logger.error('No access token provided')
-			return null;
-		}
-		try {
-			const response = await fetch(this.configService.get<string>('URL_INTRA_USERME'), {
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${access_token}`,
-					'Content-Type': 'application/json',
-				},
-			});
-			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-			return response.json();
-		} catch (error) {
-			this.logger.error(`Error fetching data - trace: ${error.message}`)
-		}
-		return null;
+		
+		if (!access_token)
+			this.thrower.throwSessionExcp(`No access token provided from Intra42`, `${AuthService.name}.${this.constructor.prototype.getUserMe.name}()`, HttpStatus.UNAUTHORIZED)
+		
+		const response = await fetch(this.configService.get<string>('URL_INTRA_USERME'), {
+			method: 'GET',
+			headers: {
+				Authorization: `Bearer ${access_token}`,
+				'Content-Type': 'application/json',
+			},
+		});
+		
+		if (!response.ok)
+			this.thrower.throwSessionExcp(`Problem with Intra42 temp user fetching, response: ${response.body}`, `${AuthService.name}.${this.constructor.prototype.getUserMe.name}()`, HttpStatus.UNAUTHORIZED)
+	
+		return response.json();
 	}
 
 	async login(code: string, res: Response): Promise<UserDTO | null> {
-		if (!code) {
-			res.clearCookie('auth_token');
-			res.redirect(this.configService.get<string>('URL_FRONTEND') + '/login');
-			return null;
-		}
+	
+		if (!code)
+			this.thrower.throwSessionExcp(`Login failed, no code provided`, `${AuthService.name}.${this.constructor.prototype.login.name}()`, HttpStatus.UNAUTHORIZED)
 
-		const access = await this.getUserAccessToken(code);
-		if (access === null) return null;
-
+		const access: AccessTokenDTO = await this.getUserAccessToken(code);
 		const userMe = await this.getUserMe(access.access_token);
-		if (userMe === null) return null;
-		
 		const signedToken = sign({ intraId: userMe.id }, this.configService.get<string>('SECRET_KEY'));
 
 		res.cookie('auth_token', signedToken, {
@@ -95,16 +91,11 @@ export class AuthService {
 			maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
 		});
 
-		try {
-			const userDTOreturn = await this.userService.createUser(access, userMe);
-			res.redirect(this.configService.get<string>('URL_FRONTEND'));
-			this.logger.log(`Successful login with user: ${userDTOreturn.nameNick}`)
-			return userDTOreturn;
-		} catch (error) {
-			this.logger.error(`Login failed with user: ${userMe.login} - trace: ${error.message}`)
-			res.redirect(this.configService.get<string>('URL_FRONTEND') + '/login');
-			return null;
-		}
+		const userDTOreturn = await this.userService.createUser(access, userMe);
+		this.logger.log(`Successful login with user ${userDTOreturn.nameNick}`)
+		
+		res.redirect(this.configService.get<string>('URL_FRONTEND'));
+		return userDTOreturn;
 	}
 
 	async validate(req: Request, res: Response) {
@@ -117,14 +108,17 @@ export class AuthService {
 
 		// Extract token
 		const token = req.cookies['auth_token'];
-		if (!token) return this.failResponse(res, responseData, 'Validator token not found.', '/login');
+		if (!token)
+			this.thrower.throwSessionExcp(`Validator token 'auth_token' not found in cookies`, `${AuthService.name}.${this.constructor.prototype.validate.name}()`, HttpStatus.UNAUTHORIZED)
+
 
 		// Verify token
 		let decoded: string | JwtPayload;
 		try {
 			decoded = verify(token, this.configService.get<string>('SECRET_KEY'));
 		} catch (error) {
-			return this.failResponse(res, responseData, 'Token validation error.', '/login');
+			this.thrower.throwSessionExcp(`Token validation error`, `${AuthService.name}.${this.constructor.prototype.validate.name}()`, HttpStatus.UNAUTHORIZED)
+
 		}
 		// Check decoded type
 		if (typeof decoded !== 'object' || isNaN(Number(decoded.intraId)))

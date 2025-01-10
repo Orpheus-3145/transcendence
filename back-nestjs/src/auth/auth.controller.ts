@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Req, Res, UseFilters } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { AuthService } from './auth.service';
 
+import { AuthService } from 'src/auth/auth.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 
 
