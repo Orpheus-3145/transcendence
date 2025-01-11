@@ -38,8 +38,7 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 	return found ? true : false;
 };
 
-const ChannelsPage: React.FC = () => {
-	
+const ChannelsPage: React.FC = () => {	
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const [channelName, setChannelName] = useState('');
@@ -674,7 +673,6 @@ const ChannelsPage: React.FC = () => {
 		</Stack>
 	  </Container>
 	);
-	
 };
 
 export default ChannelsPage;

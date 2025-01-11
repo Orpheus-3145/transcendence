@@ -1,28 +1,65 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
-import { User } from './user.entity';
+import {Entity,	PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
 
-@Entity()
-export class Chat {
+// Channel entity
+@Entity('Channels')
+export class Channel {
 	@PrimaryGeneratedColumn()
-	id: number;
+	channel_id: number;
 
-	@Column()
-	name: string;
+	@Column({
+		type: 'enum',
+		enum: ['public', 'protected', 'private', 'chat'],
+		default: 'public',
+	})
+	ch_type: string;
 
-	@Column()
-	type: 'public' | 'private' | 'password';
+	@Column({ type: 'varchar', length: 50, default: 'Welcome to my Channel!' })
+	title: string;
 
-	@Column({ nullable: true })
-	password: string | null;
+	@Column({ type: 'varchar', length: 50, default: 'default_channel_photo.png' })
+	channel_photo: string;
 
-	@ManyToMany(() => User)
-	@JoinTable()
-	users: User[];
-
-	@Column('jsonb', { default: [] })
-	messages: Array<{
-		message: string;
-		userId: number
-		timestamp: string;
-	}>;
+	@CreateDateColumn()
+	created: Date;
 }
+
+// Channel_Members entity
+@Entity('Channel_Members')
+export class ChannelMember {
+	@PrimaryColumn()
+	user_id: number;
+
+	@PrimaryColumn()
+	channel_id: number;
+
+	@Column({
+		type: 'enum',
+		enum: ['owner', 'admin', 'member'],
+		default: 'member',
+	})
+	member_role: string;
+
+	@ManyToOne(() => Channel, (channel: Channel) => channel.channel_id)
+	@JoinColumn({ name: 'channel_id' })
+	channel: Channel;
+}
+
+// Messages entity
+@Entity('Messages')
+export class Message {
+	@PrimaryGeneratedColumn()
+	msg_id: number;
+
+	@Column()
+	sender_id: number;
+
+	@Column()
+	receiver_id: number;
+
+	@Column('text')
+	content: string;
+
+	@CreateDateColumn()
+	send_time: Date;
+}
+
