@@ -62,3 +62,4 @@ export class Message {
 	@CreateDateColumn()
 	send_time: Date;
 }
+
