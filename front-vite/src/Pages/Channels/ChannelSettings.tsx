@@ -83,7 +83,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 	const handleDeleteChannel = () => {
 		//--> CALL TO BACKEND <-- //
 		console.log("'Delete Channel' clicked!");
-		if (selectedChannel.settings.owner === 'MYSELF') {
+		if (selectedChannel.settings.owner === myself.name) {
 			const updatedChannels = chatProps.chatRooms.filter((chat) => chat.name !== selectedChannel.name);
 			setChatProps({...chatProps, chatRooms: updatedChannels});
 			setSelectedChannel(null);
@@ -186,7 +186,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 							{`(${user.role})`}
 					  </Typography>
 					  {(userIsAdmin(myself.name, selectedChannel) ||
-					  	selectedChannel.settings.owner === myself.name) && (
+					  	selectedChannel.settings.owner === myself.name) && 
+						myself.name !== user.name && (
 					  <Stack direction="row" spacing={0.3}>
 						<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
 							{user.role === 'Guest' ? 'Make Admin' : 'Make Guest' }
