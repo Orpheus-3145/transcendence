@@ -9,6 +9,8 @@ import {
   Logout as LogoutIcon,
   Login as LoginIcon,
 } from '@mui/icons-material';
+import ChatComponent from './ChatComponent'
+
 
 interface ChannelTypeEvent {
   component: React.ReactNode;
@@ -94,8 +96,12 @@ const ChannelsPage: React.FC = () => {
     <Box
     height={'80vh'}
     bgcolor={theme.palette.primary.light}
+	display={'flex'}
+	alignItems={'center'}
+	justifyContent={'center'}
+	flexDirection={'column'}
     >
-    channel creation part
+		<ChatComponent />
     </Box>
   );
   };
@@ -120,9 +126,9 @@ const ChannelsPage: React.FC = () => {
     }}
     >
     <AddIcon />
-    <Typography>
-      Create a Channel
-    </Typography>
+	    <Typography>
+	    	Create a Channel
+	    </Typography>
     </Stack>
   );
   };
@@ -166,7 +172,7 @@ const ChannelsPage: React.FC = () => {
   };
 
   return (
-  pageContainer()
+  	pageContainer()
   );
 };
 
