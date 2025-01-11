@@ -32,7 +32,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    const validate = async () => {
+	const validate = async () => {
       try {
         const response = await axios.get(import.meta.env.URL_BACKEND + '/auth/validate', { withCredentials: true });
         const userDTO = response.data.user;
