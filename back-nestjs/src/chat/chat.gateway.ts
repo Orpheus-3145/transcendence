@@ -39,21 +39,26 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
 	// Join a specific room/channel
 	@SubscribeMessage('joinChannel')
-	handleJoinChannel(
+	async handleJoinChannel(
 		@MessageBody('channel') channel: string,
 		@ConnectedSocket() client: Socket,
-	): void {
-		client.join(channel);
+	): Promise<void> {
 		console.log(`Client ${client.id} joined channel ${channel}`);
+
+		// Add the user to the database if needed
+		await this.chatService.addUserToChannel(+client.id, +channel);
+	  
+		// Join the channel
+		client.join(channel);
 		client.emit('joinedChannel', { channel });
 	}
 
 	// Leave a specific room/channel
 	@SubscribeMessage('leaveChannel')
-	handleLeaveChannel(
+	async handleLeaveChannel(
 		@MessageBody('channel') channel: string,
 		@ConnectedSocket() client: Socket,
-	): void {
+	): Promise<void> {
 		client.leave(channel);
 		console.log(`Client ${client.id} left channel ${channel}`);
 		client.emit('leftChannel', { channel });
@@ -61,12 +66,17 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
 	// Handle messages sent to a specific channel
 	@SubscribeMessage('sendMessage')
-	handleMessage(
+	async handleMessage(
 		@MessageBody('channel') channel: string,
 		@MessageBody('message') message: string,
-	@ConnectedSocket() client: Socket,
-	): void {
+		@ConnectedSocket() client: Socket,
+	): Promise<void> {
 		console.log(`Message to channel ${channel} from ${client.id}: ${message}`);
+
+		// Save the message to the database
+		await this.chatService.sendMessage(+client.id, +channel, message);
+
+		// Broadcast to other clients in the channel
 		this.server.to(channel).emit('newMessage', { message, channel, senderId: client.id });
 	}
 };
