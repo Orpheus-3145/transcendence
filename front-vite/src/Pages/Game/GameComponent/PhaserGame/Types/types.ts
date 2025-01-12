@@ -25,14 +25,14 @@ export interface GameState {
 		p2: number}
 };
 
-export interface extras {
-	speedBall: powerUp
-}
-
 export interface PowerUp {
 	x: number,
-	y: number,
-	active: boolean
+	y: number
+}
+
+export interface PowerUpStatus {
+	active: boolean,
+	player: number
 }
 
 export interface PlayerData {

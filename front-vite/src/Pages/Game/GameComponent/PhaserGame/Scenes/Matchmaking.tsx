@@ -8,6 +8,7 @@ export default class Matchmaking extends Phaser.Scene {
 
 	private _background!: Phaser.GameObjects.Image;
 	private _socketIO!: Socket;
+	private _extras: boolean = false
 
   private _keyEsc!: Phaser.Input.Keyboard.Key;
 
@@ -17,10 +18,10 @@ export default class Matchmaking extends Phaser.Scene {
 	}
 
 	// executed when scene.start('Matchmaking') is called
-  init(): void {
+  init(extras: boolean): void {
 
 		this._keyEsc = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) as Phaser.Input.Keyboard.Key;
-		
+		this._extras = extras
 		this.setupSocket();
 	};
 
@@ -76,7 +77,7 @@ export default class Matchmaking extends Phaser.Scene {
 		
 		this._socketIO.on('ready', (sessionId: string) => {
 			
-			const sessionData: GameTypes.InitData = {sessionToken: sessionId, mode: GameTypes.GameMode.multi};
+			const sessionData: GameTypes.InitData = {sessionToken: sessionId, mode: GameTypes.GameMode.multi, extras: this._extras};
 			this.scene.start('Game', sessionData);
 		});
 

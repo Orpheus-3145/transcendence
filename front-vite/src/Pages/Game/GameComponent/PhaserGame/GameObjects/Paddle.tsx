@@ -18,25 +18,29 @@ export default class Paddle {
     this._startPos = new Phaser.Math.Vector2(x, y);
 
     // Create a graphical rectangle to represent the player bar
-    this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0x0f0); // A green bar
+    this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0x0000ff);
 
     // Optional: Set some default properties for the bar
     this._graphic.setOrigin(0.5, 0.5); // Set origin to the center (for easier positioning)
     this._graphic.setDepth(1); // Ensure the bar is drawn above other elements (optional)
   };
 
-  // Update the position of the bar based on backend data
-  updatePosition(y: number): void {
-    this._graphic.y = y; // Set the y position from backend data
-  };
+	// Update the position of the bar based on backend data
+	updatePosition(y: number): void {
+		this._graphic.y = y; // Set the y position from backend data
+	};
 
-  // Optionally, reset the position if you need to reset to the start position
-  resetPos(): void {
-    this._graphic.setPosition(this._startPos.x, this._startPos.y);
-  };
+	// Optionally, reset the position if you need to reset to the start position
+	resetPos(): void {
+		this._graphic.setPosition(this._startPos.x, this._startPos.y);
+	};
 
-  // Change the color of the paddle
-  changeColor(color: number): void {
-    this._graphic.setFillStyle(color); // Set the new color using a hexadecimal color value
-  }
+	// Change the color of the paddle
+	changeColor(color: number): void {
+		this._graphic.setFillStyle(color, 1); // Set the new color using a hexadecimal color value
+	};
+
+	getColor(): number {
+		return this._graphic.fillColor;
+	}
 };

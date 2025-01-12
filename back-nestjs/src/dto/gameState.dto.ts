@@ -61,7 +61,3 @@ export default class GameStateDTO {
     // @Type(() => PowerUpDTO)
 	// speedBall: PowerUpDTO;
 };
-
-export class GameExtrasDTO {
-
-};

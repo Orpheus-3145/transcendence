@@ -35,7 +35,7 @@ export default class MainMenu extends Phaser.Scene {
 		this.createBtn(400, 100, 'Play [single player]').on(
 			'pointerup', () => this.scene.start('Game', {sessionToken: 'singlePlayerToken', mode: GameTypes.GameMode.single, extras: this._extrasEnabled}));
 		this.createBtn(400, 150, 'Play [multi player]').on(
-			'pointerup', () => this.scene.start('Matchmaking'));
+			'pointerup', () => this.scene.start('Matchmaking', {extras: this._extrasEnabled}));
 		this.createBtn(400, 200, 'Settings').on(
 			'pointerup', () => this.scene.start('Settings'));
 	};

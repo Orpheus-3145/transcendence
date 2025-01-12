@@ -12,7 +12,7 @@ export default class Game extends Phaser.Scene {
 	// Game objects
 	private _ball!: Ball;
 	private _leftPaddle!: Paddle;
-	private _righPaddle!: Paddle;
+	private _rightPaddle!: Paddle;
 	private _field!: Field;
 	private _speedBall!: SpeedBall | null;
 
@@ -34,7 +34,8 @@ export default class Game extends Phaser.Scene {
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private _extras: boolean = false;
 	private _gameState!: GameTypes.GameState;
-	private _addPlayerSuccess = false;
+	// private _powerUpActive: boolean = false;
+ 	private _powerUpActive: { [key: number]: boolean } = { 0: false, 1: false }; // Tracks if a player has the power-up
   constructor() {
 		
 		super({ key: 'Game' });
@@ -74,7 +75,7 @@ export default class Game extends Phaser.Scene {
 
 		// Create bars
 		this._leftPaddle = new Paddle(this, GAME_BAR.width / 2, GAME.height / 2);
-		this._righPaddle = new Paddle(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
+		this._rightPaddle = new Paddle(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
@@ -126,14 +127,10 @@ export default class Game extends Phaser.Scene {
 			this._speedBall = null; // Reset the reference
 		}
 		});
-		this._socketIO.on('powerUpActivated', (state: boolean) => {
+		this._socketIO.on('powerUpActivated', (state: GameTypes.PowerUpStatus) => {
 			console.log("Power-up state received:", state);
-			if (state == true) {
-				this._leftPaddle.changeColor(0xffff00);
-			}
-			else {
-				this._leftPaddle.changeColor(0x0000ff);
-			}
+
+			this._powerUpActive[state.player] = state.active
 		});
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 
@@ -143,10 +140,19 @@ export default class Game extends Phaser.Scene {
 		this._socketIO.emit(msgType, content);
 	};
 
+	setPaddleColour(paddle: Paddle, active: boolean): void {
+		if (active === true) {
+			paddle.changeColor(0xffff00);
+		}
+		else if (paddle.getColor() === 0xffff00 && active === false) {
+			paddle.changeColor(0x0000ff);
+		}
+	}
+
 	// Frame-by-frame update
 	update(): void {
 
-		if (this._gameStarted == false)
+		if (this._gameStarted === false)
 			return;
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
@@ -160,7 +166,10 @@ export default class Game extends Phaser.Scene {
 			this.scene.start('MainMenu');
 			// this.scene.start('Error', "random!")
 		}
-		
+	
+		console.log("Power-up state update: ", this._powerUpActive);
+		this.setPaddleColour(this._leftPaddle, this._powerUpActive[0])
+		this.setPaddleColour(this._rightPaddle, this._powerUpActive[1])
 		this.updateGame();
   };
 
@@ -174,6 +183,6 @@ export default class Game extends Phaser.Scene {
 
 		// Update paddles based on player positions
 		this._leftPaddle.updatePosition(this._gameState.p1.y);
-		this._righPaddle.updatePosition(this._gameState.p2.y);
+		this._rightPaddle.updatePosition(this._gameState.p2.y);
 	};
 };
