@@ -251,18 +251,20 @@ export default class SimulationService {
 	updateBotPaddle(): void {
 
 		// throw excp if engine is not running
-		// if (this.mode === GameTypes.GameMode.single && this.speedBallPosition.x > this.windowWidth / 2) {
-		// 	if (this.speedBallPosition.y < this.player2.posY - 30)
-		// 		this.movePaddle(this.botName, GameTypes.PaddleDirection.up);
-		// 	else if (this.speedBallPosition.y > this.player2.posY + 30)
-		// 		this.movePaddle(this.botName, GameTypes.PaddleDirection.down);
-		// }
-		if (this.mode === GameTypes.GameMode.single && this.ball.x > this.windowWidth / 2) {
+		if (this.mode === GameTypes.GameMode.single) {
+			if (this.ball.x > this.windowWidth / 2) {
 
-			if (this.ball.y < this.player2.posY - 30)
-				this.movePaddle(this.botName, GameTypes.PaddleDirection.up);
-			else if (this.ball.y > this.player2.posY + 30)
-				this.movePaddle(this.botName, GameTypes.PaddleDirection.down);
+				if (this.ball.y < this.player2.posY - 30)
+					this.movePaddle(this.botName, GameTypes.PaddleDirection.up);
+				else if (this.ball.y > this.player2.posY + 30)
+					this.movePaddle(this.botName, GameTypes.PaddleDirection.down);
+			}
+			else {
+				if (this.speedBallPosition.y < this.player2.posY - 30)
+					this.movePaddle(this.botName, GameTypes.PaddleDirection.up);
+				else if (this.speedBallPosition.y > this.player2.posY + 30)
+					this.movePaddle(this.botName, GameTypes.PaddleDirection.down);
+			}
 		}
  	};
 
@@ -432,9 +434,12 @@ deactivateSpeedBall(): void {
 
 handleSpeedBallCollisionWithPaddle(player_no: number): void {
 	this.powerUpActive[player_no] = true;
+	// console.log(`Power up turned on for ${player_no}`);
 	const player_identity_1 = player_no === 0 ? GameTypes.PlayerIdentity.self : GameTypes.PlayerIdentity.opponent
+	
 	this.updatePlayers(this.player1, player_no, player_identity_1, true);
-	if ( this.mode == GameTypes.GameMode.multi) {
+	console.log(`Informing p1 that power up turned on for ${player_no}. id ${player_identity_1}`);
+	if ( this.mode === GameTypes.GameMode.multi) {
 		const player_identity_2 = player_no === 1 ? GameTypes.PlayerIdentity.self : GameTypes.PlayerIdentity.opponent
 		this.updatePlayers(this.player2, player_no, player_identity_2, true);
 	}
@@ -453,22 +458,20 @@ removePowerUp(player_no: number): void {
     this.powerUpActive[player_no] = false;
 	const player_identity_1 = player_no === 0 ? GameTypes.PlayerIdentity.self : GameTypes.PlayerIdentity.opponent
 	this.updatePlayers(this.player1, player_no, player_identity_1, false);
-	if ( this.mode == GameTypes.GameMode.multi) {
+	console.log(`Informing p1 that power up turned off for ${player_no}. id ${player_identity_1}`);
+	if ( this.mode === GameTypes.GameMode.multi) {
 		const player_identity_2 = player_no === 1 ? GameTypes.PlayerIdentity.self : GameTypes.PlayerIdentity.opponent
 		this.updatePlayers(this.player2, player_no, player_identity_2, false);
 	}
 }
 
-updatePlayers(player:  GameTypes.Player, player_no: number, player_id: number, active: boolean) {
+updatePlayers(player: GameTypes.Player, player_no: number, player_id: number, active: boolean) {
 	console.log(player_no)
 	let powerUpStatus = {
 		active: active,
 		player: player_id
 	}
-	if (player_no === 0 || (player_no === 1 && this.mode == GameTypes.GameMode.multi)) {
-		// Notify player about the power-up deactivation
-		player.clientSocket.emit('powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
-	}
+	player.clientSocket.emit('powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
 }
 
 };
