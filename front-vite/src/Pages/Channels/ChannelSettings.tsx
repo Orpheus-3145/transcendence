@@ -4,7 +4,7 @@ import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons
 import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl} from '@mui/material';
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
-import { myself, userIsAdmin } from '.';
+import { myself, userInChannel, userIsAdmin } from '.';
 
 interface SettingsModalProps {
     open: boolean;
@@ -15,9 +15,24 @@ interface SettingsModalProps {
 	setChatProps: (chatProps: ChatProps) => void;
 	selectedChannel: ChatRoom;
 	setSelectedChannel: (selectedChannel: ChatRoom) => void;
+	availableChannels: ChatRoom[]
+	setAvailableChannels: (availableChannels: ChatRoom[]) => void;
+	setIsSettingsView: boolean
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, settings, setSettings, chatProps, setChatProps, selectedChannel, setSelectedChannel }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ 
+	open,
+	onClose,
+	settings,
+	setSettings,
+	chatProps,
+	setChatProps,
+	selectedChannel,
+	setSelectedChannel,
+	availableChannels,
+	setAvailableChannels,
+	setIsSettingsView
+}) => {
 	const [friendName, setFriendName] = useState('');
 	const theme = useTheme();
 
@@ -92,6 +107,38 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose, set
 
 	const handleLeaveChannel = () => {
 
+		setIsSettingsView(false);
+
+		
+		setChatProps((prevState) => ({
+			...prevState,
+			chatRooms:  prevState.chatRooms.filter((channel) => channel.name !== selectedChannel.name),
+		}));
+		
+		if (selectedChannel.settings.users.length === 1 && userInChannel(myself.name, selectedChannel)) {
+			setSelectedChannel(null);
+			return ;
+		}
+		
+		const filteredUsers = selectedChannel.settings.users.filter((user) => user.name !== myself.name);
+		
+		const updatedChannel: ChatRoom = {
+			...selectedChannel,
+			settings: {
+				...selectedChannel.settings,
+				users: filteredUsers,
+				owner: selectedChannel.settings.owner === myself.name ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
+			},
+		};
+
+		setAvailableChannels((prevState) => ([
+			...prevState,
+			updatedChannel,
+		]))
+
+		setSelectedChannel(null);
+
+		
 	};
 
 

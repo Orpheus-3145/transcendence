@@ -255,8 +255,9 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	const moveSelectedChToJoinedCh = () => {
-		if (!selectedAvailableChannel)
+		if (!selectedAvailableChannel) {
 			return;
+		}
 		setIsPasswordModal(false);
 		
 		// const updatedChannel = { ...selectedAvailableChannel }; 
@@ -280,6 +281,22 @@ const ChannelsPage: React.FC = () => {
 		setSelectedChannel(null);
 		
 	};
+
+	// const moveSelectedChToAvailableCh = () => {
+	// 	if (!selectedChannel) {
+	// 		return ;
+	// 	}
+
+	// 	setChatProps((prevState) => ({
+	// 		...prevState,
+	// 		chatRooms:  prevState.chatRooms.filter((channel) => channel.name != selectedChannel.name),
+	// 	}));
+
+	// 	setAvailableChannels((prevState) => ([
+	// 		...prevState,
+	// 		selectedChannel,
+	// 	]))
+	// };
 	  
 
 	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
@@ -556,6 +573,9 @@ const ChannelsPage: React.FC = () => {
 				  setChatProps={setChatProps}
 				  selectedChannel={selectedChannel}
 				  setSelectedChannel={setSelectedChannel}
+				  availableChannels={availableChannels}
+				  setAvailableChannels={setAvailableChannels}
+				  setIsSettingsView={setIsSettingsView}
 				/>
 			  ) : (
 				//---Render Messages---//
