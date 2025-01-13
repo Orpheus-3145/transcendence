@@ -120,6 +120,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			return ;
 		}
 		
+		
 		const filteredUsers = selectedChannel.settings.users.filter((user) => user.name !== myself.name);
 		
 		const updatedChannel: ChatRoom = {
