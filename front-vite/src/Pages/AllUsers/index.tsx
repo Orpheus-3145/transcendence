@@ -5,23 +5,59 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import { getAll, User, UserStatus} from '../../Providers/UserContext/User';
 import SearchIcon from '@mui/icons-material/Search';
+import { off } from 'process';
 
 const AllUsersPage: React.FC = () => {
 	const allUsers = getAll();
 	const [users, setUsers] = useState<User[]>([]);
+	const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
+	const [offlineUsers, setOfflineUsers] = useState<User[]>([]);
 	const [showInput, setShowInput] = useState<Boolean>(false);
 	const [inputValue, setInputValue] = useState<string>('');
 	const [showMessage, setShowMessage] = useState<Boolean>(false);
+	const [showOnline, setShowOnline] = useState<Boolean>(true);
+	const [showOffline, setShowOffline] = useState<Boolean>(true);
+	const [showSearch, setShowSearch] = useState<Boolean>(false);
 	const navigate = useNavigate();
 	
 	useEffect(() => {
 		const fetchUsers = async () => {
 			const usersList = await getAll();
 			setUsers(usersList);
+			sortUsers(usersList);
 		};
 
 		fetchUsers();
-	}, []);
+	}, [onlineUsers, offlineUsers, users, showOnline, showOffline]);
+
+	let sortUsers = (arr: User[]) =>
+	{
+		const online: User[] = [];
+		const offline: User[] = [];
+		arr.forEach((item: User) => 
+		{
+			if (item.status === UserStatus.Online || item.status === UserStatus.InGame) 
+			{
+				online.push(item);
+			} 
+			else 
+			{
+				offline.push(item);
+			}
+		});
+		setOnlineUsers(online);
+		setOfflineUsers(offline);
+		setShowOnline(true);
+		setShowOffline(true);
+		if (offline.length === 0)
+		{
+			setShowOffline(false);
+		}
+		if (online.length === 0)
+		{
+			setShowOnline(false);
+		}
+	}
 
 	let redirectToUser = (id: number) => {
 		navigate(`/profile/${id}`);
@@ -48,9 +84,11 @@ const AllUsersPage: React.FC = () => {
 			if (len == -1)
 			{
 				setUsers((await allUsers));
+				sortUsers((await allUsers));
 				setInputValue('');
 				setShowMessage(false);
 				setShowInput(false);
+				setShowSearch(false);
 				return ;
 			}
 
@@ -70,10 +108,13 @@ const AllUsersPage: React.FC = () => {
 			
 			if (added == 0)
 				setShowMessage(true);
-
+			else
+				setShowMessage(false);
+	
 			setUsers(newlist);
 			setInputValue('');
 			setShowInput(false);
+			setShowSearch(true);
 		}
 	}
 
@@ -139,6 +180,92 @@ const AllUsersPage: React.FC = () => {
 		return ('red');
 	}
 
+	let getOnline = () =>
+	{
+		if (showOnline)
+		{
+			return (
+				<ImageList cols={4}>
+					{onlineUsers.map((item: User) => 
+					(
+						<ImageListItem key={item.image}>
+							<img
+								src={item.image}
+								alt={item.nameNick}
+								loading="lazy"
+							/>
+							<Link 
+								href="" 
+								onClick={() => redirectToUser(item.id)} 
+								sx={{ 
+									color: statusToColor(item)
+								}}
+							>
+								{item.nameNick}
+							</Link>
+						</ImageListItem>
+					))}
+				</ImageList>
+			);
+		}
+
+		return (
+			<Stack alignItems="center">
+				<Typography
+					variant={'h5'}
+					sx={{
+						fontFamily: 'Georgia, serif',
+					}}
+				>
+					Currently no online users!
+				</Typography>
+			</Stack>
+		);
+	}
+
+	let getOffline = () =>
+	{
+		if (showOffline)
+		{
+			return (
+				<ImageList cols={4}>
+					{offlineUsers.map((item: User) => 
+					(
+						<ImageListItem key={item.image}>
+							<img
+								src={item.image}
+								alt={item.nameNick}
+								loading="lazy"
+							/>
+							<Link 
+								href="" 
+								onClick={() => redirectToUser(item.id)} 
+								sx={{ 
+									color: statusToColor(item)
+								}}
+							>
+								{item.nameNick}
+							</Link>
+						</ImageListItem>
+					))}
+				</ImageList>
+			);
+		}
+
+		return (
+			<Stack alignItems="center">
+				<Typography
+					variant={'h5'}
+					sx={{
+						fontFamily: 'Georgia, serif',
+					}}
+				>
+					Currently no offline users!
+				</Typography>
+			</Stack>
+		);
+	}
+
 	let pageBody = () => 
 	{
 		if (showMessage)
@@ -165,28 +292,61 @@ const AllUsersPage: React.FC = () => {
 			);
 		}
 
+		if (showSearch)
+		{
+			return (
+				<Stack>
+					<ImageList cols={4}>
+					{users.map((item: User) => 
+					(
+						<ImageListItem key={item.image}>
+							<img
+								src={item.image}
+								alt={item.nameNick}
+								loading="lazy"
+							/>
+							<Link 
+								href="" 
+								onClick={() => redirectToUser(item.id)} 
+								sx={{ 
+									color: statusToColor(item)
+								}}
+							>
+								{item.nameNick}
+							</Link>
+						</ImageListItem>
+					))}
+					</ImageList>
+				</Stack>
+			);
+		}
+
 		return (
-			<ImageList cols={4}>
-				{users.map((item: User) => (
-					<ImageListItem 
-						key={item.image}>
-						<img
-							src={item.image}
-							alt={item.nameNick}
-							loading="lazy"
-						/>
-						<Link 
-							href="" 
-							onClick={() => redirectToUser(item.id)} 
-							sx={{ 
-								color: statusToColor(item)
-							}}
-						>
-							{item.nameNick}
-						</Link>
-					</ImageListItem>
-				))}
-			</ImageList>
+			<Stack>
+				<Stack alignItems="center">
+					<Typography
+						variant="h4"
+						sx={{
+							fontFamily: 'Georgia, serif',
+						}}
+					>
+						Online
+					</Typography>
+				</Stack>
+				{getOnline()}
+				<br />
+				<Stack alignItems="center">
+					<Typography
+						variant="h4"
+						sx={{
+							fontFamily: 'Georgia, serif',
+						}}
+					>
+						Offline
+					</Typography>
+				</Stack>
+				{getOffline()}
+			</Stack>
 		);
 	}
 

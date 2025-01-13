@@ -31,14 +31,13 @@ const ProfilePage: React.FC = () => {
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
-	const [showInputMessage, setShowInputMessage] = useState(false);
-	const [showInput, setShowInput] = useState(false);
-	const [inputValue, setInputValue] = useState('');
-	const [ownPage, showOwnPage] = useState(false);
+	const [showInputMessage, setShowInputMessage] = useState<Boolean>(false);
+	const [showInput, setShowInput] = useState<Boolean>(false);
+	const [inputValue, setInputValue] = useState<string>("");
+	const [ownPage, showOwnPage] = useState<Boolean>(false);
 	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
-	const [showMessage, setShowMessage] = useState(false);
-	// const messageErrorNickname = "Invalid nickname! Maximum of 27 chars and only letters, numbers and spaces are allowed!";
+	const [showMessage, setShowMessage] = useState<Boolean>(false);
 	const [messageErrorNickname, setMessageErrorNickname] = useState<string>("");
 	const [profileImage, setProfileImage] = useState();
 	const [friendsList, setFriendsList] = useState<string[]>([]);
@@ -309,26 +308,67 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
+	var scoreOwn = 5;
+	var scoreother = 2;
+	var won: Boolean = true;
+	var idOther = "Brother";
+	var typeGame = "Casual";
+
 	let gameLine = () => 
 	{
+		var color = '#1da517';
+		if (won === false)
+			color = '#b01515';
+		// var friend = fetchFriend();
+
 		return (
 			<Stack
-				direction={'row'}
-				gap={1}
-				justifyContent={'space-around'}
-				alignContent={'center'}
-				textAlign={'center'}
-				bgcolor={alpha(theme.palette.background.default, 0.3)}
-				borderRadius={'2em'}
-				padding={'0.3em'}
+				direction="row"
+				justifyContent="space-around"
+				alignItems="center"
+				bgcolor={color}
+				borderRadius="2em"
+				padding="0.3em"
 			>
-				<Typography alignContent={'center'} textAlign={'center'}>Type</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>Custom</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>9:15</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>Opponent Name</Typography>
+				<Typography 
+					style={{ 
+						width: '150px', 
+						textAlign: 'center' 
+					}}
+				>
+					Game Type: {typeGame}
+				</Typography>
+				<Typography 
+					style={{ 
+						width: '100px', 
+						textAlign: 'center' 
+					}}
+				>
+					Score: {scoreOwn} | {scoreother}
+				</Typography>
+				<Typography 
+					sx={{
+						'& a': {
+							textDecoration: 'none',
+							color: 'blue',
+							'&:hover': { 
+								color: 'black'
+							}
+						},
+					}}
+					style={{ 
+						width: '0px',
+						position: 'relative', 
+						left: '10px',
+						textAlign: 'center' 
+					}}
+				>
+					<a href="" onClick={() => redirectFriend()}>{idOther}</a>
+				</Typography>
 				<Avatar />
 			</Stack>
 		);
+
 	};
 
 	let gameContainer = () => 
@@ -336,18 +376,16 @@ const ProfilePage: React.FC = () => {
 		return (
 			<Box
 				sx={{
-					width: '100%',
+					width: '90%',
+					position: 'relative',
+					left: '40px',
 					height: '100%',
 					overflowY: 'auto',
 					padding: '0.5em'
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{Array.from({ length: 2 }).map((_, index) => (
-						<React.Fragment key={index}>
-							{gameLine()}
-						</React.Fragment>
-					))}
+					{gameLine()}
 				</Stack>
 			</Box>
 		);
@@ -355,6 +393,7 @@ const ProfilePage: React.FC = () => {
 
 	let GameBox = () => 
 	{
+		
 		return (
 			<Stack
 			width={'100%'}

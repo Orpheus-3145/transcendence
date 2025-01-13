@@ -261,26 +261,67 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
+	var scoreOwn = 5;
+	var scoreother = 2;
+	var won: Boolean = true;
+	var idOther = "Brother";
+	var typeGame = "Casual";
+
 	let gameLine = () => 
 	{
+		var color = '#1da517';
+		if (won === false)
+			color = '#b01515';
+		// var friend = fetchFriend();
+
 		return (
 			<Stack
-				direction={'row'}
-				gap={1}
-				justifyContent={'space-around'}
-				alignContent={'center'}
-				textAlign={'center'}
-				bgcolor={alpha(theme.palette.background.default, 0.3)}
-				borderRadius={'2em'}
-				padding={'0.3em'}
+				direction="row"
+				justifyContent="space-around"
+				alignItems="center"
+				bgcolor={color}
+				borderRadius="2em"
+				padding="0.3em"
 			>
-				<Typography alignContent={'center'} textAlign={'center'}>Type</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>Custom</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>9:15</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>Opponent Name</Typography>
+				<Typography 
+					style={{ 
+						width: '150px', 
+						textAlign: 'center' 
+					}}
+				>
+					Game Type: {typeGame}
+				</Typography>
+				<Typography 
+					style={{ 
+						width: '100px', 
+						textAlign: 'center' 
+					}}
+				>
+					Score: {scoreOwn} | {scoreother}
+				</Typography>
+				<Typography 
+					sx={{
+						'& a': {
+							textDecoration: 'none',
+							color: 'blue',
+							'&:hover': { 
+								color: 'black'
+							}
+						},
+					}}
+					style={{ 
+						width: '0px',
+						position: 'relative', 
+						left: '10px',
+						textAlign: 'center' 
+					}}
+				>
+					<a href="" onClick={() => redirectFriend()}>{idOther}</a>
+				</Typography>
 				<Avatar />
 			</Stack>
 		);
+
 	};
 
 	let gameContainer = () => 
@@ -288,18 +329,16 @@ const ProfilePageOther: React.FC = () => {
 		return (
 			<Box
 				sx={{
-					width: '100%',
+					width: '90%',
+					position: 'relative',
+					left: '40px',
 					height: '100%',
 					overflowY: 'auto',
 					padding: '0.5em'
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{Array.from({ length: 2 }).map((_, index) => (
-						<React.Fragment key={index}>
-							{gameLine()}
-						</React.Fragment>
-					))}
+					{gameLine()}
 				</Stack>
 			</Box>
 		);
@@ -307,6 +346,7 @@ const ProfilePageOther: React.FC = () => {
 
 	let GameBox = () => 
 	{
+		
 		return (
 			<Stack
 			width={'100%'}

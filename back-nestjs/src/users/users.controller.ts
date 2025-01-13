@@ -34,13 +34,10 @@ export class UsersController {
 	{
 		if (newname.length == 0)
 		{
-			console.log("lenght is 0, add chars!");
 			return ("lenght is 0, add chars!");
 		}
 		if (newname.length > 27)
 		{
-			// throw new HttpException('Bad Request', 400);
-			console.log("Lenght is bigger then 27 chars, make it shorter!");
 			return ("lenght is bigger then 27 chars, make it shorter!");
 		}
 
@@ -49,11 +46,10 @@ export class UsersController {
 		{
 			if (((newname[i] < 'a') || (newname[i] > 'z')) && ((newname[i] < 'A') || (newname[i] > 'Z')) && ((newname[i] < '0') || (newname[i] > '9')))
 			{
-				if (newname[i] != ' ')
+				if (newname[i] != ' ' && newname[i] != '_' && newname[i] != '-')
 				{
-					console.log("only letters, numbers and spaces are allowed!");
-					return ("only letters, numbers and spaces are allowed!");
-					// throw new HttpException('Bad Request', 400);
+					var str: string = "char: " + newname[i] + " is not allowed! Only letters, numbers, spaced, - and _ are allowed!";
+					return (str);
 				}
 			}
 			i++;
@@ -69,7 +65,6 @@ export class UsersController {
 		}
 		if (i == newname.length)
 		{	
-			console.log("Name needs atleast 1 letter or number!");
 			return ("name needs atleast 1 letter or number!");
 		}
 		var user = this.UserService.getUserId(username);
@@ -89,7 +84,8 @@ export class UsersController {
 	}
 
 	@Get('/profile/:username/friend/:id')
-	async fetchFriend(@Param('id') id: string) {
+	async fetchFriend(@Param('id') id: string) 
+	{
 		return (this.UserService.getFriend(id));
 	}
 
