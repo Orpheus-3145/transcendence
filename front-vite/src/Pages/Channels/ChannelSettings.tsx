@@ -37,7 +37,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const theme = useTheme();
 
 	const handleAddFriend = () => {
-		//--> CALL TO BACKEND <-- //
 		console.log('"Add Friend" clicked!');
 		if (friendName) {
 			const newUser: UserProps = {
@@ -47,6 +46,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				password: '',
 				icon: <PersonAddIcon />
 			};
+
+			//--> CALL TO BACKEND <-- //
+			
 			setSettings({ ...settings, users: [...settings.users, newUser] });
 			setFriendName('');
 		}
@@ -54,49 +56,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleKickFriend = (name: string) => {
 		//--> CALL TO BACKEND <-- //
+
 		console.log('"Kick Friend" clicked!');
 		// const updatedUsers = settings.users.filter(user => user.name !== name);
 		// setSettings({ ...settings, users: updatedUsers });
-	
 	};
 
 	const handleBanFriend = (name: string) => {
 		//--> CALL TO BACKEND <-- //
+
 		console.log('"Ban Friend" clicked!');
 		// const updatedUsers = settings.users.filter(user => user.name !== name);
 		// setSettings({ ...settings, users: updatedUsers });
-	
 	};
 
 	const handleBlockFriend = (name: string) => {
 		//--> CALL TO BACKEND <-- //
+
 		console.log('"Block Friend" clicked!');
 		// const updatedUsers = settings.users.filter(user => user.name !== name);
 		// setSettings({ ...settings, users: updatedUsers });
-	
 	};
 
 	const handleRoleChange = (name: string, role: string) => {
-		//--> CALL TO BACKEND <-- //
 		console.log('"Change Role" clicked!');
 		// if (selectedChannel.settings.owner === 'MSELF') { 
 			const newRole = role === 'Guest' ? 'Admin' : 'Guest';
 			const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role: newRole } : user);
 			setSettings({ ...settings, users: updatedUsers });
-		// } 
-		// else {
-		// 	alert('Only channel owners can change user permissions!');
-		// }
+			// } 
+			// else {
+				// 	alert('Only channel owners can change user permissions!');
+				// }
+
+		//--> CALL TO BACKEND <-- //
 	};
 
 	const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
 		//--> CALL TO BACKEND <-- //
+	
 		console.log('"Change Privacy" clicked!');
 		setSettings({ ...settings, type, password });
 	};
 
 	const handleDeleteChannel = () => {
 		//--> CALL TO BACKEND <-- //
+
 		console.log("'Delete Channel' clicked!");
 		if (selectedChannel.settings.owner === myself.name) {
 			const updatedChannels = chatProps.chatRooms.filter((chat) => chat.name !== selectedChannel.name);
@@ -106,23 +111,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	}
 
 	const handleLeaveChannel = () => {
-
-		setIsSettingsView(false);
-
+		//--> CALL TO BACKEND <-- //
 		
+		setIsSettingsView(false);
 		setChatProps((prevState) => ({
 			...prevState,
 			chatRooms:  prevState.chatRooms.filter((channel) => channel.name !== selectedChannel.name),
 		}));
-		
 		if (selectedChannel.settings.users.length === 1 && userInChannel(myself.name, selectedChannel)) {
 			setSelectedChannel(null);
 			return ;
 		}
-		
-		
 		const filteredUsers = selectedChannel.settings.users.filter((user) => user.name !== myself.name);
-		
 		const updatedChannel: ChatRoom = {
 			...selectedChannel,
 			settings: {
@@ -131,17 +131,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				owner: selectedChannel.settings.owner === myself.name ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
 			},
 		};
-
 		setAvailableChannels((prevState) => ([
 			...prevState,
 			updatedChannel,
 		]))
 
+
 		setSelectedChannel(null);
-
-		
 	};
-
 
 	return (
 		<Modal open={open} onClose={onClose}>
@@ -227,7 +224,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
 					  <Typography sx={{whiteSpace: 'pre-line'}} >
 							{user.name.length > 10 ? user.name.slice(0, 9) + '...' : user.name}
-					  		{(userIsAdmin(myself.name, selectedChannel) ||
+					  		{(userIsAdmin(myself.name, selectedChannel) || 
 					  			selectedChannel.settings.owner === myself.name) ? 
 									'\n' :
 									' '}

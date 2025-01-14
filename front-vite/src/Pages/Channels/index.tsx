@@ -29,6 +29,7 @@ export const myself: UserProps =  {
 };
 
 export const userIsAdmin = (userName: string, channel: ChatRoom): boolean => {
+	// 
 	const found = channel.settings.users.find((user) => user.name === userName);
 	return found?.role === 'Admin';
 };
@@ -46,7 +47,7 @@ const ChannelsPage: React.FC = () => {
 	const [isSettingsView, setIsSettingsView] = useState(false);
 	const [isPasswordModal, setIsPasswordModal] = useState(false);
 	const [enteredChannelPass, setEnteredChannelPass] = useState('');
-	const [onlinePlayers, setOnlinePlayers] = useState<UserProps[]>([
+	const [onlinePlayers, setOnlinePlayers] = useState<UserProps[]>([  //--> CALL TO BACKEND <-- //
 		{
 			name: 'Thooooooooooooooooooooooor',
 			role: 'Guest',
@@ -83,7 +84,7 @@ const ChannelsPage: React.FC = () => {
 		users: [],
 		owner: 'currentUser',
 	});
-	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([
+	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([ //--> CALL TO BACKEND <-- //
 		{
 			name: 'chaaaaaaaaaaaaaaaaannel1',
 			icon: <GroupIcon />,
@@ -145,35 +146,28 @@ const ChannelsPage: React.FC = () => {
 		//--> CALL TO BACKEND <-- //
 		// socket.emit('joinChannel', {'channel': channelName})
 		//  TEST CALL BACKEND
-		if (channelName.trim()) {
-		  setChatProps((prevState) => ({
-			...prevState,
-			chatRooms: [
-			  ...prevState.chatRooms,
-			  {
-				name: channelName, //--> CALL TO BACKEND <-- //
-				icon: <GroupIcon />,
-				messages: [],
-				settings: {
-				  type: 'public',
-				  password: null,
-				  users: [{...myself, role: 'admin'}],
-				  owner: myself.name, //--> CALL TO BACKEND <-- //
-				},
-			  },
-			],
-		  }));
-		  setChannelName('');
-		  setIsAddingChannel(false);
-		}
-	}
 
-	const handleDeleteChannel = () => {
-		//--> CALL TO BACKEND <-- //
-		console.log("'Delete Channel' clicked!");
-		const updatedChannels = chatProps.chatRooms.filter((chat: ChatRoom) => chat.name !== selectedChannel.name);
-		setChatProps({...chatProps, chatRooms: updatedChannels});
-		setSelectedChannel(null);
+		if (channelName.trim()) {
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: [
+					...prevState.chatRooms,
+					{
+						name: channelName, //--> CALL TO BACKEND <-- //
+						icon: <GroupIcon />,
+						messages: [],
+						settings: {
+							type: 'public',
+							password: null,
+							users: [{...myself, role: 'admin'}],
+							owner: myself.name, //--> CALL TO BACKEND <-- //
+						},
+					},
+				],
+			}));
+			setChannelName('');
+			setIsAddingChannel(false);
+		}
 	}
 
 	const handleCancelNewChannel = () => {
@@ -187,8 +181,6 @@ const ChannelsPage: React.FC = () => {
 	  setIsAddingChannel(false);
 	  
 	};
-
-
 
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
@@ -214,9 +206,10 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	const handleSendGameInvite = (event: React.MouseEvent) => {
+		//--> CALL TO BACKEND <-- //
+
 		event.stopPropagation();
 		console.log("'Send Game Invite' clicked!");
-
 	};
 
 	const handleSetMessage = (event: React.KeyboardEvent) => {
@@ -231,6 +224,9 @@ const ChannelsPage: React.FC = () => {
 				userPP: <Typography>img</Typography>,
 				timestamp: <Typography>20:00</Typography>,
 			};
+
+			//--> CALL TO BACKEND <-- //
+
 			setChatProps((prevProps) => ({
 				...prevProps,
 				chatRooms: prevProps.chatRooms.map(room => 
@@ -243,7 +239,7 @@ const ChannelsPage: React.FC = () => {
 				...prevState,
 				messages: [...prevState.messages, newChatMessage]
 			}));
-			setNewMessage('');		
+			setNewMessage('');
 		}
 	};
 
@@ -269,6 +265,8 @@ const ChannelsPage: React.FC = () => {
 			},
 		}; 
 		
+		//--> CALL TO BACKEND <-- //
+
 		setChatProps((prevState) => ({
 		  ...prevState,
 		  chatRooms: [...prevState.chatRooms, updatedChannel],
@@ -277,21 +275,17 @@ const ChannelsPage: React.FC = () => {
 		setAvailableChannels((prevState) => 
 		  prevState.filter((channel) => channel.name !== updatedChannel.name)
 		);
-		
 		setSelectedChannel(null);
-		
 	};
 
 	// const moveSelectedChToAvailableCh = () => {
 	// 	if (!selectedChannel) {
 	// 		return ;
 	// 	}
-
 	// 	setChatProps((prevState) => ({
 	// 		...prevState,
 	// 		chatRooms:  prevState.chatRooms.filter((channel) => channel.name != selectedChannel.name),
 	// 	}));
-
 	// 	setAvailableChannels((prevState) => ([
 	// 		...prevState,
 	// 		selectedChannel,
@@ -302,6 +296,8 @@ const ChannelsPage: React.FC = () => {
 	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
 		event.preventDefault();
 
+		//--> CALL TO BACKEND <-- //
+
 		if (enteredChannelPass !== selectedAvailableChannel?.settings.password) {
 			alert("Incorrect password!");
 		} else {
@@ -310,9 +306,6 @@ const ChannelsPage: React.FC = () => {
 		}
 		setEnteredChannelPass('');
 	};
-
-
-
 
 	const MessageInput: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
 		console.log('d');

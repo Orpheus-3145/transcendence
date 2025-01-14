@@ -23,6 +23,9 @@ export const useChatContext = (): ChatContextType => {
 };
 
 export const ChatProvider: React.FC = ({ children }) => {
+
+	//--> CALL TO BACKEND <-- //
+
 	const [newMessage, setNewMessage] = useState('');
 	const [chatProps, setChatProps] = useState<ChatProps>({
 		chatRooms: [
