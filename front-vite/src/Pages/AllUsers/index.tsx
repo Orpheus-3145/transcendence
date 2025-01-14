@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Stack, Link, Typography, IconButton, Tooltip, Input } from '@mui/material';
+import { Stack, Link, Typography, IconButton, Tooltip, Input, useTheme, Divider, Avatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -8,6 +8,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { off } from 'process';
 
 const AllUsersPage: React.FC = () => {
+	const theme = useTheme();
 	const allUsers = getAll();
 	const [users, setUsers] = useState<User[]>([]);
 	const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
@@ -105,6 +106,7 @@ const AllUsersPage: React.FC = () => {
 					added++;
 				}
 			});
+			console.log(newlist.length)
 			
 			if (added == 0)
 				setShowMessage(true);
@@ -112,6 +114,7 @@ const AllUsersPage: React.FC = () => {
 				setShowMessage(false);
 	
 			setUsers(newlist);
+			console.log(newlist);
 			setInputValue('');
 			setShowInput(false);
 			setShowSearch(true);
@@ -184,29 +187,7 @@ const AllUsersPage: React.FC = () => {
 	{
 		if (showOnline)
 		{
-			return (
-				<ImageList cols={4}>
-					{onlineUsers.map((item: User) => 
-					(
-						<ImageListItem key={item.image}>
-							<img
-								src={item.image}
-								alt={item.nameNick}
-								loading="lazy"
-							/>
-							<Link 
-								href="" 
-								onClick={() => redirectToUser(item.id)} 
-								sx={{ 
-									color: statusToColor(item)
-								}}
-							>
-								{item.nameNick}
-							</Link>
-						</ImageListItem>
-					))}
-				</ImageList>
-			);
+			return (imageArr(onlineUsers));
 		}
 
 		return (
@@ -217,6 +198,7 @@ const AllUsersPage: React.FC = () => {
 						fontFamily: 'Georgia, serif',
 					}}
 				>
+					<br />
 					Currently no online users!
 				</Typography>
 			</Stack>
@@ -227,29 +209,7 @@ const AllUsersPage: React.FC = () => {
 	{
 		if (showOffline)
 		{
-			return (
-				<ImageList cols={4}>
-					{offlineUsers.map((item: User) => 
-					(
-						<ImageListItem key={item.image}>
-							<img
-								src={item.image}
-								alt={item.nameNick}
-								loading="lazy"
-							/>
-							<Link 
-								href="" 
-								onClick={() => redirectToUser(item.id)} 
-								sx={{ 
-									color: statusToColor(item)
-								}}
-							>
-								{item.nameNick}
-							</Link>
-						</ImageListItem>
-					))}
-				</ImageList>
-			);
+			return (imageArr(offlineUsers));
 		}
 
 		return (
@@ -263,6 +223,53 @@ const AllUsersPage: React.FC = () => {
 					Currently no offline users!
 				</Typography>
 			</Stack>
+		);
+	}
+
+	let imageArr = (arr: User[]) => 
+	{
+		return (
+			<ImageList 
+				cols={4} 
+				sx={{
+					overflowX: 'hidden',
+					margin: 0,
+					padding: 0,
+				}}
+			>
+				{arr.map((item: User) => 
+				(
+					<ImageListItem key={item.image}>
+						<Stack
+							sx={{
+								position: 'relative',
+								left: '20px',
+							}}
+						>
+							<Avatar
+								sx={{
+									width: '250px',
+									height: '250px',
+									bgcolor: theme.palette.primary.light,
+									borderRadius: 0,
+								}}
+								src={item.image}
+							>
+							</Avatar>
+							<Link 
+								href="" 
+								onClick={() => redirectToUser(item.id)} 
+								sx={{
+									color: statusToColor(item),
+									marginTop: '2px',
+								  }}
+							>
+								{item.nameNick}
+							</Link>
+						</Stack>
+					</ImageListItem>
+				))}
+			</ImageList>
 		);
 	}
 
@@ -294,31 +301,7 @@ const AllUsersPage: React.FC = () => {
 
 		if (showSearch)
 		{
-			return (
-				<Stack>
-					<ImageList cols={4}>
-					{users.map((item: User) => 
-					(
-						<ImageListItem key={item.image}>
-							<img
-								src={item.image}
-								alt={item.nameNick}
-								loading="lazy"
-							/>
-							<Link 
-								href="" 
-								onClick={() => redirectToUser(item.id)} 
-								sx={{ 
-									color: statusToColor(item)
-								}}
-							>
-								{item.nameNick}
-							</Link>
-						</ImageListItem>
-					))}
-					</ImageList>
-				</Stack>
-			);
+			return (imageArr(users));
 		}
 
 		return (
@@ -334,7 +317,6 @@ const AllUsersPage: React.FC = () => {
 					</Typography>
 				</Stack>
 				{getOnline()}
-				<br />
 				<Stack alignItems="center">
 					<Typography
 						variant="h4"
@@ -342,6 +324,7 @@ const AllUsersPage: React.FC = () => {
 							fontFamily: 'Georgia, serif',
 						}}
 					>
+						<br />
 						Offline
 					</Typography>
 				</Stack>
@@ -354,10 +337,29 @@ const AllUsersPage: React.FC = () => {
 	{
 		return (
 			<Stack>
-				{pageHeader()}
-				{pageBody()}
+				<Stack
+					justifyContent={'space-between'}
+					margin={'1em'}
+					bgcolor={theme.palette.primary.dark}
+					sx={{
+						width: '1200px',
+						height: '110px',
+					}}
+				>
+					{pageHeader()}
+				</Stack>
+				<Stack
+					justifyContent={'space-between'}
+					margin={'1em'}
+					bgcolor={theme.palette.primary.dark}
+					sx={{
+						width: '1200px',
+					}}
+				>
+					{pageBody()}
+				</Stack>
 			</Stack>
-		)
+		);
 	}
 
 	return (

@@ -396,9 +396,9 @@ const ProfilePage: React.FC = () => {
 		
 		return (
 			<Stack
-			width={'100%'}
-			padding={'0.3em'}
-			maxHeight={isSmallScreen ? '80vh' : '80vh'}
+				width={'100%'}
+				padding={'0.3em'}
+				maxHeight={isSmallScreen ? '80vh' : '80vh'}
 			>
 				{gameStats()}
 				{gameContainer()}

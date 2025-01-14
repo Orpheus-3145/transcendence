@@ -40,11 +40,56 @@ export class UsersService {
 		user.status = UserStatus.Offline;
 		user.friends = [];
 		user.blocked = [];
+		const a = new User();
+		a.accessToken = access.access_token;
+		a.intraId = 43212;
+		a.nameNick = "a";
+		a.nameIntra = "a";
+		a.nameFirst = "a";
+		a.nameLast = "a";
+		a.email = "a@gmail.co,"
+		a.image = userMe.image.link;
+		a.greeting = 'Hello, I ave just landed!';
+		a.status = UserStatus.Offline;
+		a.friends = [];
+		a.blocked = [];
+		const b = new User();
+		b.accessToken = access.access_token;
+		b.intraId = 456412;
+		b.nameNick = "ab";
+		b.nameIntra = "ab";
+		b.nameFirst = "ab";
+		b.nameLast = "ab";
+		b.email = "ab@gmail.co,"
+		b.image = userMe.image.link;
+		b.greeting = 'Hello, I ave just landed!';
+		b.status = UserStatus.Online;
+		b.friends = [];
+		b.blocked = [];
+		const c = new User();
+		c.accessToken = access.access_token;
+		c.intraId = 48712;
+		c.nameNick = "abc";
+		c.nameIntra = "abc";
+		c.nameFirst = "abc";
+		c.nameLast = "abc";
+		c.email = "abc@gmail.co,"
+		c.image = userMe.image.link;
+		c.greeting = 'Hello, I ave just landed!';
+		c.status = UserStatus.Online;
+		c.friends = [];
+		c.blocked = [];
 		try {
 			if (await this.userAlreadyExist(user) == true)
 				return (new UserDTO(user));
 			await user.validate();
+			await a.validate();
+			await b.validate();
+			await c.validate();
 			await this.usersRepository.save(user);
+			await this.usersRepository.save(a);
+			await this.usersRepository.save(b);
+			await this.usersRepository.save(c);
 			return new UserDTO(user);
 		} 
 		catch (error) {

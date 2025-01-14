@@ -14,7 +14,7 @@ import { getUserNotifications } from '../../Providers/NotificationContext/Notifi
 export const Bar: React.FC = () => {
 	const { user } = useUser();
 	const navigate = useNavigate();
-	const theme = useTheme();  
+	const theme = useTheme();
 	// const [showNotificationDot, setShowNotificationDot] = useState<Boolean>(false);
 
 	const navToProfile = () => { user && user.id && navigate(`/profile/${user.id}`) }
