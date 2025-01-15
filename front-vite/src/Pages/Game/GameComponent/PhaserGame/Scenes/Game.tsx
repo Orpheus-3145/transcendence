@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-import { GAME, GAME_BALL, GAME_BAR } from '../Game.data';
+import { GAME, GAME_BALL, GAME_PADDLE } from '../Game.data';
 import * as GameTypes from '../Types/types';
 import Ball from '../GameObjects/Ball';
 import Paddle from '../GameObjects/Paddle';
@@ -72,8 +72,8 @@ export default class Game extends Phaser.Scene {
 		this._ball = new Ball(this, GAME.width / 2, GAME.height / 2); // Initialize ball with no movement initially
 
 		// Create bars
-		this._leftPaddle = new Paddle(this, GAME_BAR.width / 2, GAME.height / 2);
-		this._righPaddle = new Paddle(this, GAME.width - GAME_BAR.width / 2, GAME.height / 2);
+		this._leftPaddle = new Paddle(this, GAME_PADDLE.width / 2, GAME.height / 2);
+		this._righPaddle = new Paddle(this, GAME.width - GAME_PADDLE.width / 2, GAME.height / 2);
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
