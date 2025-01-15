@@ -18,6 +18,7 @@ export class AuthService {
 		private readonly thrower: ExceptionFactory,
 	) {
 		this.logger.setContext(AuthService.name);
+
 		if (this.config.get<boolean>('DEBUG_MODE_SESSION', false) == false)
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
@@ -66,7 +67,6 @@ export class AuthService {
 			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			return;
 		}
-		// this.thrower.throwSessionExcp(`Validator token 'auth_token' not found in cookies`, `${AuthService.name}.${this.constructor.prototype.validate.name}()`, HttpStatus.UNAUTHORIZED)
 
 		this.logger.debug(`Validating token [${token}]`);
 		// Verify token

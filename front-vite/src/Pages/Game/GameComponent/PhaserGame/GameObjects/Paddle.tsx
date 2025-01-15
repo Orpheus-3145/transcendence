@@ -1,12 +1,12 @@
-import { GAME_BAR } from '../Game.data';
+import { GAME_PADDLE } from '../Game.data';
 import Game from '../Scenes/Game';
 
 export default class Paddle {
 	private _startPos: Phaser.Math.Vector2;
 	private _graphic: Phaser.GameObjects.Rectangle;
 
-	private readonly _width: number = GAME_BAR.width;
-	private readonly _height: number = GAME_BAR.height;
+	private readonly _width: number = GAME_PADDLE.width;
+	private readonly _height: number = GAME_PADDLE.height;
 
 	// @param scene: Phaser.Scene that contains the bar
 	// @param x: x pos

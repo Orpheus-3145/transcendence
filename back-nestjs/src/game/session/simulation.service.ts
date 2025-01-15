@@ -4,19 +4,20 @@ import { Socket } from 'socket.io';
 
 import GameStateDTO from 'src/dto/gameState.dto';
 import * as GameTypes from 'src/game/game.types';
-import { GAME, GAME_BALL, GAME_PADDLE } from 'src/game/game.data';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export default class SimulationService {
-	private readonly maxScore: number = GAME.maxScore;
-	private readonly windowWidth: number = GAME.width;
-	private readonly windowHeight: number = GAME.height;
-	private readonly botName: string = GAME.botName;
-	private readonly paddleWidth: number = GAME_PADDLE.width;
-	private readonly paddleHeight: number = GAME_PADDLE.height;
-	private readonly ballSpeed: number = GAME_BALL.speed;
+	private readonly maxScore: number = parseInt(this.config.get('GAME_MAX_SCORE'), 10);
+	private readonly windowWidth: number = parseInt(this.config.get('GAME_WIDTH'), 10);
+	private readonly windowHeight: number = parseInt(this.config.get('GAME_HEIGHT'), 10);
+	private readonly botName: string = this.config.get<string>('GAME_BOT_NAME');
+	private readonly paddleWidth: number = parseInt(this.config.get('GAME_PADDLE_WIDTH'), 10);
+	private readonly paddleHeight: number = parseInt(this.config.get('GAME_PADDLE_HEIGHT'), 10);
+	private readonly paddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_SPEED'), 10);
+	private readonly ballSpeed: number = parseInt(this.config.get('GAME_BALL_SPEED'), 10);
+	private readonly frameRate: number = parseInt(this.config.get('GAME_FPS'), 10);
 
 	private sessionToken: string;
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
@@ -26,7 +27,7 @@ export default class SimulationService {
 	private gameOver: boolean = false;
 	private player1: GameTypes.Player = null;
 	private player2: GameTypes.Player = null;
-	private ball = { x: GAME.width / 2, y: GAME.height / 2, dx: 5, dy: 5 };
+	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
 
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
@@ -56,7 +57,7 @@ export default class SimulationService {
 			if (this.forbidAutoPlay == true && this.player1.nameNick == this.player2.nameNick)
 				this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
 			else this.startEngine();
-		}, GAME.frameRate);
+		}, this.frameRate);
 	}
 
 	startEngine(): void {
@@ -67,7 +68,7 @@ export default class SimulationService {
 		clearInterval(this.gameSetupInterval);
 		this.gameSetupInterval = null;
 
-		this.gameStateInterval = setInterval(() => this.gameIteration(), GAME.frameRate);
+		this.gameStateInterval = setInterval(() => this.gameIteration(), this.frameRate);
 		this.logger.debug(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
 		this.logger.debug(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
 		this.logger.log(`session [${this.sessionToken}] - game started`);
@@ -156,7 +157,8 @@ export default class SimulationService {
 	movePaddle(idClient: string, direction: GameTypes.PaddleDirection): void {
 		if (this.engineRunning === false) return;
 
-		const delta = direction === GameTypes.PaddleDirection.up ? -10 : 10;
+		const delta =
+			direction === GameTypes.PaddleDirection.up ? this.paddleSpeed * -1 : this.paddleSpeed;
 
 		if (idClient === this.player1.clientSocket.id)
 			this.player1.posY = Math.max(
