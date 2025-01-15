@@ -78,13 +78,16 @@ export default class SimulationService {
 			// missing info, not ready to play yet
 			if (!this.player1 || !this.player2) return;
 
+			console.log('ready');
 			if (this.forbidAutoPlay == true && this.player1.nameNick == this.player2.nameNick)
 				this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
-			else this.startEngine();
+			
+			this.startEngine();
 		}, this.frameRate);
 	}
 
 	startEngine(): void {
+		console.log('trying to start engine');
 		if (this.engineRunning) return;
 
 		this.engineRunning = true;
@@ -186,6 +189,7 @@ export default class SimulationService {
 					context,
 				);
 		}
+		this.logger.debug(`session [${this.sessionToken}] - added player ${newPlayer.nameNick} to game`);
 	}
 
 	// Handle paddle movement based on key data

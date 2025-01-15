@@ -84,18 +84,21 @@ export default class Game extends Phaser.Scene {
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
 
+		if (this._mode === GameTypes.GameMode.single) {
+			
+			const initData: GameTypes.InitData = {
+				sessionToken: this._sessionToken,
+				mode: this._mode,
+				extras: this._extras,
+			};
+			this.sendMsgToServer('createRoomSinglePlayer', initData);
+		}
+
 		const playerData: GameTypes.PlayerData = {
 			playerId: this._id,
 			nameNick: this._nameNick,
-			sessionToken: this._sessionToken,
+			sessionToken: this._sessionToken,		// NB: remove IT!
 		};
-
-		if (this._mode === GameTypes.GameMode.single)
-			this.sendMsgToServer('createRoomSinglePlayer', {
-				sessionToken: this._sessionToken,
-				extras: this._extras,
-			});
-
 		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	}
 

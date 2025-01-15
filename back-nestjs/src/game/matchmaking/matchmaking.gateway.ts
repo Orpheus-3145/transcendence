@@ -31,13 +31,17 @@ export default class MatchmakingGateway implements OnGatewayDisconnect {
 	handleDisconnect(@ConnectedSocket() client: Socket): void {
 		this.matchmakingService.removePlayerFromQueue(client);
 	}
-
+	export interface InitData {
+		sessionToken: string;
+		mode: GameMode;
+		extras: boolean;
+	}
 	@SubscribeMessage('waiting')
 	clientWaitingAdd(
-		@MessageBody() data: { extras: boolean },
+		@MessageBody() data: {sessionToken: string,	mode: GameMode,	extras: boolean},
 		@ConnectedSocket() client: Socket,
 	): void {
-		console.log(`TESTTTT Client: ${client}, Extras: ${data.extras}`);
+		console.log('message waiting received!');
 		this.matchmakingService.addPlayerToQueue(client, data.extras);
 	}
 }

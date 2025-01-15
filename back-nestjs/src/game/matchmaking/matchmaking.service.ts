@@ -27,7 +27,6 @@ export default class MatchmakingService {
 			extras: extras,
 		};
 		// console.log(`Checking waitingPlayer: ${waitingPlayer.extras}`);
-		console.log(`Client: ${client}, Extras: ${extras}`);
 		this._waitingPlayersIP.push(waitingPlayer);
 
 		if (this._checker === null) this._checker = setInterval(() => this.checkNewGame(), 100);

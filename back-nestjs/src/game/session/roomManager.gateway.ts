@@ -41,9 +41,9 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('createRoomSinglePlayer')
-	setInitData(@MessageBody() data: { sessionToken: string; extras: boolean }): void {
-		console.log(`roomManager Gateway check: ${data}, ${data.sessionToken}, ${data.extras}`);
-		this.roomManager.createRoom(data.sessionToken, data.extras, GameMode.single);
+	setInitData(@MessageBody() data: { sessionToken: string, mode: GameMode, extras: boolean }): void {
+		
+		this.roomManager.createRoom(data.sessionToken, data.extras, data.mode);
 	}
 
 	@SubscribeMessage('playerLeftGame')
@@ -57,6 +57,7 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 		@ConnectedSocket() client: Socket,
 		mode: GameMode,
 	): void {
+		console.log('creating new player');
 		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
 	}
 

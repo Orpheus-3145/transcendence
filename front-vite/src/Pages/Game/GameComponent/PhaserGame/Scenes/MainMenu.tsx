@@ -40,7 +40,11 @@ export default class MainMenu extends Phaser.Scene {
 			}),
 		);
 		this.createBtn(400, 150, 'Play [multi player]').on('pointerup', () =>
-			this.scene.start('Matchmaking', { extras: this._extrasEnabled }),
+			this.scene.start('Matchmaking', {
+				sessionToken: '',
+				mode: GameTypes.GameMode.multi,
+				extras: this._extrasEnabled,
+			}),
 		);
 		this.createBtn(400, 200, 'Settings').on('pointerup', () => this.scene.start('Settings'));
 	}

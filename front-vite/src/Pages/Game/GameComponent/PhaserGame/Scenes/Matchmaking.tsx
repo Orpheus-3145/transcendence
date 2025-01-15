@@ -6,7 +6,7 @@ import * as GameTypes from '../Types/types';
 export default class Matchmaking extends Phaser.Scene {
 	private _background!: Phaser.GameObjects.Image;
 	private _socketIO!: Socket;
-	private _extras: boolean = false;
+	private _gameInitData: GameTypes.InitData;
 
 	private _keyEsc!: Phaser.Input.Keyboard.Key;
 
@@ -15,11 +15,11 @@ export default class Matchmaking extends Phaser.Scene {
 	}
 
 	// executed when scene.start('Matchmaking') is called
-	init(extras: boolean): void {
+	init(data: GameTypes.InitData): void {
 		this._keyEsc = this.input.keyboard!.addKey(
 			Phaser.Input.Keyboard.KeyCodes.ESC,
 		) as Phaser.Input.Keyboard.Key;
-		this._extras = extras;
+		this._gameInitData = data;
 		this.setupSocket();
 	}
 
@@ -51,14 +51,8 @@ export default class Matchmaking extends Phaser.Scene {
 		goHomeButton.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }));
 		// Start the main game
 		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
-
-		// this._socketIO.emit('waiting', {extras: this._extras});
-
-		this.sendMsgToServer('waiting', { extras: this._extras });
-	}
-
-	sendMsgToServer(msgType: string, content?: any) {
-		this._socketIO.emit(msgType, content);
+		this._socketIO.emit('waiting', this._gameInitData);
+		console.log('sending info to client');
 	}
 
 	// run every frame update
@@ -74,12 +68,9 @@ export default class Matchmaking extends Phaser.Scene {
 		});
 
 		this._socketIO.on('ready', (sessionId: string) => {
-			const sessionData: GameTypes.InitData = {
-				sessionToken: sessionId,
-				mode: GameTypes.GameMode.multi,
-				extras: this._extras,
-			};
-			this.scene.start('Game', sessionData);
+			
+			this._gameInitData.sessionToken = sessionId;	
+			this.scene.start('Game', this._gameInitData);
 		});
 
 		this._socketIO.on('gameError', (trace: string) => this.scene.start('Error', { trace }));
