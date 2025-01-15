@@ -52,7 +52,6 @@ export default class Matchmaking extends Phaser.Scene {
 		// Start the main game
 		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
 		this._socketIO.emit('waiting', this._gameInitData);
-		console.log('sending info to client');
 	}
 
 	// run every frame update
