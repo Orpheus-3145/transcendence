@@ -53,6 +53,34 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		client.emit('joinedChannel', { channel });
 	}
 
+	// @SubscribeMessage('joinChannel')
+	// async handleJoinChannel(
+  	// 	@MessageBody('channel') channel: string,
+  	// 	@ConnectedSocket() client: Socket,
+	// ): Promise<void> {
+  	// console.log(`Client ${client.id} joined channel ${channel}`);
+
+	//   try {
+	//     // Add the user to the database (check if the user is already a member, etc.)
+	//     await this.chatService.addUserToChannel(+client.id, +channel);
+
+	//     // Join the channel
+	//     client.join(channel);
+
+	//     // Emit a success message back to the client, with a callback to confirm the success
+	//     client.emit('joinedChannelSuccess', { 
+	//       message: `User ${client.id} successfully joined channel ${channel}`, 
+	//       channel 
+	//     });
+	//   } catch (error) {
+	//     // Handle error if there's an issue with adding the user to the channel
+	//     client.emit('joinedChannelError', { 
+	//       message: `Failed to join channel: ${channel}`,
+	//       error: error.message 
+	//     });
+	//   }
+	// }
+
 	// Leave a specific room/channel
 	@SubscribeMessage('leaveChannel')
 	async handleLeaveChannel(

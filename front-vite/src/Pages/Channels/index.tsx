@@ -163,7 +163,12 @@ const ChannelsPage: React.FC = () => {
   
 	const handleCreateChannel = () => {
 		//--> CALL TO BACKEND <-- //
-		socket.emit('joinChannel', {'channel': channelName})
+		// socket.emit('joinChannel', { channel: channelName }, (response) => {
+		// if (response && response.message)
+		// 	console.log('Success:', response.message);
+		// else 
+		// 	console.log('Error:', response.message);
+
 		//  TEST CALL BACKEND
 
 		if (channelName.trim()) {
@@ -187,7 +192,7 @@ const ChannelsPage: React.FC = () => {
 			setChannelName('');
 			setIsAddingChannel(false);
 		}
-	}
+	};
 
 	const handleCancelNewChannel = () => {
 		setIsAddingChannel(false);
@@ -201,21 +206,50 @@ const ChannelsPage: React.FC = () => {
 	  
 	};
 
+	// const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
+	// 	event.stopPropagation();
+	// 	// event.preventDefault();
+	// 	console.log('Available channel clicked!');
+		
+		
+	// 	setSelectedAvailableChannel(channel);
+	// 	setIsSettingsView(false);
+	//   	setIsAddingChannel(false);
+	// 	if (channel.settings.type === 'password') {
+	// 		setIsPasswordModal(true);
+	// 	}
+
+	// 	//  else {
+	// 	// 	moveSelectedChToJoinedCh();
+	// 	// }
+
+	// };
+
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
-		// event.preventDefault();
 		console.log('Available channel clicked!');
+	
 		setSelectedAvailableChannel(channel);
 		setIsSettingsView(false);
-	  	setIsAddingChannel(false);
+		setIsAddingChannel(false);
+	
 		if (channel.settings.type === 'password') {
 			setIsPasswordModal(true);
-		}
-		//  else {
-		// 	moveSelectedChToJoinedCh();
-		// }
+		} else { 
+			console.log('Socket instance:', socket);
 
+			// Emit to the backend to join the channel
+			socket.emit('joinChannel', { channel: channel.name }, (response: any) => {
+				if (response && response.message) {
+					console.log('Success:', response.message);
+					moveSelectedChToJoinedCh();
+				} else {
+					console.error('Error:', response.message);
+				}
+			});
+		}
 	};
+	
   
 	const handleSettingsClick = (event: React.MouseEvent, channel: ChatRoom) => {
 	  event.stopPropagation(); // Prevent triggering the channel click
