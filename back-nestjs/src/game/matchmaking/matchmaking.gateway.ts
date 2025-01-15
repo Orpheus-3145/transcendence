@@ -4,9 +4,13 @@ import {
 	OnGatewayDisconnect,
 	SubscribeMessage,
 	ConnectedSocket,
+	MessageBody,
 } from '@nestjs/websockets';
+import { UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import MatchmakingService from './game.matchmaking.service';
+
+import MatchmakingService from './matchmaking.service';
+import { GameExceptionFilter } from '../../errors/exceptionFilters';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_MATCHMAKING,
@@ -17,6 +21,7 @@ import MatchmakingService from './game.matchmaking.service';
 	},
 	transports: ['websocket'],
 })
+@UseFilters(GameExceptionFilter)
 export default class MatchmakingGateway implements OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;
@@ -24,12 +29,15 @@ export default class MatchmakingGateway implements OnGatewayDisconnect {
 	constructor(private matchmakingService: MatchmakingService) {}
 
 	handleDisconnect(@ConnectedSocket() client: Socket): void {
-		
 		this.matchmakingService.removePlayerFromQueue(client);
 	}
 
 	@SubscribeMessage('waiting')
-	clientWaitingAdd(@ConnectedSocket() client: Socket): void {
-		this.matchmakingService.addPlayerToQueue(client);
-	};
-};
+	clientWaitingAdd(
+		@MessageBody() data: { extras: boolean },
+		@ConnectedSocket() client: Socket,
+	): void {
+		console.log(`TESTTTT Client: ${client}, Extras: ${data.extras}`);
+		this.matchmakingService.addPlayerToQueue(client, data.extras);
+	}
+}

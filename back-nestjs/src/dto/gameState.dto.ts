@@ -1,63 +1,59 @@
-import { IsInt, Min, ValidateNested, IsBoolean} from 'class-validator';
+import { IsInt, Min, ValidateNested, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class BallDTO {
-    @IsInt()
-    @Min(1)
-    x: number;
+	@IsInt()
+	@Min(1)
+	x: number;
 
-    @IsInt()
-    @Min(1)
-    y: number;
-};
+	@IsInt()
+	@Min(1)
+	y: number;
+}
 
 class PowerUpDTO {
-    @IsInt()
-    @Min(1)
-    x: number;
+	@IsInt()
+	@Min(1)
+	x: number;
 
-    @IsInt()
-    @Min(1)
-    y: number;
+	@IsInt()
+	@Min(1)
+	y: number;
 
 	@IsBoolean()
 	active: boolean;
-};
+}
 
 class PlayerDTO {
-    @IsInt()
-    @Min(1)
-    y: number;
-};
+	@IsInt()
+	@Min(1)
+	y: number;
+}
 
 class ScoreDTO {
-    @IsInt()
-    @Min(1)
-    p1: number;
+	@IsInt()
+	@Min(1)
+	p1: number;
 
-    @IsInt()
-    @Min(1)
-    p2: number;
-};
+	@IsInt()
+	@Min(1)
+	p2: number;
+}
 
 export default class GameStateDTO {
-    @ValidateNested()
-    @Type(() => BallDTO)
-    ball: BallDTO;
+	@ValidateNested()
+	@Type(() => BallDTO)
+	ball: BallDTO;
 
-    @ValidateNested()
-    @Type(() => PlayerDTO)
-    p1: PlayerDTO;
+	@ValidateNested()
+	@Type(() => PlayerDTO)
+	p1: PlayerDTO;
 
-    @ValidateNested()
-    @Type(() => PlayerDTO)
-    p2: PlayerDTO;
+	@ValidateNested()
+	@Type(() => PlayerDTO)
+	p2: PlayerDTO;
 
-    @ValidateNested()
-    @Type(() => ScoreDTO)
-    score: ScoreDTO;
-
-	// @ValidateNested()
-    // @Type(() => PowerUpDTO)
-	// speedBall: PowerUpDTO;
-};
+	@ValidateNested()
+	@Type(() => ScoreDTO)
+	score: ScoreDTO;
+}

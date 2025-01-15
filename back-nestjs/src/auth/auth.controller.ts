@@ -1,11 +1,12 @@
-import { Controller, Get, Query, Req, Res, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res, UseFilters } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { AuthService } from './auth.service';
+
+import { AuthService } from 'src/auth/auth.service';
+import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 
 @Controller('auth')
+@UseFilters(SessionExceptionFilter)
 export class AuthController {
-	private readonly logger = new Logger(AuthController.name);
-
 	constructor(private readonly authService: AuthService) {}
 
 	@Get('login')
@@ -20,6 +21,6 @@ export class AuthController {
 
 	@Get('logout')
 	async logout(@Res() res: Response) {
-		this.authService.handleRedir(res, true, '/login', 'Logged out successfully');
+		this.authService.logout(res);
 	}
 }
