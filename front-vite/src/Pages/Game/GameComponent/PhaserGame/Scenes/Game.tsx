@@ -128,8 +128,6 @@ export default class Game extends Phaser.Scene {
 		}
 		});
 		this._socketIO.on('powerUpActivated', (state: GameTypes.PowerUpStatus) => {
-			console.log("Power-up state received:", state);
-
 			this._powerUpActive[state.player] = state.active
 		});
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
@@ -147,6 +145,9 @@ export default class Game extends Phaser.Scene {
 		else if (paddle.getColor() === 0xffff00 && active === false) {
 			paddle.changeColor(0x0000ff);
 		}
+		// console.log('Changing paddle color:', paddle, 'to:', color);
+		// console.log('Ball color remains unchanged:', this._ball.getColor());
+
 	}
 
 	// Frame-by-frame update

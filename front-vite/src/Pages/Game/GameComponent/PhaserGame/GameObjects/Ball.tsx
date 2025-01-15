@@ -1,20 +1,31 @@
 import { GAME_BALL } from '../Game.data'
+import Game from '../Scenes/Game'
 
-export default class Ball extends Phaser.GameObjects.Graphics {
+export default class Ball {
 
-  private readonly radius: number = GAME_BALL.radius;
+	private readonly radius: number = GAME_BALL.radius;
+	private _graphic: Phaser.GameObjects.Circle;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
 
-    super(scene);
-    scene.add.existing(this);  // Add ball to the scene
-  };
+	constructor(scene: Game, x: number, y: number) {
+	this._graphic = scene.add.circle(x, y, this.radius, 0x0000ff);
 
-  // Update position and redraw ball with new coordinates
-  updatePosition(x: number, y: number) {
+	};
 
-    this.clear();  // Clear previous drawing
-    this.setPosition(x, y);  // Update position
-    this.fillCircle(0, 0, this.radius);  // Redraw the ball with the same radius
-  };
+	// Redraw the ball
+	private redraw(): void {
+		// this._graphic.clear(); // Clear previous graphics
+		this._graphic.fillStyle(0xff0000, 1); // Set the fill style (red in this case)
+		this._graphic.fillCircle(0, 0, this.radius); // Draw the circle centered at (0, 0)
+	}
+	
+	// Update the ball's position
+	updatePosition(x: number, y: number): void {
+		this._graphic.setPosition(x, y); // Update the ball's position
+	}
+	
+	// Change the ball's color if needed
+	setColor(color: number): void {
+		this._graphic.setFillStyle(color, 1); // Update the fill style
+	}
 };
