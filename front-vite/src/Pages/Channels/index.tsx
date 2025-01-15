@@ -93,8 +93,17 @@ const ChannelsPage: React.FC = () => {
 				icon: <PersonAddIcon />,
 				type: 'public',
 				password: null,
-				users: [],
-				owner: 'Groot',
+				users: [
+					{
+						name: 'User1',
+						role: 'Admin',
+						email: 'iamgroot@avengers.com',
+						password: '',
+						icon: React.ReactElement ,
+	
+					},
+				],
+				owner: 'User1',
 			  },
 		},
 		{
@@ -105,8 +114,17 @@ const ChannelsPage: React.FC = () => {
 				icon: <PersonAddIcon />,
 				type: 'private',
 				password: null,
-				users: [],
-				owner: 'Cap',
+				users: [
+					{
+						name: 'User2',
+						role: 'Admin',
+						email: 'iamgroot@avengers.com',
+						password: '',
+						icon: React.ReactElement ,
+	
+					},
+				],
+				owner: 'User2',
 			  },
 		},
 		{

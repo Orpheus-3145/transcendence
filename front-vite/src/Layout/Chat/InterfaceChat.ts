@@ -9,20 +9,22 @@ export enum ChatStatus {
   ChannelsPage = 'channelsPage',
 }
 
-export interface ChatMessage {
-  message: React.ReactElement<typeof Typography>;
-  user: string;
-  userPP: React.ReactElement;
-  timestamp: React.ReactElement;
-}
-
 export enum UserRoles {
   Admin = 'Admin',
   Guest = 'Guest',
   Owner = 'Owner',
 }
 
+export interface ChatMessage {
+  id: string,
+  message: React.ReactElement<typeof Typography>;
+  user: string;
+  userPP: React.ReactElement;
+  timestamp: React.ReactElement;
+}
+
 export interface UserProps {
+  id: string,
   name: string;
   role: string;
   email: string;
@@ -39,6 +41,8 @@ export interface ChatSettings {
 }
 
 export interface ChatRoom {
+  id: string,
+  
   name: string;
   icon: React.ReactElement;
   messages: ChatMessage[];
