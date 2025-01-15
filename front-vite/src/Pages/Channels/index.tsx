@@ -13,7 +13,8 @@ import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as Log
 import { timeStamp } from 'console';
 import { index } from 'cheerio/dist/commonjs/api/traversing';
 import { useChatContext, socket } from '../../Layout/Chat/ChatContext';
-import { Socket } from 'socket.io-client';
+// import { Socket } from 'socket.io-client';
+
 interface ChannelTypeEvent {
   component: React.ReactNode;
   newColor: string;
@@ -162,7 +163,7 @@ const ChannelsPage: React.FC = () => {
   
 	const handleCreateChannel = () => {
 		//--> CALL TO BACKEND <-- //
-		// socket.emit('joinChannel', {'channel': channelName})
+		socket.emit('joinChannel', {'channel': channelName})
 		//  TEST CALL BACKEND
 
 		if (channelName.trim()) {

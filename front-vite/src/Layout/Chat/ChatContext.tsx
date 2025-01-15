@@ -4,6 +4,24 @@ import { children } from 'cheerio/dist/commonjs/api/traversing';
 import { Group as GroupIcon } from '@mui/icons-material';
 import { Typography } from '@mui/material';
 import { PersonAdd as PersonAddIcon} from '@mui/icons-material';
+import { io } from 'socket.io-client';
+
+// export const socket = io('https://localhost:3000/chat', {
+// 	withCredentials: true,
+// });
+
+export const socket = io(`${import.meta.env.URL_WEBSOCKET}${import.meta.env.WS_NS_CHAT}`, {
+    withCredentials: true,    // Send credentials (e.g., cookies) with the WebSocket request
+    transports: ['websocket'], // Restrict to WebSocket transport
+});
+
+socket.on('connect', () => {
+	console.log('Socket connected:', socket.id);
+});
+
+socket.on('connect_error', (error) => {
+	console.error('Connection failed:', error);
+});
 
 interface ChatContextType {
 	chatProps: ChatProps;
