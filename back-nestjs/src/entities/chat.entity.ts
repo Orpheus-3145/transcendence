@@ -1,4 +1,4 @@
-import {Entity,	PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
+import {Entity,	PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
 
 // Channel entity
 @Entity('Channels')
@@ -21,6 +21,9 @@ export class Channel {
 
 	@CreateDateColumn()
 	created: Date;
+
+	@OneToMany(() => ChannelMember, (channelMember: ChannelMember) => channelMember.channel)
+	members: ChannelMember[];
 }
 
 // Channel_Members entity
@@ -39,7 +42,7 @@ export class ChannelMember {
 	})
 	member_role: string;
 
-	@ManyToOne(() => Channel, (channel: Channel) => channel.channel_id)
+	@ManyToOne(() => Channel, (channel: Channel) => channel.members)
 	@JoinColumn({ name: 'channel_id' })
 	channel: Channel;
 }
