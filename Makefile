@@ -1,4 +1,4 @@
-COMPOSE := docker compose --progress=auto --env-file ./env/.env
+COMPOSE := docker compose --env-file ./env/.env
 
 all: build
 

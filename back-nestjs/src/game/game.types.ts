@@ -11,6 +11,16 @@ export enum PaddleDirection {
 	down = 'down',
 }
 
+export enum PlayerIdentity {
+	self = 0,
+	opponent = 1,
+}
+
+export interface WaitingPlayer {
+	clientSocket: Socket;
+	extras: boolean;
+}
+
 export interface Player {
 	clientSocket: Socket;
 	intraId: number;

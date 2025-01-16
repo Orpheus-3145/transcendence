@@ -26,6 +26,16 @@ export interface GameState {
 	};
 }
 
+export interface PowerUp {
+	x: number;
+	y: number;
+}
+
+export interface PowerUpStatus {
+	active: boolean;
+	player: number;
+}
+
 export interface PlayerData {
 	playerId: number;
 	sessionToken: string;
@@ -35,4 +45,5 @@ export interface PlayerData {
 export interface InitData {
 	sessionToken: string;
 	mode: GameMode;
+	extras: boolean;
 }

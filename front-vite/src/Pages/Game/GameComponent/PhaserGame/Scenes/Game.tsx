@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { GAME, GAME_BALL, GAME_PADDLE } from '../Game.data';
 import * as GameTypes from '../Types/types';
 import Ball from '../GameObjects/Ball';
+import SpeedBall from '../GameObjects/SpeedBall';
 import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
 
@@ -10,8 +11,9 @@ export default class Game extends Phaser.Scene {
 	// Game objects
 	private _ball!: Ball;
 	private _leftPaddle!: Paddle;
-	private _righPaddle!: Paddle;
+	private _rightPaddle!: Paddle;
 	private _field!: Field;
+	private _speedBall!: SpeedBall | null;
 
 	// Background image
 	private _background!: Phaser.GameObjects.Image;
@@ -29,8 +31,10 @@ export default class Game extends Phaser.Scene {
 	private _socketIO!: Socket;
 	private _gameStarted: boolean = false;
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
+	private _extras: boolean = false;
 	private _gameState!: GameTypes.GameState;
-
+	// private _powerUpActive: boolean = false;
+	private _powerUpActive: { [key: number]: boolean } = { 0: false, 1: false }; // Tracks if a player has the power-up
 	constructor() {
 		super({ key: 'Game' });
 	}
@@ -39,8 +43,10 @@ export default class Game extends Phaser.Scene {
 	init(data: GameTypes.InitData): void {
 		this._id = this.registry.get('user42data').id;
 		this._nameNick = this.registry.get('user42data').nameNick;
+
 		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
+		this._extras = data.extras;
 
 		// Key bindings
 		this._cursors =
@@ -73,20 +79,26 @@ export default class Game extends Phaser.Scene {
 
 		// Create bars
 		this._leftPaddle = new Paddle(this, GAME_PADDLE.width / 2, GAME.height / 2);
-		this._righPaddle = new Paddle(this, GAME.width - GAME_PADDLE.width / 2, GAME.height / 2);
+		this._rightPaddle = new Paddle(this, GAME.width - GAME_PADDLE.width / 2, GAME.height / 2);
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
+
+		if (this._mode === GameTypes.GameMode.single) {
+			
+			const initData: GameTypes.InitData = {
+				sessionToken: this._sessionToken,
+				mode: this._mode,
+				extras: this._extras,
+			};
+			this.sendMsgToServer('createRoomSinglePlayer', initData);
+		}
 
 		const playerData: GameTypes.PlayerData = {
 			playerId: this._id,
 			nameNick: this._nameNick,
 			sessionToken: this._sessionToken,
 		};
-
-		if (this._mode === GameTypes.GameMode.single)
-			this.sendMsgToServer('createRoomSinglePlayer', { sessionToken: this._sessionToken });
-
 		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	}
 
@@ -107,11 +119,44 @@ export default class Game extends Phaser.Scene {
 
 		this._socketIO.on('gameError', (trace: string) => this.scene.start('Error', { trace }));
 
+		// power ups handling
+		// Handle SpeedBall appearance
+		this._socketIO.on('speedBallUpdate', (state: GameTypes.PowerUp) => {
+			if (!this._speedBall) {
+				// Create the SpeedBall object if it doesn't already exist
+				this._speedBall = new SpeedBall(this, state.x, state.y);
+			} else {
+				// Update the SpeedBall position
+				this._speedBall.updatePosition(state.x, state.y);
+			}
+		});
+
+		// Handle SpeedBall deactivation
+		this._socketIO.on('speedBallDeactivated', () => {
+			if (this._speedBall) {
+				this._speedBall.destroy(); // Remove the SpeedBall from the scene
+				this._speedBall = null; // Reset the reference
+			}
+		});
+		this._socketIO.on('powerUpActivated', (state: GameTypes.PowerUpStatus) => {
+			this._powerUpActive[state.player] = state.active;
+		});
+
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	}
 
 	sendMsgToServer(msgType: string, content?: any) {
 		this._socketIO.emit(msgType, content);
+	}
+
+	setPaddleColour(paddle: Paddle, active: boolean): void {
+		if (active === true) {
+			paddle.changeColor(0xffff00);
+		} else if (paddle.getColor() === 0xffff00 && active === false) {
+			paddle.changeColor(0x0000ff);
+		}
+		// console.log('Changing paddle color:', paddle, 'to:', color);
+		// console.log('Ball color remains unchanged:', this._ball.getColor());
 	}
 
 	// Frame-by-frame update
@@ -136,6 +181,8 @@ export default class Game extends Phaser.Scene {
 			// this.scene.start('Error', "random!")
 		}
 
+		this.setPaddleColour(this._leftPaddle, this._powerUpActive[0]);
+		this.setPaddleColour(this._rightPaddle, this._powerUpActive[1]);
 		this.updateGame();
 	}
 
@@ -148,6 +195,6 @@ export default class Game extends Phaser.Scene {
 
 		// Update paddles based on player positions
 		this._leftPaddle.updatePosition(this._gameState.p1.y);
-		this._righPaddle.updatePosition(this._gameState.p2.y);
+		this._rightPaddle.updatePosition(this._gameState.p2.y);
 	}
 }

@@ -1,4 +1,3 @@
-// NB: in the future move this stuf somewhere else
 export const GAME = {
 	width: 1150,
 	height: 648,

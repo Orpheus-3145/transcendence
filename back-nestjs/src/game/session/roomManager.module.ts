@@ -19,9 +19,9 @@ import AppLoggerService from 'src/log/log.service';
 		{
 			provide: 'GAME_SPAWN',
 			useFactory: (logger: AppLoggerService, thrower: ExceptionFactory, config: ConfigService) => {
-				return (sessionToken: string, mode: GameMode) => {
+				return (sessionToken: string, mode: GameMode, extras: boolean) => {
 					const newInstance = new SimulationService(logger, thrower, config);
-					newInstance.setInitInfo(sessionToken, mode);
+					newInstance.setInitInfo(sessionToken, mode, extras);
 
 					return newInstance;
 				};

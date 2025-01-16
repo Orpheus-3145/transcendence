@@ -41,8 +41,9 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('createRoomSinglePlayer')
-	setInitData(@MessageBody() data: { sessionToken: string }): void {
-		this.roomManager.createRoom(data.sessionToken, GameMode.single);
+	setInitData(@MessageBody() data: { sessionToken: string, mode: GameMode, extras: boolean }): void {
+		
+		this.roomManager.createRoom(data.sessionToken, data.extras, data.mode);
 	}
 
 	@SubscribeMessage('playerLeftGame')

@@ -1,4 +1,4 @@
-import { IsInt, Min, ValidateNested } from 'class-validator';
+import { IsInt, Min, ValidateNested, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class BallDTO {
@@ -9,6 +9,19 @@ class BallDTO {
 	@IsInt()
 	@Min(1)
 	y: number;
+}
+
+class PowerUpDTO {
+	@IsInt()
+	@Min(1)
+	x: number;
+
+	@IsInt()
+	@Min(1)
+	y: number;
+
+	@IsBoolean()
+	active: boolean;
 }
 
 class PlayerDTO {
