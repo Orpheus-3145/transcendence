@@ -410,13 +410,14 @@ export default class SimulationService {
 			this.powerUpPosition.x += this.powerUpPosition.dx * 5;
 			// this.powerUpPosition.y += this.powerUpPosition.dy * 5;
 			// Later add type of power up to this return data type
-			const speedBallData = {
+			let speedBallData = {
 				x: this.powerUpPosition.x,
 				y: this.powerUpPosition.y,
 			};
-
+			// ball: { x: this.windowWidth - this.ball.x, y: this.ball.y },
 			this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData)
 			if (this.mode === GameTypes.GameMode.multi) {
+				speedBallData.x = this.windowWidth - this.powerUpPosition.x
 				this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData)
 			}
 
@@ -479,6 +480,7 @@ export default class SimulationService {
 	handlePowerUpCollisionWithPaddle(player_no: number): void {
 		this.powerUpStatus[player_no] = true;
 
+		console.log(`Player collision ${player_no + 1}`)
 		const playerIdentity1 =
 			player_no === 0 ? GameTypes.PlayerIdentity.self : GameTypes.PlayerIdentity.opponent;
 		this.sendPowerUpData(this.player1, player_no, playerIdentity1, true);
