@@ -730,7 +730,7 @@ const ProfilePage: React.FC = () => {
 			{
 				setUserProfileNumber(number);
 			});
-		}, [profileImage, friendsList]);
+		});
 		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;

@@ -9,8 +9,10 @@ import { off } from 'process';
 
 const AllUsersPage: React.FC = () => {
 	const theme = useTheme();
+	const navigate = useNavigate();
 	const allUsers = getAll();
 	const [users, setUsers] = useState<User[]>([]);
+	const [searchUsers, setSearchUsers] = useState<User[]>([]);
 	const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
 	const [offlineUsers, setOfflineUsers] = useState<User[]>([]);
 	const [showInput, setShowInput] = useState<Boolean>(false);
@@ -19,17 +21,6 @@ const AllUsersPage: React.FC = () => {
 	const [showOnline, setShowOnline] = useState<Boolean>(true);
 	const [showOffline, setShowOffline] = useState<Boolean>(true);
 	const [showSearch, setShowSearch] = useState<Boolean>(false);
-	const navigate = useNavigate();
-	
-	useEffect(() => {
-		const fetchUsers = async () => {
-			const usersList = await getAll();
-			setUsers(usersList);
-			sortUsers(usersList);
-		};
-
-		fetchUsers();
-	}, [onlineUsers, offlineUsers, users, showOnline, showOffline]);
 
 	let sortUsers = (arr: User[]) =>
 	{
@@ -75,7 +66,7 @@ const AllUsersPage: React.FC = () => {
 		let added = Number(0);
 		if (key === 'Enter')
 		{
-			setUsers([]);
+			setSearchUsers([]);
 			var newlist: User[] = [];
 			let len = Number(-1);
 			for (const c of inputValue)
@@ -106,15 +97,13 @@ const AllUsersPage: React.FC = () => {
 					added++;
 				}
 			});
-			console.log(newlist.length)
 			
-			if (added == 0)
+			if (added === 0)
 				setShowMessage(true);
 			else
 				setShowMessage(false);
-	
-			setUsers(newlist);
-			console.log(newlist);
+
+			setSearchUsers(newlist);
 			setInputValue('');
 			setShowInput(false);
 			setShowSearch(true);
@@ -222,6 +211,8 @@ const AllUsersPage: React.FC = () => {
 				>
 					Currently no offline users!
 				</Typography>
+				<br />
+				<br />
 			</Stack>
 		);
 	}
@@ -241,33 +232,33 @@ const AllUsersPage: React.FC = () => {
 				(
 					<ImageListItem key={item.image}>
 						<Stack
-							sx={{
-								position: 'relative',
-								left: '20px',
-							}}
+						sx={{
+							alignItems: 'center',
+							spacing: 1,
+						}}
 						>
 							<Avatar
 								sx={{
-									width: '250px',
-									height: '250px',
-									bgcolor: theme.palette.primary.light,
-									borderRadius: 0,
+								width: '250px',
+								height: '250px',
+								bgcolor: theme.palette.primary.light,
+								borderRadius: 0,
 								}}
 								src={item.image}
-							>
-							</Avatar>
+							/>
 							<Link 
 								href="" 
 								onClick={() => redirectToUser(item.id)} 
 								sx={{
-									color: statusToColor(item),
-									marginTop: '2px',
-								  }}
+								color: statusToColor(item),
+								marginTop: '8px',
+								textAlign: 'center',
+								}}
 							>
 								{item.nameNick}
 							</Link>
 						</Stack>
-					</ImageListItem>
+				  </ImageListItem>
 				))}
 			</ImageList>
 		);
@@ -301,7 +292,12 @@ const AllUsersPage: React.FC = () => {
 
 		if (showSearch)
 		{
-			return (imageArr(users));
+			return (
+				<Stack>
+					<br />
+					{imageArr(searchUsers)}
+				</Stack>
+			);
 		}
 
 		return (
@@ -316,6 +312,7 @@ const AllUsersPage: React.FC = () => {
 						Online
 					</Typography>
 				</Stack>
+				<br />
 				{getOnline()}
 				<Stack alignItems="center">
 					<Typography
@@ -328,36 +325,38 @@ const AllUsersPage: React.FC = () => {
 						Offline
 					</Typography>
 				</Stack>
+				<br />
 				{getOffline()}
 			</Stack>
 		);
 	}
+
+	useEffect(() => {
+		const fetchUsers = async () => {
+			const usersList = await getAll();
+			setUsers(usersList);
+			sortUsers(usersList);
+		};
+
+		fetchUsers();
+	}, [onlineUsers, offlineUsers, searchUsers, users, showOnline, showOffline]);
 
 	let pageWarpper = () =>
 	{
 		return (
 			<Stack>
 				<Stack
-					justifyContent={'space-between'}
-					margin={'1em'}
 					bgcolor={theme.palette.primary.dark}
-					sx={{
-						width: '1200px',
-						height: '110px',
-					}}
 				>
 					{pageHeader()}
 				</Stack>
+				<br />
 				<Stack
-					justifyContent={'space-between'}
-					margin={'1em'}
 					bgcolor={theme.palette.primary.dark}
-					sx={{
-						width: '1200px',
-					}}
 				>
 					{pageBody()}
-				</Stack>
+				</Stack> 
+				<br />
 			</Stack>
 		);
 	}

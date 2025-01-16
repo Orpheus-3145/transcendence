@@ -86,6 +86,7 @@ export class NotificationService {
 		{
 			tmp.message = message;
 			this.notificationRepository.save(tmp);
+			//add message to dm
 		}
 		else
 		{
@@ -98,7 +99,7 @@ export class NotificationService {
 			noti.status = NotificationStatus.None;
 			noti.message = message;
 			this.notificationRepository.save(noti);
-			//add message to chat
+			//add message to dm
 		}
 	}
 

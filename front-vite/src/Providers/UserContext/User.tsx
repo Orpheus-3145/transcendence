@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { error } from 'console';
+import { stat } from 'fs';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -106,6 +107,21 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 	}
 }
 
+export async function setUserStatus(username:string, status:UserStatus): Promise<void> {
+	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/setStatus', {
+		method: "POST",
+		headers: {
+		'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ status: status }),
+	});
+
+	const response = await fetch(request)
+	if (response.status == 404)
+		console.log("ERROR: FAILED TO SET STATUS!");
+}
+
+
 export async function setNewNickname(username:string, nickname:string): Promise<string> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick', {
 		method: "POST",
@@ -132,8 +148,7 @@ export async function fetchFriend(friend:string): Promise<User> {
 
 	const response = await fetch(request)
 		.then((raw) => raw.json())
-		.then((json) => json as User) 
-	
+		.then((json) => json as User)
 	return response;
 }
 

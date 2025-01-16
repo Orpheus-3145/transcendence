@@ -7,6 +7,7 @@ import { AccessTokenDTO } from '../dto/auth.dto';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import { Console } from 'console';
+import { stat } from 'fs';
 
 
 @Injectable()
@@ -37,59 +38,17 @@ export class UsersService {
 		user.email = userMe.email;
 		user.image = userMe.image.link;
 		user.greeting = 'Hello, I have just landed!';
-		user.status = UserStatus.Offline;
+		user.status = UserStatus.Online;
 		user.friends = [];
 		user.blocked = [];
-		const a = new User();
-		a.accessToken = access.access_token;
-		a.intraId = 43212;
-		a.nameNick = "a";
-		a.nameIntra = "a";
-		a.nameFirst = "a";
-		a.nameLast = "a";
-		a.email = "a@gmail.co,"
-		a.image = userMe.image.link;
-		a.greeting = 'Hello, I ave just landed!';
-		a.status = UserStatus.Offline;
-		a.friends = [];
-		a.blocked = [];
-		const b = new User();
-		b.accessToken = access.access_token;
-		b.intraId = 456412;
-		b.nameNick = "ab";
-		b.nameIntra = "ab";
-		b.nameFirst = "ab";
-		b.nameLast = "ab";
-		b.email = "ab@gmail.co,"
-		b.image = userMe.image.link;
-		b.greeting = 'Hello, I ave just landed!';
-		b.status = UserStatus.Online;
-		b.friends = [];
-		b.blocked = [];
-		const c = new User();
-		c.accessToken = access.access_token;
-		c.intraId = 48712;
-		c.nameNick = "abc";
-		c.nameIntra = "abc";
-		c.nameFirst = "abc";
-		c.nameLast = "abc";
-		c.email = "abc@gmail.co,"
-		c.image = userMe.image.link;
-		c.greeting = 'Hello, I ave just landed!';
-		c.status = UserStatus.Online;
-		c.friends = [];
-		c.blocked = [];
 		try {
 			if (await this.userAlreadyExist(user) == true)
+			{
+				this.setStatus(user.intraId.toString(), UserStatus.Online);
 				return (new UserDTO(user));
+			}
 			await user.validate();
-			await a.validate();
-			await b.validate();
-			await c.validate();
 			await this.usersRepository.save(user);
-			await this.usersRepository.save(a);
-			await this.usersRepository.save(b);
-			await this.usersRepository.save(c);
 			return new UserDTO(user);
 		} 
 		catch (error) {
@@ -128,6 +87,13 @@ export class UsersService {
 	{
 		const numb = Number(code);
 		return (this.findOneIntra(numb));
+	}
+
+	async setStatus(intraId: string, status: UserStatus)
+	{
+		var user = this.getUserIntraId(intraId);
+		(await user).status = status;
+		this.usersRepository.save(await user);
 	}
 
 	async setNameNick(user: User, nameNick: string)

@@ -520,10 +520,6 @@ const ProfilePageOther: React.FC = () => {
 		}
 		else if (which == "BL")
 		{
-			if (user.blocked.find((blockedId:string) => blockedId === userProfile.intraId.toString())) 
-			{
-				return ("User has already been blocked!");
-			}
 			return (messageBlockedSend);
 		}
 		return ("ERROR");
@@ -702,11 +698,29 @@ const ProfilePageOther: React.FC = () => {
 		if (showInputMessage)
 		{
 			topMessage = '-195px'
+			if (isFriend)
+			{
+				topMessage = '-150px';
+			}
 		}
+		else
+		{
+			topMessage = '-110px';
+			if (!isFriend)
+			{
+				topMessage = '-157px';
+			}
+		}
+
 		if (showMessageGR || showMessageFR || showMessageUserBlocked)
 		{
 			top = '-247px';
 			topInputMessage = '-237px';
+			if (isFriend)
+			{
+				top = '-202px';
+				topInputMessage = '-197px';
+			}
 		}
 
 		return (
@@ -737,7 +751,7 @@ const ProfilePageOther: React.FC = () => {
 					sx={{
 						position: 'relative',
 						top: topInputMessage,
-						left: '470px',
+						left: '475px',
 						width: '200px',
 						height: '40px',
 					}}
@@ -768,6 +782,7 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageGR(false);
 		setShowMessageBL(true);
 		blockFriend(user.id, profileIntraId.toString());
+		user.blocked.push(profileIntraId.toString());
 	}
 
 	let BlockUserIcon = () =>
@@ -842,6 +857,14 @@ const ProfilePageOther: React.FC = () => {
 			top = '-395px';
 			if (showInputMessage)
 				top = '-435px';
+			if (isFriend)
+			{
+				top = '-305px';
+				if (showInputMessage)
+				{
+					top = '-345px';
+				}
+			}
 
 		}
 
@@ -916,7 +939,7 @@ const ProfilePageOther: React.FC = () => {
 			{
 				setUserProfileNumber(number);
 			});
-		}, [friendsList]);
+		});
 		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;

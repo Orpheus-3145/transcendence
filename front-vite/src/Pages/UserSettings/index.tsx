@@ -116,7 +116,6 @@ const UserSettings: React.FC = () => {
 
 	let blockedWrapper = () =>
 	{
-		console.log(blockedList.length);
 		if (blockedList.length == 0)
 		{
 			return (

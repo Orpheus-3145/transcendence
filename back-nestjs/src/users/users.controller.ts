@@ -5,14 +5,14 @@ import { Express } from 'express';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/entities/notification.entity';
 import {User} from '../entities/user.entity'
+import { UserStatus } from 'src/dto/user.dto';
+import { stat } from 'fs';
 
 @Controller('users')
 export class UsersController {
 
 	constructor(
 		private readonly UserService: UsersService,
-		@Inject(forwardRef(() => NotificationService))
-		private readonly notificationService: NotificationService,
 	  ) { }
 
 
@@ -27,6 +27,12 @@ export class UsersController {
 		if (!user)
 			throw new HttpException('Not Found', 404);
 		return (user);
+	}
+
+	@Post('/profile/:username/setStatus')
+	async setStatus(@Param('username') intraID: string, @Body('status') status: UserStatus): Promise<void>
+	{
+		return (this.UserService.setStatus(intraID, status));
 	}
 
 	@Post('/profile/:username/newnick')
