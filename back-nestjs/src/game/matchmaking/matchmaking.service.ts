@@ -54,29 +54,8 @@ export default class MatchmakingService {
 	checkNewGame(): void {
 		if (this._waitingPlayersIP.length < 2) return;
 
-		// for (let i = 0; i < this._waitingPlayersIP.length - 1; i++) {
-		// 	// console.log(`checking ${this._waitingPlayersIP}}`);
-		// 	const p1: WaitingPlayer = this._waitingPlayersIP[i];
-		// 	const p2: WaitingPlayer = this._waitingPlayersIP[i + 1];
-
-		// 	if (this.doTheyMatch(p1, p2)) {
-		// 		// if player1 and player 2 share the same settings (i.e. extras, ...) then they can be coupled
-		// 		const player1: WaitingPlayer = this._waitingPlayersIP.shift();
-		// 		const player2: WaitingPlayer = this._waitingPlayersIP.shift();
-		// 		const sessionToken: string = uuidv4();
-
-		// 		player1.clientSocket.emit('ready', sessionToken); // message player1
-		// 		player2.clientSocket.emit('ready', sessionToken); // message player2
-
-		// 		this.logger.log(
-		// 			`found players ${player1.clientSocket.id}, ${player2.clientSocket.id} - sessionToken: ${sessionToken}`,
-		// 		);
-		// 		this.roomManager.createRoom(sessionToken, player1.extras, GameMode.multi);
-		// 		break;
-		// 	}
 
 		for (let i = 0; i < this._waitingPlayersIP.length - 1; i++) {
-			// console.log(`checking ${this._waitingPlayersIP}}`);
 			const player1: WaitingPlayer = this._waitingPlayersIP[i];
 
 			for (let j = i+1; j < this._waitingPlayersIP.length; j++) {
@@ -97,11 +76,6 @@ export default class MatchmakingService {
 					return ;
 				}
 			}
-
-			// if (this._waitingPlayersIP.length === 0) {
-			// 	clearInterval(this._checker);
-			// 	this._checker = null;
-			// }
 		}
 	}
 
