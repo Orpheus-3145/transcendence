@@ -57,7 +57,6 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 		@ConnectedSocket() client: Socket,
 		mode: GameMode,
 	): void {
-		console.log('creating new player');
 		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
 	}
 

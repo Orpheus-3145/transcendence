@@ -26,13 +26,11 @@ export default class MatchmakingService {
 			clientSocket: client,
 			extras: extras,
 		};
-		// console.log(`Checking waitingPlayer: ${waitingPlayer.extras}`);
 		this._waitingPlayersIP.push(waitingPlayer);
 
 		if (this._checker === null) this._checker = setInterval(() => this.checkNewGame(), 100);
 
-		// this.logger.debug(`client ${client.handshake.address} joined the queue`);
-		this.logger.debug(`client ${client.id} joined the queue`);
+		this.logger.debug(`client ${client.handshake.address} joined the queue`);
 	}
 
 	removePlayerFromQueue(leaver: Socket) {

@@ -97,7 +97,7 @@ export default class Game extends Phaser.Scene {
 		const playerData: GameTypes.PlayerData = {
 			playerId: this._id,
 			nameNick: this._nameNick,
-			sessionToken: this._sessionToken,		// NB: remove IT!
+			sessionToken: this._sessionToken,
 		};
 		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	}
@@ -181,7 +181,6 @@ export default class Game extends Phaser.Scene {
 			// this.scene.start('Error', "random!")
 		}
 
-		console.log('Power-up state update: ', this._powerUpActive);
 		this.setPaddleColour(this._leftPaddle, this._powerUpActive[0]);
 		this.setPaddleColour(this._rightPaddle, this._powerUpActive[1]);
 		this.updateGame();

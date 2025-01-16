@@ -19,41 +19,41 @@ export default class SimulationService {
 	private readonly _defaultBallSpeed = parseInt(this.config.get('GAME_BALL_SPEED'), 10);
 	private readonly frameRate: number = parseInt(this.config.get('GAME_FPS'), 10);
 
-	// Extras
-	private extras: boolean = false;
-
-	// Speed Ball
-	private powerUpInterval: NodeJS.Timeout = null; // Timer for spawning speedball
-	private speedBallActive: boolean = false;
-	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
-
-	// Power up type
-	// Randomly choose between powerUpTypes each time
-	private powerUpType: { [key: string]: boolean } = {
-		speedBall: false,
-		speedPaddle: false,
-		slowPaddle: false,
-		shrinkPaddle: false,
-		strechtPaddle: false,
-	};
-	private powerUpIntervalTime: number = 15000; // NB move in env file
-	// Power-up state
-	private powerUpStatus: { [key: number]: boolean } = { 0: false, 1: false }; // power up statusfor player
-	private powerUpDuration: number = 8000; // Duration for power-up in ms (e.g., 5 seconds) NB move in env file
-
-	private sessionToken: string;
+	private sessionToken: string = '';
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private forbidAutoPlay: boolean = this.config.get<boolean>('FORBID_AUTO_PLAY', false); // if true the same user cannot play against themself
-
+	
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
 	private player1: GameTypes.Player = null;
 	private player2: GameTypes.Player = null;
 	private ballSpeed: number = this._defaultBallSpeed;
 	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
-
+	
+	// Extras
+	private extras: boolean = false;
+	
+	private powerUpIntervalTime: number = Number(this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000));
+	// Power-up state
+	private powerUpStatus: { [key: number]: boolean } = { 0: false, 1: false }; // power up statusfor player
+	private powerUpDuration: number = Number(this.config.get<number>('GAME_POWERUP_DURATION', 8000)); // Duration for power-up
+	// Speed Ball power up
+	private speedBallActive: boolean = false;
+	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
+	
+	// Power up type
+	// Randomly choose between powerUpTypes each time
+	// private powerUpType: { [key: string]: boolean } = {
+	// 	speedBall: false,
+	// 	speedPaddle: false,
+	// 	slowPaddle: false,
+	// 	shrinkPaddle: false,
+	// 	strechtPaddle: false,
+	// };
+	
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
+	private powerUpInterval: NodeJS.Timeout = null; // Timer for spawning speedball
 
 	constructor(
 		private readonly logger: AppLoggerService,
@@ -78,7 +78,6 @@ export default class SimulationService {
 			// missing info, not ready to play yet
 			if (!this.player1 || !this.player2) return;
 
-			console.log('ready');
 			if (this.forbidAutoPlay == true && this.player1.nameNick == this.player2.nameNick)
 				this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
 			
@@ -87,7 +86,6 @@ export default class SimulationService {
 	}
 
 	startEngine(): void {
-		console.log('trying to start engine');
 		if (this.engineRunning) return;
 
 		this.engineRunning = true;
@@ -480,7 +478,6 @@ export default class SimulationService {
 	handlePowerUpCollisionWithPaddle(player_no: number): void {
 		this.powerUpStatus[player_no] = true;
 
-		console.log(`Player collision ${player_no + 1}`)
 		const playerIdentity1 =
 			player_no === 0 ? GameTypes.PlayerIdentity.self : GameTypes.PlayerIdentity.opponent;
 		this.sendPowerUpData(this.player1, player_no, playerIdentity1, true);
