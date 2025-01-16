@@ -36,10 +36,10 @@ export default class SimulationService {
 		shrinkPaddle: false,
 		strechtPaddle: false,
 	};
-	private powerUpIntervalTime: number = 15000;
+	private powerUpIntervalTime: number = 15000; // NB move in env file
 	// Power-up state
-	private powerUpStatus: { [key: number]: boolean } = { 0: false, 1: false }; // ackspower up statusfor player
-	private powerUpDuration: number = 8000; // Duration for power-up in ms (e.g., 5 seconds)
+	private powerUpStatus: { [key: number]: boolean } = { 0: false, 1: false }; // power up statusfor player
+	private powerUpDuration: number = 8000; // Duration for power-up in ms (e.g., 5 seconds) NB move in env file
 
 	private sessionToken: string;
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
@@ -119,6 +119,12 @@ export default class SimulationService {
 			clearInterval(this.powerUpInterval);
 			this.powerUpInterval = null;
 		}
+
+		// if one of the two players have a powerup active
+		if (this.powerUpStatus[0])
+			this.removePowerUp(0);
+		else if (this.powerUpStatus[1])
+			this.removePowerUp(1);
 
 		this.engineRunning = false;
 
@@ -392,45 +398,66 @@ export default class SimulationService {
 		}
 		const spawnX = this.windowWidth / 2;
 		const spawnY = Math.random() * (this.windowHeight - 50) + 25; // Random Y position within bounds
-		const randomX = Math.random() < 0.5 ? -1 : 1;
-
-		this.powerUpPosition = { x: spawnX, y: spawnY, dx: randomX, dy: 0 };
+		const randomDirX = Math.random() < 0.5 ? -1 : 1;
+		
+		// if randomDirX == 1 towards player2, else towards player1
+		this.powerUpPosition = { x: spawnX, y: spawnY, dx: randomDirX, dy: 0 };
 		this.speedBallActive = true;
 	}
 
 	sendSpeedBallUpdate(): void {
 		if (this.speedBallActive) {
 			this.powerUpPosition.x += this.powerUpPosition.dx * 5;
-			this.powerUpPosition.y += this.powerUpPosition.dy * 5;
+			// this.powerUpPosition.y += this.powerUpPosition.dy * 5;
 			// Later add type of power up to this return data type
 			const speedBallData = {
 				x: this.powerUpPosition.x,
 				y: this.powerUpPosition.y,
 			};
 
-			if (this.player1) {
-				this.player1.clientSocket.emit('speedBallUpdate', speedBallData);
+			this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData)
+			if (this.mode === GameTypes.GameMode.multi) {
+				this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData)
 			}
-			if (this.mode == GameTypes.GameMode.multi) {
-				this.player2.clientSocket.emit('speedBallUpdate', speedBallData);
-			}
+
+			// the direction of the power up has to be mirrored between the two players
+			// if (this.powerUpPosition.dx === 1) {	// the powerup is going towards player2, opposite to player1
+				
+			// 	if (this.mode === GameTypes.GameMode.multi) {
+			// 		this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData)
+			// 	}
+			// 	// is getting far to player1
+			// 	speedBallData.x = this.windowWidth - speedBallData.x;
+			// 	this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData)
+				
+			// } else {	// the powerup is going towards player1, opposite to player2
+				
+			// 	this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData)
+			// 	if (this.mode === GameTypes.GameMode.multi) {
+			// 		speedBallData.x = this.windowWidth - speedBallData.x;
+			// 		this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData)
+			// 	}
+			// }
+
 			const leftPaddle = this.paddleHit(
 				this.player1.posY,
 				this.powerUpPosition.x,
 				this.powerUpPosition.y,
 				true,
 			);
+
 			const rightPaddle = this.paddleHit(
 				this.player2.posY,
 				this.powerUpPosition.x,
 				this.powerUpPosition.y,
 				false,
 			);
-			if (leftPaddle != null) {
+			
+			if (leftPaddle != null)
 				this.handlePowerUpCollisionWithPaddle(0);
-			} else if (rightPaddle != null) {
+			else if (rightPaddle != null)
 				this.handlePowerUpCollisionWithPaddle(1);
-			}
+			
 			if (this.powerUpPosition.x <= 0 || this.powerUpPosition.x >= this.windowWidth) {
 				this.deactivateSpeedBall();
 			}
@@ -442,10 +469,10 @@ export default class SimulationService {
 
 		// Notify players that the speed ball has been deactivated
 		if (this.player1) {
-			this.player1.clientSocket.emit('speedBallDeactivated'); // yellow ball disappears
+			this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallDeactivated'); // yellow ball disappears
 		}
 		if (this.mode == GameTypes.GameMode.multi) {
-			this.player2.clientSocket.emit('speedBallDeactivated');
+			this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallDeactivated');
 		}
 	}
 
@@ -462,7 +489,8 @@ export default class SimulationService {
 		}
 		// Set a timer to remove the power-up after the duration
 		setTimeout(() => {
-			this.removePowerUp(player_no);
+			if (this.engineRunning)
+				this.removePowerUp(player_no);
 		}, this.powerUpDuration);
 
 		// Deactivate the speedball after collision
@@ -492,7 +520,7 @@ export default class SimulationService {
 			active: active,
 			player: player_id,
 		};
-		playerBonus.clientSocket.emit('powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
+		this.sendMsgToPlayer(playerBonus.clientSocket, 'powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
 	}
 
 	sendMsgToPlayer(client: Socket, msg: string, data?: any) {

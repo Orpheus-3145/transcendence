@@ -92,49 +92,50 @@ export default class MainMenu extends Phaser.Scene {
 		// Initial color based on default state
 		toggleBtn.setStyle({ fill: this._extrasEnabled ? '#0f0' : '#fff' });
 	}
-	createToggleSwitch(x: number, y: number): void {
-		// Create the background for the toggle (a rounded rectangle)
-		const toggleBg = this.add
-			.rectangle(x, y, 80, 40, 0x555555, 0.8)
-			.setOrigin(0.5, 0.5)
-			.setInteractive()
-			.setStrokeStyle(2, 0xffffff);
 
-		// Create the toggle button (circle)
-		const toggleBtn = this.add.circle(x - 20, y, 16, 0xffffff).setInteractive();
+	// createToggleSwitch(x: number, y: number): void {
+	// 	// Create the background for the toggle (a rounded rectangle)
+	// 	const toggleBg = this.add
+	// 		.rectangle(x, y, 80, 40, 0x555555, 0.8)
+	// 		.setOrigin(0.5, 0.5)
+	// 		.setInteractive()
+	// 		.setStrokeStyle(2, 0xffffff);
 
-		// Text to indicate the state
-		const toggleText = this.add
-			.text(x + 50, y, 'OFF', {
-				fontSize: '20px',
-				color: '#fff',
-			})
-			.setOrigin(0.5, 0.5);
+	// 	// Create the toggle button (circle)
+	// 	const toggleBtn = this.add.circle(x - 20, y, 16, 0xffffff).setInteractive();
 
-		// Toggle behavior
-		toggleBg.on('pointerup', () => this.toggleSwitch(toggleBtn, toggleText, toggleBg, x, y));
-		toggleBtn.on('pointerup', () => this.toggleSwitch(toggleBtn, toggleText, toggleBg, x, y));
-	}
+	// 	// Text to indicate the state
+	// 	const toggleText = this.add
+	// 		.text(x + 50, y, 'OFF', {
+	// 			fontSize: '20px',
+	// 			color: '#fff',
+	// 		})
+	// 		.setOrigin(0.5, 0.5);
 
-	toggleSwitch(
-		toggleBtn: Phaser.GameObjects.Arc,
-		toggleText: Phaser.GameObjects.Text,
-		toggleBg: Phaser.GameObjects.Rectangle,
-		x: number,
-		y: number,
-	): void {
-		this._extrasEnabled = !this._extrasEnabled;
+	// 	// Toggle behavior
+	// 	toggleBg.on('pointerup', () => this.toggleSwitch(toggleBtn, toggleText, toggleBg, x, y));
+	// 	toggleBtn.on('pointerup', () => this.toggleSwitch(toggleBtn, toggleText, toggleBg, x, y));
+	// }
 
-		if (this._extrasEnabled) {
-			// Move the toggle circle to the right and update text
-			toggleBtn.x = x + 20;
-			toggleBg.fillColor = 0x00ff00; // Green for "ON"
-			toggleText.setText('ON');
-		} else {
-			// Move the toggle circle to the left and update text
-			toggleBtn.x = x - 20;
-			toggleBg.fillColor = 0x555555; // Gray for "OFF"
-			toggleText.setText('OFF');
-		}
-	}
+	// toggleSwitch(
+	// 	toggleBtn: Phaser.GameObjects.Arc,
+	// 	toggleText: Phaser.GameObjects.Text,
+	// 	toggleBg: Phaser.GameObjects.Rectangle,
+	// 	x: number,
+	// 	y: number,
+	// ): void {
+	// 	this._extrasEnabled = !this._extrasEnabled;
+
+	// 	if (this._extrasEnabled) {
+	// 		// Move the toggle circle to the right and update text
+	// 		toggleBtn.x = x + 20;
+	// 		toggleBg.fillColor = 0x00ff00; // Green for "ON"
+	// 		toggleText.setText('ON');
+	// 	} else {
+	// 		// Move the toggle circle to the left and update text
+	// 		toggleBtn.x = x - 20;
+	// 		toggleBg.fillColor = 0x555555; // Gray for "OFF"
+	// 		toggleText.setText('OFF');
+	// 	}
+	// }
 }
