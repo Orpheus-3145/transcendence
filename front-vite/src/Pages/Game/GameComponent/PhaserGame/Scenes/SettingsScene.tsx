@@ -1,6 +1,6 @@
 import { GAME } from '../Game.data';
 
-export default class Settings extends Phaser.Scene {
+export default class SettingsScene extends Phaser.Scene {
 	// background texture
 	private _background!: Phaser.GameObjects.Image;
 

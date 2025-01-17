@@ -1,5 +1,5 @@
 import { GAME } from '../Game.data';
-import Game from '../Scenes/Game';
+import GameScene from '../Scenes/GameScene';
 
 class Field {
 	// Player info
@@ -7,11 +7,11 @@ class Field {
 	private _rightScore: number = 0;
 
 	// Phaser objects
-	private readonly _scene: Game; // Main scene-container
+	private readonly _scene: GameScene; // Main scene-container
 	private readonly _scoreText: Phaser.GameObjects.Text; // Score display text object
 
 	// Constructor initializes the scene and sets up score display
-	constructor(scene: Game) {
+	constructor(scene: GameScene) {
 		this._scene = scene;
 
 		// Initialize the score display at the top center of the game screen

@@ -1,17 +1,16 @@
 import { GAME } from '../Game.data';
 
-export default class Error extends Phaser.Scene {
-	// error info
-	private _errorData: string = '';
+export default class ResultsScene extends Phaser.Scene {
+	// id of the winner of the game
+	private _winner: string = '';
 
 	constructor() {
-		super({ key: 'Error' });
+		super({ key: 'Results' });
 	}
 
-	// executed when scene.start('Error') is called,
-	// @param trace: information about the error
-	init(data: { trace: string }): void {
-		this._errorData = data.trace;
+	// fired then scene.start('Results') is called, sets the id
+	init(data: { winner: string }): void {
+		this._winner = data.winner;
 	}
 
 	// loading graphic assets, fired after init()
@@ -20,7 +19,7 @@ export default class Error extends Phaser.Scene {
 	// run after preload(), shows a basic info of the error
 	create(): void {
 		this.add
-			.text(GAME.width / 2, 100, `ERROR: ${this._errorData}`, {
+			.text(GAME.width / 2, 40, `Player: ${this._winner} won!`, {
 				fontSize: '50px',
 				align: 'center',
 				color: '#0f0',
@@ -44,5 +43,5 @@ export default class Error extends Phaser.Scene {
 	}
 
 	// run every frame update
-	upload(): void {}
+	update(): void {}
 }
