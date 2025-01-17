@@ -16,7 +16,8 @@ export default class SimulationService {
 	private readonly paddleWidth: number = parseInt(this.config.get('GAME_PADDLE_WIDTH'), 10);
 	private readonly paddleHeight: number = parseInt(this.config.get('GAME_PADDLE_HEIGHT'), 10);
 	private readonly paddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_SPEED'), 10);
-	private readonly _defaultBallSpeed = parseInt(this.config.get('GAME_BALL_SPEED'), 10);
+	private readonly ballRadius: number = Number(this.config.get('GAME_BALL_RADIUS'));
+	private readonly _defaultBallSpeed: number = parseInt(this.config.get('GAME_BALL_SPEED'), 10);
 	private readonly frameRate: number = parseInt(this.config.get('GAME_FPS'), 10);
 
 	private sessionToken: string = '';
@@ -363,14 +364,18 @@ export default class SimulationService {
 		item_y: number,
 		isLeftPaddle: boolean,
 	): number | null {
-		// throw excp if engine is not running
-		const collisionZone = Math.abs(player_y - item_y);
+
+		const angleDirectionBall: number = Math.atan(item_y / item_x);
+		const prj_item_x: number = item_x + Math.sqrt(this.ballRadius) + Math.cos(angleDirectionBall);
+		const prj_item_y: number = item_y + Math.sqrt(this.ballRadius) + Math.sin(angleDirectionBall);
+		const collisionZone = Math.abs(player_y - prj_item_y);
+	
 		if (isLeftPaddle) {
-			if (item_x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2)
-				return player_y - item_y; // Return offset
+			if (prj_item_x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2)
+				return player_y - prj_item_y; // Return offset
 		} else {
-			if (item_x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeight / 2)
-				return player_y - item_y; // Return offset
+			if (prj_item_x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeight / 2)
+				return player_y - prj_item_y; // Return offset
 		}
 		return null; // No collision
 	}
@@ -406,37 +411,18 @@ export default class SimulationService {
 	sendSpeedBallUpdate(): void {
 		if (this.speedBallActive) {
 			this.powerUpPosition.x += this.powerUpPosition.dx * 5;
-			// this.powerUpPosition.y += this.powerUpPosition.dy * 5;
+
 			// Later add type of power up to this return data type
 			let speedBallData = {
 				x: this.powerUpPosition.x,
 				y: this.powerUpPosition.y,
 			};
-			// ball: { x: this.windowWidth - this.ball.x, y: this.ball.y },
+
 			this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData)
 			if (this.mode === GameTypes.GameMode.multi) {
 				speedBallData.x = this.windowWidth - this.powerUpPosition.x
 				this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData)
 			}
-
-			// the direction of the power up has to be mirrored between the two players
-			// if (this.powerUpPosition.dx === 1) {	// the powerup is going towards player2, opposite to player1
-				
-			// 	if (this.mode === GameTypes.GameMode.multi) {
-			// 		this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData)
-			// 	}
-			// 	// is getting far to player1
-			// 	speedBallData.x = this.windowWidth - speedBallData.x;
-			// 	this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData)
-				
-			// } else {	// the powerup is going towards player1, opposite to player2
-				
-			// 	this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData)
-			// 	if (this.mode === GameTypes.GameMode.multi) {
-			// 		speedBallData.x = this.windowWidth - speedBallData.x;
-			// 		this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData)
-			// 	}
-			// }
 
 			const leftPaddle = this.paddleHit(
 				this.player1.posY,
