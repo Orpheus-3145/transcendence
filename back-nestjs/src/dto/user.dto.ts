@@ -44,4 +44,7 @@ export class UserDTO {
 
   @IsEnum(UserStatus)
   status: UserStatus;
+
+  @IsString()
+  role: string;
 }

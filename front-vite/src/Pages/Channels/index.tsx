@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect } from 'react';
+import axios from 'axios';
 import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Chat as ChatIcon } from '@mui/icons-material';
 import { SettingsModal } from './ChannelSettings';
@@ -41,7 +42,11 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 	return found ? true : false;
 };
 
-const ChannelsPage: React.FC = () => {	
+
+
+
+const ChannelsPage: React.FC = () => {
+	
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const [channelName, setChannelName] = useState('');
@@ -152,12 +157,63 @@ const ChannelsPage: React.FC = () => {
 		},
 	]);
   
+
+	// Using api call
+	// async function fetchAllChannels() {
+	// 	try {
+	// 	  const response = await axios.get('https://localhost:3000/channels', {
+	// 		withCredentials: true,  // If using cookies or sessions
+	// 	  });
+
+	// 	  console.log('Channels fetched:', response.data);
+	// 	//   setChatRooms(response.data); // Assuming setChatRooms is your state setter
+	// 	} catch (error) {
+	// 	  console.error('Error fetching channels:', error);
+	// 	}
+	//   }
+
+	// Using sockets
+
+	  const fetchAllChannels = () => {
+		socket.emit('getChannels');  // Emit event to request channels
+	  
+		socket.on('channelsList', (channels) => {
+		  console.log('Received channels:', channels);
+		  // Update state with the received channels
+		  setChatProps((prevState) => ({
+			...prevState,
+			chatRooms: channels.map((channel) => ({
+			  name: channel.title,
+			  icon: <GroupIcon />,
+			  messages: [],  // Initialize with empty messages
+			  settings: {
+				type: channel.ch_type,
+				password: null,
+				users: channel.settings?.users || [],  // Load users as necessary
+				owner: channel.ch_owner,
+			  },
+			})),
+		  }));
+		});
+	  
+		socket.on('error', (error) => {
+		  console.error('Error:', error);
+		});
+	};
+	
 	useEffect(() => {
 		if (selectedAvailableChannel &&
 			selectedAvailableChannel.settings.type === 'public') {
 			moveSelectedChToJoinedCh();
 		}
 	}, [selectedAvailableChannel]);
+
+	// // Uncomment to fetch the channels from the database, not fully implement
+	// useEffect(() => {
+	// 	fetchAllChannels();
+	// }, []);
+
+
 
 	// Separate available and joined channels
 	// const availableChannels = chatProps.chatRooms.slice(0, 3); // Example for available channels
@@ -174,6 +230,19 @@ const ChannelsPage: React.FC = () => {
 		// 	console.log('Error:', response.message);
 
 		//  TEST CALL BACKEND
+
+		const newChannelData = {
+			title: channelName,
+			ch_type: 'public',  // or another type based on UI
+			ch_owner: myself.name,
+			users: [
+			  { id: myself.id, name: myself.name, role: 'owner', email: myself.email }
+			],
+			password: null,  // set password if needed
+		  };
+		   
+		socket.emit('createChannel', newChannelData);
+
 
 		if (channelName.trim()) {
 			setChatProps((prevState) => ({
@@ -239,20 +308,21 @@ const ChannelsPage: React.FC = () => {
 	
 		if (channel.settings.type === 'password') {
 			setIsPasswordModal(true);
-		} else { 
-			console.log('Socket instance:', socket);
-			console.log('Emitting joinChannel with channel ID:', channel.id);
-			// Emit to the backend to join the channel
-			socket.emit('joinChannel', { channel: channel.id }, (response: any) => {
-				if (response && response.message) {
-					console.log('Success:', response.message);
-					// Optionally add logic to update UI upon successful join
-					moveSelectedChToJoinedCh();
-				} else {
-					console.error('Error:', response.message);
-				}
-			});
-		}
+		} 
+		// else { 
+		// 	console.log('Socket instance:', socket);
+		// 	console.log('Emitting joinChannel with channel ID:', channel.id);
+		// 	// Emit to the backend to join the channel
+		// 	socket.emit('joinChannel', { channel: channel.id }, (response: any) => {
+		// 		if (response && response.message) {
+		// 			console.log('Success:', response.message);
+		// 			// Optionally add logic to update UI upon successful join
+		// 			moveSelectedChToJoinedCh();
+		// 		} else {
+		// 			console.error('Error:', response.message);
+		// 		}
+		// 	});
+		// }
 	};
 	
   

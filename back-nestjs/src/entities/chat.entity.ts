@@ -11,7 +11,12 @@ export class Channel {
 		enum: ['public', 'protected', 'private', 'chat'],
 		default: 'public',
 	})
+
 	ch_type: string;
+
+	ch_owner: string;
+
+	password: string | null;
 
 	@Column({ type: 'varchar', length: 50, default: 'Welcome to my Channel!' })
 	title: string;

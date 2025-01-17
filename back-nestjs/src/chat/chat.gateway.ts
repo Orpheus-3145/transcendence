@@ -10,6 +10,8 @@ import { Server, Socket } from 'socket.io';
 
 import { ChatService } from './chat.service';
 import { UserDTO } from '../dto/user.dto';
+import { ChatDTO } from '../dto/chat.dto';
+
 
 @WebSocketGateway( {
 	namespace: process.env.WS_NS_CHAT,
@@ -37,40 +39,28 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	}
 
 
-	// Join a specific room/channel
-	@SubscribeMessage('joinChannel')
-	async handleJoinChannel(
-		@MessageBody('channel') channel: string,
-		@ConnectedSocket() client: Socket,
-	): Promise<void> {
-		const userId = 777; // --> FOR TESTING ONLY <--
+  	// Handle channel creation
+  	@SubscribeMessage('createChannel')
+  	async handleCreateChannel(
+  	  @MessageBody() chatDTO: ChatDTO, 
+  	  @ConnectedSocket() client: Socket
+  	): Promise<void> {
+  	  try {
+  	    // Assuming chatDTO contains channel information like title, type, users, etc.
+  	    const newChannel = await this.chatService.createChannel(chatDTO);
 
-		console.log(`Client ${userId} joined channel ${channel}`);
-		console.log(`Received channel from client:`, channel);
+  	    // Emit back the created channel to the client
+  	    this.server.emit('channelCreated', newChannel);
+		
+		client.emit('createChannelSuccess', { message: 'Channel created successfully', channel: newChannel });
 
-		const channelId = +channel;
-		if (isNaN(channelId)) {
-			console.error("Invalid channel ID:", channel);
-			client.emit('error', { message: 'Invalid channel ID' });
-			return; // Handle invalid case
-		}
 
-		// const userId = +client.id;
-		// if (isNaN(userId)) {
-		// 	console.error("Invalid user ID:", client.id);
-		// 	client.emit('error', { message: 'Invalid user ID' });
-		// 	return;
-		// }
-
-		console.log(`Valid channel ID: ${channelId}`);
-
-		// Add the user to the database if needed
-		await this.chatService.addUserToChannel(userId, channelId);
-	  
-		// Join the channel
-		client.join(channel);
-		client.emit('joinedChannel', { channel });
-	}
+  	    console.log(`New channel created: ${newChannel.title}`);
+  	  } catch (error) {
+  	    console.error('Error creating channel:', error);
+  	    client.emit('error', { message: 'Error creating channel' });
+  	  }
+  	}
 
 
 	// // Join a specific room/channel
@@ -79,15 +69,51 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	// 	@MessageBody('channel') channel: string,
 	// 	@ConnectedSocket() client: Socket,
 	// ): Promise<void> {
-	// 	console.log(`Client ${client.id} joined channel ${channel}`);
+	// 	const userId = 777; // --> FOR TESTING ONLY <--
+
+	// 	console.log(`Client ${userId} joined channel ${channel}`);
+	// 	console.log(`Received channel from client:`, channel);
+
+	// 	const channelId = +channel;
+	// 	if (isNaN(channelId)) {
+	// 		console.error("Invalid channel ID:", channel);
+	// 		client.emit('error', { message: 'Invalid channel ID' });
+	// 		return; // Handle invalid case
+	// 	}
+
+	// 	// const userId = +client.id;
+	// 	// if (isNaN(userId)) {
+	// 	// 	console.error("Invalid user ID:", client.id);
+	// 	// 	client.emit('error', { message: 'Invalid user ID' });
+	// 	// 	return;
+	// 	// }
+
+	// 	console.log(`Valid channel ID: ${channelId}`);
 
 	// 	// Add the user to the database if needed
-	// 	await this.chatService.addUserToChannel(+client.id, +channel);
+	// 	await this.chatService.addUserToChannel(userId, channelId);
 	  
 	// 	// Join the channel
 	// 	client.join(channel);
 	// 	client.emit('joinedChannel', { channel });
 	// }
+
+
+	// Join a specific room/channel (ORIGINAL VERSION)
+	@SubscribeMessage('joinChannel')
+	async handleJoinChannel(
+		@MessageBody('channel') channel: string,
+		@ConnectedSocket() client: Socket,
+	): Promise<void> {
+		console.log(`Client ${client.id} joined channel ${channel}`);
+
+		// Add the user to the database if needed
+		await this.chatService.addUserToChannel(+client.id, +channel);
+	  
+		// Join the channel
+		client.join(channel);
+		client.emit('joinedChannel', { channel });
+	}
 
 	// Leave a specific room/channel
 	@SubscribeMessage('leaveChannel')
@@ -115,4 +141,17 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		// Broadcast to other clients in the channel
 		this.server.to(channel).emit('newMessage', { message, channel, senderId: client.id });
 	}
+
+	// Get all channels
+	@SubscribeMessage('getChannels')
+  	async handleGetChannels(@ConnectedSocket() client: Socket): Promise<void> {
+    try {
+      const channels = await this.chatService.getAllChannels();
+      client.emit('channelsList', channels);  // Emit back the channels to the client
+    } catch (error) {
+      console.error('Error fetching channels:', error);
+      client.emit('error', { message: 'Failed to fetch channels' });
+    }
+  }
+
 };

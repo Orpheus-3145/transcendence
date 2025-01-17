@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message, Channel, ChannelMember } from 'src/entities/chat.entity';
+import {ChatDTO } from '../dto/chat.dto'
 
 @Injectable()
 export class ChatService {
@@ -16,17 +17,45 @@ export class ChatService {
 		private readonly messageRepository: Repository<Message>,
 	) {}
 
-	// Create or find a channel
-	async findOrCreateChannel(channelData: Partial<Channel>): Promise<Channel> {
-		let channel = await this.channelRepository.findOneBy({
-			title: channelData.title,
+	// // Create or find a channel
+	// async findOrCreateChannel(channelData: Partial<Channel>): Promise<Channel> {
+	// 	let channel = await this.channelRepository.findOneBy({
+	// 		title: channelData.title,
+	// 	});
+	// 	if (!channel) {
+	// 		channel = this.channelRepository.create(channelData);
+	// 		await this.channelRepository.save(channel);
+	// 	}
+	// 	return channel;
+	// }
+
+	async createChannel(chatDTO: ChatDTO): Promise<Channel> {
+		const { title, ch_type, ch_owner, users, password } = chatDTO;
+	  
+		// Create new channel
+		const newChannel = this.channelRepository.create({
+		  title,
+		  ch_type,
+		  ch_owner,
+		  password,
+		//   channel_photo: chatDTO.channel_photo || 'default_channel_photo.png',
+		  created: new Date(),
 		});
-		if (!channel) {
-			channel = this.channelRepository.create(channelData);
-			await this.channelRepository.save(channel);
-		}
-		return channel;
+	  
+		const savedChannel = await this.channelRepository.save(newChannel);
+	  
+		// Add the initial users
+		const userEntities = users.map(user => ({
+		  user_id: user.id,
+		  channel_id: savedChannel.channel_id,
+		  member_role: user.role,
+		}));
+	  
+		await this.channelMemberRepository.save(userEntities);
+	  
+		return savedChannel;
 	}
+	  
 
 	// Add user to a channel
 	async addUserToChannel(user_id: number, channel_id: number, role = 'member') {
@@ -96,4 +125,16 @@ export class ChatService {
 	async getChannelMessages(channel_id: number): Promise<Message[]> {
 		return this.messageRepository.find({ where: { receiver_id: channel_id } });
 	}
+
+ 	// Fetch channel by ID
+ 	async getChannelById(channel_id: number): Promise<Channel> {
+		return this.channelRepository.findOne({
+			where: { channel_id: channel_id },  // Pass the condition for `channel_id`
+		});
+ 	}
+
+ 	// Fetch all channels
+	async getAllChannels(): Promise<Channel[]> {
+		return this.channelRepository.find(); // Fetches all channels from the database
+ 	}
 }
