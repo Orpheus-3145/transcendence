@@ -46,9 +46,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				password: '',
 				icon: <PersonAddIcon />
 			};
-
 			//--> CALL TO BACKEND <-- //
-			
 			setSettings({ ...settings, users: [...settings.users, newUser] });
 			setFriendName('');
 		}

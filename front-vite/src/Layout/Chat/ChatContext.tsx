@@ -48,6 +48,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 	const [chatProps, setChatProps] = useState<ChatProps>({
 		chatRooms: [
 			{
+			id: 0,
 			name: 'public_channel',
 			icon: <GroupIcon />,
 			messages: [
@@ -98,6 +99,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 			},
 			},
 			{
+			id: 1,
 			name: 'private_channel',
 			icon: <GroupIcon />,
 			messages: [
@@ -148,6 +150,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 			},
 			},
 			{
+			id: 2,
 			name: 'password_channel',
 			icon: <GroupIcon />,
 			messages: [

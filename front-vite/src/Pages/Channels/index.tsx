@@ -22,6 +22,7 @@ interface ChannelTypeEvent {
 }
 
 export const myself: UserProps =  {
+	id: 777,
 	name: 'raanghel',
 	role: 'Guest',
 	email: 'raanghel@student.codam.nl',
@@ -87,6 +88,7 @@ const ChannelsPage: React.FC = () => {
 	});
 	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([ //--> CALL TO BACKEND <-- //
 		{
+			id: 3,
 			name: 'chaaaaaaaaaaaaaaaaannel1',
 			icon: <GroupIcon />,
 			messages:  [],
@@ -108,6 +110,7 @@ const ChannelsPage: React.FC = () => {
 			  },
 		},
 		{
+			id: 4,
 			name: 'channel2',
 			icon: <GroupIcon />,
 			messages: [],
@@ -129,6 +132,7 @@ const ChannelsPage: React.FC = () => {
 			  },
 		},
 		{
+			id: 5,
 			name: 'channel3',
 			icon: <GroupIcon />,
 			messages: [
@@ -237,11 +241,12 @@ const ChannelsPage: React.FC = () => {
 			setIsPasswordModal(true);
 		} else { 
 			console.log('Socket instance:', socket);
-
+			console.log('Emitting joinChannel with channel ID:', channel.id);
 			// Emit to the backend to join the channel
-			socket.emit('joinChannel', { channel: channel.name }, (response: any) => {
+			socket.emit('joinChannel', { channel: channel.id }, (response: any) => {
 				if (response && response.message) {
 					console.log('Success:', response.message);
+					// Optionally add logic to update UI upon successful join
 					moveSelectedChToJoinedCh();
 				} else {
 					console.error('Error:', response.message);
@@ -498,17 +503,17 @@ const ChannelsPage: React.FC = () => {
 	//---Function to render the list of channels---//
 	const renderJoinedChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
-		{channels.map((channel) => (
-			<ChannelLine key={channel?.name} channel={channel} />
+		{channels.map((channel, i) => (
+			<ChannelLine key={channel?.id} channel={channel} />
 		))}
 	  </Stack>
 	);
 
 	const renderAvailableChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
-		{channels.map((channel) => (
+		{channels.map((channel, i) => (
 			(channel.settings.type !== 'private') && 
-			<AvailableChannelLine key={channel?.name} channel={channel} />
+			<AvailableChannelLine key={channel?.id} channel={channel} />
 		))}
 	  </Stack>
 	);

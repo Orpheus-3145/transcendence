@@ -16,15 +16,16 @@ export enum UserRoles {
 }
 
 export interface ChatMessage {
-  id: string,
+  id: number,
   message: React.ReactElement<typeof Typography>;
   user: string;
   userPP: React.ReactElement;
   timestamp: React.ReactElement;
 }
 
+
 export interface UserProps {
-  id: string,
+  id: number,
   name: string;
   role: string;
   email: string;
@@ -42,7 +43,6 @@ export interface ChatSettings {
 
 export interface ChatRoom {
   id: string,
-  
   name: string;
   icon: React.ReactElement;
   messages: ChatMessage[];
