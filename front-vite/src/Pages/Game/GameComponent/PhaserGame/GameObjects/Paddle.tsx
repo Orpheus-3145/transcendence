@@ -1,5 +1,5 @@
 import { GAME_PADDLE } from '../Game.data';
-import Game from '../Scenes/Game';
+import GameScene from '../Scenes/GameScene';
 
 export default class Paddle {
 	private _startPos: Phaser.Math.Vector2;
@@ -11,7 +11,7 @@ export default class Paddle {
 	// @param scene: Phaser.Scene that contains the bar
 	// @param x: x pos
 	// @param y: y pos
-	constructor(scene: Game, x: number, y: number) {
+	constructor(scene: GameScene, x: number, y: number) {
 		this._startPos = new Phaser.Math.Vector2(x, y);
 
 		// Create a graphical rectangle to represent the player bar

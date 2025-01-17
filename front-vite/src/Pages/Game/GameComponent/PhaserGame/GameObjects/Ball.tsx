@@ -1,5 +1,5 @@
 import { GAME_BALL } from '../Game.data'
-import Game from '../Scenes/Game'
+import GameScene from '../Scenes/GameScene'
 
 export default class Ball {
 
@@ -7,7 +7,7 @@ export default class Ball {
 	private _graphic: Phaser.GameObjects.Circle;
 
 
-	constructor(scene: Game, x: number, y: number) {
+	constructor(scene: GameScene, x: number, y: number) {
 	this._graphic = scene.add.circle(x, y, this.radius, 0x0000ff);
 
 	};

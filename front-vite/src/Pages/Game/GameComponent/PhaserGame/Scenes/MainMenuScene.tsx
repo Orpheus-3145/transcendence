@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import * as GameTypes from '../Types/types';
 
-export default class MainMenu extends Phaser.Scene {
+export default class MainMenuScene extends Phaser.Scene {
 	// background texture
 	private _background!: Phaser.GameObjects.Image;
 

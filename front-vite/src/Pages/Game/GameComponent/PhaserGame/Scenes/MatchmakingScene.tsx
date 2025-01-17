@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 
 import * as GameTypes from '../Types/types';
 
-export default class Matchmaking extends Phaser.Scene {
+export default class MatchmakingScene extends Phaser.Scene {
 	private _background!: Phaser.GameObjects.Image;
 	private _socketIO!: Socket;
 	private _gameInitData: GameTypes.InitData;
