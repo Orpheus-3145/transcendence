@@ -26,7 +26,7 @@ export interface GameState {
 	};
 }
 
-export interface PowerUp {
+export interface PowerUpPosition {
 	x: number;
 	y: number;
 }
@@ -34,6 +34,7 @@ export interface PowerUp {
 export interface PowerUpStatus {
 	active: boolean;
 	player: number;
+	type: string
 }
 
 export interface PlayerData {
