@@ -6,6 +6,13 @@ export enum GameMode {
 	unset = 'unset',
 }
 
+export enum GameDifficulty {
+	easy = 'easy',
+	medium = 'medium',
+	hard = 'hard',
+	unset = 'unset', // This is only the case when the variable is initialised, it is always overwritten with 'single' or 'multi'
+}
+
 export enum PaddleDirection {
 	up = 'up',
 	down = 'down',
@@ -16,12 +23,20 @@ export enum PlayerIdentity {
 	opponent = 1,
 }
 
-export interface WaitingPlayer {
-	clientSocket: Socket;
-	extras: boolean;
+export interface PowerUpSelection {
+	speedball: boolean;
+	powerup_2: boolean;
+	powerup_3: boolean;
+	powerup_4: boolean;
+	powerup_5: boolean;
 }
 
-export interface Player {
+export interface WaitingPlayer {
+	clientSocket: Socket;
+	extras: PowerUpSelection;
+}
+
+export interface PlayingPlayer {
 	clientSocket: Socket;
 	intraId: number;
 	nameNick: string;

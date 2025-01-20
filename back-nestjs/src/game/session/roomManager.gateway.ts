@@ -10,11 +10,11 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UseFilters } from '@nestjs/common';
 
-import { GameMode } from '../game.types';
 import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import RoomManagerService from './roomManager.service';
 import { GameExceptionFilter } from '../../errors/exceptionFilters';
+import GameInitDTO from 'src/dto/gameInit.dto';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_SIMULATION,
@@ -41,13 +41,14 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('createRoomSinglePlayer')
-	setInitData(@MessageBody() data: { sessionToken: string, mode: GameMode, extras: boolean }): void {
+	setInitData(@MessageBody() data: GameInitDTO): void {
 		
-		this.roomManager.createRoom(data.sessionToken, data.extras, data.mode);
+		this.roomManager.createRoom(data);
 	}
 
 	@SubscribeMessage('playerLeftGame')
 	handlePlayerLeft(@ConnectedSocket() client: Socket): void {
+	
 		this.roomManager.handleDisconnect(client);
 	}
 
@@ -55,8 +56,8 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	addPlayer(
 		@MessageBody() data: PlayerDataDTO,
 		@ConnectedSocket() client: Socket,
-		mode: GameMode,
 	): void {
+	
 		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
 	}
 

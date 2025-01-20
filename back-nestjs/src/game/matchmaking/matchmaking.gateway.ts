@@ -9,9 +9,9 @@ import {
 import { UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
-import { GameMode } from '../game.types';
 import MatchmakingService from './matchmaking.service';
 import { GameExceptionFilter } from '../../errors/exceptionFilters';
+import GameInitDTO from 'src/dto/gameInit.dto';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_MATCHMAKING,
@@ -39,9 +39,9 @@ export default class MatchmakingGateway implements OnGatewayDisconnect {
 	// }
 	@SubscribeMessage('waiting')
 	clientWaitingAdd(
-		@MessageBody() data: {sessionToken: string,	mode: GameMode,	extras: boolean},
+		@MessageBody() data: GameInitDTO,
 		@ConnectedSocket() client: Socket,
 	): void {
-		this.matchmakingService.addPlayerToQueue(client, data.extras);
+		this.matchmakingService.addPlayerToQueue(client, data);
 	}
 }

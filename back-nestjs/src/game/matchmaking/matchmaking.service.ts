@@ -3,10 +3,11 @@ import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import AppLoggerService from 'src/log/log.service';
-import { GameMode } from '../game.types';
+import { GameDifficulty, GameMode } from '../game.types';
 import RoomManagerService from '../session/roomManager.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import { WaitingPlayer } from '../game.types';
+import GameInitDTO from 'src/dto/gameInit.dto';
 
 @Injectable()
 export default class MatchmakingService {
@@ -21,10 +22,10 @@ export default class MatchmakingService {
 		this.logger.setContext(MatchmakingService.name);
 	}
 
-	addPlayerToQueue(client: Socket, extras: boolean): void {
+	addPlayerToQueue(client: Socket, info: GameInitDTO): void {
 		const waitingPlayer: WaitingPlayer = {
 			clientSocket: client,
-			extras: extras,
+			extras: info.extras,
 		};
 		this._waitingPlayersIP.push(waitingPlayer);
 
@@ -64,15 +65,20 @@ export default class MatchmakingService {
 
 				if (this.doTheyMatch(player1, player2)) {
 
-					const sessionToken: string = uuidv4();
+					const initData: GameInitDTO = {
+						sessionToken: uuidv4(),
+						mode: GameMode.multi,
+						difficulty: GameDifficulty.unset,
+						extras: player1.extras,
+					};
 	
-					player1.clientSocket.emit('ready', sessionToken); // message player1
-					player2.clientSocket.emit('ready', sessionToken); // message player2
+					player1.clientSocket.emit('ready', initData.sessionToken); // message player1
+					player2.clientSocket.emit('ready', initData.sessionToken); // message player2
 	
 					this.logger.log(
-						`found players ${player1.clientSocket.id}, ${player2.clientSocket.id} - sessionToken: ${sessionToken}`,
+						`found players ${player1.clientSocket.id}, ${player2.clientSocket.id} - sessionToken: ${initData.sessionToken}`,
 					);
-					this.roomManager.createRoom(sessionToken, player1.extras, GameMode.multi);
+					this.roomManager.createRoom(initData);
 					return ;
 				}
 			}
@@ -80,10 +86,11 @@ export default class MatchmakingService {
 	}
 
 	doTheyMatch(player1: WaitingPlayer, player2: WaitingPlayer) {
-		let match = false;
-		match = player1.extras === player2.extras;
 
-		return match;
+		return (player1.extras.speedball === player2.extras.speedball &&
+						player1.extras.powerup_2 === player2.extras.powerup_2 && 
+						player1.extras.powerup_3 === player2.extras.powerup_3 &&
+						player1.extras.powerup_4 === player2.extras.powerup_4);
 	}
 
 	isPlayerWaiting(client: WaitingPlayer) {

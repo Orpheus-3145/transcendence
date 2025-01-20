@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 export default class SettingsScene extends Phaser.Scene {
 	// background texture
 	private _background!: Phaser.GameObjects.Image;
+	private _keyEsc!: Phaser.Input.Keyboard.Key;
 
 	private mode: GameMode = GameMode.unset;
 	private difficulty: GameDifficulty = GameDifficulty.unset;
@@ -24,7 +25,9 @@ export default class SettingsScene extends Phaser.Scene {
 	// executed when scene.start('Matchmaking') is called
 	init(): void {
 
-		// this.events.on('shutdown', () => {console.log(this.mode); console.log(this.difficulty); console.log(this.powerUpSelection);}, this);
+		this._keyEsc = this.input.keyboard!.addKey(
+			Phaser.Input.Keyboard.KeyCodes.ESC,
+		) as Phaser.Input.Keyboard.Key;
 	}
 	
 	// loading graphic assets, fired after init()
@@ -38,7 +41,7 @@ export default class SettingsScene extends Phaser.Scene {
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
-		this.createLabel(400, 150, 'GAME SETTINGS');
+		this.add.text(500, 150, 'SETTINGS:', { fontSize: '32px',	align: 'center',	color: '#fff' });
 		
 		this.powerUpSelection = {
 			speedball: false,
@@ -47,13 +50,9 @@ export default class SettingsScene extends Phaser.Scene {
 			powerup_4: false
 		};
 
-		this.createLabel(200, 200, 'SpeedBall:');
+		this.add.text(250, 200, 'SpeedBall', { fontSize: '32px',	align: 'center',	color: '#fff' });
 		const speedBallToggle = this.add
-		.text(550, 200, 'INACTIVE', {
-			fontSize: '32px',
-			align: 'center',
-			color: '#ff0',
-		})
+		.text(600, 200, 'INACTIVE', { fontSize: '32px',	align: 'center',	color: '#ff0' })
 		.setInteractive()
 		.on('pointerup', () => {
 			this.powerUpSelection.speedball = !this.powerUpSelection.speedball;
@@ -61,13 +60,9 @@ export default class SettingsScene extends Phaser.Scene {
 			speedBallToggle.setStyle({ fill: this.powerUpSelection.speedball ? '#0f0' : '#ff0' }); // Green for ON, White for OFF
 		});
 	
-		this.createLabel(200, 250, '[TBD] powerup_2:');
+		this.add.text(250, 250, '[TBD] powerup_2', { fontSize: '32px',	align: 'center',	color: '#fff' })
 		const powerUp2Toggle = this.add
-		.text(550, 250, 'INACTIVE', {
-			fontSize: '32px',
-			align: 'center',
-			color: '#ff0',
-		})
+		.text(600, 250, 'INACTIVE', { fontSize: '32px',	align: 'center',	color: '#ff0' })
 		.setInteractive()
 		.on('pointerup', () => {
 			this.powerUpSelection.powerup_2 = !this.powerUpSelection.powerup_2;
@@ -75,13 +70,9 @@ export default class SettingsScene extends Phaser.Scene {
 			powerUp2Toggle.setStyle({ fill: this.powerUpSelection.powerup_2 ? '#0f0' : '#ff0' }); // Green for ON, White for OFF
 		});
 
-		this.createLabel(200, 300, '[TBD] powerup_3:');
+		this.add.text(250, 300, '[TBD] powerup_3', { fontSize: '32px',	align: 'center',	color: '#fff' })
 		const powerUp3Toggle = this.add
-		.text(550, 300, 'INACTIVE', {
-			fontSize: '32px',
-			align: 'center',
-			color: '#ff0',
-		})
+		.text(600, 300, 'INACTIVE', { fontSize: '32px', align: 'center', color: '#ff0' })
 		.setInteractive()
 		.on('pointerup', () => {
 			this.powerUpSelection.powerup_3 = !this.powerUpSelection.powerup_3;
@@ -89,9 +80,9 @@ export default class SettingsScene extends Phaser.Scene {
 			powerUp3Toggle.setStyle({ fill: this.powerUpSelection.powerup_3 ? '#0f0' : '#ff0' }); // Green for ON, White for OFF
 		});
 
-		this.createLabel(200, 350, '[TBD] powerup_4:');
+		this.add.text(250, 350, '[TBD] powerup_4', { fontSize: '32px',	align: 'center',	color: '#fff' })
 		const powerUp4Toggle = this.add
-		.text(550, 350, 'INACTIVE', {
+		.text(600, 350, 'INACTIVE', {
 			fontSize: '32px',
 			align: 'center',
 			color: '#ff0',
@@ -103,27 +94,43 @@ export default class SettingsScene extends Phaser.Scene {
 			powerUp4Toggle.setStyle({ fill: this.powerUpSelection.powerup_4 ? '#0f0' : '#ff0' }); // Green for ON, White for OFF
 		});
 
-		const startBtn = this.add
-		.text(500, 500, this.mode === GameMode.single ? 'START' : 'JOIN QUEUE', {
+		this.add.text(250, 400, '[TBD] powerup_5', { fontSize: '32px',	align: 'center',	color: '#fff' })
+		const powerUp5Toggle = this.add
+		.text(600, 400, 'INACTIVE', {
 			fontSize: '32px',
 			align: 'center',
-			color: '#fff',
+			color: '#ff0',
+		})
+		.setInteractive()
+		.on('pointerup', () => {
+			this.powerUpSelection.powerup_5 = !this.powerUpSelection.powerup_5;
+			powerUp5Toggle.setText(this.powerUpSelection.powerup_5 ? 'ACTIVE' : 'INACTIVE');
+			powerUp5Toggle.setStyle({ fill: this.powerUpSelection.powerup_5 ? '#0f0' : '#ff0' }); // Green for ON, White for OFF
+		});
+
+		const startBtn = this.add
+		.text(500, 550, this.mode === GameMode.single ? 'START' : 'JOIN QUEUE', {
+			fontSize: '32px',
+			align: 'center',
+			color: '#0f0',
 		})
 		.setInteractive()
 		.on('pointerover', () => startBtn.setStyle({ fill: '#ff0' }))
-		.on('pointerout', () => startBtn.setStyle({ fill: '#fff' }))
+		.on('pointerout', () => startBtn.setStyle({ fill: '#0f0' }))
 		.on('pointerup', () => {
 
 			if (this.mode === GameMode.single) {
 				this.scene.start('Game', {
 					sessionToken: uuidv4(),
 					mode: this.mode,
+					difficulty: this.difficulty,
 					extras: this.powerUpSelection,
 				});
 			} else {
 				this.scene.start('Matchmaking', {
 					sessionToken: '',
 					mode: this.mode,
+					difficulty: GameDifficulty.unset,
 					extras: this.powerUpSelection,
 				});
 			}
@@ -133,13 +140,10 @@ export default class SettingsScene extends Phaser.Scene {
 
 			this.difficulty = GameDifficulty.medium;
 	
-			this.createLabel(200, 400, 'DIFFICULTY:');
+			this.add.text(250, 450, 'DIFFICULTY', { fontSize: '32px',	align: 'center',	color: '#fff' })
+			
 			const easyModeToggle = this.add
-			.text(550, 400, 'EASY', {
-				fontSize: '32px',
-				align: 'center',
-				color: '#fff',
-			})
+			.text(600, 450, 'EASY', { fontSize: '32px',	align: 'center', color: '#fff' })
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.easy;
@@ -149,11 +153,7 @@ export default class SettingsScene extends Phaser.Scene {
 			});
 
 			const mediumModeToggle = this.add
-			.text(650, 400, 'MEDIUM', {
-				fontSize: '32px',
-				align: 'center',
-				color: '#0f0',
-			})
+			.text(700, 450, 'MEDIUM', { fontSize: '32px',	align: 'center', color: '#0f0' })
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.medium;
@@ -163,11 +163,7 @@ export default class SettingsScene extends Phaser.Scene {
 			});
 
 			const hardModeToggle = this.add
-			.text(800, 400, 'HARD', {
-				fontSize: '32px',
-				align: 'center',
-				color: '#fff',
-			})
+			.text(850, 450, 'HARD', { fontSize: '32px',	align: 'center', color: '#fff' })
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.hard;
@@ -177,8 +173,7 @@ export default class SettingsScene extends Phaser.Scene {
 			});
 		}
 
-		// button for going home
-		const goHomeButton = this.add
+		const goHomeButton = this.add			// button for going home
 			.text(GAME.width - 150, GAME.height - 100, 'Home', {
 				fontSize: '32px',
 				align: 'center',
@@ -191,40 +186,11 @@ export default class SettingsScene extends Phaser.Scene {
 	}
 
 	// run every frame update
-	update(): void {}
+	update(): void {
 
-	createLabel(pos_x: number, pos_y: number, content: string, fontSize='32px', align='center', color='#fff',): Phaser.GameObjects.Text {
-
-		const textItem = this.add.text(pos_x, pos_y, content, {
-			fontSize: fontSize,
-			align: align,
-			color: color,
-		});
-
-		return textItem;
-	}
-
-	createToggle(x: number, y: number, onText: string, offText: string, flag: boolean, callback: () => void): Phaser.GameObjects.Text {
-		
-		const toggleBtn = this.add
-			.text(x, y, offText, {
-				fontSize: '32px',
-				align: 'center',
-				color: '#ff0',
-			})
-			.setInteractive();
-
-		// Change color on hover
-		// toggleBtn.on('pointerover', () => toggleBtn.setStyle({ fill: '#fff' }));
-		// // Change color back when not hovered
-		// toggleBtn.on('pointerout', () => toggleBtn.setStyle({ fill: '#ff0' }));
-
-		// Toggle the state and update the button text
-		toggleBtn.on('pointerup', callback);
-
-		// Initial color based on default state
-		// toggleBtn.setStyle({ fill: flag ? '#0f0' : '#ff0' });
-		
-		return toggleBtn;
+		// Exit game with ESC
+		if (this._keyEsc.isDown) {
+			this.scene.start('MainMenu');
+		}
 	}
 }

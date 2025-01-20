@@ -30,11 +30,12 @@ export default class GameScene extends Phaser.Scene {
 	
 	private _sessionToken: string = '';
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
+	private _difficulty: GameTypes.GameDifficulty = GameTypes.GameDifficulty.unset;
 	private _powerUpSelection: GameTypes.PowerUpSelection = {
-		speedball_active: false,
-		powerup_2_active: false,
-		powerup_3_active: false,
-		powerup_4_active: false,
+		speedball: false,
+		powerup_2: false,
+		powerup_3: false,
+		powerup_4: false,
 	};
 	private _extras: boolean = false;
 	
@@ -54,8 +55,9 @@ export default class GameScene extends Phaser.Scene {
 
 		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
+		this._difficulty = data.difficulty;
 		this._powerUpSelection = data.extras;
-		this._extras = data.extras.speedball_active;	// NB: to remove
+		this._extras = data.extras.speedball;	// NB: to remove
 
 		// Key bindings
 		this._cursors =

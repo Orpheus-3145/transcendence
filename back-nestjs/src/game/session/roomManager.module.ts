@@ -6,9 +6,9 @@ import RoomManagerService from 'src/game/session/roomManager.service';
 import ExceptionModule from 'src/errors/exception.module';
 import AppLoggerModule from 'src/log/log.module';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import { GameMode } from 'src/game/game.types';
 import SimulationService from 'src/game/session/simulation.service';
 import AppLoggerService from 'src/log/log.service';
+import GameInitDTO from 'src/dto/gameInit.dto';
 
 @Module({
 	imports: [AppLoggerModule, forwardRef(() => ExceptionModule)],
@@ -19,9 +19,9 @@ import AppLoggerService from 'src/log/log.service';
 		{
 			provide: 'GAME_SPAWN',
 			useFactory: (logger: AppLoggerService, thrower: ExceptionFactory, config: ConfigService) => {
-				return (sessionToken: string, mode: GameMode, extras: boolean) => {
+				return (data: GameInitDTO) => {
 					const newInstance = new SimulationService(logger, thrower, config);
-					newInstance.setInitInfo(sessionToken, mode, extras);
+					newInstance.setInitInfo(data);
 
 					return newInstance;
 				};

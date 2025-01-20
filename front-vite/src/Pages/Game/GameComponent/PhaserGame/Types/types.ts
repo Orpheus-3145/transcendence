@@ -21,6 +21,7 @@ export interface PowerUpSelection {
 	powerup_2: boolean;
 	powerup_3: boolean;
 	powerup_4: boolean;
+	powerup_5: boolean;
 }
 
 export interface GameState {
@@ -45,6 +46,13 @@ export interface PowerUp {
 	y: number;
 }
 
+export interface InitData {
+	sessionToken: string;
+	mode: GameMode;
+	difficulty: GameDifficulty;
+	extras: PowerUpSelection;
+}
+
 export interface PowerUpStatus {
 	active: boolean;
 	player: number;
@@ -54,10 +62,4 @@ export interface PlayerData {
 	playerId: number;
 	sessionToken: string;
 	nameNick: string;
-}
-
-export interface InitData {
-	sessionToken: string;
-	mode: GameMode;
-	extras: PowerUpSelection;
 }

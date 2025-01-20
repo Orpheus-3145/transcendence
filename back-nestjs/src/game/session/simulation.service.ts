@@ -6,6 +6,7 @@ import GameStateDTO from 'src/dto/gameState.dto';
 import * as GameTypes from 'src/game/game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import GameInitDTO from 'src/dto/gameInit.dto';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export default class SimulationService {
@@ -22,16 +23,18 @@ export default class SimulationService {
 
 	private sessionToken: string = '';
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
+	private difficulty: GameTypes.GameDifficulty = GameTypes.GameDifficulty.unset;
 	private forbidAutoPlay: boolean = this.config.get<boolean>('FORBID_AUTO_PLAY', false); // if true the same user cannot play against themself
 	
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
-	private player1: GameTypes.Player = null;
-	private player2: GameTypes.Player = null;
+	private player1: GameTypes.PlayingPlayer = null;
+	private player2: GameTypes.PlayingPlayer = null;
 	private ballSpeed: number = this._defaultBallSpeed;
 	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
 	
 	// Extras
+	private powerUpsSelected: GameTypes.PowerUpSelection
 	private extras: boolean = false;
 	
 	private powerUpIntervalTime: number = Number(this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000));
@@ -41,16 +44,6 @@ export default class SimulationService {
 	// Speed Ball power up
 	private speedBallActive: boolean = false;
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
-	
-	// Power up type
-	// Randomly choose between powerUpTypes each time
-	// private powerUpType: { [key: string]: boolean } = {
-	// 	speedBall: false,
-	// 	speedPaddle: false,
-	// 	slowPaddle: false,
-	// 	shrinkPaddle: false,
-	// 	strechtPaddle: false,
-	// };
 	
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
@@ -67,13 +60,26 @@ export default class SimulationService {
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	setInitInfo(sessionToken: string, mode: GameTypes.GameMode, extras: boolean) {
-		this.sessionToken = sessionToken;
-		this.mode = mode;
-		this.extras = extras;
+	setInitInfo(data: GameInitDTO) {
+		if (data.mode === GameTypes.GameMode.unset || 
+			(data.mode === GameTypes.GameMode.single && data.difficulty === GameTypes.GameDifficulty.unset)
+		)
+			this.thrower.throwGameExcp(`Game mode or difficuly are is unset`,
+				data.sessionToken,
+				`${SimulationService.name}.${this.constructor.prototype.setInitInfo.name}()`,);
+		
+		this.sessionToken = data.sessionToken;
+		this.mode = data.mode;
+		this.powerUpsSelected = data.extras;
+		
+		this.extras = data.extras.speedball;
 
 		// add bot if single mode
-		if (this.mode === GameTypes.GameMode.single) this.addPlayer(null, -1, this.botName);
+		if (this.mode === GameTypes.GameMode.single) {
+		
+			this.difficulty = data.difficulty;
+			this.addPlayer(null, -1, this.botName);
+		};
 
 		this.gameSetupInterval = setInterval(() => {
 			// missing info, not ready to play yet
@@ -164,7 +170,7 @@ export default class SimulationService {
 				`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}()`,
 			);
 
-		const newPlayer: GameTypes.Player = {
+		const newPlayer: GameTypes.PlayingPlayer = {
 			clientSocket: client, // socket created for each client
 			intraId: playerId,
 			nameNick: nameNick,
@@ -496,7 +502,7 @@ export default class SimulationService {
 	}
 
 	sendPowerUpData(
-		playerBonus: GameTypes.Player,
+		playerBonus: GameTypes.PlayingPlayer,
 		player_no: number,
 		player_id: number,
 		active: boolean,
@@ -550,7 +556,7 @@ export default class SimulationService {
 	}
 
 	// if the game ends gracefully
-	endGame(winner: GameTypes.Player): void {
+	endGame(winner: GameTypes.PlayingPlayer): void {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,

@@ -3,9 +3,10 @@ import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 
 import SimulationService from './simulation.service';
-import { GameMode, PaddleDirection } from '../game.types';
+import { PaddleDirection } from '../game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import GameInitDTO from 'src/dto/gameInit.dto';
 
 @Injectable()
 export default class RoomManagerService {
@@ -16,11 +17,7 @@ export default class RoomManagerService {
 		private readonly logger: AppLoggerService,
 		@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
 		@Inject('GAME_SPAWN')
-		private readonly gameRoomFactory: (
-			sessionToken: string,
-			mode: GameMode,
-			extras: boolean,
-		) => SimulationService,
+		private readonly gameRoomFactory: (data: GameInitDTO) => SimulationService,
 	) {
 		this.logger.setContext(RoomManagerService.name);
 		// do not log all the emits to clients if not really necessary
@@ -28,10 +25,10 @@ export default class RoomManagerService {
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	createRoom(sessionToken: string, extras: boolean, mode: GameMode): void {
-		this.rooms.set(sessionToken, this.gameRoomFactory(sessionToken, mode, extras));
+	createRoom(data: GameInitDTO): void {
+		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));
 
-		this.logger.log(`session [${sessionToken}] - creating new room, mode: ${mode}`);
+		this.logger.log(`session [${data.sessionToken}] - creating new room, mode: ${data.mode}`);
 	}
 
 	dropRoom(sessionToken: string, trace: string): void {
