@@ -1,5 +1,4 @@
 import { GAME } from '../Game.data';
-import { v4 as uuidv4 } from 'uuid';
 
 import * as GameTypes from '../Types/types';
 
@@ -27,26 +26,16 @@ export default class MainMenuScene extends Phaser.Scene {
 		// sets the background
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
-		// Create the toggle button
-		// this.createToggleSwitch(this.scale.width - 100, 50);
-		this.createToggle(this.scale.width - 250, 50, 'Extras on', 'Extras off');
 
-		// update extra
-		this.createBtn(400, 100, 'Play [single player]').on('pointerup', () =>
-			this.scene.start('Game', {
-				sessionToken: uuidv4(),
-				mode: GameTypes.GameMode.single,
-				extras: this._extrasEnabled,
-			}),
+		this.createBtn(400, 100, 'Play [single player]')
+		.on('pointerup', () =>
+			this.scene.start('Settings', { mode: GameTypes.GameMode.single }),
 		);
-		this.createBtn(400, 150, 'Play [multi player]').on('pointerup', () =>
-			this.scene.start('Matchmaking', {
-				sessionToken: '',
-				mode: GameTypes.GameMode.multi,
-				extras: this._extrasEnabled,
-			}),
+
+		this.createBtn(400, 150, 'Play [multi player]')
+		.on('pointerup', () =>
+			this.scene.start('Settings', { mode: GameTypes.GameMode.multi }),
 		);
-		this.createBtn(400, 200, 'Settings').on('pointerup', () => this.scene.start('Settings'));
 	}
 
 	// run every frame update
@@ -69,29 +58,29 @@ export default class MainMenuScene extends Phaser.Scene {
 		return newBtn;
 	}
 
-	createToggle(x: number, y: number, onText: string, offText: string): void {
-		const toggleBtn = this.add
-			.text(x, y, offText, {
-				fontSize: '32px',
-				align: 'center',
-			})
-			.setInteractive();
+	// createToggle(x: number, y: number, onText: string, offText: string): void {
+	// 	const toggleBtn = this.add
+	// 		.text(x, y, offText, {
+	// 			fontSize: '32px',
+	// 			align: 'center',
+	// 		})
+	// 		.setInteractive();
 
-		// Change color on hover
-		toggleBtn.on('pointerover', () => toggleBtn.setStyle({ fill: '#ff0' }));
-		// Change color back when not hovered
-		toggleBtn.on('pointerout', () => toggleBtn.setStyle({ fill: '#fff' }));
+	// 	// Change color on hover
+	// 	toggleBtn.on('pointerover', () => toggleBtn.setStyle({ fill: '#ff0' }));
+	// 	// Change color back when not hovered
+	// 	toggleBtn.on('pointerout', () => toggleBtn.setStyle({ fill: '#fff' }));
 
-		// Toggle the state and update the button text
-		toggleBtn.on('pointerup', () => {
-			this._extrasEnabled = !this._extrasEnabled;
-			toggleBtn.setText(this._extrasEnabled ? onText : offText);
-			toggleBtn.setStyle({ fill: this._extrasEnabled ? '#0f0' : '#fff' }); // Green for ON, White for OFF
-		});
+	// 	// Toggle the state and update the button text
+	// 	toggleBtn.on('pointerup', () => {
+	// 		this._extrasEnabled = !this._extrasEnabled;
+	// 		toggleBtn.setText(this._extrasEnabled ? onText : offText);
+	// 		toggleBtn.setStyle({ fill: this._extrasEnabled ? '#0f0' : '#fff' }); // Green for ON, White for OFF
+	// 	});
 
-		// Initial color based on default state
-		toggleBtn.setStyle({ fill: this._extrasEnabled ? '#0f0' : '#fff' });
-	}
+	// 	// Initial color based on default state
+	// 	toggleBtn.setStyle({ fill: this._extrasEnabled ? '#0f0' : '#fff' });
+	// }
 
 	// createToggleSwitch(x: number, y: number): void {
 	// 	// Create the background for the toggle (a rounded rectangle)

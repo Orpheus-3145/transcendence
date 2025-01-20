@@ -12,7 +12,7 @@ build_debug:
 	@$(COMPOSE) build --no-cache --pull
 
 run:
-	@$(COMPOSE) up --no-build
+	@$(COMPOSE) up --build
 
 restart: down run
 

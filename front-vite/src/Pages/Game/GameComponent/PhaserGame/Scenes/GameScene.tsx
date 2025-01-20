@@ -27,13 +27,22 @@ export default class GameScene extends Phaser.Scene {
 	// Player references
 	private _id: number = -1;
 	private _nameNick: string = '';
+	
 	private _sessionToken: string = '';
+	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
+	private _powerUpSelection: GameTypes.PowerUpSelection = {
+		speedball_active: false,
+		powerup_2_active: false,
+		powerup_3_active: false,
+		powerup_4_active: false,
+	};
+	private _extras: boolean = false;
+	
 	private _socketIO!: Socket;
 	private _gameStarted: boolean = false;
-	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
-	private _extras: boolean = false;
 	private _gameState!: GameTypes.GameState;
 	private _powerUpActive: { [key: number]: boolean } = { 0: false, 1: false }; // Tracks if a player has the power-up
+	
 	constructor() {
 		super({ key: 'Game' });
 	}
@@ -45,7 +54,8 @@ export default class GameScene extends Phaser.Scene {
 
 		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
-		this._extras = data.extras;
+		this._powerUpSelection = data.extras;
+		this._extras = data.extras.speedball_active;	// NB: to remove
 
 		// Key bindings
 		this._cursors =
@@ -87,7 +97,7 @@ export default class GameScene extends Phaser.Scene {
 			const initData: GameTypes.InitData = {
 				sessionToken: this._sessionToken,
 				mode: this._mode,
-				extras: this._extras,
+				extras: this._powerUpSelection,
 			};
 			this.sendMsgToServer('createRoomSinglePlayer', initData);
 		}

@@ -4,9 +4,23 @@ export enum GameMode {
 	unset = 'unset', // This is only the case when the variable is initialised, it is always overwritten with 'single' or 'multi'
 }
 
+export enum GameDifficulty {
+	easy = 'easy',
+	medium = 'medium',
+	hard = 'hard',
+	unset = 'unset', // This is only the case when the variable is initialised, it is always overwritten with 'single' or 'multi'
+}
+
 export enum PaddleDirection {
 	up = 'up',
 	down = 'down',
+}
+
+export interface PowerUpSelection {
+	speedball: boolean;
+	powerup_2: boolean;
+	powerup_3: boolean;
+	powerup_4: boolean;
 }
 
 export interface GameState {
@@ -45,5 +59,5 @@ export interface PlayerData {
 export interface InitData {
 	sessionToken: string;
 	mode: GameMode;
-	extras: boolean;
+	extras: PowerUpSelection;
 }

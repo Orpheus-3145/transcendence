@@ -6,7 +6,7 @@ import * as GameTypes from '../Types/types';
 export default class MatchmakingScene extends Phaser.Scene {
 	private _background!: Phaser.GameObjects.Image;
 	private _socketIO!: Socket;
-	private _gameInitData: GameTypes.InitData;
+	private _gameInitData: GameTypes.InitData | null = null;
 
 	private _keyEsc!: Phaser.Input.Keyboard.Key;
 
@@ -44,13 +44,11 @@ export default class MatchmakingScene extends Phaser.Scene {
 				align: 'center',
 				color: '#fff',
 			})
-			.setInteractive();
-		// Change color on hover
-		goHomeButton.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' }));
-		// Change color back when not hovered
-		goHomeButton.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }));
-		// Start the main game
-		goHomeButton.on('pointerup', () => this.scene.start('MainMenu'));
+		.setInteractive()
+		.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' }))			// Change color on hover
+		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }))			// Change color back when not hovered
+		.on('pointerup', () => this.scene.start('MainMenu'));									// Start the main game
+		
 		this._socketIO.emit('waiting', this._gameInitData);
 	}
 
