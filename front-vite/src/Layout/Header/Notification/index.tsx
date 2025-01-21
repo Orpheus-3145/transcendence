@@ -19,7 +19,8 @@ import {NotificationStruct,
 		acceptGameInvite, 
 		declineGameInvite,
 		NotificationType,
-		NotificationStatus} from '../../../Providers/NotificationContext/Notification'
+		NotificationStatus,
+		socket} from '../../../Providers/NotificationContext/Notification'
 import { posix } from 'path';
 
 export const Notification: React.FC = () => {
@@ -105,7 +106,7 @@ export const Notification: React.FC = () => {
 
 	let putMessages = () =>
 	{
-		if (messageArray == null)
+		if (messageArray == null || messageArray.length == 0)
 		{
 			return (
 				<Box
@@ -254,7 +255,7 @@ export const Notification: React.FC = () => {
 
 	let putFiendRequests = () =>
 	{
-		if (friendRequestArray == null)
+		if (friendRequestArray == null || friendRequestArray.length == 0)
 		{
 			return (
 				<Box
@@ -294,7 +295,7 @@ export const Notification: React.FC = () => {
 
 	let putGameInvites = () =>
 	{
-		if (gameInviteArray == null)
+		if (gameInviteArray == null || gameInviteArray.length == 0)
 			{
 				return (
 					<Box
@@ -500,55 +501,108 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-	let getNotificationUser = async () : Promise<void> =>
-	{
-		let arr = await getUserNotifications(user);
-		if (arr?.length === 0)
-		{
-			setShowNotificationDot(false);
-			setFriendRequestArray(null);
-			setMessageArray(null);
-			setGameInviteArray(null);
-			setShowNotificationDot(false);
-		}
-		else
-		{
-			var friendsArr: NotificationStruct[]  = [];
-			var messageArr: NotificationStruct[]  = [];
-			var gameArr: NotificationStruct[]  = [];
-			arr?.map((item: NotificationStruct) =>
-			{
-				if (item.type == NotificationType.Message)
-				{
-					messageArr.push(item);
-				}
-				else if (item.type == NotificationType.friendRequest)
-				{
-					friendsArr.push(item);
-				}
-				else if (item.type == NotificationType.gameInvite)
-				{
-					gameArr.push(item);
-				}
-			}
-			)
-			setFriendRequestArray(friendsArr);
-			setMessageArray(messageArr);
-			setGameInviteArray(gameArr);
-			setShowNotificationDot(true);
-		}
-	}
+	// let getNotificationUser = async () : Promise<void> =>
+	// {
+	// 	let arr = await getUserNotifications(user);
+	// 	if (arr?.length === 0)
+	// 	{
+	// 		setShowNotificationDot(false);
+	// 		setFriendRequestArray(null);
+	// 		setMessageArray(null);
+	// 		setGameInviteArray(null);
+	// 		setShowNotificationDot(false);
+	// 	}
+	// 	else
+	// 	{
+	// 		var friendsArr: NotificationStruct[]  = [];
+	// 		var messageArr: NotificationStruct[]  = [];
+	// 		var gameArr: NotificationStruct[]  = [];
+	// 		arr?.map((item: NotificationStruct) =>
+	// 		{
+	// 			if (item.type == NotificationType.Message)
+	// 			{
+	// 				messageArr.push(item);
+	// 			}
+	// 			else if (item.type == NotificationType.friendRequest)
+	// 			{
+	// 				friendsArr.push(item);
+	// 			}
+	// 			else if (item.type == NotificationType.gameInvite)
+	// 			{
+	// 				gameArr.push(item);
+	// 			}
+	// 		}
+	// 		)
+	// 		setFriendRequestArray(friendsArr);
+	// 		setMessageArray(messageArr);
+	// 		setGameInviteArray(gameArr);
+	// 		setShowNotificationDot(true);
+	// 	}
+	// }
 
-  	let notificationWrapper = () =>
-  	{
-		useEffect(() => 
-		{
-			getNotificationUser();
+  	// let notificationWrapper = () =>
+  	// {
+	// 	useEffect(() => 
+	// 	{
+	// 		getNotificationUser();
 		
-		}, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);
+	// 	}, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);
 
-		return (notificationBar());
-  	}
+	// 	return (notificationBar());
+  	// }
+
+	let notificationWrapper = () =>
+	{
+		const handleNotifications = (arr: NotificationStruct[]) => 
+		{
+			if (arr?.length === 0)
+			{
+				setShowNotificationDot(false);
+				setFriendRequestArray(null);
+				setMessageArray(null);
+				setGameInviteArray(null);
+				setShowNotificationDot(false);
+			}
+			else
+			{
+				var friendsArr: NotificationStruct[]  = [];
+				var messageArr: NotificationStruct[]  = [];
+				var gameArr: NotificationStruct[]  = [];
+				arr?.map((item: NotificationStruct) =>
+				{
+					if (item.type == NotificationType.Message)
+					{
+						messageArr.push(item);
+					}
+					else if (item.type == NotificationType.friendRequest)
+					{
+						friendsArr.push(item);
+					}
+					else if (item.type == NotificationType.gameInvite)
+					{
+						gameArr.push(item);
+					}
+				})
+				setFriendRequestArray(friendsArr);
+				setMessageArray(messageArr);
+				setGameInviteArray(gameArr);
+				setShowNotificationDot(true);
+			}
+		}
+		
+		 useEffect(() => 
+		{
+			socket.on('getNotifications', (notifications: NotificationStruct[]) => 
+			{
+				handleNotifications(notifications);
+			});
+		
+			getUserNotifications(user);
+
+		  }, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);
+
+		  return (notificationBar());
+	}
 
 	return (
 		notificationWrapper()

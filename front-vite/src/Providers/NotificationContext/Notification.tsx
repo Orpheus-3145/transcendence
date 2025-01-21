@@ -2,6 +2,50 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { error } from 'console';
 import { useNavigate } from 'react-router-dom';
 import {User} from '../UserContext/User'
+import { io, Socket } from 'socket.io-client';
+
+export interface SocketInterface {
+	socket_obj: Socket | undefined,
+	url: string,
+}
+
+interface SocketContextType {
+  socket: SocketInterface;
+  setSocket: React.Dispatch<React.SetStateAction<SocketInterface>>;
+}
+
+const SocketContext = createContext<SocketContextType | undefined>(undefined);
+
+export const SocketProviderNoti: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+	const [socket, setSocket] = useState<SocketInterface>({socket_obj: undefined, url: import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_NOTIFICATION});
+	useEffect(() => {
+		setSocket({socket_obj: io(
+			socket.url,
+			{
+				withCredentials: true,
+				transports: ['websocket'],
+			}
+		), url: socket.url})
+	}, [socket])
+	return (
+		<SocketContext.Provider value={{ socket, setSocket }}>
+		  {children}
+		</SocketContext.Provider>
+	)
+}
+
+export const socket = io(`${import.meta.env.URL_WEBSOCKET}${import.meta.env.WS_NS_NOTIFICATION}`, {
+    withCredentials: true,    // Send credentials (e.g., cookies) with the WebSocket request
+    transports: ['websocket'], // Restrict to WebSocket transport
+});
+
+socket.on('connect', () => {
+	console.log('Socket connected:', socket.id);
+});
+
+socket.on('connect_error', (error) => {
+	console.error('Connection failed:', error);
+});
 
 
 export enum NotificationType {
@@ -29,26 +73,12 @@ export interface NotificationStruct {
 
 const BACKEND_URL: string = 'https://localhost:4000';
 
-export async function getUserNotifications(user:User): Promise<Notification[] | null> 
+export async function getUserNotifications(user:User): Promise<void> 
 {
-	const request = new Request(BACKEND_URL + '/notification/getFromUser/' + user.id.toString(), {
-		method: "GET"
-	});
-	
-	try
-	{
-		const response = await fetch(request)
-			.then((raw) => raw.json())
-			.then((json) => json as Notification[]);
-		return response;
-	}
-	catch (error)
-	{
-		return (null);
-	}	
+	socket.emit('getFromUser', { id: user.id.toString() });
 }
 
-export async function removeNotificationDb(id:string): Promise<void> 
+export async function removeNotificationDb(id:string): Promise<void>
 {
 	const request = new Request(BACKEND_URL + '/notification/removeNotification/' + id, {
 		method: "GET",
