@@ -13,11 +13,14 @@ export class User {
   @Column({ nullable: false })
   intraId: number;
 
-  @Column({ nullable: true, length: 20 })
+  @Column({ nullable: true})
   @IsAscii()
-  @Length(0, 20)
   nameNick: string | null;
   
+  @Column({ nullable: true, length: 20 })
+  @IsAscii()
+  nameIntra: string | null;
+
   @Column({ nullable: false })
   nameFirst: string;
   
@@ -47,6 +50,12 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column("text", { array: true, default: '{}' })
+  friends: string[];
+
+  @Column("text", { array: true, default: '{}' })
+  blocked: string[];
 
   async validate() {
     await validateOrReject(this);

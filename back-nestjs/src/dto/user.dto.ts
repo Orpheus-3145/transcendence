@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNumber, IsString, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsNumber, IsString, Length, IsArray } from 'class-validator';
 import { User } from '../entities/user.entity'
 
 export enum UserStatus {
@@ -12,12 +12,15 @@ export class UserDTO {
   constructor(user: User) {
     this.id = user.id;
     this.nameNick = user.nameNick;
+    this.nameIntra = user.nameNick;
     this.nameFirst = user.nameFirst;
     this.nameLast = user.nameLast;
     this.email = user.email;
     this.image = user.image;
     this.greeting = user.greeting;
     this.status = user.status;
+    this.friends = user.friends;
+    this.blocked = user.blocked;
   }
 
   @IsNumber()
@@ -32,6 +35,9 @@ export class UserDTO {
   @IsString()
   nameLast: string;
 
+  @IsString()
+  nameIntra: string;
+
   @IsEmail()
   email: string;
 
@@ -45,6 +51,14 @@ export class UserDTO {
   @IsEnum(UserStatus)
   status: UserStatus;
 
+  @IsArray()
+  @IsString({ each: true })
+  friends: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  blocked: string[];
+  
   @IsString()
   role: string;
 }
