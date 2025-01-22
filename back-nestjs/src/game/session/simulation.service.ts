@@ -419,7 +419,7 @@ export default class SimulationService {
 		const randomIndex = Math.floor(Math.random() * this.powerUpTypes.length); // Pick a random index
 		this.powerUpType = this.powerUpTypes[randomIndex]
 		this.logger.log(
-			`power up of type ${this.powerUpType.valueOf} selected`,
+			`power up of type ${GameTypes.PowerUpType[this.powerUpType]} selected`,
 		);
 	}
 
@@ -494,7 +494,7 @@ export default class SimulationService {
 
 	handlePowerUpCollisionWithPaddle(player_no: number): void {
 		// Give 'shrinkPaddle' power down to opponent
-		if (this.powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+		if (this.powerUpType === GameTypes.PowerUpType.shrinkPaddle || this.powerUpType === GameTypes.PowerUpType.slowPaddle) {
 			player_no = player_no === 0 ? 1 : 0;
 		}
 		this.powerUpStatus[player_no] = true;

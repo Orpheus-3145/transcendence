@@ -17,11 +17,11 @@ export enum PlayerIdentity {
 }
 
 export enum PowerUpType {
-	speedBall = 0,
-	speedPaddle = 1,
-	slowPaddle = 2,
-	shrinkPaddle = 3,
-	stretchPaddle = 4
+	speedBall = 'speedBall',
+	speedPaddle = 'speedPaddle',
+	slowPaddle = 'slowPaddle',
+	shrinkPaddle = 'shrinkPaddle',
+	stretchPaddle = 'stretchPaddle'
 }
 
 export interface WaitingPlayer {
