@@ -14,9 +14,15 @@ export default class SimulationService {
 	private readonly windowHeight: number = parseInt(this.config.get('GAME_HEIGHT'), 10);
 	private readonly botName: string = this.config.get<string>('GAME_BOT_NAME');
 	private readonly paddleWidth: number = parseInt(this.config.get('GAME_PADDLE_WIDTH'), 10);
-	private readonly _defaultPaddleHeight: number = parseInt(this.config.get('GAME_PADDLE_HEIGHT'), 10);
+	private readonly _defaultPaddleHeight: number = parseInt(
+		this.config.get('GAME_PADDLE_HEIGHT'),
+		10,
+	);
 	private readonly _defaultpaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_SPEED'), 10);
-	private readonly _highPaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_HIGH_SPEED'), 10);
+	private readonly _highPaddleSpeed: number = parseInt(
+		this.config.get('GAME_PADDLE_HIGH_SPEED'),
+		10,
+	);
 	private readonly _lowPaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_LOW_SPEED'), 10);
 	private readonly ballRadius: number = Number(this.config.get('GAME_BALL_RADIUS'));
 	private readonly _defaultBallSpeed: number = parseInt(this.config.get('GAME_BALL_SPEED'), 10);
@@ -25,28 +31,36 @@ export default class SimulationService {
 	private sessionToken: string = '';
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private forbidAutoPlay: boolean = this.config.get<boolean>('FORBID_AUTO_PLAY', false); // if true the same user cannot play against themself
-	
+
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
 	private player1: GameTypes.Player = null;
 	private player2: GameTypes.Player = null;
 	private ballSpeed: number = this._defaultBallSpeed;
 	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
-	private paddleSpeed: number[] = [this._defaultpaddleSpeed, this._defaultpaddleSpeed]
+	private paddleSpeed: number[] = [this._defaultpaddleSpeed, this._defaultpaddleSpeed];
 	// Extras
 	private extras: boolean = false;
-	
-	private powerUpIntervalTime: number = Number(this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000));
+
+	private powerUpIntervalTime: number = Number(
+		this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000),
+	);
 	// Power-up state
 	private powerUpStatus: boolean[] = [false, false]; // Power up status for players
 	private powerUpDuration: number = Number(this.config.get<number>('GAME_POWERUP_DURATION', 8000)); // Duration for power-up
 	private powerUpActive: boolean = false; // Is powerUp active or not? Maybe we can remove this.
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
-	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight]
-	
+	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight];
+
 	// Power up type
-	private powerUpTypes: GameTypes.PowerUpType[] = [GameTypes.PowerUpType.speedBall, GameTypes.PowerUpType.speedPaddle, GameTypes.PowerUpType.slowPaddle, GameTypes.PowerUpType.shrinkPaddle, GameTypes.PowerUpType.stretchPaddle];
-	// private powerUpTypes: GameTypes.PowerUpType[] = [GameTypes.PowerUpType.speedPaddle, GameTypes.PowerUpType.slowPaddle]
+	private powerUpTypes: GameTypes.PowerUpType[] = [
+		GameTypes.PowerUpType.speedBall,
+		GameTypes.PowerUpType.speedPaddle,
+		GameTypes.PowerUpType.slowPaddle,
+		GameTypes.PowerUpType.shrinkPaddle,
+		GameTypes.PowerUpType.stretchPaddle,
+	];
+	// private powerUpTypes: GameTypes.PowerUpType[] = [GameTypes.PowerUpType.speedBall, GameTypes.PowerUpType.speedPaddle, GameTypes.PowerUpType.slowPaddle]
 	private powerUpType: GameTypes.PowerUpType;
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
@@ -77,7 +91,7 @@ export default class SimulationService {
 
 			if (this.forbidAutoPlay == true && this.player1.nameNick == this.player2.nameNick)
 				this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
-			
+
 			this.startEngine();
 		}, this.frameRate);
 	}
@@ -116,10 +130,8 @@ export default class SimulationService {
 		}
 
 		// if one of the two players have a powerup active
-		if (this.powerUpStatus[0])
-			this.removePowerUp(0);
-		else if (this.powerUpStatus[1])
-			this.removePowerUp(1);
+		if (this.powerUpStatus[0]) this.removePowerUp(0);
+		else if (this.powerUpStatus[1]) this.removePowerUp(1);
 
 		this.engineRunning = false;
 
@@ -190,7 +202,9 @@ export default class SimulationService {
 					context,
 				);
 		}
-		this.logger.debug(`session [${this.sessionToken}] - added player ${newPlayer.nameNick} to game`);
+		this.logger.debug(
+			`session [${this.sessionToken}] - added player ${newPlayer.nameNick} to game`,
+		);
 	}
 
 	getPlayerId(idClient: string): number {
@@ -203,9 +217,11 @@ export default class SimulationService {
 	// Handle paddle movement based on key data
 	movePaddle(idClient: string, direction: GameTypes.PaddleDirection, player_no: number): void {
 		if (this.engineRunning === false) return;
+		this.addPowerUp(player_no);
 		const delta =
-			direction === GameTypes.PaddleDirection.up ? this.paddleSpeed[player_no] * -1 : this.paddleSpeed[player_no];
-
+			direction === GameTypes.PaddleDirection.up
+				? this.paddleSpeed[player_no] * -1
+				: this.paddleSpeed[player_no];
 		if (idClient === this.player1.clientSocket.id)
 			this.player1.posY = Math.max(
 				this.paddleHeights[player_no] / 2,
@@ -289,13 +305,13 @@ export default class SimulationService {
 			const angle = normalizedOffset * maxAngle;
 			this.ball.dx = Math.abs(this.ball.dx); // Move right
 			this.ball.dy = Math.tan(angle) * Math.abs(this.ball.dx); // Set dy based on angle
-			this.addPowerUp(0);
+			this.addSpeedBall(0);
 		} else if (rightPaddleOffset !== null) {
 			const normalizedOffset = rightPaddleOffset / (this.paddleHeights[1] / 2); // -1 to 1 range
 			const angle = normalizedOffset * maxAngle;
 			this.ball.dx = -Math.abs(this.ball.dx); // Move left
 			this.ball.dy = Math.tan(angle) * Math.abs(this.ball.dx);
-			this.addPowerUp(1); // Set dy based on angle
+			this.addSpeedBall(1); // Set dy based on angle
 		}
 
 		// Check for scoring
@@ -324,8 +340,8 @@ export default class SimulationService {
 
 		// The 30 is to prevent the paddle from getting stuck when the y coordinate is the same. Allows smooth movement.
 		if (this.mode === GameTypes.GameMode.single) {
-			// If the ball in the second half and moving in the direction of the bot
-			if (this.ball.x > this.windowWidth / 2 && this.ball.dx > 0) {
+			// If the ball in the second half and moving in the direction of the bot && this.ball.dx > 0
+			if (this.ball.x > this.windowWidth / 2) {
 				if (this.ball.y < this.player2.posY - 30)
 					this.movePaddle(this.botName, GameTypes.PaddleDirection.up, 1);
 				else if (this.ball.y > this.player2.posY + 30)
@@ -367,43 +383,51 @@ export default class SimulationService {
 		item_y: number,
 		isLeftPaddle: boolean,
 	): number | null {
-
 		const angleDirectionBall: number = Math.atan(item_y / item_x);
 		const prj_item_x: number = item_x + Math.sqrt(this.ballRadius) + Math.cos(angleDirectionBall);
 		const prj_item_y: number = item_y + Math.sqrt(this.ballRadius) + Math.sin(angleDirectionBall);
 		const collisionZone = Math.abs(player_y - prj_item_y);
-	
+
 		if (isLeftPaddle) {
 			if (prj_item_x <= this.paddleWidth && collisionZone <= this.paddleHeights[0] / 2)
 				return player_y - prj_item_y; // Return offset
 		} else {
-			if (prj_item_x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeights[1] / 2)
+			if (
+				prj_item_x >= this.windowWidth - this.paddleWidth &&
+				collisionZone <= this.paddleHeights[1] / 2
+			)
 				return player_y - prj_item_y; // Return offset
 		}
 		return null; // No collision
 	}
 
-	addPowerUp(player_no: number): void {
+	addSpeedBall(player_no): void {
 		if (this.powerUpType === GameTypes.PowerUpType.speedBall) {
 			this.ballSpeed =
-				this.powerUpStatus[player_no] === true ? this._defaultBallSpeed * 3 : this._defaultBallSpeed;
+				this.powerUpStatus[player_no] === true
+					? this._defaultBallSpeed * 3
+					: this._defaultBallSpeed;
 		}
-		else if (this.powerUpType === GameTypes.PowerUpType.speedPaddle) {
-			this.paddleSpeed[player_no] = 
-				this.powerUpStatus[player_no] === true ? this._highPaddleSpeed : this._defaultpaddleSpeed;
-		}
-		else if (this.powerUpType === GameTypes.PowerUpType.slowPaddle) {
-			this.paddleSpeed[player_no] = 
-							this.powerUpStatus[player_no] === true ? this._lowPaddleSpeed : this._defaultpaddleSpeed;
-		}
-		else if (this.powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+	}
 
-			this.paddleHeights[player_no] = 
-				this.powerUpStatus[player_no] === true ? this._defaultPaddleHeight / 2 : this._defaultPaddleHeight
-		}
-		else if (this.powerUpType === GameTypes.PowerUpType.stretchPaddle) { // powerUpType === "stretchPaddle"
-			this.paddleHeights[player_no] = 
-				this.powerUpStatus[player_no] === true ? this._defaultPaddleHeight * 2 : this._defaultPaddleHeight
+	addPowerUp(player_no: number): void {
+		if (this.powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+			this.paddleHeights[player_no] =
+				this.powerUpStatus[player_no] === true
+					? this._defaultPaddleHeight / 2
+					: this._defaultPaddleHeight;
+		} else if (this.powerUpType === GameTypes.PowerUpType.stretchPaddle) {
+			// powerUpType === "stretchPaddle"
+			this.paddleHeights[player_no] =
+				this.powerUpStatus[player_no] === true
+					? this._defaultPaddleHeight * 2
+					: this._defaultPaddleHeight;
+		} else if (this.powerUpType === GameTypes.PowerUpType.speedPaddle) {
+			this.paddleSpeed[player_no] =
+				this.powerUpStatus[player_no] === true ? this._highPaddleSpeed : this._defaultpaddleSpeed;
+		} else if (this.powerUpType === GameTypes.PowerUpType.slowPaddle) {
+			this.paddleSpeed[player_no] =
+				this.powerUpStatus[player_no] === true ? this._lowPaddleSpeed : this._defaultpaddleSpeed;
 		}
 	}
 
@@ -417,21 +441,19 @@ export default class SimulationService {
 
 	setRandomPowerUp(): void {
 		const randomIndex = Math.floor(Math.random() * this.powerUpTypes.length); // Pick a random index
-		this.powerUpType = this.powerUpTypes[randomIndex]
-		this.logger.log(
-			`power up of type ${GameTypes.PowerUpType[this.powerUpType]} selected`,
-		);
+		this.powerUpType = this.powerUpTypes[randomIndex];
+		this.logger.log(`power up of type ${GameTypes.PowerUpType[this.powerUpType]} selected`);
 	}
 
 	spawnPowerUp(): void {
 		if (this.powerUpActive) {
 			return; // If speed ball is already active, do nothing
 		}
-		this.setRandomPowerUp() // Deactivate all, then turn on a random power up
+		this.setRandomPowerUp(); // Deactivate all, then turn on a random power up
 		const spawnX = this.windowWidth / 2;
 		const spawnY = Math.random() * (this.windowHeight - 50) + 25; // Random Y position within bounds
 		const randomDirX = Math.random() < 0.5 ? -1 : 1;
-		
+
 		// if randomDirX == 1 towards player2, else towards player1
 		this.powerUpPosition = { x: spawnX, y: spawnY, dx: randomDirX, dy: 0 };
 		this.powerUpActive = true;
@@ -446,12 +468,11 @@ export default class SimulationService {
 				x: this.powerUpPosition.x,
 				y: this.powerUpPosition.y,
 			};
-			
 
-			this.sendMsgToPlayer(this.player1.clientSocket, 'powerUpUpdate', powerUpData)
+			this.sendMsgToPlayer(this.player1.clientSocket, 'powerUpUpdate', powerUpData);
 			if (this.mode === GameTypes.GameMode.multi) {
-				powerUpData.x = this.windowWidth - this.powerUpPosition.x
-				this.sendMsgToPlayer(this.player2.clientSocket, 'powerUpUpdate', powerUpData)
+				powerUpData.x = this.windowWidth - this.powerUpPosition.x;
+				this.sendMsgToPlayer(this.player2.clientSocket, 'powerUpUpdate', powerUpData);
 			}
 
 			const leftPaddle = this.paddleHit(
@@ -467,12 +488,10 @@ export default class SimulationService {
 				this.powerUpPosition.y,
 				false,
 			);
-			
-			if (leftPaddle != null)
-				this.handlePowerUpCollisionWithPaddle(0);
-			else if (rightPaddle != null)
-				this.handlePowerUpCollisionWithPaddle(1);
-			
+
+			if (leftPaddle != null) this.handlePowerUpCollisionWithPaddle(0);
+			else if (rightPaddle != null) this.handlePowerUpCollisionWithPaddle(1);
+
 			if (this.powerUpPosition.x <= 0 || this.powerUpPosition.x >= this.windowWidth) {
 				this.deactivatePowerUp();
 			}
@@ -493,7 +512,10 @@ export default class SimulationService {
 
 	handlePowerUpCollisionWithPaddle(player_no: number): void {
 		// Give 'shrinkPaddle' power down to opponent
-		if (this.powerUpType === GameTypes.PowerUpType.shrinkPaddle || this.powerUpType === GameTypes.PowerUpType.slowPaddle) {
+		if (
+			this.powerUpType === GameTypes.PowerUpType.shrinkPaddle ||
+			this.powerUpType === GameTypes.PowerUpType.slowPaddle
+		) {
 			player_no = player_no === 0 ? 1 : 0;
 		}
 		this.powerUpStatus[player_no] = true;
@@ -508,8 +530,7 @@ export default class SimulationService {
 		}
 		// Set a timer to remove the power-up after the duration
 		setTimeout(() => {
-			if (this.engineRunning)
-				this.removePowerUp(player_no);
+			if (this.engineRunning) this.removePowerUp(player_no);
 		}, this.powerUpDuration);
 
 		// Deactivate the power up after collision
@@ -538,7 +559,7 @@ export default class SimulationService {
 		const powerUpStatus = {
 			active: active,
 			player: player_id,
-			type: this.powerUpType
+			type: this.powerUpType,
 		};
 		this.sendMsgToPlayer(playerBonus.clientSocket, 'powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
 	}
