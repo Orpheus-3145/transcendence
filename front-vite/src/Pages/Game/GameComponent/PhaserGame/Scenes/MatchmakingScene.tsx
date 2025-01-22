@@ -44,11 +44,11 @@ export default class MatchmakingScene extends Phaser.Scene {
 				align: 'center',
 				color: '#fff',
 			})
-		.setInteractive()
-		.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' }))			// Change color on hover
-		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' }))			// Change color back when not hovered
-		.on('pointerup', () => this.scene.start('MainMenu'));									// Start the main game
-		
+			.setInteractive()
+			.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) // Change color on hover
+			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
+			.on('pointerup', () => this.scene.start('MainMenu')); // Start the main game
+
 		this._socketIO.emit('waiting', this._gameInitData);
 	}
 
@@ -65,8 +65,7 @@ export default class MatchmakingScene extends Phaser.Scene {
 		});
 
 		this._socketIO.on('ready', (sessionId: string) => {
-			
-			this._gameInitData.sessionToken = sessionId;	
+			this._gameInitData.sessionToken = sessionId;
 			this.scene.start('Game', this._gameInitData);
 		});
 

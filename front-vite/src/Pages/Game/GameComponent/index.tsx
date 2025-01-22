@@ -14,15 +14,11 @@ const GameComponent: React.FC = () => {
 		gameRef.current.registry.set('user42data', playerData);
 
 		return () => {
-				
 			if (gameRef.current) {
-				
 				if (gameRef.current.scene.isActive('Game')) {
-
 					const gameScene = gameRef.current?.scene.getScene('Game') as GameScene;
-		
-					if (gameScene)
-						gameScene.disconnect();
+
+					if (gameScene) gameScene.disconnect();
 				}
 				gameRef.current.destroy(true);
 				gameRef.current = null;

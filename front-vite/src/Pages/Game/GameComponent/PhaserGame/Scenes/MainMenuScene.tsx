@@ -27,13 +27,11 @@ export default class MainMenuScene extends Phaser.Scene {
 		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
-		this.createBtn(400, 100, 'Play [single player]')
-		.on('pointerup', () =>
+		this.createBtn(400, 100, 'Play [single player]').on('pointerup', () =>
 			this.scene.start('Settings', { mode: GameTypes.GameMode.single }),
 		);
 
-		this.createBtn(400, 150, 'Play [multi player]')
-		.on('pointerup', () =>
+		this.createBtn(400, 150, 'Play [multi player]').on('pointerup', () =>
 			this.scene.start('Settings', { mode: GameTypes.GameMode.multi }),
 		);
 	}
