@@ -9,6 +9,14 @@ export enum PaddleDirection {
 	down = 'down',
 }
 
+export enum PowerUpType {
+	speedBall = 'speedBall',
+	speedPaddle = 'speedPaddle',
+	slowPaddle = 'slowPaddle',
+	shrinkPaddle = 'shrinkPaddle',
+	stretchPaddle = 'stretchPaddle'
+}
+
 export interface GameState {
 	ball: {
 		x: number;
@@ -26,7 +34,7 @@ export interface GameState {
 	};
 }
 
-export interface PowerUp {
+export interface PowerUpPosition {
 	x: number;
 	y: number;
 }
@@ -34,6 +42,7 @@ export interface PowerUp {
 export interface PowerUpStatus {
 	active: boolean;
 	player: number;
+	type: PowerUpType;
 }
 
 export interface PlayerData {
