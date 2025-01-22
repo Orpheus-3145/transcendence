@@ -46,7 +46,6 @@ export default class SimulationService {
 	private powerUpSelected: GameTypes.PowerUpType[] = new Array();
 	private paddleSpeed: number[] = [this._defaultpaddleSpeed, this._defaultpaddleSpeed];
 
-
 	private powerUpIntervalTime: number = Number(
 		this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000),
 	);
@@ -58,14 +57,14 @@ export default class SimulationService {
 	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight];
 
 	// Power up type
-	private powerUpTypes: GameTypes.PowerUpType[] = [
-		GameTypes.PowerUpType.speedBall,
-		GameTypes.PowerUpType.speedPaddle,
-		GameTypes.PowerUpType.slowPaddle,
-		GameTypes.PowerUpType.shrinkPaddle,
-		GameTypes.PowerUpType.stretchPaddle,
-	];
-	// private powerUpTypes: GameTypes.PowerUpType[] = [GameTypes.PowerUpType.speedBall, GameTypes.PowerUpType.speedPaddle, GameTypes.PowerUpType.slowPaddle]
+	// private powerUpTypes: GameTypes.PowerUpType[] = [
+	// 	GameTypes.PowerUpType.speedBall,
+	// 	GameTypes.PowerUpType.speedPaddle,
+	// 	GameTypes.PowerUpType.slowPaddle,
+	// 	GameTypes.PowerUpType.shrinkPaddle,
+	// 	GameTypes.PowerUpType.stretchPaddle,
+	// ];
+	
 	private powerUpType: GameTypes.PowerUpType;
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
@@ -93,6 +92,7 @@ export default class SimulationService {
 				data.sessionToken,
 				`${SimulationService.name}.${this.constructor.prototype.setInitInfo.name}()`,
 			);
+
 		this.sessionToken = data.sessionToken;
 		this.mode = data.mode;
 		this.powerUpSelected = data.extras;
@@ -461,8 +461,8 @@ export default class SimulationService {
 	}
 
 	setRandomPowerUp(): void {
-		const randomIndex = Math.floor(Math.random() * this.powerUpTypes.length); // Pick a random index
-		this.powerUpType = this.powerUpTypes[randomIndex];
+		const randomIndex = Math.floor(Math.random() * this.powerUpSelected.length); // Pick a random index
+		this.powerUpType = this.powerUpSelected[randomIndex];
 		this.logger.log(`power up of type ${GameTypes.PowerUpType[this.powerUpType]} selected`);
 	}
 
@@ -609,7 +609,7 @@ export default class SimulationService {
 					'gameError',
 					`Game interrupted, player ${this.player1.nameNick} left the game`,
 				);
-		} else if (this.player2 && this.player2.clientSocket.id === client.handshake.address) {
+		} else if (this.player2) {
 			this.logger.log(
 				`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`,
 			);
