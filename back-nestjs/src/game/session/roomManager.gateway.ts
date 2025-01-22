@@ -30,34 +30,26 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	@WebSocketServer()
 	server: Server;
 
-	// Keeps a Map of SimulationService instances, one per game simulation
 	constructor(private roomManager: RoomManagerService) {}
 
 	handleConnection(): void {}
 
 	handleDisconnect(@ConnectedSocket() client: Socket): void {
-		// Called by default everytime a client disconnects to the websocket
 		this.roomManager.handleDisconnect(client);
 	}
 
 	@SubscribeMessage('createRoomSinglePlayer')
 	setInitData(@MessageBody() data: GameInitDTO): void {
-		
 		this.roomManager.createRoom(data);
 	}
 
 	@SubscribeMessage('playerLeftGame')
 	handlePlayerLeft(@ConnectedSocket() client: Socket): void {
-	
 		this.roomManager.handleDisconnect(client);
 	}
 
 	@SubscribeMessage('playerData')
-	addPlayer(
-		@MessageBody() data: PlayerDataDTO,
-		@ConnectedSocket() client: Socket,
-	): void {
-	
+	addPlayer(@MessageBody() data: PlayerDataDTO, @ConnectedSocket() client: Socket): void {
 		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
 	}
 

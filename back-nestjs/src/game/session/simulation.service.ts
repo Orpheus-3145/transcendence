@@ -20,31 +20,34 @@ export default class SimulationService {
 	private readonly ballRadius: number = Number(this.config.get('GAME_BALL_RADIUS'));
 	private readonly _defaultBallSpeed: number = parseInt(this.config.get('GAME_BALL_SPEED'), 10);
 	private readonly frameRate: number = parseInt(this.config.get('GAME_FPS'), 10);
+	private readonly hardDebugMode: boolean = this.config.get<boolean>('HARD_DEBUG_MODE', false);
+	private readonly forbidAutoPlay: boolean = this.config.get<boolean>('FORBID_AUTO_PLAY', false); // if true the same user cannot play against themself
 
 	private sessionToken: string = '';
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private difficulty: GameTypes.GameDifficulty = GameTypes.GameDifficulty.unset;
-	private forbidAutoPlay: boolean = this.config.get<boolean>('FORBID_AUTO_PLAY', false); // if true the same user cannot play against themself
-	
+
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
 	private player1: GameTypes.PlayingPlayer = null;
 	private player2: GameTypes.PlayingPlayer = null;
 	private ballSpeed: number = this._defaultBallSpeed;
 	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
-	
+
 	// Extras
-	private powerUpsSelected: GameTypes.PowerUpSelection
-	private extras: boolean = false;
-	
-	private powerUpIntervalTime: number = Number(this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000));
+	private extras: boolean = false; // legacy, to be removed soon
+	private powerUpSelected: GameTypes.PowerUpTypes[] = new Array();
+
+	private powerUpIntervalTime: number = Number(
+		this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000),
+	);
 	// Power-up state
 	private powerUpStatus: { [key: number]: boolean } = { 0: false, 1: false }; // power up statusfor player
 	private powerUpDuration: number = Number(this.config.get<number>('GAME_POWERUP_DURATION', 8000)); // Duration for power-up
 	// Speed Ball power up
 	private speedBallActive: boolean = false;
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
-	
+
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
 	private powerUpInterval: NodeJS.Timeout = null; // Timer for spawning speedball
@@ -61,25 +64,26 @@ export default class SimulationService {
 	}
 
 	setInitInfo(data: GameInitDTO) {
-		if (data.mode === GameTypes.GameMode.unset || 
-			(data.mode === GameTypes.GameMode.single && data.difficulty === GameTypes.GameDifficulty.unset)
+		if (
+			data.mode === GameTypes.GameMode.unset ||
+			(data.mode === GameTypes.GameMode.single &&
+				data.difficulty === GameTypes.GameDifficulty.unset)
 		)
-			this.thrower.throwGameExcp(`Game mode or difficuly are is unset`,
+			this.thrower.throwGameExcp(
+				`Game mode or difficuly are is unset`,
 				data.sessionToken,
-				`${SimulationService.name}.${this.constructor.prototype.setInitInfo.name}()`,);
-		
+				`${SimulationService.name}.${this.constructor.prototype.setInitInfo.name}()`,
+			);
 		this.sessionToken = data.sessionToken;
 		this.mode = data.mode;
-		this.powerUpsSelected = data.extras;
-		
-		this.extras = data.extras.speedball;
+		this.powerUpSelected = data.extras;
+		this.extras = data.extras.includes(GameTypes.PowerUpTypes.speedBall); // legacy, to be removed soon
 
 		// add bot if single mode
 		if (this.mode === GameTypes.GameMode.single) {
-		
 			this.difficulty = data.difficulty;
 			this.addPlayer(null, -1, this.botName);
-		};
+		}
 
 		this.gameSetupInterval = setInterval(() => {
 			// missing info, not ready to play yet
@@ -87,7 +91,7 @@ export default class SimulationService {
 
 			if (this.forbidAutoPlay == true && this.player1.nameNick == this.player2.nameNick)
 				this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
-			
+
 			this.startEngine();
 		}, this.frameRate);
 	}
@@ -126,10 +130,8 @@ export default class SimulationService {
 		}
 
 		// if one of the two players have a powerup active
-		if (this.powerUpStatus[0])
-			this.removePowerUp(0);
-		else if (this.powerUpStatus[1])
-			this.removePowerUp(1);
+		if (this.powerUpStatus[0]) this.removePowerUp(0);
+		else if (this.powerUpStatus[1]) this.removePowerUp(1);
 
 		this.engineRunning = false;
 
@@ -184,23 +186,27 @@ export default class SimulationService {
 		else if (this.player1 === null) this.player1 = newPlayer;
 		else if (this.player2 === null) this.player2 = newPlayer;
 		else {
-			const context = `${SimulationService.name}.${this.constructor.prototype.addPlayer.name}`;
 			if (playerId === this.player1.intraId || playerId === this.player2.intraId)
 				// already inside game
 				this.thrower.throwGameExcp(
 					`player ${playerId} is already in this game`,
 					this.sessionToken,
-					context,
+					`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}`,
 				);
 			// unknown player
 			else
 				this.thrower.throwGameExcp(
 					`room full, failed to add player ${playerId}`,
 					this.sessionToken,
-					context,
+					`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}`,
 				);
 		}
-		this.logger.debug(`session [${this.sessionToken}] - added player ${newPlayer.nameNick} to game`);
+
+		if (this.mode === GameTypes.GameMode.single && nameNick === this.botName)
+			this.logger.debug(
+				`session [${this.sessionToken}] - bot added to game, difficulty: ${GameTypes.GameDifficulty[this.difficulty]}`,
+			);
+		else this.logger.debug(`session [${this.sessionToken}] - player ${nameNick} added to game`);
 	}
 
 	// Handle paddle movement based on key data
@@ -370,17 +376,19 @@ export default class SimulationService {
 		item_y: number,
 		isLeftPaddle: boolean,
 	): number | null {
-
 		const angleDirectionBall: number = Math.atan(item_y / item_x);
 		const prj_item_x: number = item_x + Math.sqrt(this.ballRadius) + Math.cos(angleDirectionBall);
 		const prj_item_y: number = item_y + Math.sqrt(this.ballRadius) + Math.sin(angleDirectionBall);
 		const collisionZone = Math.abs(player_y - prj_item_y);
-	
+
 		if (isLeftPaddle) {
 			if (prj_item_x <= this.paddleWidth && collisionZone <= this.paddleHeight / 2)
 				return player_y - prj_item_y; // Return offset
 		} else {
-			if (prj_item_x >= this.windowWidth - this.paddleWidth && collisionZone <= this.paddleHeight / 2)
+			if (
+				prj_item_x >= this.windowWidth - this.paddleWidth &&
+				collisionZone <= this.paddleHeight / 2
+			)
 				return player_y - prj_item_y; // Return offset
 		}
 		return null; // No collision
@@ -408,7 +416,7 @@ export default class SimulationService {
 		const spawnX = this.windowWidth / 2;
 		const spawnY = Math.random() * (this.windowHeight - 50) + 25; // Random Y position within bounds
 		const randomDirX = Math.random() < 0.5 ? -1 : 1;
-		
+
 		// if randomDirX == 1 towards player2, else towards player1
 		this.powerUpPosition = { x: spawnX, y: spawnY, dx: randomDirX, dy: 0 };
 		this.speedBallActive = true;
@@ -424,10 +432,10 @@ export default class SimulationService {
 				y: this.powerUpPosition.y,
 			};
 
-			this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData)
+			this.sendMsgToPlayer(this.player1.clientSocket, 'speedBallUpdate', speedBallData);
 			if (this.mode === GameTypes.GameMode.multi) {
-				speedBallData.x = this.windowWidth - this.powerUpPosition.x
-				this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData)
+				speedBallData.x = this.windowWidth - this.powerUpPosition.x;
+				this.sendMsgToPlayer(this.player2.clientSocket, 'speedBallUpdate', speedBallData);
 			}
 
 			const leftPaddle = this.paddleHit(
@@ -443,12 +451,10 @@ export default class SimulationService {
 				this.powerUpPosition.y,
 				false,
 			);
-			
-			if (leftPaddle != null)
-				this.handlePowerUpCollisionWithPaddle(0);
-			else if (rightPaddle != null)
-				this.handlePowerUpCollisionWithPaddle(1);
-			
+
+			if (leftPaddle != null) this.handlePowerUpCollisionWithPaddle(0);
+			else if (rightPaddle != null) this.handlePowerUpCollisionWithPaddle(1);
+
 			if (this.powerUpPosition.x <= 0 || this.powerUpPosition.x >= this.windowWidth) {
 				this.deactivateSpeedBall();
 			}
@@ -480,8 +486,7 @@ export default class SimulationService {
 		}
 		// Set a timer to remove the power-up after the duration
 		setTimeout(() => {
-			if (this.engineRunning)
-				this.removePowerUp(player_no);
+			if (this.engineRunning) this.removePowerUp(player_no);
 		}, this.powerUpDuration);
 
 		// Deactivate the speedball after collision
@@ -515,9 +520,10 @@ export default class SimulationService {
 	}
 
 	sendMsgToPlayer(client: Socket, msg: string, data?: any) {
-		this.logger.debug(
-			`session [${this.sessionToken}] - emitting to client ${client.id} data: ${JSON.stringify(data)}`,
-		);
+		if (this.hardDebugMode == true)
+			this.logger.debug(
+				`session [${this.sessionToken}] - emitting to client ${client.handshake.address} data: ${JSON.stringify(data)}`,
+			);
 
 		client.emit(msg, data);
 	}
@@ -526,30 +532,28 @@ export default class SimulationService {
 	handleDisconnect(client: Socket): void {
 		if (this.engineRunning === false) return;
 
-		if (this.mode === GameTypes.GameMode.multi) {
-			if (this.player1 && this.player1.clientSocket.id === client.id) {
-				this.logger.log(
-					`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`,
-				);
+		if (this.player1 && this.player1.clientSocket.id === client.handshake.address) {
+			this.logger.log(
+				`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`,
+			);
 
-				if (this.mode === GameTypes.GameMode.multi)
-					this.sendMsgToPlayer(
-						this.player2.clientSocket,
-						'gameError',
-						`Game interrupted, player ${this.player1.nameNick} left the game`,
-					);
-			} else if (this.player2 && this.player2.clientSocket.id === client.id) {
-				this.logger.log(
-					`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`,
+			if (this.mode === GameTypes.GameMode.multi)
+				this.sendMsgToPlayer(
+					this.player2.clientSocket,
+					'gameError',
+					`Game interrupted, player ${this.player1.nameNick} left the game`,
 				);
+		} else if (this.player2 && this.player2.clientSocket.id === client.handshake.address) {
+			this.logger.log(
+				`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`,
+			);
 
-				if (this.mode === GameTypes.GameMode.multi)
-					this.sendMsgToPlayer(
-						this.player1.clientSocket,
-						'gameError',
-						`Game interrupted, player ${this.player2.nameNick} left the game`,
-					);
-			}
+			if (this.mode === GameTypes.GameMode.multi)
+				this.sendMsgToPlayer(
+					this.player1.clientSocket,
+					'gameError',
+					`Game interrupted, player ${this.player2.nameNick} left the game`,
+				);
 		}
 
 		this.stopEngine();

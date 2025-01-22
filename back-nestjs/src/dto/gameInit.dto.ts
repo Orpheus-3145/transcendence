@@ -1,24 +1,5 @@
-import { ValidateNested, IsBoolean, IsEnum, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
-import { GameDifficulty, GameMode, PowerUpSelection } from 'src/game/game.types';
-
-
-class PowerUpSelectionDTO {
-	@IsBoolean()
-	speedball: boolean;
-
-	@IsBoolean()
-	powerup_2: boolean;
-
-	@IsBoolean()
-	powerup_3: boolean;
-
-	@IsBoolean()
-	powerup_4: boolean;
-
-	@IsBoolean()
-	powerup_5: boolean;
-}
+import { IsString, IsEnum, IsArray } from 'class-validator';
+import { GameDifficulty, GameMode, PowerUpTypes } from 'src/game/game.types';
 
 export default class GameInitDTO {
 	@IsString()
@@ -30,7 +11,7 @@ export default class GameInitDTO {
 	@IsEnum(GameDifficulty)
 	difficulty: GameDifficulty;
 
-	@ValidateNested()
-	@Type(() => PowerUpSelectionDTO)
-	extras: PowerUpSelection;
+	@IsArray()
+	@IsEnum(PowerUpTypes, { each: true })
+	extras: Array<PowerUpTypes>;
 }

@@ -36,7 +36,9 @@ export class GameExceptionFilter implements ExceptionFilter {
 		} catch {
 			client.emit('gameError', `Internal error: ${exception.message}`);
 			client.disconnect(true);
-			this.logger.error(`Client [${client.id} - ${client.handshake.address}] forced to disconnect`);
+			this.logger.error(
+				`Client [${client.handshake.address} - ${client.handshake.address}] forced to disconnect`,
+			);
 		}
 	}
 }

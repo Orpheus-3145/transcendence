@@ -27,23 +27,18 @@ export default class GameScene extends Phaser.Scene {
 	// Player references
 	private _id: number = -1;
 	private _nameNick: string = '';
-	
+
 	private _sessionToken: string = '';
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private _difficulty: GameTypes.GameDifficulty = GameTypes.GameDifficulty.unset;
-	private _powerUpSelection: GameTypes.PowerUpSelection = {
-		speedball: false,
-		powerup_2: false,
-		powerup_3: false,
-		powerup_4: false,
-	};
+	private _powerUpSelection: Array<GameTypes.PowerUpTypes> = new Array();
 	private _extras: boolean = false;
-	
+
 	private _socketIO!: Socket;
 	private _gameStarted: boolean = false;
 	private _gameState!: GameTypes.GameState;
 	private _powerUpActive: { [key: number]: boolean } = { 0: false, 1: false }; // Tracks if a player has the power-up
-	
+
 	constructor() {
 		super({ key: 'Game' });
 	}
@@ -57,7 +52,7 @@ export default class GameScene extends Phaser.Scene {
 		this._mode = data.mode;
 		this._difficulty = data.difficulty;
 		this._powerUpSelection = data.extras;
-		this._extras = data.extras.speedball;	// NB: to remove
+		this._extras = data.extras.includes(GameTypes.PowerUpTypes.speedBall); // NB: legacy, to remove
 
 		// Key bindings
 		this._cursors =
@@ -95,10 +90,10 @@ export default class GameScene extends Phaser.Scene {
 		this._field = new Field(this);
 
 		if (this._mode === GameTypes.GameMode.single) {
-			
 			const initData: GameTypes.InitData = {
 				sessionToken: this._sessionToken,
 				mode: this._mode,
+				difficulty: this._difficulty,
 				extras: this._powerUpSelection,
 			};
 			this.sendMsgToServer('createRoomSinglePlayer', initData);
@@ -132,10 +127,11 @@ export default class GameScene extends Phaser.Scene {
 		// power ups handling
 		// Handle SpeedBall appearance
 		this._socketIO.on('speedBallUpdate', (state: GameTypes.PowerUp) => {
-			if (!this._speedBall)	// Create the SpeedBall object if it doesn't already exist
+			if (!this._speedBall)
+				// Create the SpeedBall object if it doesn't already exist
 				this._speedBall = new SpeedBall(this, state.x, state.y);
-			else	// Update the SpeedBall position
-				this._speedBall.updatePosition(state.x, state.y);
+			// Update the SpeedBall position
+			else this._speedBall.updatePosition(state.x, state.y);
 		});
 
 		// Handle SpeedBall deactivation
@@ -146,7 +142,10 @@ export default class GameScene extends Phaser.Scene {
 			}
 		});
 
-		this._socketIO.on('powerUpActivated', (state: GameTypes.PowerUpStatus) => this._powerUpActive[state.player] = state.active);
+		this._socketIO.on(
+			'powerUpActivated',
+			(state: GameTypes.PowerUpStatus) => (this._powerUpActive[state.player] = state.active),
+		);
 
 		this.events.on('shutdown', () => this.disconnect(), this);
 	}
@@ -156,10 +155,8 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	setPaddleColour(paddle: Paddle, active: boolean): void {
-		if (active === true)
-			paddle.changeColor(0xffff00);
-		else if (paddle.getColor() === 0xffff00 && active === false)
-			paddle.changeColor(0x0000ff);
+		if (active === true) paddle.changeColor(0xffff00);
+		else if (paddle.getColor() === 0xffff00 && active === false) paddle.changeColor(0x0000ff);
 	}
 
 	// Frame-by-frame update
@@ -201,7 +198,6 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	disconnect() {
-
 		this._socketIO.disconnect();
 	}
 }

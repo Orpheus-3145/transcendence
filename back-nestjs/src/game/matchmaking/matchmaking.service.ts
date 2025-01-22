@@ -55,42 +55,34 @@ export default class MatchmakingService {
 	checkNewGame(): void {
 		if (this._waitingPlayersIP.length < 2) return;
 
-
 		for (let i = 0; i < this._waitingPlayersIP.length - 1; i++) {
 			const player1: WaitingPlayer = this._waitingPlayersIP[i];
 
-			for (let j = i+1; j < this._waitingPlayersIP.length; j++) {
-
+			for (let j = i + 1; j < this._waitingPlayersIP.length; j++) {
 				const player2: WaitingPlayer = this._waitingPlayersIP[j];
 
 				if (this.doTheyMatch(player1, player2)) {
-
 					const initData: GameInitDTO = {
 						sessionToken: uuidv4(),
 						mode: GameMode.multi,
 						difficulty: GameDifficulty.unset,
 						extras: player1.extras,
 					};
-	
 					player1.clientSocket.emit('ready', initData.sessionToken); // message player1
 					player2.clientSocket.emit('ready', initData.sessionToken); // message player2
-	
+
 					this.logger.log(
 						`found players ${player1.clientSocket.id}, ${player2.clientSocket.id} - sessionToken: ${initData.sessionToken}`,
 					);
 					this.roomManager.createRoom(initData);
-					return ;
+					return;
 				}
 			}
 		}
 	}
 
 	doTheyMatch(player1: WaitingPlayer, player2: WaitingPlayer) {
-
-		return (player1.extras.speedball === player2.extras.speedball &&
-						player1.extras.powerup_2 === player2.extras.powerup_2 && 
-						player1.extras.powerup_3 === player2.extras.powerup_3 &&
-						player1.extras.powerup_4 === player2.extras.powerup_4);
+		return JSON.stringify(player1.extras) === JSON.stringify(player2.extras);
 	}
 
 	isPlayerWaiting(client: WaitingPlayer) {

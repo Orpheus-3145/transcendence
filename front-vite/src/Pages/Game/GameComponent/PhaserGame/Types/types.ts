@@ -16,12 +16,12 @@ export enum PaddleDirection {
 	down = 'down',
 }
 
-export interface PowerUpSelection {
-	speedball: boolean;
-	powerup_2: boolean;
-	powerup_3: boolean;
-	powerup_4: boolean;
-	powerup_5: boolean;
+export enum PowerUpTypes {
+	speedBall = 'speedBall',
+	speedPaddle = 'speedPaddle',
+	slowPaddle = 'slowPaddle',
+	shrinkPaddle = 'shrinkPaddle',
+	stretchPaddle = 'stretchPaddle',
 }
 
 export interface GameState {
@@ -50,7 +50,7 @@ export interface InitData {
 	sessionToken: string;
 	mode: GameMode;
 	difficulty: GameDifficulty;
-	extras: PowerUpSelection;
+	extras: Array<PowerUpTypes>;
 }
 
 export interface PowerUpStatus {

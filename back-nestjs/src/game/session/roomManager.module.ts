@@ -15,8 +15,8 @@ import GameInitDTO from 'src/dto/gameInit.dto';
 	providers: [
 		RoomManagerGateway,
 		RoomManagerService,
-		//SimulationService, needs a factory to create a new instance every time
 		{
+			//SimulationService, needs a factory to create a new instance every time
 			provide: 'GAME_SPAWN',
 			useFactory: (logger: AppLoggerService, thrower: ExceptionFactory, config: ConfigService) => {
 				return (data: GameInitDTO) => {

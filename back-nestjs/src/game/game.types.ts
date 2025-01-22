@@ -23,17 +23,17 @@ export enum PlayerIdentity {
 	opponent = 1,
 }
 
-export interface PowerUpSelection {
-	speedball: boolean;
-	powerup_2: boolean;
-	powerup_3: boolean;
-	powerup_4: boolean;
-	powerup_5: boolean;
+export enum PowerUpTypes {
+	speedBall = 'speedBall',
+	speedPaddle = 'speedPaddle',
+	slowPaddle = 'slowPaddle',
+	shrinkPaddle = 'shrinkPaddle',
+	stretchPaddle = 'stretchPaddle',
 }
 
 export interface WaitingPlayer {
 	clientSocket: Socket;
-	extras: PowerUpSelection;
+	extras: Array<PowerUpTypes>;
 }
 
 export interface PlayingPlayer {

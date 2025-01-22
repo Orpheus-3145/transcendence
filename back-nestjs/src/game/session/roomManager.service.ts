@@ -20,27 +20,29 @@ export default class RoomManagerService {
 		private readonly gameRoomFactory: (data: GameInitDTO) => SimulationService,
 	) {
 		this.logger.setContext(RoomManagerService.name);
-		// do not log all the emits to clients if not really necessary
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
 	createRoom(data: GameInitDTO): void {
-		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));
-
 		this.logger.log(`session [${data.sessionToken}] - creating new room, mode: ${data.mode}`);
+
+		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));
 	}
 
 	dropRoom(sessionToken: string, trace: string): void {
+		this.logger.log(`session [${sessionToken}] - removing room, trace: ${trace}`);
+
 		this._getRoom(sessionToken).interruptGame(trace);
 		this._deleteRoom(sessionToken);
-
-		this.logger.log(`session [${sessionToken}] - removing room, trace: ${trace}`);
 	}
 
 	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
+		this.logger.log(
+			`session [${sessionToken}] - player ${nameNick} [id client ${client.handshake.address}] joined the room`,
+		);
+
 		this._getRoom(sessionToken).addPlayer(client, playerId, nameNick);
-		this.logger.log(`session [${sessionToken}] - player ${nameNick} [id client ${client.id}] added to game`);
 	}
 
 	handleDisconnect(client: Socket): void {
@@ -55,11 +57,11 @@ export default class RoomManagerService {
 	}
 
 	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection) {
-		this._getRoom(sessionToken).movePaddle(clientId, data);
-
 		this.logger.debug(
 			`session [${sessionToken}] - update from client ${clientId} , move '${data}'`,
 		);
+
+		this._getRoom(sessionToken).movePaddle(clientId, data);
 	}
 
 	_getRoom(sessionToken: string): SimulationService {
