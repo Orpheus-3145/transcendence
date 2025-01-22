@@ -43,10 +43,10 @@ export default class SimulationService {
 	private powerUpActive: boolean = false; // Is powerUp active or not? Maybe we can remove this.
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
 	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight]
+	
 	// Power up type
-	// private powerUpTypes: string[] = ["speedBall", "speedPaddle", "slowPaddle", "shrinkPaddle",  "stretchPaddle"];
-	private powerUpTypes: string[] = ["shrinkPaddle",  "stretchPaddle"];
-	private powerUpType: string;
+	private powerUpTypes: GameTypes.PowerUpType[] = [GameTypes.PowerUpType.speedBall, GameTypes.PowerUpType.speedPaddle, GameTypes.PowerUpType.slowPaddle, GameTypes.PowerUpType.shrinkPaddle, GameTypes.PowerUpType.stretchPaddle]
+	private powerUpType: GameTypes.PowerUpType;
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
 	private powerUpInterval: NodeJS.Timeout = null; // Timer for spawning power up
@@ -384,27 +384,24 @@ export default class SimulationService {
 	}
 
 	addPowerUp(player: number): void {
-		const powerUpType = this.powerUpType;
-
-		if (powerUpType === "speedBall") {
+		if (this.powerUpType === GameTypes.PowerUpType.speedBall) {
 			this.ballSpeed =
 				this.powerUpStatus[player] === true ? this._defaultBallSpeed * 2 : this._defaultBallSpeed;
 		}
-		else if (powerUpType === "speedPaddle") {
+		else if (this.powerUpType === GameTypes.PowerUpType.speedPaddle) {
 			this.paddleSpeed[player] = 
 				this.powerUpStatus[player] === true ? this._highPaddleSpeed : this._defaultpaddleSpeed;
-			console.log(`Paddle speed: ${this.paddleSpeed[player]}`)
 		}
-		else if (powerUpType === "slowPaddle") {
+		else if (this.powerUpType === GameTypes.PowerUpType.slowPaddle) {
 			this.paddleSpeed[player] = 
 							this.powerUpStatus[player] === true ? this._lowPaddleSpeed : this._defaultpaddleSpeed;
-			console.log(`Paddle speed: ${this.paddleSpeed[player]}`)
 		}
-		else if (powerUpType === "shrinkPaddle") {
+		else if (this.powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+
 			this.paddleHeights[player] = 
 				this.powerUpStatus[player] === true ? this._defaultPaddleHeight / 2 : this._defaultPaddleHeight
 		}
-		else { // powerUpType === "stretchPaddle"
+		else if (this.powerUpType === GameTypes.PowerUpType.stretchPaddle) { // powerUpType === "stretchPaddle"
 			this.paddleHeights[player] = 
 				this.powerUpStatus[player] === true ? this._defaultPaddleHeight * 2 : this._defaultPaddleHeight
 		}
@@ -421,8 +418,9 @@ export default class SimulationService {
 	setRandomPowerUp(): void {
 		const randomIndex = Math.floor(Math.random() * this.powerUpTypes.length); // Pick a random index
 		this.powerUpType = this.powerUpTypes[randomIndex]
-
-		console.log(`Power-up activated: ${this.powerUpType}, randomIndex ${randomIndex}`);
+		this.logger.log(
+			`power up of type ${this.powerUpType.valueOf} selected`,
+		);
 	}
 
 	spawnPowerUp(): void {
@@ -437,7 +435,7 @@ export default class SimulationService {
 		// if randomDirX == 1 towards player2, else towards player1
 		this.powerUpPosition = { x: spawnX, y: spawnY, dx: randomDirX, dy: 0 };
 		this.powerUpActive = true;
-		console.log("power up is active");
+		// console.log("power up is active");
 	}
 
 	sendPowerUpUpdate(): void {
@@ -495,6 +493,10 @@ export default class SimulationService {
 	}
 
 	handlePowerUpCollisionWithPaddle(player_no: number): void {
+		// Give 'shrinkPaddle' power down to opponent
+		if (this.powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+			player_no = player_no === 0 ? 1 : 0;
+		}
 		this.powerUpStatus[player_no] = true;
 
 		const playerIdentity1 =
@@ -539,7 +541,7 @@ export default class SimulationService {
 			player: player_id,
 			type: this.powerUpType
 		};
-		console.log(`PoewrUpData: ${powerUpStatus.type}`);
+		this.logger.debug(`powerup data: ${powerUpStatus.type}`);
 		this.sendMsgToPlayer(playerBonus.clientSocket, 'powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
 	}
 

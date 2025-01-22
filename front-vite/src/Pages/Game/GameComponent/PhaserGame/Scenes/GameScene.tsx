@@ -35,7 +35,7 @@ export default class GameScene extends Phaser.Scene {
 	private _gameState!: GameTypes.GameState;
 
 	private _powerUpActive: boolean[] = [false, false]; // Tracks if a player has the power-up
-	private _powerUpType: string = "";
+	private _powerUpType: GameTypes.PowerUpType = 0;
 
 	constructor() {
 		super({ key: 'Game' });
@@ -123,7 +123,6 @@ export default class GameScene extends Phaser.Scene {
 		// power ups handling
 		// Handle SpeedBall appearance
 		this._socketIO.on('powerUpUpdate', (state: GameTypes.PowerUpPosition) => {
-			console.log(`Printing the pos: ${state.x, state.y}`)
 			if (!this._powerUp)	// Create the powerUp object if it doesn't already exist
 				this._powerUp = new PowerUpBall(this, state.x, state.y);
 			else	// Update the SpeedBall position
@@ -151,21 +150,25 @@ export default class GameScene extends Phaser.Scene {
 	}
 
 	getColour(): number {
-		let colour: number;
-		if (this._powerUpType === "speedBall") {
+		let colour: number = 0;
+		if (this._powerUpType === GameTypes.PowerUpType.speedBall) {
 			colour = 0xff6600;  // Bright orange for speedBall
 		}
-		else if (this._powerUpType === "speedPaddle") {
+		else if (this._powerUpType === GameTypes.PowerUpType.speedPaddle) {
 			colour = 0x66ff33;  // Vibrant green for speedPaddle
 		}
-		else if (this._powerUpType === "slowPaddle") {
+		else if (this._powerUpType === GameTypes.PowerUpType.slowPaddle) {
 			colour = 0x9900cc;  // Calming purple for slowPaddle
 		}
-		else if (this._powerUpType === "shrinkPaddle") {
+		else if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
 			colour = 0xff66cc;  // Light pink for shrinkPaddle
 		}
-		else { // this._powerUpType === "stretchPaddle"
+		else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
 			colour = 0xcc0000;  // Deep red for stretchPaddle
+		}
+		else {
+			this.disconnect()
+			this.scene.start('Error', {trace: "Error with power up type"});
 		}
 		return colour;
 	}
@@ -173,16 +176,16 @@ export default class GameScene extends Phaser.Scene {
 	handlePowerUp(paddle: Paddle, active: boolean): void {
 		if (active === true) {
 			paddle.changeColor(this.getColour());
-			if (this._powerUpType === "shrinkPaddle") {
+			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
 				paddle.resizeShrink();
 			}
-			else if (this._powerUpType === "stretchPaddle") {
+			else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
 				paddle.resizeStretch();
 			}
 		}	
 		else if (paddle.getColor() != 0xffff00 && active === false) {
 			paddle.changeColor(0x0000ff);
-			if (this._powerUpType === "shrinkPaddle" || this._powerUpType === "stretchPaddle") {
+			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle || this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
 				paddle.resizeOriginal();
 			}
 		}
