@@ -23,17 +23,17 @@ export enum PlayerIdentity {
 	opponent = 1,
 }
 
-export enum PowerUpTypes {
+export enum PowerUpType {
 	speedBall = 'speedBall',
 	speedPaddle = 'speedPaddle',
 	slowPaddle = 'slowPaddle',
 	shrinkPaddle = 'shrinkPaddle',
-	stretchPaddle = 'stretchPaddle',
+	stretchPaddle = 'stretchPaddle'
 }
 
 export interface WaitingPlayer {
 	clientSocket: Socket;
-	extras: Array<PowerUpTypes>;
+	extras: Array<PowerUpType>;
 }
 
 export interface PlayingPlayer {

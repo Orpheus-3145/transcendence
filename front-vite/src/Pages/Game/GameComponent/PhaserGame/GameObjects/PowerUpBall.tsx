@@ -1,7 +1,7 @@
 import { GAME_BALL } from '../Game.data';
 
-export default class SpeedBall extends Phaser.GameObjects.Graphics {
-	private readonly radius: number = GAME_BALL.radius;
+export default class PowerUpBall extends Phaser.GameObjects.Graphics {
+  private readonly radius: number = GAME_BALL.radius;
 
 	constructor(scene: Phaser.Scene, x: number, y: number) {
 		super(scene);

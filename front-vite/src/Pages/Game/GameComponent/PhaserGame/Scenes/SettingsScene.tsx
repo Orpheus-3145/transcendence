@@ -1,5 +1,5 @@
 import { GAME } from '../Game.data';
-import { GameDifficulty, GameMode, PowerUpSelection, PowerUpTypes } from '../Types/types';
+import { GameDifficulty, GameMode, PowerUpType } from '../Types/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class SettingsScene extends Phaser.Scene {
@@ -9,7 +9,7 @@ export default class SettingsScene extends Phaser.Scene {
 	private mode: GameMode = GameMode.unset;
 	private difficulty: GameDifficulty = GameDifficulty.unset;
 
-	private powerUpSelection: Set<PowerUpTypes> = new Set();
+	private powerUpSelection: Set<PowerUpType> = new Set();
 
 	constructor() {
 		super({ key: 'Settings' });
@@ -38,11 +38,11 @@ export default class SettingsScene extends Phaser.Scene {
 
 		this.add.text(500, 80, 'SETTINGS:', { fontSize: '40px', align: 'center', color: '#fff' });
 
-		this.createTogglePowerUp(300, 150, PowerUpTypes.speedBall);
-		this.createTogglePowerUp(300, 200, PowerUpTypes.speedPaddle);
-		this.createTogglePowerUp(300, 250, PowerUpTypes.slowPaddle);
-		this.createTogglePowerUp(300, 300, PowerUpTypes.shrinkPaddle);
-		this.createTogglePowerUp(300, 350, PowerUpTypes.stretchPaddle);
+		this.createTogglePowerUp(300, 150, PowerUpType.speedBall);
+		this.createTogglePowerUp(300, 200, PowerUpType.speedPaddle);
+		this.createTogglePowerUp(300, 250, PowerUpType.slowPaddle);
+		this.createTogglePowerUp(300, 300, PowerUpType.shrinkPaddle);
+		this.createTogglePowerUp(300, 350, PowerUpType.stretchPaddle);
 
 		const startBtn = this.add
 			.text(500, 550, this.mode === GameMode.single ? 'START' : 'JOIN QUEUE', {
@@ -109,7 +109,7 @@ export default class SettingsScene extends Phaser.Scene {
 		if (this._keyEsc.isDown) this.scene.start('MainMenu');
 	}
 
-	createTogglePowerUp(x: number, y: number, value: PowerUpTypes): void {
+	createTogglePowerUp(x: number, y: number, value: PowerUpType): void {
 		this.add.text(x, y, `${value}`, { fontSize: '32px', align: 'center', color: '#fff' });
 		const toggle = this.add
 			.text(x + 350, y, 'INACTIVE', {

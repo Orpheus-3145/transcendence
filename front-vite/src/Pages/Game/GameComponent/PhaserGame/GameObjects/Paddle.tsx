@@ -36,4 +36,24 @@ export default class Paddle {
 	getColor(): number {
 		return this._graphic.fillColor;
 	}
+
+	// Change the size of the paddle
+	resizeShrink(): void {
+		const newWidth = this._width;
+		const newHeight = this._height / 2;
+		this._graphic.setSize(newWidth, newHeight); // Update the internal size of the rectangle
+		this._graphic.setDisplaySize(newWidth, newHeight); // Update the displayed size
+	}
+
+	resizeStretch(): void {
+		const newWidth = this._width;
+		const newHeight = this._height * 2;
+		this._graphic.setSize(newWidth, newHeight); // Update the internal size of the rectangle
+		this._graphic.setDisplaySize(newWidth, newHeight); // Update the displayed size
+	}
+
+	resizeOriginal(): void {
+		this._graphic.setSize(this._width, this._height); // Update the internal size of the rectangle
+		this._graphic.setDisplaySize(this._width, this._height); // Update the displayed size
+	}
 }
