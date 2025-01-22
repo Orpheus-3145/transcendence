@@ -58,7 +58,9 @@ export default class RoomManagerService {
 	}
 
 	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection) {
-		this._getRoom(sessionToken).movePaddle(clientId, data);
+		const room = this._getRoom(sessionToken);
+		const playerId = this._getPlayerId(room, clientId);
+		room.movePaddle(clientId, data, playerId);
 
 		this.logger.debug(
 			`session [${sessionToken}] - update from client ${clientId} , move '${data}'`,
@@ -75,6 +77,10 @@ export default class RoomManagerService {
 			);
 
 		return room;
+	}
+
+	_getPlayerId(room: SimulationService, clientId: string): number {
+		return room.getPlayerId(clientId);
 	}
 
 	_deleteRoom(sessionToken: string): void {

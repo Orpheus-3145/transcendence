@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { GAME, GAME_BALL, GAME_PADDLE } from '../Game.data';
 import * as GameTypes from '../Types/types';
 import Ball from '../GameObjects/Ball';
-import SpeedBall from '../GameObjects/SpeedBall';
+import PowerUpBall from '../GameObjects/PowerUpBall';
 import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
 
@@ -13,7 +13,7 @@ export default class GameScene extends Phaser.Scene {
 	private _leftPaddle!: Paddle;
 	private _rightPaddle!: Paddle;
 	private _field!: Field;
-	private _speedBall!: SpeedBall | null;
+	private _powerUp!: PowerUpBall | null;
 
 	// Background image
 	private _background!: Phaser.GameObjects.Image;
@@ -33,18 +33,21 @@ export default class GameScene extends Phaser.Scene {
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private _extras: boolean = false;
 	private _gameState!: GameTypes.GameState;
-	private _powerUpActive: { [key: number]: boolean } = { 0: false, 1: false }; // Tracks if a player has the power-up
+
+	private _powerUpActive: boolean[] = [false, false]; // Tracks if a player has the power-up
+	private _powerUpType: GameTypes.PowerUpType = 0;
+
 	constructor() {
 		super({ key: 'Game' });
 	}
 
 	// Initialize players and key bindings
 	init(data: GameTypes.InitData): void {
+	this._sessionToken = data.sessionToken;
 		this._id = this.registry.get('user42data').id;
 		this._nameNick = this.registry.get('user42data').nameNick;
-
-		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
+
 		this._extras = data.extras;
 
 		// Key bindings
@@ -119,22 +122,25 @@ export default class GameScene extends Phaser.Scene {
 
 		// power ups handling
 		// Handle SpeedBall appearance
-		this._socketIO.on('speedBallUpdate', (state: GameTypes.PowerUp) => {
-			if (!this._speedBall)	// Create the SpeedBall object if it doesn't already exist
-				this._speedBall = new SpeedBall(this, state.x, state.y);
+		this._socketIO.on('powerUpUpdate', (state: GameTypes.PowerUpPosition) => {
+			if (!this._powerUp)	// Create the powerUp object if it doesn't already exist
+				this._powerUp = new PowerUpBall(this, state.x, state.y);
 			else	// Update the SpeedBall position
-				this._speedBall.updatePosition(state.x, state.y);
+				this._powerUp.updatePosition(state.x, state.y);
 		});
 
 		// Handle SpeedBall deactivation
-		this._socketIO.on('speedBallDeactivated', () => {
-			if (this._speedBall) {
-				this._speedBall.destroy(); // Remove the SpeedBall from the scene
-				this._speedBall = null; // Reset the reference
+		this._socketIO.on('powerUpDeactivated', () => {
+			if (this._powerUp) {
+				this._powerUp.destroy(); // Remove the power up
+				this._powerUp = null; // Reset the reference
 			}
 		});
 
-		this._socketIO.on('powerUpActivated', (state: GameTypes.PowerUpStatus) => this._powerUpActive[state.player] = state.active);
+		this._socketIO.on('powerUpActivated', (state: GameTypes.PowerUpStatus) => {
+			this._powerUpActive[state.player] = state.active;
+			this._powerUpType = state.type;
+		});
 
 		this.events.on('shutdown', () => this.disconnect(), this);
 	}
@@ -143,12 +149,48 @@ export default class GameScene extends Phaser.Scene {
 		this._socketIO.emit(msgType, content);
 	}
 
-	setPaddleColour(paddle: Paddle, active: boolean): void {
-		if (active === true)
-			paddle.changeColor(0xffff00);
-		else if (paddle.getColor() === 0xffff00 && active === false)
-			paddle.changeColor(0x0000ff);
+	getColour(): number {
+		let colour: number = 0;
+		if (this._powerUpType === GameTypes.PowerUpType.speedBall) {
+			colour = 0xff6600;  // Bright orange for speedBall
+		}
+		else if (this._powerUpType === GameTypes.PowerUpType.speedPaddle) {
+			colour = 0x66ff33;  // Vibrant green for speedPaddle
+		}
+		else if (this._powerUpType === GameTypes.PowerUpType.slowPaddle) {
+			colour = 0x9900cc;  // Calming purple for slowPaddle
+		}
+		else if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+			colour = 0xff66cc;  // Light pink for shrinkPaddle
+		}
+		else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
+			colour = 0xcc0000;  // Deep red for stretchPaddle
+		}
+		else {
+			this.disconnect()
+			this.scene.start('Error', {trace: "Error with power up type"});
+		}
+		return colour;
 	}
+
+	handlePowerUp(paddle: Paddle, active: boolean): void {
+		if (active === true) {
+			paddle.changeColor(this.getColour());
+			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+				paddle.resizeShrink();
+			}
+			else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
+				paddle.resizeStretch();
+			}
+		}	
+		else if (paddle.getColor() != 0xffff00 && active === false) {
+			paddle.changeColor(0x0000ff);
+			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle || this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
+				paddle.resizeOriginal();
+			}
+		}
+	}
+
 
 	// Frame-by-frame update
 	update(): void {
@@ -171,8 +213,9 @@ export default class GameScene extends Phaser.Scene {
 			this.scene.start('MainMenu');
 		}
 
-		this.setPaddleColour(this._leftPaddle, this._powerUpActive[0]);
-		this.setPaddleColour(this._rightPaddle, this._powerUpActive[1]);
+		this.handlePowerUp(this._leftPaddle, this._powerUpActive[0]);
+		this.handlePowerUp(this._rightPaddle, this._powerUpActive[1]);
+
 		this.updateGame();
 	}
 
