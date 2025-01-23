@@ -3,14 +3,6 @@ import { Container, Stack, Box, Typography, useTheme, useMediaQuery } from '@mui
 import { styled } from '@mui/system';
 import GameComponent from './GameComponent';
 
-const GameBox = styled(Box)(({ theme }) => ({
-	backgroundColor: theme.palette.primary.main,
-	width: '100%',
-	display: 'flex', // Enable flexbox
-	justifyContent: 'center', // Center horizontally
-	alignItems: 'center', // Center vertically
-	position: 'relative',
-}));
 
 const HistoryBox = styled(Box)(({ theme }) => ({
 	backgroundColor: theme.palette.background.default,
@@ -51,9 +43,7 @@ const Game: React.FC = () => {
 						Pong Game
 					</Typography>
 				</Box>
-				<GameBox>
-					<GameComponent />
-				</GameBox>
+				<GameComponent />
 				<HistoryBox>
 					<Typography
 						variant='h4'

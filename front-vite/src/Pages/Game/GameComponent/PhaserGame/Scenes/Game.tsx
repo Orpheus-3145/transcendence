@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import BaseScene from './Base';
 
 import { GAME, GAME_BALL, GAME_PADDLE } from '../Game.data';
 import * as GameTypes from '../Types/types';
@@ -7,7 +8,7 @@ import PowerUpBall from '../GameObjects/PowerUpBall';
 import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
 
-export default class GameScene extends Phaser.Scene {
+export default class GameScene extends BaseScene {
 	// Game objects
 	private _ball!: Ball;
 	private _leftPaddle!: Paddle;
@@ -15,14 +16,10 @@ export default class GameScene extends Phaser.Scene {
 	private _field!: Field;
 	private _powerUp!: PowerUpBall | null;
 
-	// Background image
-	private _background!: Phaser.GameObjects.Image;
-
 	// Key listeners
 	private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 	private _keyW!: Phaser.Input.Keyboard.Key;
 	private _keyS!: Phaser.Input.Keyboard.Key;
-	private _keyEsc!: Phaser.Input.Keyboard.Key;
 
 	// Player references
 	private _id: number = -1;
@@ -31,13 +28,13 @@ export default class GameScene extends Phaser.Scene {
 	private _sessionToken: string = '';
 	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private _difficulty: GameTypes.GameDifficulty = GameTypes.GameDifficulty.unset;
-	private _powerUpSelection: Array<GameTypes.PowerUpTypes> = new Array();
+	private _powerUpSelection: Array<GameTypes.PowerUpType> = new Array();
 
 	private _socketIO!: Socket;
 	private _gameStarted: boolean = false;
 	private _gameState!: GameTypes.GameState;
 	private _powerUpActive: { [key: number]: boolean } = { 0: false, 1: false }; // Tracks if a player has the power-up
-	private _powerUpType: GameTypes.PowerUpTypes = 0;
+	private _powerUpType: GameTypes.PowerUpType = GameTypes.PowerUpType.speedBall;
 
 	constructor() {
 		super({ key: 'Game' });
@@ -45,7 +42,9 @@ export default class GameScene extends Phaser.Scene {
 
 	// Initialize players and key bindings
 	init(data: GameTypes.InitData): void {
-	this._sessionToken = data.sessionToken;
+		super.init();
+
+		this._sessionToken = data.sessionToken;
 		this._id = this.registry.get('user42data').id;
 		this._nameNick = this.registry.get('user42data').nameNick;
 		this._mode = data.mode;
@@ -61,31 +60,13 @@ export default class GameScene extends Phaser.Scene {
 		this._keyS = this.input.keyboard!.addKey(
 			Phaser.Input.Keyboard.KeyCodes.S,
 		) as Phaser.Input.Keyboard.Key;
-		this._keyEsc = this.input.keyboard!.addKey(
-			Phaser.Input.Keyboard.KeyCodes.ESC,
-		) as Phaser.Input.Keyboard.Key;
 
 		this.setupSocket();
 	}
 
-	// Load assets like images or sounds here
-	preload(): void {}
-
 	// Create game objects and establish WebSocket connection
 	create(): void {
-		// Set background
-		this._background = this.add.image(GAME.width / 2, GAME.height / 2, 'background');
-		this._background.setDisplaySize(this.scale.width, this.scale.height);
-
-		// Create the ball as an instance of the Ball class
-		this._ball = new Ball(this, GAME.width / 2, GAME.height / 2); // Initialize ball with no movement initially
-
-		// Create bars
-		this._leftPaddle = new Paddle(this, GAME_PADDLE.width / 2, GAME.height / 2);
-		this._rightPaddle = new Paddle(this, GAME.width - GAME_PADDLE.width / 2, GAME.height / 2);
-
-		// Create field (handles borders, scoring, etc.)
-		this._field = new Field(this);
+		super.create()
 
 		if (this._mode === GameTypes.GameMode.single) {
 			const initData: GameTypes.InitData = {
@@ -105,6 +86,18 @@ export default class GameScene extends Phaser.Scene {
 		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	}
 
+  buildGraphicObjects(): void {
+
+		this._ball = new Ball(this, this.scale.width / 2, this.scale.height / 2); // Initialize ball with no movement initially
+
+		// Create bars
+		this._leftPaddle = new Paddle(this, GAME_PADDLE.width / 2, this.scale.height / 2);
+		this._rightPaddle = new Paddle(this, this.scale.width - GAME_PADDLE.width / 2, this.scale.height / 2);
+
+		// Create field (handles borders, scoring, etc.)
+		this._field = new Field(this);
+	}
+
 	setupSocket() {
 		this._socketIO = io(import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION, {
 			withCredentials: true,
@@ -118,9 +111,9 @@ export default class GameScene extends Phaser.Scene {
 
 		this._socketIO.on('gameState', (state: GameTypes.GameState) => (this._gameState = state));
 
-		this._socketIO.on('endGame', (data: { winner: string }) => this.scene.start('Results', data));
+		this._socketIO.on('endGame', (data: { winner: string }) => this.switchScene('Results', data));
 
-		this._socketIO.on('gameError', (trace: string) => this.scene.start('Error', { trace }));
+		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
 		// power ups handling
 		this._socketIO.on('powerUpUpdate', (state: GameTypes.PowerUpPosition) => {
@@ -142,7 +135,7 @@ export default class GameScene extends Phaser.Scene {
 			this._powerUpType = state.type;
 		});
 
-		this.events.on('shutdown', () => this.disconnect(), this);
+		this.events.on('shutdown', () => this.onPreLeave(), this);
 	}
 
 	sendMsgToServer(msgType: string, content?: any) {
@@ -151,49 +144,40 @@ export default class GameScene extends Phaser.Scene {
 
 	getColour(): number {
 		let colour: number = 0;
-		if (this._powerUpType === GameTypes.PowerUpType.speedBall) {
+		if (this._powerUpType === GameTypes.PowerUpType.speedBall)
 			colour = 0xff6600;  // Bright orange for speedBall
-		}
-		else if (this._powerUpType === GameTypes.PowerUpType.speedPaddle) {
+		else if (this._powerUpType === GameTypes.PowerUpType.speedPaddle)
 			colour = 0x66ff33;  // Vibrant green for speedPaddle
-		}
-		else if (this._powerUpType === GameTypes.PowerUpType.slowPaddle) {
+		else if (this._powerUpType === GameTypes.PowerUpType.slowPaddle)
 			colour = 0x9900cc;  // Calming purple for slowPaddle
-		}
-		else if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+		else if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle)
 			colour = 0xff66cc;  // Light pink for shrinkPaddle
-		}
-		else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
+		else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle)
 			colour = 0xcc0000;  // Deep red for stretchPaddle
-		}
-		else {
-			this.disconnect()
-			this.scene.start('Error', {trace: "Error with power up type"});
-		}
+		else
+			this.switchScene('Error', {trace: "Error with power up type"});
 		return colour;
 	}
 
 	handlePowerUp(paddle: Paddle, active: boolean): void {
 		if (active === true) {
 			paddle.changeColor(this.getColour());
-			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle) {
+			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle)
 				paddle.resizeShrink();
-			}
-			else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
+			else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle)
 				paddle.resizeStretch();
-			}
 		}	
 		else if (paddle.getColor() != 0xffff00 && active === false) {
 			paddle.changeColor(0x0000ff);
-			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle || this._powerUpType === GameTypes.PowerUpType.stretchPaddle) {
+			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle || this._powerUpType === GameTypes.PowerUpType.stretchPaddle)
 				paddle.resizeOriginal();
-			}
 		}
 	}
 
-
 	// Frame-by-frame update
 	update(): void {
+		super.update();
+	
 		if (this._gameStarted == false) return;
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
@@ -207,19 +191,9 @@ export default class GameScene extends Phaser.Scene {
 				sessionToken: this._sessionToken,
 			});
 
-		// Exit game with ESC
-		if (this._keyEsc.isDown) {
-			this.sendMsgToServer('playerLeftGame');
-			this.scene.start('MainMenu');
-		}
-
 		this.handlePowerUp(this._leftPaddle, this._powerUpActive[0]);
 		this.handlePowerUp(this._rightPaddle, this._powerUpActive[1]);
 
-		this.updateGame();
-	}
-
-	updateGame(): void {
 		// Update score
 		this._field.updateScore(this._gameState.score.p1, this._gameState.score.p2);
 
@@ -231,7 +205,7 @@ export default class GameScene extends Phaser.Scene {
 		this._rightPaddle.updatePosition(this._gameState.p2.y);
 	}
 
-	disconnect() {
+	onPreLeave() {
 		this._socketIO.disconnect();
 	}
 }

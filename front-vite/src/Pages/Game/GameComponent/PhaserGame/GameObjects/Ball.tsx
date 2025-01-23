@@ -1,5 +1,5 @@
 import { GAME_BALL } from '../Game.data';
-import GameScene from '../Scenes/GameScene';
+import GameScene from '../Scenes/Game';
 
 export default class Ball {
 	private readonly radius: number = GAME_BALL.radius;

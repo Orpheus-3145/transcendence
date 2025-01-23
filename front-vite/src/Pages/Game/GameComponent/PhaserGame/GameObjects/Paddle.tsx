@@ -1,5 +1,5 @@
 import { GAME_PADDLE } from '../Game.data';
-import GameScene from '../Scenes/GameScene';
+import GameScene from '../Scenes/Game';
 
 export default class Paddle {
 	private _startPos: Phaser.Math.Vector2;
