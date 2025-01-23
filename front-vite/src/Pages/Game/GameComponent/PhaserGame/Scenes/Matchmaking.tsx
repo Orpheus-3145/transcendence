@@ -21,6 +21,7 @@ export default class MatchmakingScene extends BaseScene {
 	}
 
   buildGraphicObjects(): void {
+		super.buildGraphicObjects();
 
 		this.add.text(this.scale.width * 0.5, this.scale.height * 0.3, 'Waiting for playerz ...', {
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 10}px`,

@@ -1,7 +1,9 @@
-import { GAME } from '../Game.data';
+// import { GAME } from '../Game.data';
 
 export default class BaseScene extends Phaser.Scene {
 	
+	// background image
+	protected _backgroundPath: string = import.meta.env.GAME_PATH_BACKGROUND;
 	protected _background!: Phaser.GameObjects.Image;
 	protected _keyEsc!: Phaser.Input.Keyboard.Key;
 	
@@ -13,6 +15,7 @@ export default class BaseScene extends Phaser.Scene {
 		super(arg);
 	}
 
+	// method called when scene.start(nameScene, args) is run
 	init(arg?: any): void {
 
 		this._keyEsc = this.input.keyboard!.addKey(
@@ -22,18 +25,24 @@ export default class BaseScene extends Phaser.Scene {
 
 	// loading graphic assets, fired after init()
 	preload(arg?: any): void {
-		this.load.image('background', GAME.background);
+		this.load.image('background', this._backgroundPath);
 	}
 
-	// run after preload(), creation of the elements of the menu
+	// run after preload(), creation of the entities of the scene
 	create(arg?: any): void {
-
-		this._background = this.add.image(this.scale.width * 0.5, this.scale.height * 0.5, 'background');
-		this._background.setDisplaySize(this.scale.width, this.scale.height);
 
 		this.buildGraphicObjects();
 	}
 
+	// function called by Phaser engine once every frame
+	// @param time: absolute time (in ms) since the start of the scene
+	// @param delta: amount of time (in ms) passed since last time time update() was called
+	update(time: number, delta: number) {
+
+		if (this._keyEsc.isDown) this.switchScene('MainMenu');
+	}
+
+	// method to call whenever the scene is switched
 	switchScene(sceneName: string, initSceneData?: any) {
 
 		this.onPreLeave();
@@ -43,13 +52,11 @@ export default class BaseScene extends Phaser.Scene {
 
 	// the phaser objects will have to be definied
 	// inside the override of this function in the sub-classes
-	buildGraphicObjects(): void {}
+	buildGraphicObjects(): void {
 
-	// method to call whenever the scene is switched
-	onPreLeave() {}
-
-	update(arg?: any) {
-
-		if (this._keyEsc.isDown) this.switchScene('MainMenu');
+		this._background = this.add.image(this.scale.width * 0.5, this.scale.height * 0.5, 'background');
+		this._background.setDisplaySize(this.scale.width, this.scale.height);
 	}
+
+	onPreLeave() {}
 };

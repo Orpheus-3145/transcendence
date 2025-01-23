@@ -17,11 +17,16 @@ export default class ResultsScene extends BaseScene {
 	}
 
 	buildGraphicObjects(): void {
+		super.buildGraphicObjects();
+
 		this.add
 			.text(this.scale.width * 0.5, this.scale.height * 0.1, `Player: ${this._winner} won!`, {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 50}px`,
 				align: 'center',
 				color: '#0f0',
+				wordWrap: { 
+					width: this.scale.width * 0.5,
+				},
 			})
 			.setOrigin(0.5, 0.5);
 
@@ -33,11 +38,8 @@ export default class ResultsScene extends BaseScene {
 			})
 			.setOrigin(0.5, 0.5)
 			.setInteractive()
-			.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) // Change color on hover
-			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
-			.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+			.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) 	// Change color on hover
+			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 		// Change color back when not hovered
+			.on('pointerup', () => this.switchScene('MainMenu')); 							// Start the main game
 	}
-
-	// run every frame update
-	update(): void {}
 }

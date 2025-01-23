@@ -87,6 +87,7 @@ export default class GameScene extends BaseScene {
 	}
 
   buildGraphicObjects(): void {
+		super.buildGraphicObjects();
 
 		this._ball = new Ball(this, this.scale.width / 2, this.scale.height / 2); // Initialize ball with no movement initially
 
@@ -175,8 +176,8 @@ export default class GameScene extends BaseScene {
 	}
 
 	// Frame-by-frame update
-	update(): void {
-		super.update();
+	update(time: number, delta: number): void {
+		super.update(time, delta);
 	
 		if (this._gameStarted == false) return;
 

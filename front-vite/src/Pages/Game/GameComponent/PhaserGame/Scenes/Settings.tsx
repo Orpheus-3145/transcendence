@@ -22,12 +22,13 @@ export default class SettingsScene extends BaseScene {
 	}
 
 	buildGraphicObjects() {
+		super.buildGraphicObjects();
 
 		this.add.text(this.scale.width * 0.5, this.scale.height * 0.17, 'SETTINGS', { 
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 38}px`,
 			align: 'center',
-			color: '#fff' }
-		)
+			color: '#fff' 
+		})
 		.setOrigin(0.5, 0.5);
 
 		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.3, PowerUpType.speedBall);
@@ -40,8 +41,8 @@ export default class SettingsScene extends BaseScene {
 			.text(this.scale.width * 0.5, this.scale.height * 0.75, this.mode === GameMode.single ? 'START' : 'JOIN QUEUE', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 28}px`,
 				align: 'center',
-				color: '#0f0',
-			})
+				color: '#0f0'}
+			)
 			.setOrigin(0.5, 0.5)
 			.setInteractive()
 			.on('pointerover', () => startBtn.setStyle({ fill: '#ff0' }))
@@ -54,7 +55,7 @@ export default class SettingsScene extends BaseScene {
 			this.add.text(this.scale.width * 0.25, this.scale.height * 0.63, 'difficulty', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
 				align: 'center',
-				color: '#fff' }
+				color: '#fff'}
 			)
 			.setOrigin(0, 0.5);
 
@@ -62,7 +63,8 @@ export default class SettingsScene extends BaseScene {
 				.text(this.scale.width * 0.55, this.scale.height * 0.63, 'EASY', {
 					fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
 					align: 'center',
-					color: '#fff' })
+					color: '#fff'}
+				)
 				.setOrigin(0.5, 0.5)
 				.setInteractive()
 				.on('pointerup', () => {
@@ -76,7 +78,8 @@ export default class SettingsScene extends BaseScene {
 				.text(this.scale.width * 0.675, this.scale.height * 0.63, 'MEDIUM', {
 					fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
 					align: 'center',
-					color: '#0f0' })
+					color: '#0f0'}
+				)
 				.setOrigin(0.5, 0.5)
 				.setInteractive()
 				.on('pointerup', () => {
@@ -90,7 +93,8 @@ export default class SettingsScene extends BaseScene {
 				.text(this.scale.width * 0.8, this.scale.height * 0.63, 'HARD', {
 					fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
 					align: 'center',
-					color: '#fff' })
+					color: '#fff'}
+				)
 				.setOrigin(0.5, 0.5)
 				.setInteractive()
 				.on('pointerup', () => {
@@ -105,8 +109,8 @@ export default class SettingsScene extends BaseScene {
 			.text(this.scale.width * 0.9, this.scale.height * 0.9, 'Home', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
 				align: 'center',
-				color: '#fff',
-			})
+				color: '#fff'}
+			)
 			.setOrigin(0.5, 0.5)
 			.setInteractive()
 			.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) // Change color on hover
@@ -118,16 +122,16 @@ export default class SettingsScene extends BaseScene {
 		this.add.text(x, y, `${value}`, 
 			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
 				align: 'center',
-				color: '#fff' }
+				color: '#fff'}
 		)
 		.setOrigin(0, 0.5);
 	
 		const toggle = this.add
-			.text(x + 350, y, 'INACTIVE', {
+			.text(x + this.scale.width * 0.3, y, 'INACTIVE', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
 				align: 'center',
-				color: '#ff0',
-			})
+				color: '#ff0'}
+			)
 			.setOrigin(0, 0.5)
 			.setInteractive()
 			.on('pointerup', () => {
@@ -139,8 +143,8 @@ export default class SettingsScene extends BaseScene {
 					this.powerUpSelection.add(value);
 					toggle.setText('ACTIVE');
 					toggle.setStyle({ fill: '#0f0' }); // Green for ON, White for OFF
-				}
-			});
+				}}
+			);
 	}
 
 	startGame(): void {

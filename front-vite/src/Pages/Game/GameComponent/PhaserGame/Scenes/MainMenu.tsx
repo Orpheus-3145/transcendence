@@ -10,6 +10,7 @@ export default class MainMenuScene extends BaseScene {
 	}
 
   buildGraphicObjects(): void {
+		super.buildGraphicObjects();
 
 		const singleGameBtn = this.add
 		.text(this.scale.width * 0.5, this.scale.height * 0.2, 'Play [single player]', {

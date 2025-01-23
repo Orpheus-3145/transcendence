@@ -5,7 +5,8 @@ import Phaser from 'phaser';
 
 import { useUser } from '../../../Providers/UserContext/User';
 import GameScene from './PhaserGame/Scenes/Game';
-import MainMenuScene, { ProtoScene } from './PhaserGame/Scenes/MainMenu';
+import BaseScene from './PhaserGame/Scenes/Base';
+import MainMenuScene from './PhaserGame/Scenes/MainMenu';
 import MatchmakingScene from './PhaserGame/Scenes/Matchmaking';
 import ResultsScene from './PhaserGame/Scenes/Results';
 import SettingsScene from './PhaserGame/Scenes/Settings';
@@ -30,15 +31,21 @@ const GameComponent: React.FC = () => {
 
 	const handleResize = () => {
 		if (gameInstance && containerRef.current) {
+			
+			// resize game window keeping same ratio (16/9)
 			const { width, height } = containerRef.current.getBoundingClientRect();
 			gameInstance.scale.resize(width, width * 9 / 16);
-
-			gameInstance.scene.getScenes(true).forEach( (scene) => (scene as ProtoScene).create() );
+			// resize all the objects inside of every active scene
+			gameInstance.scene.getScenes(true).forEach( scene => {
+				
+				scene.children.getChildren().forEach( child => child.destroy());
+				(scene as BaseScene).buildGraphicObjects();
+			});
 		}
 	}
 
 	useEffect(() => {
-		
+
 		if (gameInstance === null) {
 			
 			const cnt = containerRef.current!;
@@ -76,7 +83,7 @@ const GameComponent: React.FC = () => {
 				if (gameInstance.scene.isActive('Game')) {
 					
 					const gameScene = gameInstance?.scene.getScene('Game') as GameScene;
-					if (gameScene) gameScene.disconnect();
+					if (gameScene) gameScene.onPreLeave();
 				}
 				gameInstance.destroy(true);
 				gameInstance = null;
@@ -85,8 +92,7 @@ const GameComponent: React.FC = () => {
 	}, []);
 
 	return (
-		<GameBox ref={containerRef}>
-		</GameBox>
+		<GameBox ref={containerRef}/>
 	);
 };
 

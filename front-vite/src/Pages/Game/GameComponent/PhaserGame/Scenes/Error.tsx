@@ -14,12 +14,16 @@ export default class ErrorScene extends BaseScene {
 	}
 
   buildGraphicObjects(): void {
+		super.buildGraphicObjects();
 
 		this.add
 			.text(this.scale.width * 0.5, this.scale.height * 0.4, `ERROR: ${this._errorTrace}`, {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 18}px`,
 				align: 'center',
-				color: '#0f0',
+				color: '#f00',
+				wordWrap: { 
+					width: this.scale.width * 0.5,
+				},
 			})
 			.setOrigin(0.5, 0.5);
 
