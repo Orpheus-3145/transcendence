@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Socket } from 'socket.io';
 
 import GameStateDTO from 'src/dto/gameState.dto';
+import GameSizeDTO from 'src/dto/gameSize.dto'
 import * as GameTypes from 'src/game/game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
@@ -56,15 +57,6 @@ export default class SimulationService {
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
 	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight];
 
-	// Power up type
-	// private powerUpTypes: GameTypes.PowerUpType[] = [
-	// 	GameTypes.PowerUpType.speedBall,
-	// 	GameTypes.PowerUpType.speedPaddle,
-	// 	GameTypes.PowerUpType.slowPaddle,
-	// 	GameTypes.PowerUpType.shrinkPaddle,
-	// 	GameTypes.PowerUpType.stretchPaddle,
-	// ];
-	
 	private powerUpType: GameTypes.PowerUpType;
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
@@ -96,7 +88,6 @@ export default class SimulationService {
 		this.sessionToken = data.sessionToken;
 		this.mode = data.mode;
 		this.powerUpSelected = data.extras;
-		// this.extras = data.extras.includes(GameTypes.PowerUpTypes.speedBall); // legacy, to be removed soon
 
 		// add bot if single mode
 		if (this.mode === GameTypes.GameMode.single) {
@@ -124,17 +115,21 @@ export default class SimulationService {
 		this.gameSetupInterval = null;
 
 		this.gameStateInterval = setInterval(() => this.gameIteration(), this.frameRate);
+
 		this.logger.debug(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
 		this.logger.debug(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
 		this.logger.log(`session [${this.sessionToken}] - game started`);
 
 		this.resetBall();
-		this.sendUpdateToPlayers('gameStart');
-
-		// Extra power up
-		if (this.powerUpSelected.length > 0) {
-			this.startpowerUpTimer(); // Start power up timer
-		}
+		
+		const sizeGame: GameSizeDTO = {width: this.windowWidth, height: this.windowHeight}
+		this.sendMsgToPlayer(this.player1.clientSocket, 'gameStart', sizeGame);
+		if (this.mode === GameTypes.GameMode.multi)
+			this.sendMsgToPlayer(this.player2.clientSocket, 'gameStart', sizeGame);
+		
+		// if at least one powerup is select start spawning timer
+		if (this.powerUpSelected.length > 0)
+			this.startpowerUpTimer();
 	}
 
 	stopEngine(): void {

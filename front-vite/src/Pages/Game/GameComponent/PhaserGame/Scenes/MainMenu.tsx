@@ -1,4 +1,3 @@
-import { GAME } from '../Game.data';
 
 import * as GameTypes from '../Types/types';
 import BaseScene from './Base';

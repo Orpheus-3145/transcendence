@@ -1,7 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import BaseScene from './Base';
 
-import { GAME, GAME_BALL, GAME_PADDLE } from '../Game.data';
 import * as GameTypes from '../Types/types';
 import Ball from '../GameObjects/Ball';
 import PowerUpBall from '../GameObjects/PowerUpBall';
@@ -9,47 +8,82 @@ import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
 
 export default class GameScene extends BaseScene {
+	
+	private _id: number;
+	private _nameNick: string;
+	private _sessionToken: string;
+	private _mode: GameTypes.GameMode;
+	private _difficulty: GameTypes.GameDifficulty;
+	private _gameState: GameTypes.GameState;
+	private _gameStarted: boolean;
+
+	private _gameSizeBackEnd: GameTypes.GameSize;
+	private _widthRatio: number;
+	private _heightRatio: number;
+	
+	private _powerUpSelection: Array<GameTypes.PowerUpType>;
+	private _powerUpType: GameTypes.PowerUpType;
+	private _powerUpActive: { [key: number]: boolean }; // Tracks if a player has the power-up
+	
+	private _urlWebsocket: string;
+	private _socketIO!: Socket;
+
 	// Game objects
 	private _ball!: Ball;
 	private _leftPaddle!: Paddle;
 	private _rightPaddle!: Paddle;
 	private _field!: Field;
 	private _powerUp!: PowerUpBall | null;
-
+	
 	// Key listeners
 	private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 	private _keyW!: Phaser.Input.Keyboard.Key;
 	private _keyS!: Phaser.Input.Keyboard.Key;
 
-	// Player references
-	private _id: number = -1;
-	private _nameNick: string = '';
-
-	private _sessionToken: string = '';
-	private _mode: GameTypes.GameMode = GameTypes.GameMode.unset;
-	private _difficulty: GameTypes.GameDifficulty = GameTypes.GameDifficulty.unset;
-	private _powerUpSelection: Array<GameTypes.PowerUpType> = new Array();
-
-	private _socketIO!: Socket;
-	private _gameStarted: boolean = false;
-	private _gameState!: GameTypes.GameState;
-	private _powerUpActive: { [key: number]: boolean } = { 0: false, 1: false }; // Tracks if a player has the power-up
-	private _powerUpType: GameTypes.PowerUpType = GameTypes.PowerUpType.speedBall;
-
 	constructor() {
 		super({ key: 'Game' });
+		
+		this._id = -1;
+		this._nameNick = '';
+		this._sessionToken = '';
+		this._mode = GameTypes.GameMode.unset;
+		this._difficulty = GameTypes.GameDifficulty.unset;
+		this._gameState = {
+			ball: { x: 0, y: 0 },
+			p1: { y: 0 },
+			p2: { y: 0 },
+			score: { p1: 0, p2: 0 }
+		}
+		this._gameStarted = false;
+		
+		this._gameSizeBackEnd = {width: 0, height: 0}
+		this._widthRatio = 0;
+		this._heightRatio = 0;
+		
+		this._powerUpSelection = new Array();
+		this._powerUpActive = { 0: false, 1: false };
+		this._powerUpType = GameTypes.PowerUpType.speedBall;
+		
+		this._urlWebsocket = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION;
 	}
 
 	// Initialize players and key bindings
 	init(data: GameTypes.InitData): void {
 		super.init();
 
-		this._sessionToken = data.sessionToken;
 		this._id = this.registry.get('user42data').id;
 		this._nameNick = this.registry.get('user42data').nameNick;
+		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
 		this._difficulty = data.difficulty;
 		this._powerUpSelection = data.extras;
+		this._gameState = {
+			ball: { x: 0, y: 0 },
+			p1: { y: 0 },
+			p2: { y: 0 },
+			score: { p1: 0, p2: 0 }
+		}
+		this._gameStarted = false;
 
 		// Key bindings
 		this._cursors =
@@ -89,28 +123,38 @@ export default class GameScene extends BaseScene {
   buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		this._ball = new Ball(this, this.scale.width / 2, this.scale.height / 2); // Initialize ball with no movement initially
+		this._ball = new Ball(this, this._gameState.ball.x, this._gameState.ball.y); // Initialize ball with no movement initially
 
 		// Create bars
-		this._leftPaddle = new Paddle(this, GAME_PADDLE.width / 2, this.scale.height / 2);
-		this._rightPaddle = new Paddle(this, this.scale.width - GAME_PADDLE.width / 2, this.scale.height / 2);
+		const paddleWidthRatio = parseInt(import.meta.env.GAME_PADDLE_W_RATIO);
+		this._leftPaddle = new Paddle(this, 0, this._gameState.p1.y);
+		this._rightPaddle = new Paddle(this, this.scale.width - (this.scale.width / (paddleWidthRatio)), this._gameState.p2.y);
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
 	}
 
 	setupSocket() {
-		this._socketIO = io(import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION, {
-			withCredentials: true,
-			transports: ['websocket'],
-		});
+		this._socketIO = io(this._urlWebsocket, { withCredentials: true, transports: ['websocket'] });
 
-		this._socketIO.on('gameStart', (state: GameTypes.GameState) => {
+		this._socketIO.on('gameStart', (gameSize: GameTypes.GameSize) => {
+	
+			// adjust position objects because of the new scale
+			this._gameSizeBackEnd = gameSize;
+			this.resetWindowRatio();
 			this._gameStarted = true;
-			this._gameState = state;
 		});
 
-		this._socketIO.on('gameState', (state: GameTypes.GameState) => (this._gameState = state));
+		this._socketIO.on('gameState', (state: GameTypes.GameState) => {
+		
+			// apply ratio for current window size	
+			state.ball.x /= this._widthRatio;
+			state.ball.y /= this._heightRatio;
+			state.p1.y /= this._heightRatio;
+			state.p2.y /= this._heightRatio;
+
+			this._gameState = state
+		});
 
 		this._socketIO.on('endGame', (data: { winner: string }) => this.switchScene('Results', data));
 
@@ -118,6 +162,9 @@ export default class GameScene extends BaseScene {
 
 		// power ups handling
 		this._socketIO.on('powerUpUpdate', (state: GameTypes.PowerUpPosition) => {
+
+			state.x /= this._widthRatio;
+			state.y /= this._heightRatio;
 			if (!this._powerUp)	// Create the powerUp object if it doesn't already exist
 				this._powerUp = new PowerUpBall(this, state.x, state.y);
 			else	// update position
@@ -175,10 +222,21 @@ export default class GameScene extends BaseScene {
 		}
 	}
 
+	resetWindowRatio(): void {
+
+		if (this._gameSizeBackEnd.width * this._gameSizeBackEnd.height === 0)
+			this.switchScene('Error', `Invalid resize ratio, got zero value(s): ${this._gameSizeBackEnd.width} : ${this._gameSizeBackEnd.height}`);
+		else if (this.scale.width * this.scale.height === 0)
+			this.switchScene('Error', `Invalid window size, got zero value(s): ${this.scale.width} : ${this.scale.height}`);
+		
+		this._widthRatio = this._gameSizeBackEnd.width / this.scale.width;
+		this._heightRatio = this._gameSizeBackEnd.height / this.scale.height;
+	}
+
 	// Frame-by-frame update
 	update(time: number, delta: number): void {
 		super.update(time, delta);
-	
+
 		if (this._gameStarted == false) return;
 
 		if (this._keyW.isDown || this._cursors.up.isDown)

@@ -1,5 +1,5 @@
-import { GAME } from '../Game.data';
 import GameScene from '../Scenes/Game';
+
 
 class Field {
 	// Player info

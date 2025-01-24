@@ -1,4 +1,3 @@
-// import { GAME } from '../Game.data';
 
 export default class BaseScene extends Phaser.Scene {
 	
@@ -56,6 +55,11 @@ export default class BaseScene extends Phaser.Scene {
 
 		this._background = this.add.image(this.scale.width * 0.5, this.scale.height * 0.5, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
+	}
+
+	killChildren():void {
+
+		this.children.list.forEach((gameObject) => gameObject.destroy());
 	}
 
 	onPreLeave() {}

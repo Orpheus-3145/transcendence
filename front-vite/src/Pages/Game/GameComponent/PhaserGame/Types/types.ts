@@ -41,6 +41,11 @@ export interface GameState {
 	};
 }
 
+export interface GameSize {
+	width: number;
+	height: number;
+}
+
 export interface PowerUpPosition {
 	x: number;
 	y: number;
