@@ -120,15 +120,46 @@ export default class GameScene extends BaseScene {
 		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	}
 
+	// Frame-by-frame update
+	update(time: number, delta: number): void {
+		super.update(time, delta);
+
+		if (this._gameStarted == false) return;
+
+		if (this._keyW.isDown || this._cursors.up.isDown)
+			this.sendMsgToServer('playerMovedPaddle', {
+				direction: GameTypes.PaddleDirection.up,
+				sessionToken: this._sessionToken,
+			});
+		else if (this._keyS.isDown || this._cursors.down.isDown)
+			this.sendMsgToServer('playerMovedPaddle', {
+				direction: GameTypes.PaddleDirection.down,
+				sessionToken: this._sessionToken,
+			});
+
+		this.handlePowerUp(this._leftPaddle, this._powerUpActive[0]);
+		this.handlePowerUp(this._rightPaddle, this._powerUpActive[1]);
+
+		// Update score
+		this._field.updateScore(this._gameState.score.p1, this._gameState.score.p2);
+
+		// Update ball position using the new method
+		this._ball.updatePosition(this._gameState.ball.x, this._gameState.ball.y);
+
+		// Update paddles based on player positions
+		this._leftPaddle.updatePosition(this._gameState.p1.y);
+		this._rightPaddle.updatePosition(this._gameState.p2.y);
+	}
+
   buildGraphicObjects(): void {
 		super.buildGraphicObjects();
-
+	
 		this._ball = new Ball(this, this._gameState.ball.x, this._gameState.ball.y); // Initialize ball with no movement initially
 
 		// Create bars
 		const paddleWidthRatio = parseInt(import.meta.env.GAME_PADDLE_W_RATIO);
 		this._leftPaddle = new Paddle(this, 0, this._gameState.p1.y);
-		this._rightPaddle = new Paddle(this, this.scale.width - (this.scale.width / (paddleWidthRatio)), this._gameState.p2.y);
+		this._rightPaddle = new Paddle(this, this.scale.width - (this.scale.width / paddleWidthRatio), this._gameState.p2.y);
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
@@ -143,6 +174,7 @@ export default class GameScene extends BaseScene {
 			this._gameSizeBackEnd = gameSize;
 			this.resetWindowRatio();
 			this._gameStarted = true;
+			this.buildGraphicObjects();
 		});
 
 		this._socketIO.on('gameState', (state: GameTypes.GameState) => {
@@ -165,9 +197,8 @@ export default class GameScene extends BaseScene {
 
 			state.x /= this._widthRatio;
 			state.y /= this._heightRatio;
-			if (!this._powerUp)	// Create the powerUp object if it doesn't already exist
-				this._powerUp = new PowerUpBall(this, state.x, state.y);
-			else	// update position
+
+			if (this._powerUp)	// Create the powerUp object if it doesn't already exist
 				this._powerUp.updatePosition(state.x, state.y);
 		});
 
@@ -231,37 +262,6 @@ export default class GameScene extends BaseScene {
 		
 		this._widthRatio = this._gameSizeBackEnd.width / this.scale.width;
 		this._heightRatio = this._gameSizeBackEnd.height / this.scale.height;
-	}
-
-	// Frame-by-frame update
-	update(time: number, delta: number): void {
-		super.update(time, delta);
-
-		if (this._gameStarted == false) return;
-
-		if (this._keyW.isDown || this._cursors.up.isDown)
-			this.sendMsgToServer('playerMovedPaddle', {
-				direction: GameTypes.PaddleDirection.up,
-				sessionToken: this._sessionToken,
-			});
-		else if (this._keyS.isDown || this._cursors.down.isDown)
-			this.sendMsgToServer('playerMovedPaddle', {
-				direction: GameTypes.PaddleDirection.down,
-				sessionToken: this._sessionToken,
-			});
-
-		this.handlePowerUp(this._leftPaddle, this._powerUpActive[0]);
-		this.handlePowerUp(this._rightPaddle, this._powerUpActive[1]);
-
-		// Update score
-		this._field.updateScore(this._gameState.score.p1, this._gameState.score.p2);
-
-		// Update ball position using the new method
-		this._ball.updatePosition(this._gameState.ball.x, this._gameState.ball.y);
-
-		// Update paddles based on player positions
-		this._leftPaddle.updatePosition(this._gameState.p1.y);
-		this._rightPaddle.updatePosition(this._gameState.p2.y);
 	}
 
 	onPreLeave() {
