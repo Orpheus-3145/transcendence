@@ -269,8 +269,8 @@ export default class SimulationService {
 
 		const dataPlayer1: GameStateDTO = {
 			ball: { x: this.ball.x, y: this.ball.y },
-			p1: { x: this.player1.posX, y: this.player1.posY },
-			p2: { x: this.player2.posX, y: this.player2.posY },
+			p1: { y: this.player1.posY },
+			p2: { y: this.player2.posY },
 			score: { p1: this.player1.score, p2: this.player2.score },
 		};
 
@@ -280,8 +280,8 @@ export default class SimulationService {
 		if (this.mode === GameTypes.GameMode.multi) {
 			const dataPlayer2: GameStateDTO = {
 				ball: { x: this.windowWidth - this.ball.x, y: this.ball.y },
-				p1: { x: this.player2.posX, y: this.player2.posY },
-				p2: { x: this.player1.posX, y: this.player1.posY },
+				p1: { y: this.player2.posY },
+				p2: { y: this.player1.posY },
 				score: { p1: this.player2.score, p2: this.player1.score },
 			};
 

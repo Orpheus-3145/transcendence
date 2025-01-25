@@ -20,7 +20,7 @@ export default class Paddle {
 		this._height = scene.scale.height / paddleHeightRatio;
 
 		// Create a graphical rectangle to represent the player bar
-		this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0x0000ff).setOrigin(0.5, 0.5);
+		this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0x0000ff).setOrigin(0, 0.5);
 	}
 
 	// Update the position of the bar based on backend data

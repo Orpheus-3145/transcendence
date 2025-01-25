@@ -27,10 +27,6 @@ class PowerUpDTO {
 class PlayerDTO {
 	@IsInt()
 	@Min(1)
-	x: number;
-
-	@IsInt()
-	@Min(1)
 	y: number;
 }
 

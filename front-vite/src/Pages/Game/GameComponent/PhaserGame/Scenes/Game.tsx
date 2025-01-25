@@ -15,6 +15,7 @@ export default class GameScene extends BaseScene {
 	private _mode: GameTypes.GameMode;
 	private _difficulty: GameTypes.GameDifficulty;
 	private _gameState: GameTypes.GameState;
+	private _powerUpState: GameTypes.PowerUpPosition | null;
 	private _gameStarted: boolean;
 
 	private _gameSizeBackEnd: GameTypes.GameSize;
@@ -54,6 +55,7 @@ export default class GameScene extends BaseScene {
 			p2: { x: 0, y: 0 },
 			score: { p1: 0, p2: 0 }
 		}
+		this._powerUpState = null;
 		this._gameStarted = false;
 		
 		this._gameSizeBackEnd = {width: 0, height: 0}
@@ -83,6 +85,7 @@ export default class GameScene extends BaseScene {
 			p2: { x: 0, y: 0 },
 			score: { p1: 0, p2: 0 }
 		}
+		this._powerUpState = null;
 		this._gameStarted = false;
 
 		// Key bindings
@@ -160,12 +163,15 @@ export default class GameScene extends BaseScene {
 		this._ball = new Ball(this, this._gameState.ball.x, this._gameState.ball.y); // Initialize ball with no movement initially
 
 		// Create bars
-		// const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
-		this._leftPaddle = new Paddle(this, this._gameState.p1.x, this._gameState.p1.y);
-		this._rightPaddle = new Paddle(this, this._gameState.p2.x, this._gameState.p2.y);
+		const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
+		this._leftPaddle = new Paddle(this, 0, this._gameState.p1.y);
+		this._rightPaddle = new Paddle(this, this.scale.width - (this.scale.width / paddleWidthRatio), this._gameState.p2.y);
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
+
+		if (this._powerUpState)
+			this._powerUp = new PowerUpBall(this, this._powerUpState.x, this._powerUpState.y);
 	}
 
 	setupSocket() {
@@ -183,9 +189,7 @@ export default class GameScene extends BaseScene {
 			// apply ratio for current window size	
 			state.ball.x /= this._widthRatio;
 			state.ball.y /= this._heightRatio;
-			state.p1.x /= this._widthRatio;
 			state.p1.y /= this._heightRatio;
-			state.p2.x /= this._widthRatio;
 			state.p2.y /= this._heightRatio;
 			
 			this._gameState = state
@@ -205,15 +209,19 @@ export default class GameScene extends BaseScene {
 
 			state.x /= this._widthRatio;
 			state.y /= this._heightRatio;
-
-			if (this._powerUp)	// Create the powerUp object if it doesn't already exist
-				this._powerUp.updatePosition(state.x, state.y);
+			
+			this._powerUpState = state;
+			if (!this._powerUp)	// Create the powerUp object if it doesn't already exist
+				this._powerUp = new PowerUpBall(this, this._powerUpState.x, this._powerUpState.y);
+			else	// update position
+				this._powerUp.updatePosition(this._powerUpState.x, this._powerUpState.y);
 		});
 
 		this._socketIO.on('powerUpDeactivated', () => {
 			if (this._powerUp) {
 				this._powerUp.destroy(); // Remove the power up
 				this._powerUp = null; // Reset the reference
+				this._powerUpState = null;
 			}
 		});
 
