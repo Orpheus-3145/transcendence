@@ -3,8 +3,8 @@ export default class BaseScene extends Phaser.Scene {
 	
 	// background image
 	protected _backgroundPath: string = import.meta.env.GAME_PATH_BACKGROUND;
-	protected _background!: Phaser.GameObjects.Image;
-	protected _keyEsc!: Phaser.Input.Keyboard.Key;
+	protected _background: Phaser.GameObjects.Image | null = null;
+	protected _keyEsc: Phaser.Input.Keyboard.Key | null = null;
 	
 	// ratio between standard size of the standard font size and the game window 
 	// if the windows is resized, the font size is derivated from new_size_wdth * ratio

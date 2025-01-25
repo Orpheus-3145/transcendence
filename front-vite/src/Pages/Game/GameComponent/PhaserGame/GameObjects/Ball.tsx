@@ -7,7 +7,7 @@ export default class Ball {
 
 	constructor(scene: GameScene, x: number, y: number) {
 
-		this.radius = scene.scale.width / parseInt(import.meta.env.GAME_BALL_R_RATIO);
+		this.radius = scene.scale.width / (parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_BALL_RADIUS));
 		this._graphic = scene.add.circle(x, y, this.radius, 0x0000ff);
 	}
 

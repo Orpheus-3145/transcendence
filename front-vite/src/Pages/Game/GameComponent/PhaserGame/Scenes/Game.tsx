@@ -50,8 +50,8 @@ export default class GameScene extends BaseScene {
 		this._difficulty = GameTypes.GameDifficulty.unset;
 		this._gameState = {
 			ball: { x: 0, y: 0 },
-			p1: { y: 0 },
-			p2: { y: 0 },
+			p1: { x: 0, y: 0 },
+			p2: { x: 0, y: 0 },
 			score: { p1: 0, p2: 0 }
 		}
 		this._gameStarted = false;
@@ -79,8 +79,8 @@ export default class GameScene extends BaseScene {
 		this._powerUpSelection = data.extras;
 		this._gameState = {
 			ball: { x: 0, y: 0 },
-			p1: { y: 0 },
-			p2: { y: 0 },
+			p1: { x: 0, y: 0 },
+			p2: { x: 0, y: 0 },
 			score: { p1: 0, p2: 0 }
 		}
 		this._gameStarted = false;
@@ -153,13 +153,16 @@ export default class GameScene extends BaseScene {
 
   buildGraphicObjects(): void {
 		super.buildGraphicObjects();
-	
+		
+		if (this._gameStarted === false)
+			return ;
+
 		this._ball = new Ball(this, this._gameState.ball.x, this._gameState.ball.y); // Initialize ball with no movement initially
 
 		// Create bars
-		const paddleWidthRatio = parseInt(import.meta.env.GAME_PADDLE_W_RATIO);
-		this._leftPaddle = new Paddle(this, 0, this._gameState.p1.y);
-		this._rightPaddle = new Paddle(this, this.scale.width - (this.scale.width / paddleWidthRatio), this._gameState.p2.y);
+		// const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
+		this._leftPaddle = new Paddle(this, this._gameState.p1.x, this._gameState.p1.y);
+		this._rightPaddle = new Paddle(this, this._gameState.p2.x, this._gameState.p2.y);
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
@@ -173,19 +176,24 @@ export default class GameScene extends BaseScene {
 			// adjust position objects because of the new scale
 			this._gameSizeBackEnd = gameSize;
 			this.resetWindowRatio();
-			this._gameStarted = true;
-			this.buildGraphicObjects();
 		});
 
 		this._socketIO.on('gameState', (state: GameTypes.GameState) => {
-		
+			
 			// apply ratio for current window size	
 			state.ball.x /= this._widthRatio;
 			state.ball.y /= this._heightRatio;
+			state.p1.x /= this._widthRatio;
 			state.p1.y /= this._heightRatio;
+			state.p2.x /= this._widthRatio;
 			state.p2.y /= this._heightRatio;
-
+			
 			this._gameState = state
+			
+			if (this._gameStarted === false) {
+				this._gameStarted = true;
+				this.buildGraphicObjects();
+			}
 		});
 
 		this._socketIO.on('endGame', (data: { winner: string }) => this.switchScene('Results', data));

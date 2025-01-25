@@ -41,6 +41,7 @@ export interface PlayingPlayer {
 	intraId: number;
 	nameNick: string;
 	score: number;
+	posX: number;
 	posY: number;
 }
 
@@ -50,9 +51,11 @@ export interface GameState {
 		y: number;
 	};
 	p1: {
+		x: number;
 		y: number;
 	};
 	p2: {
+		x: number;
 		y: number;
 	};
 	score: {

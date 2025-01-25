@@ -30,7 +30,7 @@ export default class SimulationService {
 	private readonly _defaultBallSpeed: number = parseInt(this.config.get('GAME_BALL_SPEED'), 10);
 	private readonly frameRate: number = parseInt(this.config.get('GAME_FPS'), 10);
 	private readonly hardDebugMode: boolean = this.config.get<boolean>('HARD_DEBUG_MODE', false);
-	private readonly forbidAutoPlay: boolean = this.config.get<boolean>('FORBID_AUTO_PLAY', false); // if true the same user cannot play against themself
+	private readonly forbidAutoPlay: boolean = this.config.get<boolean>('GAME_FORBID_AUTO_PLAY', false); // if true the same user cannot play against themself
 
 	private sessionToken: string = '';
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
@@ -191,14 +191,24 @@ export default class SimulationService {
 			intraId: playerId,
 			nameNick: nameNick,
 			score: 0,
+			posX: 0,
 			posY: this.windowHeight / 2,
 		};
 
-		if (nameNick === this.botName)
+		if (nameNick === this.botName) {
+
 			// set bot, always player2
 			this.player2 = newPlayer;
-		else if (this.player1 === null) this.player1 = newPlayer;
-		else if (this.player2 === null) this.player2 = newPlayer;
+			this.player2.posX = this.windowWidth - this.paddleWidth / 2;
+		}
+		else if (this.player1 === null){
+			this.player1 = newPlayer;
+			this.player1.posX = this.paddleWidth / 2;
+		}
+		else if (this.player2 === null) {
+			this.player2 = newPlayer;
+			this.player2.posX = this.windowWidth - this.paddleWidth / 2;
+		}
 		else {
 			if (playerId === this.player1.intraId || playerId === this.player2.intraId)
 				// already inside game
@@ -215,7 +225,6 @@ export default class SimulationService {
 					`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}`,
 				);
 		}
-
 		if (this.mode === GameTypes.GameMode.single && nameNick === this.botName)
 			this.logger.debug(
 				`session [${this.sessionToken}] - bot added to game, difficulty: ${GameTypes.GameDifficulty[this.difficulty]}`,
@@ -250,18 +259,6 @@ export default class SimulationService {
 			);
 	}
 
-	// Get positions of ball and paddles
-	getGameState(): GameStateDTO {
-		const state: GameStateDTO = {
-			ball: { x: this.ball.x, y: this.ball.y },
-			p1: { y: this.player1.posY },
-			p2: { y: this.player2.posY },
-			score: { p1: this.player1.score, p2: this.player2.score },
-		};
-
-		return state;
-	}
-
 	sendUpdateToPlayers(msgType: string) {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
@@ -272,8 +269,8 @@ export default class SimulationService {
 
 		const dataPlayer1: GameStateDTO = {
 			ball: { x: this.ball.x, y: this.ball.y },
-			p1: { y: this.player1.posY },
-			p2: { y: this.player2.posY },
+			p1: { x: this.player1.posX, y: this.player1.posY },
+			p2: { x: this.player2.posX, y: this.player2.posY },
 			score: { p1: this.player1.score, p2: this.player2.score },
 		};
 
@@ -283,8 +280,8 @@ export default class SimulationService {
 		if (this.mode === GameTypes.GameMode.multi) {
 			const dataPlayer2: GameStateDTO = {
 				ball: { x: this.windowWidth - this.ball.x, y: this.ball.y },
-				p1: { y: this.player2.posY },
-				p2: { y: this.player1.posY },
+				p1: { x: this.player2.posX, y: this.player2.posY },
+				p2: { x: this.player1.posX, y: this.player1.posY },
 				score: { p1: this.player2.score, p2: this.player1.score },
 			};
 
@@ -306,13 +303,12 @@ export default class SimulationService {
 		this.ball.y += this.ball.dy * this.ballSpeed;
 
 		// Bounce off top and bottom walls
-		if (this.ball.y <= 0 || this.ball.y >= this.windowHeight) {
+		if (this.ball.y <= this.ballRadius || this.ball.y >= this.windowHeight - this.ballRadius )
 			this.ball.dy = -this.ball.dy;
-		}
 
 		// Collision detection with paddles
-		const leftPaddleOffset = this.paddleHit(this.player1.posY, this.ball.x, this.ball.y, true);
-		const rightPaddleOffset = this.paddleHit(this.player2.posY, this.ball.x, this.ball.y, false);
+		const leftPaddleOffset = this.paddleHit(this.player1.posX, this.player1.posY, this.ball.x, this.ball.y);
+		const rightPaddleOffset = this.paddleHit(this.player2.posX, this.player2.posY, this.ball.x, this.ball.y);
 		const maxAngle = Math.PI / 4; // Maximum bounce angle from paddle center (45 degrees)
 
 		if (leftPaddleOffset !== null) {
@@ -331,12 +327,12 @@ export default class SimulationService {
 		}
 
 		// Check for scoring
-		if (this.ball.x <= 0) {
+		if (this.ball.x <= this.ballRadius * 0.5) {
 			// point for player2
 			this.player2.score += 1;
 			if (this.player2.score === this.maxScore) this.gameOver = true;
 			else this.resetBall(); // Reset position and give random velocity
-		} else if (this.ball.x >= this.windowWidth) {
+		} else if (this.ball.x >= this.windowWidth - this.ballRadius * 0.5) {
 			// point for player1
 			this.player1.score += 1;
 			if (this.player1.score === this.maxScore) this.gameOver = true;
@@ -394,27 +390,19 @@ export default class SimulationService {
 	}
 
 	paddleHit(
+		player_x: number,
 		player_y: number,
 		item_x: number,
 		item_y: number,
-		isLeftPaddle: boolean,
 	): number | null {
-		const angleDirectionBall: number = Math.atan(item_y / item_x);
-		const prj_item_x: number = item_x + Math.sqrt(this.ballRadius) + Math.cos(angleDirectionBall);
-		const prj_item_y: number = item_y + Math.sqrt(this.ballRadius) + Math.sin(angleDirectionBall);
-		const collisionZone = Math.abs(player_y - prj_item_y);
 
-		if (isLeftPaddle) {
-			if (prj_item_x <= this.paddleWidth && collisionZone <= this.paddleHeights[0] / 2)
-				return player_y - prj_item_y; // Return offset
-		} else {
-			if (
-				prj_item_x >= this.windowWidth - this.paddleWidth &&
-				collisionZone <= this.paddleHeights[1] / 2
-			)
-				return player_y - prj_item_y; // Return offset
-		}
-		return null; // No collision
+		const checkHitX = Math.abs(player_x - item_x) < this.paddleWidth / 2;
+		const checkHitY = Math.abs(player_y - item_y) < this._defaultPaddleHeight / 2;
+
+		if (checkHitX && checkHitY)
+			return player_y - item_y; // Return offset
+		else
+			return null; // No collision
 	}
 
 	addSpeedBall(player_no): void {
@@ -492,25 +480,24 @@ export default class SimulationService {
 			}
 
 			const leftPaddle = this.paddleHit(
+				this.player1.posX,
 				this.player1.posY,
 				this.powerUpPosition.x,
 				this.powerUpPosition.y,
-				true,
 			);
 
 			const rightPaddle = this.paddleHit(
+				this.player2.posX,
 				this.player2.posY,
 				this.powerUpPosition.x,
 				this.powerUpPosition.y,
-				false,
 			);
 
 			if (leftPaddle != null) this.handlePowerUpCollisionWithPaddle(0);
 			else if (rightPaddle != null) this.handlePowerUpCollisionWithPaddle(1);
 
-			if (this.powerUpPosition.x <= 0 || this.powerUpPosition.x >= this.windowWidth) {
+			if (this.powerUpPosition.x <= this.ballRadius || this.powerUpPosition.x >= this.windowWidth - this.ballRadius)
 				this.deactivatePowerUp();
-			}
 		}
 	}
 
