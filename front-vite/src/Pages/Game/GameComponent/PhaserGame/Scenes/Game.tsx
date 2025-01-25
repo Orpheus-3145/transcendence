@@ -51,8 +51,8 @@ export default class GameScene extends BaseScene {
 		this._difficulty = GameTypes.GameDifficulty.unset;
 		this._gameState = {
 			ball: { x: 0, y: 0 },
-			p1: { x: 0, y: 0 },
-			p2: { x: 0, y: 0 },
+			p1: { y: 0 },
+			p2: { y: 0 },
 			score: { p1: 0, p2: 0 }
 		}
 		this._powerUpState = null;
@@ -81,8 +81,8 @@ export default class GameScene extends BaseScene {
 		this._powerUpSelection = data.extras;
 		this._gameState = {
 			ball: { x: 0, y: 0 },
-			p1: { x: 0, y: 0 },
-			p2: { x: 0, y: 0 },
+			p1: { y: 0 },
+			p2: { y: 0 },
 			score: { p1: 0, p2: 0 }
 		}
 		this._powerUpState = null;
