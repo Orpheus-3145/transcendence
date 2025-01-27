@@ -23,7 +23,7 @@ export default class ResultsScene extends BaseScene {
 		super.buildGraphicObjects();
 
 		this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.1, `Player ${this._winner} won!`, {
+		.text(this.scale.width * 0.5, this.scale.height * 0.2, `Player ${this._winner} won!`, {
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 50}px`,
 			align: 'center',
 			color: '#0f0',

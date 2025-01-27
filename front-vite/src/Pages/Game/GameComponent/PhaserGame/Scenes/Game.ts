@@ -88,7 +88,6 @@ export default class GameScene extends BaseScene {
 		}
 		this._powerUpState = null;
 		this._gameStarted = false;
-
 		// Key bindings
 		this._cursors =
 			this.input.keyboard!.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
@@ -140,9 +139,6 @@ export default class GameScene extends BaseScene {
 				direction: GameTypes.PaddleDirection.down,
 				sessionToken: this._sessionToken,
 			});
-
-		this.handlePowerUp(this._leftPaddle, this._powerUpActive[0]);
-		this.handlePowerUp(this._rightPaddle, this._powerUpActive[1]);
 
 		// Update score
 		this._field.updateScore(this._gameState.score.p1, this._gameState.score.p2);
@@ -201,7 +197,7 @@ export default class GameScene extends BaseScene {
 			}
 		});
 
-		this._socketIO.on('endGame', (data: { winner: string }) => {
+		this._socketIO.on('endGame', (winner: string) => {
 
 			const nextGameData: GameTypes.InitData = {
 				sessionToken: uuidv4(),
@@ -209,7 +205,7 @@ export default class GameScene extends BaseScene {
 				difficulty: this._difficulty,
 				extras: this._powerUpSelection,
 			}
-			this.switchScene('Results', {winner: data.winner, nextGameData: nextGameData})
+			this.switchScene('Results', {winner: winner, nextGameData: nextGameData})
 		});
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
@@ -238,6 +234,12 @@ export default class GameScene extends BaseScene {
 		this._socketIO.on('powerUpActivated', (state: GameTypes.PowerUpStatus) => {
 			this._powerUpActive[state.player] = state.active;
 			this._powerUpType = state.type;
+		
+			if(state.player == 0)
+				this.handlePowerUp(this._leftPaddle, state.active);
+			else
+				this.handlePowerUp(this._rightPaddle, state.active);
+	
 		});
 
 		this.events.on('shutdown', () => this.onPreLeave(), this);

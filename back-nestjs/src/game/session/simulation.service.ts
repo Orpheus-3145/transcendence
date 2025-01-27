@@ -73,7 +73,7 @@ export default class SimulationService {
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	setInitInfo(data: GameInitDTO) {
+	setInitInfo(data: GameInitDTO): void {
 		if (
 			data.mode === GameTypes.GameMode.unset ||
 			(data.mode === GameTypes.GameMode.single &&
@@ -144,9 +144,9 @@ export default class SimulationService {
 			this.powerUpInterval = null;
 			
 			if (this.powerUpStatus[0])
-				{console.log('remove power up on player 0');this.removePowerUp(0)};
+				this.removePowerUp(0);
 			if (this.powerUpStatus[1])
-				{console.log('remove power up on player 1');this.removePowerUp(1)};
+				this.removePowerUp(1);
 		}
 
 		this.engineRunning = false;
@@ -311,8 +311,8 @@ export default class SimulationService {
 			this.ball.dy = -this.ball.dy;
 
 		// Collision detection with paddles
-		const leftPaddleOffset = this.paddleHit(this.player1.posX, this.player1.posY, this.ball.x, this.ball.y);
-		const rightPaddleOffset = this.paddleHit(this.player2.posX, this.player2.posY, this.ball.x, this.ball.y);
+		const leftPaddleOffset = this.paddleHit(0, this.ball.x, this.ball.y);
+		const rightPaddleOffset = this.paddleHit(1, this.ball.x, this.ball.y);
 		const maxAngle = Math.PI / 4; // Maximum bounce angle from paddle center (45 degrees)
 
 		if (leftPaddleOffset !== null) {
@@ -394,14 +394,22 @@ export default class SimulationService {
 	}
 
 	paddleHit(
-		player_x: number,
-		player_y: number,
+		player_no: number,
 		item_x: number,
 		item_y: number,
 	): number | null {
+		let player_x: number = 0;
+		let player_y: number = 0;
+		if (player_no === 0) {
+			player_x = this.player1.posX;
+			player_y = this.player1.posY;
+		} else if (player_no === 1) {
+			player_x = this.player2.posX;
+			player_y = this.player2.posY;
+		}
 
 		const checkHitX = Math.abs(player_x - item_x) < (this.paddleWidth / 2 + this.ballRadius);
-		const checkHitY = Math.abs(player_y - item_y) < (this._defaultPaddleHeight / 2 + this.ballRadius);
+		const checkHitY = Math.abs(player_y - item_y) < (this.paddleHeights[player_no] / 2 + this.ballRadius);
 
 		if (checkHitX && checkHitY)
 			return player_y - item_y; // Return offset
@@ -409,7 +417,7 @@ export default class SimulationService {
 			return null; // No collision
 	}
 
-	addSpeedBall(player_no): void {
+	addSpeedBall(player_no: number): void {
 		if (this.powerUpType === GameTypes.PowerUpType.speedBall) {
 			this.ballSpeed =
 				this.powerUpStatus[player_no] === true
@@ -483,22 +491,10 @@ export default class SimulationService {
 				this.sendMsgToPlayer(this.player2.clientSocket, 'powerUpUpdate', powerUpData);
 			}
 
-			const leftPaddle = this.paddleHit(
-				this.player1.posX,
-				this.player1.posY,
-				this.powerUpPosition.x,
-				this.powerUpPosition.y,
-			);
-
-			const rightPaddle = this.paddleHit(
-				this.player2.posX,
-				this.player2.posY,
-				this.powerUpPosition.x,
-				this.powerUpPosition.y,
-			);
-
-			if (leftPaddle != null) this.handlePowerUpCollisionWithPaddle(0);
-			else if (rightPaddle != null) this.handlePowerUpCollisionWithPaddle(1);
+			if (this.paddleHit(0, this.powerUpPosition.x, this.powerUpPosition.y))
+				this.handlePowerUpCollisionWithPaddle(0);
+			else if (this.paddleHit(1, this.powerUpPosition.x, this.powerUpPosition.y))
+				this.handlePowerUpCollisionWithPaddle(1);
 
 			if (this.powerUpPosition.x <= this.ballRadius || this.powerUpPosition.x >= this.windowWidth - this.ballRadius)
 				this.deactivatePowerUp();
@@ -512,7 +508,7 @@ export default class SimulationService {
 		if (this.player1) {
 			this.sendMsgToPlayer(this.player1.clientSocket, 'powerUpDeactivated'); // yellow ball disappears
 		}
-		if (this.mode == GameTypes.GameMode.multi) {
+		if (this.player2 && this.mode == GameTypes.GameMode.multi) {
 			this.sendMsgToPlayer(this.player2.clientSocket, 'powerUpDeactivated');
 		}
 	}
@@ -562,7 +558,7 @@ export default class SimulationService {
 		player_no: number,
 		player_id: number,
 		active: boolean,
-	) {
+	): void {
 		const powerUpStatus = {
 			active: active,
 			player: player_id,
@@ -571,7 +567,7 @@ export default class SimulationService {
 		this.sendMsgToPlayer(playerBonus.clientSocket, 'powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
 	}
 
-	sendMsgToPlayer(client: Socket, msg: string, data?: any) {
+	sendMsgToPlayer(client: Socket, msg: string, data?: any): void {
 		if (this.hardDebugMode == true)
 			this.logger.debug(
 				`session [${this.sessionToken}] - emitting to client ${client.handshake.address} data: ${JSON.stringify(data)}`,
@@ -622,10 +618,10 @@ export default class SimulationService {
 		this.logger.log(`session [${this.sessionToken}] - game over, winner: ${winner.nameNick}`);
 
 		if (this.player1)
-			this.sendMsgToPlayer(this.player1.clientSocket, 'endGame', { winner: winner.nameNick });
+			this.sendMsgToPlayer(this.player1.clientSocket, 'endGame', winner.nameNick);
 
 		if (this.player2 && this.mode === GameTypes.GameMode.multi)
-			this.sendMsgToPlayer(this.player2.clientSocket, 'endGame', { winner: winner.nameNick });
+			this.sendMsgToPlayer(this.player2.clientSocket, 'endGame', winner.nameNick);
 
 		this.stopEngine();
 	}
