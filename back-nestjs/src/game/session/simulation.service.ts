@@ -138,16 +138,21 @@ export default class SimulationService {
 		clearInterval(this.gameStateInterval);
 		this.gameStateInterval = null;
 
+		// if players are using powerup
 		if (this.powerUpSelected.length > 0) {
 			clearInterval(this.powerUpInterval);
 			this.powerUpInterval = null;
+			
+			if (this.powerUpStatus[0])
+				{console.log('remove power up on player 0');this.removePowerUp(0)};
+			if (this.powerUpStatus[1])
+				{console.log('remove power up on player 1');this.removePowerUp(1)};
 		}
 
-		// if one of the two players have a powerup active
-		if (this.powerUpStatus[0]) this.removePowerUp(0);
-		else if (this.powerUpStatus[1]) this.removePowerUp(1);
-
 		this.engineRunning = false;
+		this.gameOver = false;
+		this.ballSpeed = this._defaultBallSpeed
+		this.ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
 
 		if (this.player1 !== null) {
 			this.player1.clientSocket.disconnect(true);
@@ -158,7 +163,6 @@ export default class SimulationService {
 			this.player2 = null;
 		}
 
-		this.mode = GameTypes.GameMode.unset;
 		this.logger.debug(`session [${this.sessionToken}] - engine stopped`);
 	}
 
@@ -591,17 +595,16 @@ export default class SimulationService {
 					'gameError',
 					`Game interrupted, player ${this.player1.nameNick} left the game`,
 				);
-		} else if (this.player2) {
+		} else if (this.player2 && (this.mode === GameTypes.GameMode.multi) && this.player2.clientSocket.id === client.handshake.address) {
 			this.logger.log(
 				`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`,
 			);
 
-			if (this.mode === GameTypes.GameMode.multi)
-				this.sendMsgToPlayer(
-					this.player1.clientSocket,
-					'gameError',
-					`Game interrupted, player ${this.player2.nameNick} left the game`,
-				);
+			this.sendMsgToPlayer(
+				this.player1.clientSocket,
+				'gameError',
+				`Game interrupted, player ${this.player2.nameNick} left the game`,
+			);
 		}
 
 		this.stopEngine();
