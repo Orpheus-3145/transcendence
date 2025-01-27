@@ -396,8 +396,8 @@ export default class SimulationService {
 		item_y: number,
 	): number | null {
 
-		const checkHitX = Math.abs(player_x - item_x) < this.paddleWidth / 2;
-		const checkHitY = Math.abs(player_y - item_y) < this._defaultPaddleHeight / 2;
+		const checkHitX = Math.abs(player_x - item_x) < (this.paddleWidth / 2 + this.ballRadius);
+		const checkHitY = Math.abs(player_y - item_y) < (this._defaultPaddleHeight / 2 + this.ballRadius);
 
 		if (checkHitX && checkHitY)
 			return player_y - item_y; // Return offset
