@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { io, Socket } from 'socket.io-client';
 import BaseScene from './Base';
 
@@ -51,8 +52,8 @@ export default class GameScene extends BaseScene {
 		this._difficulty = GameTypes.GameDifficulty.unset;
 		this._gameState = {
 			ball: { x: 0, y: 0 },
-			p1: { x: 0, y: 0 },
-			p2: { x: 0, y: 0 },
+			p1: { y: 0 },
+			p2: { y: 0 },
 			score: { p1: 0, p2: 0 }
 		}
 		this._powerUpState = null;
@@ -81,8 +82,8 @@ export default class GameScene extends BaseScene {
 		this._powerUpSelection = data.extras;
 		this._gameState = {
 			ball: { x: 0, y: 0 },
-			p1: { x: 0, y: 0 },
-			p2: { x: 0, y: 0 },
+			p1: { y: 0 },
+			p2: { y: 0 },
 			score: { p1: 0, p2: 0 }
 		}
 		this._powerUpState = null;
@@ -200,7 +201,16 @@ export default class GameScene extends BaseScene {
 			}
 		});
 
-		this._socketIO.on('endGame', (data: { winner: string }) => this.switchScene('Results', data));
+		this._socketIO.on('endGame', (data: { winner: string }) => {
+
+			const nextGameData: GameTypes.InitData = {
+				sessionToken: uuidv4(),
+				mode: this._mode,
+				difficulty: this._difficulty,
+				extras: this._powerUpSelection,
+			}
+			this.switchScene('Results', {winner: data.winner, nextGameData: nextGameData})
+		});
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
