@@ -107,11 +107,7 @@ export class UsersService {
 		const numb = Number(code);
 		return (this.findOneIntra(numb));
 	}
-  
-	async addFriend(user: User, other: User)
-	{
-		this.notificationService.initRequest( user, other, NotificationType.friendRequest);
-	}
+
 
   	async friendRequestAccepted(iduser:string, idother:string)
   	{
@@ -159,15 +155,5 @@ export class UsersService {
   	{
 		user.image = image;
 		this.usersRepository.save(user);
-  	}
-
-  	async inviteGame(user: User, other: User)
- 	{	
-		this.notificationService.initRequest(user, other, NotificationType.gameInvite);
- 	}
-
-  	async sendMessage(user :User, other: User, message:string)
-  	{
-		this.notificationService.initMessage(user, other, message);
   	}
 }

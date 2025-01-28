@@ -50,18 +50,19 @@ export class NotificationService {
 		return (false);
 	}
 
-	async initRequest(sender:User, receiver:User, type:NotificationType): Promise<void>
+	async initRequest(sender:User, receiver:User, type:NotificationType): Promise<Notification | null>
 	{
 		if (await this.isSenderBlocked(sender, receiver) == true)
-			return ;
+			return (null);
 		var tmp = await this.doesNotificationExist(sender, receiver, type);
 		if (tmp != null)
-			return ;
+			return (tmp);
 		tmp = await this.doesNotificationExist(receiver, sender, type);
 		if ((tmp != null) && (tmp.type == NotificationType.friendRequest))
 		{
 			this.removeReq(receiver.id.toString(), sender.id.toString(), type);
 			this.userService.friendRequestAccepted(sender.id.toString(), receiver.id.toString());
+			return (null);
 		}
 		else
 		{
@@ -74,19 +75,21 @@ export class NotificationService {
 			noti.status = NotificationStatus.Pending;
 			noti.message = null;
 			this.notificationRepository.save(noti);
+			return (noti);
 		}
 	}
 
-	async initMessage(sender:User, receiver:User, message:string): Promise<void>
+	async initMessage(sender:User, receiver:User, message:string): Promise<Notification | null>
 	{
 		if (await this.isSenderBlocked(sender, receiver) == true)
-			return ;
+			return null;
 		var tmp = await this.doesNotificationExist(sender, receiver, NotificationType.Message);
 		if (tmp != null)
 		{
 			tmp.message = message;
 			this.notificationRepository.save(tmp);
 			//add message to dm
+			return (tmp);
 		}
 		else
 		{
@@ -100,6 +103,7 @@ export class NotificationService {
 			noti.message = message;
 			this.notificationRepository.save(noti);
 			//add message to dm
+			return (noti);
 		}
 	}
 

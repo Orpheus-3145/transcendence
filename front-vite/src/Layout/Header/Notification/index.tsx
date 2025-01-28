@@ -29,9 +29,9 @@ export const Notification: React.FC = () => {
 	const theme = useTheme();  
 	const [openDrawer, setOpenDrawer] = useState<Boolean>(false);
 	const [showNotificationDot, setShowNotificationDot] = useState<Boolean>(false);
-	const [messageArray, setMessageArray] = useState<NotificationStruct[] | null>(null);
-	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[] | null>(null);
-	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[] | null>(null);
+	const [messageArray, setMessageArray] = useState<NotificationStruct[]>([]);
+	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[]>([]);
+	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[]>([]);
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)}
@@ -44,6 +44,8 @@ export const Notification: React.FC = () => {
 
 	let initMessage = (noti: NotificationStruct) =>
 	{
+		if (noti.message == null)
+			return ;
 		var notiMessage = noti.message;
 		if (noti.message?.length > 23)
 		{
@@ -65,6 +67,12 @@ export const Notification: React.FC = () => {
 						borderColor: theme.palette.secondary.dark, 
 						borderRadius: '16px',
 						backgroundColor: 'black',
+						width: '270px',
+						position: 'relative',
+						display: 'flex',
+						justifyContent: 'center',
+						alignItems: 'center',
+						textAlign: 'center',
 					}}
 				>
 					<Tooltip title="Clear Notification" arrow>
@@ -73,8 +81,9 @@ export const Notification: React.FC = () => {
 							component="label"
 							onClick={() => removeNotification(noti)}
 							sx={{
-								left: '190px',
-								top: '-30px',
+								position: 'absolute',
+								left: '230px',
+								top: '5px',
 								width: '20px',
 								height: '20px',
 								fontSize: '20px',
@@ -90,12 +99,12 @@ export const Notification: React.FC = () => {
 					<Typography variant={'h1'}
 						sx={{
 							position: 'relative',
-							top: '-10px',
+							left: '0px',
 							fontSize: '0.9rem',
 						}}    
 					>
 						<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-						send you a message:
+						sent a message:
 						<br />
 						{notiMessage}
 					</Typography>
@@ -184,44 +193,29 @@ export const Notification: React.FC = () => {
 						borderColor: theme.palette.secondary.dark, 
 						borderRadius: '16px',
 						backgroundColor: 'black',
+						width: '300px',
+						height: '150px',
+						display: 'flex',
+						flexDirection: 'column',
+						justifyContent: 'center',
+						alignItems: 'center',
+						textAlign: 'center',
 					}}
 				>
-					<Tooltip title="Clear Notification" arrow>
-						<IconButton 
-							variant="contained" 
-							component="label"
-							onClick={() => removeNotification(noti)}
-							sx={{
-								left: '240px',
-								top: '-30px',
-								width: '20px',
-								height: '20px',
-								fontSize: '20px',
-								color: theme.palette.secondary.main,
-								'&:hover': {
-									color: theme.palette.error.dark,
-								},
-							}}				
-						>
-							<ClearIcon fontSize="inherit" />
-						</IconButton>
-					</Tooltip>
 					<Typography variant={'h1'}
 						sx={{
 							position: 'relative',
-							top: '-20px',
+							top: '-10px',
 							fontSize: '0.9rem',
 						}}    
 					>
 						<a href="" onClick={() => navToUser('/profile/' + noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
 						{message}
 					</Typography>
-
 					<ButtonGroup 
 						variant="contained"
 						sx={{
 							position: 'relative',
-							left: '25px',
 							top: '10px',
 						}}
 					>
@@ -426,12 +420,13 @@ export const Notification: React.FC = () => {
 			<Stack
 				style={{
 					overflowX: 'hidden',
+					overflowY: 'auto',
 				}}
 				width={'350px'}
-				minHeight={'600px'}
+				minHeight={'1000px'}
 			>
 				<Box 
-					component="section"         
+					component="section"
 					sx={{
 						position: 'relative',
 						left: '56px',
@@ -501,56 +496,6 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-	// let getNotificationUser = async () : Promise<void> =>
-	// {
-	// 	let arr = await getUserNotifications(user);
-	// 	if (arr?.length === 0)
-	// 	{
-	// 		setShowNotificationDot(false);
-	// 		setFriendRequestArray(null);
-	// 		setMessageArray(null);
-	// 		setGameInviteArray(null);
-	// 		setShowNotificationDot(false);
-	// 	}
-	// 	else
-	// 	{
-	// 		var friendsArr: NotificationStruct[]  = [];
-	// 		var messageArr: NotificationStruct[]  = [];
-	// 		var gameArr: NotificationStruct[]  = [];
-	// 		arr?.map((item: NotificationStruct) =>
-	// 		{
-	// 			if (item.type == NotificationType.Message)
-	// 			{
-	// 				messageArr.push(item);
-	// 			}
-	// 			else if (item.type == NotificationType.friendRequest)
-	// 			{
-	// 				friendsArr.push(item);
-	// 			}
-	// 			else if (item.type == NotificationType.gameInvite)
-	// 			{
-	// 				gameArr.push(item);
-	// 			}
-	// 		}
-	// 		)
-	// 		setFriendRequestArray(friendsArr);
-	// 		setMessageArray(messageArr);
-	// 		setGameInviteArray(gameArr);
-	// 		setShowNotificationDot(true);
-	// 	}
-	// }
-
-  	// let notificationWrapper = () =>
-  	// {
-	// 	useEffect(() => 
-	// 	{
-	// 		getNotificationUser();
-		
-	// 	}, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);
-
-	// 	return (notificationBar());
-  	// }
-
 	let notificationWrapper = () =>
 	{
 		const handleNotifications = (arr: NotificationStruct[]) => 
@@ -589,15 +534,46 @@ export const Notification: React.FC = () => {
 				setShowNotificationDot(true);
 			}
 		}
-		
-		 useEffect(() => 
+
+		const addNotification = (noti: NotificationStruct) =>
 		{
-			socket.on('getNotifications', (notifications: NotificationStruct[]) => 
+			if (noti.type == NotificationType.Message)
+			{
+				messageArray.push(noti);
+			}
+			else if (noti.type == NotificationType.friendRequest)
+			{
+				friendRequestArray.push(noti);
+			}
+			else if (noti.type == NotificationType.gameInvite)
+			{
+				gameInviteArray.push(noti);
+			}
+
+			setFriendRequestArray(friendRequestArray);
+			setMessageArray(messageArray);
+			setGameInviteArray(gameInviteArray);
+			setShowNotificationDot(true);
+		}
+		
+		useEffect(() => 
+		{
+			getUserNotifications(user);
+		
+			socket.on('getAllNotifications', (notifications: NotificationStruct[]) => 
 			{
 				handleNotifications(notifications);
 			});
-		
-			getUserNotifications(user);
+
+			socket.on('sendNoti', (noti: NotificationStruct) =>
+			{
+				if (noti != null)
+					addNotification(noti);
+			});
+
+			return () => {
+				socket.off('getAllNotifications');
+			};
 
 		  }, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);
 

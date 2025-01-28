@@ -95,19 +95,6 @@ export class UsersController {
 		return (this.UserService.getFriend(id));
 	}
 
-	@Get('profile/:username/friend/add/:id')
-	async addFriend(@Param('username') username:string, @Param('id') id: string) 
-	{
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserId(id);
-		if (user == null || other == null)
-		{
-			console.log("ERROR: failed to get user in addFriend!");
-			throw new HttpException('Not Found', 404);
-		}
-		return (this.UserService.addFriend(await user, await other));
-	}
-
 	@Get('profile/:username/friend/remove/:id')
 	async removeFriend(@Param('username') username:string, @Param('id') id: string) 
 	{
@@ -145,37 +132,6 @@ export class UsersController {
 			throw new HttpException('Not Found', 404);
 		}
 		return (this.UserService.unBlockUser(await user, await other));
-	}
-
-	@Post('profile/:username/sendMessage/:id')
-	async sendMessage(@Param('username') username:string, @Param('id') id: string, @Body('message') message:string) 
-	{
-		if (message.length == 0)
-		{
-			console.log("ERROR: message in sendMessage is invalid!");
-			throw new HttpException('Bad Request', 400);
-		}
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserId(id);
-		if (user == null || other == null)
-		{
-			console.log("ERROR: failed to get user in sendMessage!");
-			throw new HttpException('Not Found', 404);
-		}
-		return (this.UserService.sendMessage(await user, await other, message));
-	}
-
-	@Get('profile/:username/invitegame/:id/')
-	async inviteGame(@Param('username') username:string, @Param('id') id: string) 
-	{
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserId(id);
-		if (user == null || other == null)
-		{
-			console.log("ERROR: failed to get user in inviteGame!");
-			throw new HttpException('Not Found', 404);
-		}
-		return (this.UserService.inviteGame(await user, await other));
 	}
 
 	@Post('profile/:username/changepfp')
