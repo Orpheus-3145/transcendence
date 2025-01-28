@@ -9,7 +9,7 @@ import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
 
 export default class GameScene extends BaseScene {
-	
+
 	private _id: number;
 	private _nameNick: string;
 	private _sessionToken: string;
@@ -22,11 +22,11 @@ export default class GameScene extends BaseScene {
 	private _gameSizeBackEnd: GameTypes.GameSize;
 	private _widthRatio: number;
 	private _heightRatio: number;
-	
+
 	private _powerUpSelection: Array<GameTypes.PowerUpType>;
 	private _powerUpType: GameTypes.PowerUpType;
 	private _powerUpActive: { [key: number]: boolean }; // Tracks if a player has the power-up
-	
+
 	private _urlWebsocket: string;
 	private _socketIO!: Socket;
 
@@ -36,7 +36,7 @@ export default class GameScene extends BaseScene {
 	private _rightPaddle!: Paddle;
 	private _field!: Field;
 	private _powerUp!: PowerUpBall | null;
-	
+
 	// Key listeners
 	private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 	private _keyW!: Phaser.Input.Keyboard.Key;
@@ -171,7 +171,7 @@ export default class GameScene extends BaseScene {
 			this._powerUp = new PowerUpBall(this, this._powerUpState.x, this._powerUpState.y);
 	}
 
-	setupSocket() {
+	setupSocket(): void {
 		this._socketIO = io(this._urlWebsocket, { withCredentials: true, transports: ['websocket'] });
 
 		this._socketIO.on('gameStart', (gameSize: GameTypes.GameSize) => {
@@ -245,7 +245,7 @@ export default class GameScene extends BaseScene {
 		this.events.on('shutdown', () => this.onPreLeave(), this);
 	}
 
-	sendMsgToServer(msgType: string, content?: any) {
+	sendMsgToServer(msgType: string, content?: any): void {
 		this._socketIO.emit(msgType, content);
 	}
 
@@ -292,7 +292,7 @@ export default class GameScene extends BaseScene {
 		this._heightRatio = this._gameSizeBackEnd.height / this.scale.height;
 	}
 
-	onPreLeave() {
+	onPreLeave(): void {
 		this._socketIO.disconnect();
 	}
 }

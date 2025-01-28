@@ -36,13 +36,13 @@ export default class BaseScene extends Phaser.Scene {
 	// function called by Phaser engine once every frame
 	// @param time: absolute time (in ms) since the start of the scene
 	// @param delta: amount of time (in ms) passed since last time time update() was called
-	update(time: number, delta: number) {
+	update(time: number, delta: number): void {
 
 		if (this._keyEsc.isDown) this.switchScene('MainMenu');
 	}
 
 	// method to call whenever the scene is switched
-	switchScene(sceneName: string, initSceneData?: any) {
+	switchScene(sceneName: string, initSceneData?: any): void {
 
 		this.onPreLeave();
 
@@ -57,10 +57,10 @@ export default class BaseScene extends Phaser.Scene {
 		this._background.setDisplaySize(this.scale.width, this.scale.height);
 	}
 
-	killChildren():void {
+	killChildren(): void {
 
 		this.children.list.forEach((gameObject) => gameObject.destroy());
 	}
 
-	onPreLeave() {}
+	onPreLeave(): void {}
 };

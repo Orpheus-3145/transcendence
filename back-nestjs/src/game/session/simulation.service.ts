@@ -9,6 +9,7 @@ import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import GameInitDTO from 'src/dto/gameInit.dto';
 
+
 @Injectable({ scope: Scope.TRANSIENT })
 export default class SimulationService {
 	private readonly maxScore: number = parseInt(this.config.get('GAME_MAX_SCORE'), 10);
@@ -68,7 +69,6 @@ export default class SimulationService {
 		private readonly config: ConfigService,
 	) {
 		this.logger.setContext(SimulationService.name);
-		// do not log all the emits to clients if not really necessary
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
@@ -158,8 +158,9 @@ export default class SimulationService {
 			this.player1.clientSocket.disconnect(true);
 			this.player1 = null;
 		}
-		if (this.mode === GameTypes.GameMode.multi && this.player2 !== null) {
-			this.player2.clientSocket.disconnect(true);
+		if (this.player2 !== null) {
+			if (this.mode === GameTypes.GameMode.multi)
+				this.player2.clientSocket.disconnect(true);
 			this.player2 = null;
 		}
 
@@ -263,7 +264,7 @@ export default class SimulationService {
 			);
 	}
 
-	sendUpdateToPlayers(msgType: string) {
+	sendUpdateToPlayers(msgType: string): void {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
@@ -580,7 +581,7 @@ export default class SimulationService {
 	handleDisconnect(client: Socket): void {
 		if (this.engineRunning === false) return;
 
-		if (this.player1 && this.player1.clientSocket.id === client.handshake.address) {
+		if (this.player1 && this.player1.clientSocket.id === client.id) {
 			this.logger.log(
 				`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`,
 			);
@@ -591,7 +592,7 @@ export default class SimulationService {
 					'gameError',
 					`Game interrupted, player ${this.player1.nameNick} left the game`,
 				);
-		} else if (this.player2 && (this.mode === GameTypes.GameMode.multi) && this.player2.clientSocket.id === client.handshake.address) {
+		} else if (this.player2 && (this.mode === GameTypes.GameMode.multi) && this.player2.clientSocket.id === client.id) {
 			this.logger.log(
 				`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`,
 			);
