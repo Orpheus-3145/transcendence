@@ -23,4 +23,16 @@ export class AuthController {
 	async logout(@Res() res: Response) {
 		this.authService.logout(res);
 	}
+
+	// ✅ NEW: Enable 2FA for a user
+	@Get('enable-2fa')
+	async enableTwoFactorAuth(@Query('userId') userId: string) {
+		return this.authService.enableTwoFactorAuth(Number(userId));
+	}
+
+	// ✅ NEW: Verify 2FA token during login
+	@Get('verify-2fa')
+	async verifyTwoFactorLogin(@Query('userId') userId: string, @Query('token') token: string, @Res() res: Response) {
+		return this.authService.verifyTwoFactorLogin(Number(userId), token, res);
+	}
 }

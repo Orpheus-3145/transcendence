@@ -8,7 +8,10 @@ import AccessTokenDTO from 'src/dto/auth.dto';
 import { UserDTO } from 'src/dto/user.dto';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import speakeasy from 'speakeasy';
+import QRCode from 'qrcode';
 
+// Add 2FA to the existing authentication
 @Injectable()
 export class AuthService {
 	constructor(
@@ -33,12 +36,27 @@ export class AuthService {
 
 		this.logger.debug(`Login attempt, code [${code}]`);
 
+		/// Step 1: Fetch user access token
 		const access: AccessTokenDTO = await this.getUserAccessToken(code);
 		this.logger.debug(`Found access token [${access.access_token}]`);
 
+		// Step 2: Get user information
 		const userMe = await this.getUserMe(access.access_token);
 		this.logger.debug(`Found user42 ${userMe.login}`);
 
+		// Step 3: Retrieve or create user in database
+		const user = await this.userService.createUser(access, userMe);
+		this.logger.log(`Login attempt with user ${user.nameNick}`);
+
+		// Step 4: Check if 2FA is enabled for the user
+		if (user.twoFactorSecret) {
+			this.logger.debug(`2FA is enabled for user ${user.nameNick}. Redirecting to 2FA verification.`);
+
+			// Redirect to the frontend for 2FA verification
+			res.redirect(`${this.config.get<string>('URL_FRONTEND_2FA')}?userId=${user.id}`);
+			return null; // Stop the login flow until 2FA is verified
+		}
+		// Step 5: Generate and set the JWT token if 2FA is not enabled
 		const signedToken = sign({ intraId: userMe.id }, this.config.get<string>('SECRET_KEY'));
 		res.cookie('auth_token', signedToken, {
 			httpOnly: true,
@@ -46,9 +64,10 @@ export class AuthService {
 		});
 		this.logger.debug(`Access token signed`);
 
-		const userDTOreturn = await this.userService.createUser(access, userMe);
-		this.logger.log(`Login successful with user ${userDTOreturn.nameNick}`);
-
+		// const userDTOreturn = await this.userService.createUser(access, userMe);
+		// this.logger.log(`Login successful with user ${userDTOreturn.nameNick}`);
+		// Step 6: Redirect to frontend and return user
+		const userDTOreturn = user;
 		res.redirect(this.config.get<string>('URL_FRONTEND'));
 		return userDTOreturn;
 	}
@@ -101,7 +120,7 @@ export class AuthService {
 		// Success
 		responseData.message = 'User successfully validated.';
 		responseData.user = new UserDTO(user);
-		res.status(200).json(responseData);
+		res.status(HttpStatus.OK).json(responseData);
 	}
 
 	async logout(res: Response, redir?: string, mess?: string) {
@@ -178,4 +197,63 @@ export class AuthService {
 
 		return response.json();
 	}
+
+	//2FA
+	async verifyTwoFactorLogin(userId: number, token: string, res: Response) {
+	const isValid = await this.verifyTwoFactorAuth(userId, token);
+
+	if (!isValid) {
+		this.thrower.throwSessionExcp('Invalid 2FA token', 'AuthService.verifyTwoFactorLogin', HttpStatus.UNAUTHORIZED);
+	}
+
+	// Generate and save the JWT token
+	const signedToken = sign({ intraId: userId }, this.config.get<string>('SECRET_KEY'));
+	res.cookie('auth_token', signedToken, {
+		httpOnly: true,
+		maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
+	});
+
+	return { message: '2FA verified successfully and login completed.' };
+	}
+
+	async verifyTwoFactorAuth(userId: number, token: string): Promise<boolean> {
+	const user = await this.userService.findOne(userId);
+
+	if (!user || !user.twoFactorSecret) {
+		this.thrower.throwSessionExcp('2FA not enabled or user not found', 'AuthService.verifyTwoFactorAuth', HttpStatus.NOT_FOUND);
+	}
+
+	return speakeasy.totp.verify({
+		secret: user.twoFactorSecret,
+		encoding: 'base32',
+		token,
+		window: 1, // Small time window for drift
+	});
+	}
+	async enableTwoFactorAuth(userId: number): Promise<{ qrCode: string; secret: string }> {
+	const user = await this.userService.findOne(userId);
+
+		if (!user) {
+			this.thrower.throwSessionExcp('User not found', 'AuthService.enableTwoFactorAuth', HttpStatus.NOT_FOUND);
+		}
+
+		// this.logger.debug(`2FA is enabled for user ${user.nameNick}. Redirecting to 2FA verification.`);
+		console.log(`2FA is enabled for user ${user.nameNick}. Redirecting to 2FA verification.`);
+		// Generate a 2FA secret
+		const secret = speakeasy.generateSecret({
+			name: `YourAppName (${user.email})`,
+			issuer: 'YourAppName',
+		});
+
+		// Save the secret in the database
+		user.twoFactorSecret = secret.base32;
+		user.twoFactorEnabled = true;
+		await this.userService.update(user);
+
+		// Generate and return the QR code
+		const qrCode = await QRCode.toDataURL(secret.otpauth_url);
+		return { qrCode, secret: secret.base32 };
+	}
+
+
 }

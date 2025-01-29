@@ -29,6 +29,11 @@ export default class UsersService {
 		user.image = userMe.image.link;
 		user.greeting = 'Hello, I have just landed!';
 		user.status = UserStatus.Offline;
+		// Not sure if these go here
+		user.twoFactorSecret = userMe.twoFactorSecret;
+		// user.twoFactorEnabled = userMe.twoFactorEnabled;
+		user.twoFactorEnabled = true;
+
 
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
@@ -46,5 +51,18 @@ export default class UsersService {
 
 	async findOne(intraId: number): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { intraId } });
+	}
+
+	async update(user: User): Promise<User> {
+		try {
+			await this.usersRepository.save(user);
+			return user;
+		} catch (error) {
+			this.thrower.throwSessionExcp(
+				`User update error: ${error}`,
+				`${UsersService.name}.${this.constructor.prototype.update.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
 	}
 }

@@ -9,7 +9,7 @@ import LoginPage from '../../Pages/Login/index';
 import ChannelsPage from '../../Pages/Channels/index';
 import LogoutPage from '../../Pages/Logout';
 import { useUser } from '../../Providers/UserContext/User';
-
+import TwoFactorAuth from '../../Pages/2FA';
 export const Main: React.FC = () => {
 	const { user } = useUser();
 
@@ -25,7 +25,12 @@ export const Main: React.FC = () => {
 		</>
 	);
 
-	const unauthenticatedRoutes = <Route path='/login' element={<LoginPage />} />;
+	const unauthenticatedRoutes = (
+		<>
+			<Route path='/login' element={<LoginPage />} />
+			<Route path='/verify-2fa' element={<TwoFactorAuth />} />
+		</>
+	);
 
 	return (
 		<Routes>

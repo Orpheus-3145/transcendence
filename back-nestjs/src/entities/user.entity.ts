@@ -36,8 +36,8 @@ export default class User {
 	@Length(0, 100)
 	greeting: string | null;
 
-	@Column({ nullable: true, default: null })
-	auth2F: string | null;
+	// @Column({ nullable: true, default: null })
+	// auth2F: string | null;
 
 	@Column({
 		type: 'enum',
@@ -45,6 +45,14 @@ export default class User {
 		default: UserStatus.Offline,
 	})
 	status: UserStatus;
+
+		// user.twoFactorSecret = secret.base32;
+		// user.twoFactorEnabled 
+	@Column({ nullable: false, default: false })
+	twoFactorEnabled: boolean;
+
+	@Column({ nullable: true, default: null })
+	twoFactorSecret: string;
 
 	@CreateDateColumn()
 	createdAt: Date;

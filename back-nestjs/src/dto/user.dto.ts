@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNumber, IsString, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsNumber, IsString, Length, IsBoolean } from 'class-validator';
 import User from '../entities/user.entity';
 
 export enum UserStatus {
@@ -17,6 +17,8 @@ export class UserDTO {
 		this.image = user.image;
 		this.greeting = user.greeting;
 		this.status = user.status;
+		user.twoFactorSecret = user.twoFactorSecret;
+		user.twoFactorEnabled = user.twoFactorEnabled;
 	}
 
 	@IsNumber()
@@ -43,4 +45,10 @@ export class UserDTO {
 
 	@IsEnum(UserStatus)
 	status: UserStatus;
+
+	@IsString()
+	twoFactorSecret: string | null;
+
+	@IsBoolean()
+	twoFactorEnabled: boolean
 }
