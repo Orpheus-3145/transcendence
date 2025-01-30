@@ -7,9 +7,13 @@ export default class ResultsScene extends BaseScene {
 
 	// private _id: number;
 	// private _nameNick: string;
-	private _playAgain: boolean;
+	// private _playAgain: boolean;
 	private _winner!: string;
+	private _score!: {p1: number, p2: number};
 	private _nextGameData!: InitData;
+	private _playAgainPopup!: Phaser.GameObjects.Container;
+	private _waitingPopup!: Phaser.GameObjects.Container;
+	private _refusePopup!: Phaser.GameObjects.Container;
 
 	private _urlWebsocket: string;
 	private _socketIO!: Socket;
@@ -19,15 +23,15 @@ export default class ResultsScene extends BaseScene {
 		
 		// this._id = this.registry.get('user42data').id;
 		// this._nameNick = this.registry.get('user42data').nameNick;
-		this._playAgain = false;
+		// this._playAgain = false;
 		this._urlWebsocket = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION;
 	}
 
-	// fired then scene.start('Results') is called, sets the id
-	init(data: { winner: string, nextGameData: InitData }): void {
+	init(data: { winner: string, score: {p1: number, p2: number}, nextGameData: InitData }): void {
 		super.init();
 
 		this._winner = data.winner;
+		this._score = data.score;
 		this._nextGameData = data.nextGameData
 
 		this.setupSocket();
@@ -44,8 +48,8 @@ export default class ResultsScene extends BaseScene {
 		super.buildGraphicObjects();
 
 		this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.2, `Player ${this._winner} won!`, {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 50}px`,
+		.text(this.scale.width * 0.5, this.scale.height * 0.25, `Player ${this._winner} won!`, {
+			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 30}px`,
 			align: 'center',
 			color: '#0f0',
 			wordWrap: { 
@@ -53,8 +57,15 @@ export default class ResultsScene extends BaseScene {
 			},
 		})
 		.setOrigin(0.5, 0.5);
-		
-			
+
+		this.add
+			.text(this.scale.width * 0.5, this.scale.height * 0.1, `${this._score.p1} : ${this._score.p2}`, {
+				fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 40}px`,
+				align: 'center',
+				color: '#0f0',
+			})
+			.setOrigin(0.5, 0.5);
+	
 		const playAgainBtn = this.add
 		.text(this.scale.width * 0.5, this.scale.height * 0.4, 'Play again', {
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
@@ -68,7 +79,13 @@ export default class ResultsScene extends BaseScene {
 		.on('pointerup', () => {
 
 			playAgainBtn.visible = false;
-			this.sendMsgToServer('playAgain');
+			if (this._nextGameData.mode === GameMode.single)
+				this.sendMsgToServer('acceptRematch');
+			else if (this._nextGameData.mode === GameMode.multi) {
+
+				this.sendMsgToServer('askForRematch');
+				this._waitingPopup.setVisible(true);
+			}
 		});
 
 		const goHomeButton = this.add
@@ -80,8 +97,15 @@ export default class ResultsScene extends BaseScene {
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
 		.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) 	// Change color on hover
-		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 		// Change color back when not hovered
-		.on('pointerup', () => this.switchScene('MainMenu')); 							// Start the main game
+		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 	// Change color back when not hovered
+		.on('pointerup', () => this.switchScene('MainMenu')); 				// Start the main game
+
+		this._waitingPopup = this.createWaitingPopup();
+		this._waitingPopup.setVisible(false);
+		this._playAgainPopup = this.createPlayAgainPopup();
+		this._playAgainPopup.setVisible(false);
+		this._refusePopup = this.createRefusePopup();
+		this._refusePopup.setVisible(false);
 	}
 
 	setupSocket(): void {
@@ -91,13 +115,25 @@ export default class ResultsScene extends BaseScene {
 			transports: ['websocket'],
 		});
 
-		this._socketIO.on('readySingleGame', () => this.switchScene('Game'));
+		this._socketIO.on('acceptRematch', (data: InitData) => {
 
-		this._socketIO.on('newMultiGame', (sessionId: string) => {
-
-				this._nextGameData.sessionToken = sessionId;
-				this.switchScene('Game', this._nextGameData);
+			if (this._waitingPopup.visible === true)
+				this._waitingPopup.setVisible(false);
+			if (this._playAgainPopup.visible === true)
+				this._playAgainPopup.setVisible(false);
+			this.switchScene('Game', data);
 		});
+
+		this._socketIO.on('refuseRematch', (data: InitData) => {
+
+			if (this._waitingPopup.visible === true)
+				this._waitingPopup.setVisible(false);
+			if (this._playAgainPopup.visible === true)
+				this._playAgainPopup.setVisible(false);
+			this._refusePopup.setVisible(true);
+		});
+
+		this._socketIO.on('askForRematch', () => this._playAgainPopup.setVisible(true));
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
@@ -108,42 +144,163 @@ export default class ResultsScene extends BaseScene {
 		this._socketIO.emit(msgType, content);
 	}
 
-	createPopup() {
-		// Un contenitore per il popup
-		const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
+	createWaitingPopup() {
 
-		// Sfondo del popup
-		const background = this.add.rectangle(0, 0, 300, 200, 0x000000, 0.8)
-				.setStrokeStyle(2, 0xffffff)
-				.setOrigin(0.5);
+		const waitingPopup = this.add.container(this.scale.width / 4, this.scale.height / 4);//.setScale(0.5);
 
-		// Testo del popup
-		const text = this.add.text(0, -50, 'Questo è un popup!', {
-				font: '20px Arial',
-				fill: '#ffffff',
-				align: 'center',
-		}).setOrigin(0.5);
+		const background = this.add.rectangle(this.scale.width / 4,
+				this.scale.height / 4,
+				this.scale.width / 2,
+				this.scale.height / 2,
+				0xfff,
+				1)
+			.setStrokeStyle(2, 0xffffff)
+			.setInteractive()
+			.setOrigin(0.5, 0.5);
 
-		// Pulsante per chiudere il popup
-		const closeButton = this.add.text(0, 50, 'Chiudi', {
-				font: '18px Arial',
-				fill: '#ff0000',
-		}).setOrigin(0.5)
-				.setInteractive()
-				.on('pointerdown', () => {
-						popup.setVisible(false);
-				});
+		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, 'waiting for other player', {
+			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+			align: 'center',
+			color: '#fff',
+		})
+		.setOrigin(0.5, 0.5);
 
-		// Aggiungiamo gli elementi al container
-		popup.add([background, text, closeButton]);
+		waitingPopup.add([background, textTitle]);
 
-		return popup;
-}
+		this.tweens.add({
+			targets: waitingPopup,
+			scaleX: 1,
+			scaleY: 1,
+			alpha: 1,
+			duration: 500,
+			ease: 'Back.Out',
+		});	
 
-// Funzione per mostrare il popup
-	showPopup() {
-		if (this.someCondition) {
-				this.popup.setVisible(true);
-		}
-}
+		return waitingPopup;
+	}
+
+	createPlayAgainPopup() {
+		const rematchPopup = this.add.container(this.scale.width / 4, this.scale.height / 4);//.setScale(0.5);
+
+		const background = this.add.rectangle(this.scale.width / 4,
+				this.scale.height / 4,
+				this.scale.width / 2,
+				this.scale.height / 2,
+				0xfff,
+				1)
+			.setStrokeStyle(2, 0xffffff)
+			.setInteractive()
+			.setOrigin(0.5, 0.5);
+
+		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, 'user asked to play again', {
+			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+			align: 'center',
+			color: '#fff',
+		})
+		.setOrigin(0.5, 0.5);
+
+		const yesButton = this.add.text(background.width * 0.2, background.height * 0.75, 'yes', {
+				fontSize: `${Math.round(this._textFontRatio * this.scale.width) - 10}px`,
+				align: 'left',
+				color: '#fff',
+		})
+		.setOrigin(0.5, 0.5)
+		.setInteractive()
+		.on('pointerdown', () => {
+			
+			this.sendMsgToServer('acceptRematch');
+			this._playAgainPopup.setVisible(false);
+		});
+
+		const noButton = this.add.text(background.width * 0.8, background.height * 0.75, 'no', {
+			fontSize: `${Math.round(this._textFontRatio * this.scale.width) - 10}px`,
+			align: 'right',
+			color: '#fff',
+		})
+		.setOrigin(0.5, 0.5)
+		.setInteractive()
+		.on('pointerdown', () => {
+
+			this.sendMsgToServer('refuseRematch');
+			this._playAgainPopup.setVisible(false);
+			this.switchScene('MainMenu');
+		});
+
+		rematchPopup.add([background, textTitle, yesButton, noButton]);
+
+		this.tweens.add({
+			targets: rematchPopup,
+			scaleX: 1,
+			scaleY: 1,
+			alpha: 1,
+			duration: 500,
+			ease: 'Back.Out',
+		});	
+
+		return rematchPopup;
+	}
+
+	createRefusePopup() {
+
+		const refusePopup = this.add.container(this.scale.width / 4, this.scale.height / 4);//.setScale(0.5);
+
+		const background = this.add.rectangle(this.scale.width / 4,
+				this.scale.height / 4,
+				this.scale.width / 2,
+				this.scale.height / 2,
+				0xfff,
+				1)
+			.setStrokeStyle(2, 0xffffff)
+			.setInteractive()
+			.setOrigin(0.5, 0.5);
+
+		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, 'Rematch rejected', {
+			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+			align: 'center',
+			color: '#fff',
+		})
+		.setOrigin(0.5, 0.5);
+		
+		const closeButton = this.add.text(background.width * 0.5, background.height * 0.75, 'close', {
+				fontSize: `${Math.round(this._textFontRatio * this.scale.width) - 10}px`,
+				align: 'left',
+				color: '#fff',
+		})
+		.setOrigin(0.5, 0.5)
+		.setInteractive()
+		.on('pointerdown', () => refusePopup.setVisible(false));
+
+		refusePopup.add([background, textTitle, closeButton]);
+
+		this.tweens.add({
+			targets: refusePopup,
+			scaleX: 1,
+			scaleY: 1,
+			alpha: 1,
+			duration: 500,
+			ease: 'Back.Out',
+		});	
+
+		return refusePopup;
+	}
+
+	// showWaitingPopup() {
+	// 	console.log('open waiting popup');
+	// 	this._waitingPopup.setVisible(true);
+	// }
+
+	// hideWaitingPopup() {
+	// 	this._waitingPopup.setVisible(false);
+	// 	// this._waitingPopup.setScale(0.5);
+	// }
+
+	// showPlayAgainPopup() {
+	// 	console.log('open play again popup');
+	// 	this._playAgainPopup.setVisible(true);
+	// }
+
+	// hidePlayAgainPopup() {
+	// 	this._playAgainPopup.setVisible(false);
+	// 	// this._playAgainPopup.setScale(0.5);
+	// }
 }

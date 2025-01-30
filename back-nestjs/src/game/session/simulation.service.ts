@@ -174,10 +174,13 @@ export default class SimulationService {
 			if (this.mode === GameTypes.GameMode.single) this.updateBotPaddle();
 
 			this.sendPowerUpUpdate();
+			this.sendUpdateToPlayers('gameState');
 			if (this.gameOver) {
-				if (this.player2.score === this.maxScore) this.endGame(this.player2);
-				else this.endGame(this.player1);
-			} else this.sendUpdateToPlayers('gameState');
+				if (this.player2.score === this.maxScore)
+					this.endGame(this.player2);
+				else 
+					this.endGame(this.player1);
+			}
 		} catch (error) {
 			this.interruptGame(error.message);
 		}

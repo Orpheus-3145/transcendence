@@ -12,7 +12,7 @@ import GameInitDTO from 'src/dto/gameInit.dto';
 @Injectable()
 export default class MatchmakingService {
 	private _waitingPlayersIP: Array<WaitingPlayer> = new Array();
-	private _checker = null;
+	private _checker: NodeJS.Timeout = null;
 
 	constructor(
 		private logger: AppLoggerService,

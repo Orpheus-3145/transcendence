@@ -205,7 +205,7 @@ export default class GameScene extends BaseScene {
 				difficulty: this._difficulty,
 				extras: this._powerUpSelection,
 			}
-			this.switchScene('Results', {winner: winner, nextGameData: nextGameData})
+			this.switchScene('Results', {winner: winner, score: this._gameState.score, nextGameData: nextGameData})
 		});
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));

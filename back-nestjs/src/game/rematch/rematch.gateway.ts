@@ -31,21 +31,27 @@ export default class RematchGateway implements OnGatewayDisconnect {
 
 	handleDisconnect(@ConnectedSocket() client: Socket): void {
 		
-		// emit to other player that client left the room
+		this.rematchService.leaveQueue(client);
 	}
 
 	@SubscribeMessage('joinQueue')
-	joinQueue(@MessageBody() data: GameInitDTO, @ConnectedSocket() client: Socket): void {
+	joinQueue(@ConnectedSocket() client: Socket, @MessageBody() data: GameInitDTO): void {
+		
 		this.rematchService.joinQueue(client, data);
 	}
 
-	@SubscribeMessage('playAgain')
-	playAgain(@ConnectedSocket() client: Socket): void {
-		this.rematchService.playAgain(client);
+	@SubscribeMessage('askForRematch')
+	askForRematch(@ConnectedSocket() client: Socket): void {
+		this.rematchService.askForRematch(client);
 	}
 
-	@SubscribeMessage('acceptPlayAgain')
-	acceptPlayAgain(@ConnectedSocket() client: Socket): void {
+	@SubscribeMessage('acceptRematch')
+	acceptRematch(): void {
 		this.rematchService.startGame();
+	}
+
+	@SubscribeMessage('refuseRematch')
+	refuseRematch(@ConnectedSocket() client: Socket): void {
+		this.rematchService.abortRematch(client);
 	}
 }
