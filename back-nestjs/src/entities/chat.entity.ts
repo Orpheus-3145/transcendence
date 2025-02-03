@@ -1,4 +1,4 @@
-import {Entity,	PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
+import { Entity,	PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
 
 // Channel entity
 @Entity('Channels')
@@ -12,10 +12,13 @@ export class Channel {
 		default: 'public',
 	})
 
+	@Column()
 	ch_type: string;
 
+	@Column()
 	ch_owner: string;
 
+	@Column({ type: 'varchar', nullable: true })
 	password: string | null;
 
 	@Column({ type: 'varchar', length: 50, default: 'Welcome to my Channel!' })
@@ -29,6 +32,9 @@ export class Channel {
 
 	@OneToMany(() => ChannelMember, (channelMember: ChannelMember) => channelMember.channel)
 	members: ChannelMember[];
+
+	@OneToMany(() => Message, (message: Message) => message.channel)
+	messages: Message[];
 }
 
 // Channel_Members entity
@@ -66,6 +72,10 @@ export class Message {
 
 	@Column('text')
 	content: string;
+
+	@ManyToOne(() => Channel, (channel: Channel) => channel.messages)
+	@JoinColumn({ name: 'channel_id' })
+	channel: Channel;
 
 	@CreateDateColumn()
 	send_time: Date;

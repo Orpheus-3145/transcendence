@@ -42,9 +42,6 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 	return found ? true : false;
 };
 
-
-
-
 const ChannelsPage: React.FC = () => {
 	
 	const theme = useTheme();
@@ -208,10 +205,10 @@ const ChannelsPage: React.FC = () => {
 		}
 	}, [selectedAvailableChannel]);
 
-	// // Uncomment to fetch the channels from the database, not fully implement
-	// useEffect(() => {
-	// 	fetchAllChannels();
-	// }, []);
+	// Uncomment to fetch the channels from the database, not fully implement
+	useEffect(() => {
+		fetchAllChannels();
+	}, []);
 
 
 

@@ -14,13 +14,13 @@ import { ChatDTO } from '../dto/chat.dto';
 
 
 @WebSocketGateway( {
-	namespace: process.env.WS_NS_CHAT,
+	namespace: process.env.WS_NS_CHAT, 		// Defines WebSocket namespace (e.g., "/chat")
 	cors: {
-		origin: process.env.URL_FRONTEND,
+		origin: process.env.URL_FRONTEND, 	// Allows frontend to connect
 		methods: ['GET', 'POST'],
 		credentials: true,
 	},
-	transports: ['websocket'],
+	transports: ['websocket'],				// Uses only WebSocket (no polling)
 })
 
 export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
@@ -48,13 +48,10 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
   	  try {
   	    // Assuming chatDTO contains channel information like title, type, users, etc.
   	    const newChannel = await this.chatService.createChannel(chatDTO);
-
   	    // Emit back the created channel to the client
   	    this.server.emit('channelCreated', newChannel);
-		
+		// Send success message to the user who created the channel
 		client.emit('createChannelSuccess', { message: 'Channel created successfully', channel: newChannel });
-
-
   	    console.log(`New channel created: ${newChannel.title}`);
   	  } catch (error) {
   	    console.error('Error creating channel:', error);

@@ -1,6 +1,8 @@
-import { IsArray, IsEnum, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { IsArray, IsInt , IsEnum, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UserDTO } from './user.dto';
+import { MessageDTO } from './message.dto';
+import { each } from 'cheerio/dist/commonjs/api/traversing';
 
 export class ChatDTO {
   @IsString()
@@ -26,4 +28,9 @@ export class ChatDTO {
   @IsOptional()
   @IsString()
   password?: string | null;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type (() => MessageDTO)
+  messages?: MessageDTO[];
 }
