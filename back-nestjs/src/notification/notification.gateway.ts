@@ -15,6 +15,10 @@ import { User } from 'src/entities/user.entity';
 import { UserStatus } from 'src/dto/user.dto';
 import { HttpException } from '@nestjs/common';
 
+interface Websock {
+	client: Socket;
+	userId: string;
+}
 
 @WebSocketGateway( {
 	namespace: process.env.WS_NS_NOTIFICATION,
@@ -30,6 +34,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	@WebSocketServer()
 	server: Server;
+	private sockets: Websock[] = [];
 
 	constructor(private notificationService: NotificationService, private userService: UsersService) {};
 
@@ -38,20 +43,28 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	handleDisconnect(client: Socket) {
+		// var websock: Websock = this.sockets.find((socket) => socket.client.id === client.id);
+		// this.userService.setStatus(websock?.userId, UserStatus.Offline);
+		this.sockets = this.sockets.filter((s) => s.client.id !== client.id);
 		console.log(`Noti Client disconnected: ${client.id}`);
 	}
 
 	@SubscribeMessage('getFromUser')
 	async handleNotificationEvent(@ConnectedSocket() client: Socket, @MessageBody() data: { id: string }): Promise<void> 
 	{
+		// this.userService.setStatus(data.id, UserStatus.Online);
+		var newwebsock: Websock = {client: client, userId: data.id};
+		this.sockets.push(newwebsock);
 		var Noti = await this.notificationService.findNotificationReceiver(data.id);
 	  	client.emit('getAllNotifications', Noti);
 	}
 
-	@SubscribeMessage('sendNotification')
-	async sendNotiToFrontend(@ConnectedSocket() client: Socket, Noti: Notification | null): Promise<void>
+	async sendNotiToFrontend(Noti: Notification | null): Promise<void>
 	{
-		client.emit('sendNoti', Noti);
+		var websock: Websock = this.sockets.find((socket) => socket.userId === Noti.receiverId.toString());
+		if (websock === undefined)
+			return ;
+		websock.client.emit('sendNoti', Noti);
 	}
 
 	@SubscribeMessage('sendMessage')
@@ -70,7 +83,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			throw new HttpException('Not Found', 404);
 		}
 		var Noti = await this.notificationService.initMessage(user, other, data.message);
-		this.sendNotiToFrontend(client, Noti);
+		this.sendNotiToFrontend(Noti);
 	}
 
 	@SubscribeMessage('sendFriendReq')
@@ -84,7 +97,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			throw new HttpException('Not Found', 404);
 		}
 		var Noti = await this.notificationService.initRequest(user, other, NotificationType.friendRequest);
-		this.sendNotiToFrontend(client, Noti);
+		this.sendNotiToFrontend(Noti);
 	}
 
 	@SubscribeMessage('sendGameInvite')
@@ -98,6 +111,19 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			throw new HttpException('Not Found', 404);
 		}
 		var Noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite);
-		this.sendNotiToFrontend(client, Noti);
+		this.sendNotiToFrontend(Noti);
+	}
+
+	@SubscribeMessage('changeStatus')
+	async changeStatus(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string, status: string}): Promise<void> 
+	{
+		console.log(data.userId);
+		console.log(data.status);
+		if (data.status == 'offline')
+			this.userService.setStatus(data.userId, UserStatus.Offline);
+		else if (data.status == 'online')
+			this.userService.setStatus(data.userId, UserStatus.Online);
+		else if (data.status == 'ingame')
+			this.userService.setStatus(data.userId, UserStatus.InGame);
 	}
 };
