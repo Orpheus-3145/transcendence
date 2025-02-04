@@ -14,7 +14,9 @@ import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as Log
 import { timeStamp } from 'console';
 import { index } from 'cheerio/dist/commonjs/api/traversing';
 import { useChatContext, socket } from '../../Layout/Chat/ChatContext';
+import { User, useUser } from '../../Providers/UserContext/User';
 // import { Socket } from 'socket.io-client';
+
 
 interface ChannelTypeEvent {
   component: React.ReactNode;
@@ -31,6 +33,8 @@ export const myself: UserProps =  {
 	icon: React.ReactElement ,
 };
 
+// console.log('USER', )
+
 export const userIsAdmin = (userName: string, channel: ChatRoom): boolean => {
 	// 
 	const found = channel.settings.users.find((user) => user.name === userName);
@@ -43,6 +47,8 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 };
 
 const ChannelsPage: React.FC = () => {
+	const { user } = useUser();
+	// console.log(user);
 	
 	const theme = useTheme();
 	const navigate = useNavigate();
@@ -88,6 +94,7 @@ const ChannelsPage: React.FC = () => {
 		users: [],
 		owner: 'currentUser',
 	});
+
 	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([ //--> CALL TO BACKEND <-- //
 		{
 			id: 3,
@@ -171,32 +178,33 @@ const ChannelsPage: React.FC = () => {
 
 	// Using sockets
 
-	  const fetchAllChannels = () => {
-		socket.emit('getChannels');  // Emit event to request channels
+	//   const fetchAllChannels = () => {
+	// 	socket.emit('getChannels');  // Emit event to request channels
 	  
-		socket.on('channelsList', (channels) => {
-		  console.log('Received channels:', channels);
-		  // Update state with the received channels
-		  setChatProps((prevState) => ({
-			...prevState,
-			chatRooms: channels.map((channel) => ({
-			  name: channel.title,
-			  icon: <GroupIcon />,
-			  messages: [],  // Initialize with empty messages
-			  settings: {
-				type: channel.ch_type,
-				password: null,
-				users: channel.settings?.users || [],  // Load users as necessary
-				owner: channel.ch_owner,
-			  },
-			})),
-		  }));
-		});
+	// 	socket.on('channelsList', (channels) => {
+	// 	  console.log('Received channels:', channels);
+	// 	  // Update state with the received channels
+	// 	  setChatProps((prevState) => ({
+	// 		...prevState,
+	// 		chatRooms: channels.map((channel) => ({
+	// 		  	id: channel.channel_id,
+	// 		  	name: channel.title,
+	// 		  	icon: <GroupIcon />,
+	// 		  	messages: [],  // Initialize with empty messages
+	// 		  	settings: {
+	// 				type: channel.ch_tye,
+	// 				password: channel.password,
+	// 				users: channel.members || [],  // Load users as necessary
+	// 				owner: channel.settings.owner,
+	// 		  },
+	// 		})),
+	// 	  }));
+	// 	});
 	  
-		socket.on('error', (error) => {
-		  console.error('Error:', error);
-		});
-	};
+	// 	socket.on('error', (error) => {
+	// 	  console.error('Error:', error);
+	// 	});
+	// };
 	
 	useEffect(() => {
 		if (selectedAvailableChannel &&
@@ -206,9 +214,9 @@ const ChannelsPage: React.FC = () => {
 	}, [selectedAvailableChannel]);
 
 	// Uncomment to fetch the channels from the database, not fully implement
-	useEffect(() => {
-		fetchAllChannels();
-	}, []);
+	// useEffect(() => {
+	// 	fetchAllChannels();
+	// }, []);
 
 
 
@@ -219,42 +227,33 @@ const ChannelsPage: React.FC = () => {
 	// Functions to handle channel creation //
   
 	const handleCreateChannel = () => {
-		//--> CALL TO BACKEND <-- //
-		// socket.emit('joinChannel', { channel: channelName }, (response) => {
-		// if (response && response.message)
-		// 	console.log('Success:', response.message);
-		// else 
-		// 	console.log('Error:', response.message);
-
-		//  TEST CALL BACKEND
-
-		const newChannelData = {
-			title: channelName,
-			ch_type: 'public',  // or another type based on UI
-			ch_owner: myself.name,
-			users: [
-			  { id: myself.id, name: myself.name, role: 'owner', email: myself.email }
-			],
-			password: null,  // set password if needed
-		  };
-		   
-		socket.emit('createChannel', newChannelData);
-
-
 		if (channelName.trim()) {
+			const newChannelData = {
+				title: channelName,
+				ch_type: 'public',  // or another type based on UI
+				ch_owner: user.nameIntra,
+				users: [
+				  { id: user.id, naame: user.nameIntra, role: 'admin', email: user.email }
+				],
+				password: null,  // set password if needed
+			};
+			// console.log('NEW CHANNEL:', newChannelData);
+
+			socket.emit('createChannel', newChannelData);
+		
 			setChatProps((prevState) => ({
 				...prevState,
 				chatRooms: [
 					...prevState.chatRooms,
 					{
-						name: channelName, //--> CALL TO BACKEND <-- //
+						name: channelName,
 						icon: <GroupIcon />,
 						messages: [],
 						settings: {
 							type: 'public',
 							password: null,
-							users: [{...myself, role: 'admin'}],
-							owner: myself.name, //--> CALL TO BACKEND <-- //
+							users: [{...user, role: 'admin'}],
+							owner: user.nameIntra,
 						},
 					},
 				],
@@ -263,6 +262,65 @@ const ChannelsPage: React.FC = () => {
 			setIsAddingChannel(false);
 		}
 	};
+
+	// const handleCreateChannel = () => {
+	// 	if (channelName.trim()) {
+	// 	  // Prepare the data for creating a new channel
+	// 	  const newChannelData = {
+	// 		title: channelName,
+	// 		ch_type: 'public',  // or another type based on UI
+	// 		ch_owner: myself.name,
+	// 		users: [
+	// 		  { id: myself.id, name: myself.name, role: 'owner', email: myself.email }
+	// 		],
+	// 		password: null,  // set password if needed
+	// 	  };
+	// 	  // Emit the createChannel event to the backend
+	// 	  socket.emit('createChannel', newChannelData, (response) => {
+	// 		if (response && response.channel) {
+	// 		  // Assuming the response includes the full channel object (including id, members, etc.)
+	// 		  setChatProps((prevState) => ({
+	// 			...prevState,
+	// 			chatRooms: [
+	// 			  ...prevState.chatRooms,
+	// 			  {
+	// 				id: response.channel.channel_id,  // Use the id from the backend response
+	// 				name: response.channel.title,
+	// 				icon: <GroupIcon />,
+	// 				messages: [],
+	// 				settings: {
+	// 				  type: response.channel.ch_type,
+	// 				  password: response.channel.password,
+	// 				  users: response.channel.members || [],  // Include users from the response
+	// 				  owner: response.channel.ch_owner,  // Include the owner from the response
+	// 				},
+	// 			  },
+	// 			],
+	// 		  }));
+	// 		  // Clear the channel name and hide the add channel form
+	// 		  setChannelName('');
+	// 		  setIsAddingChannel(false);
+	// 		} else {
+	// 		  console.log('Error creating channel:', response.message);
+	// 		}
+	// 	  });
+	// 	}
+	//   };
+	// const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
+	// 	event.stopPropagation();
+	// 	// event.preventDefault();
+	// 	console.log('Available channel clicked!');
+	// 	setSelectedAvailableChannel(channel);
+	// 	setIsSettingsView(false);
+	//   	setIsAddingChannel(false);
+	// 	if (channel.settings.type === 'password') {
+	// 		setIsPasswordModal(true);
+	// 	}
+	// 	//  else {
+	// 	// 	moveSelectedChToJoinedCh();
+	// 	// }
+	// };
+	  
 
 	const handleCancelNewChannel = () => {
 		setIsAddingChannel(false);
@@ -276,24 +334,6 @@ const ChannelsPage: React.FC = () => {
 	  
 	};
 
-	// const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
-	// 	event.stopPropagation();
-	// 	// event.preventDefault();
-	// 	console.log('Available channel clicked!');
-		
-		
-	// 	setSelectedAvailableChannel(channel);
-	// 	setIsSettingsView(false);
-	//   	setIsAddingChannel(false);
-	// 	if (channel.settings.type === 'password') {
-	// 		setIsPasswordModal(true);
-	// 	}
-
-	// 	//  else {
-	// 	// 	moveSelectedChToJoinedCh();
-	// 	// }
-
-	// };
 
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
@@ -570,8 +610,8 @@ const ChannelsPage: React.FC = () => {
 	//---Function to render the list of channels---//
 	const renderJoinedChannels = (channels: ChatRoom[]) => (
 		<Stack gap={1}>
-		{channels.map((channel, i) => (
-			<ChannelLine key={channel?.id} channel={channel} />
+		{channels.map((channel) => (
+			<ChannelLine key={channel.id} channel={channel} />
 		))}
 	  </Stack>
 	);

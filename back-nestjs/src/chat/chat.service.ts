@@ -31,6 +31,8 @@ export class ChatService {
 
 	async createChannel(chatDTO: ChatDTO): Promise<Channel> {
 		const { title, ch_type, ch_owner, users, password } = chatDTO;
+	
+		// console.log('chatDTO:', chatDTO);  // Log to check if ch_owner exists
 	  
 		// Create new channel
 		const newChannel = this.channelRepository.create({
@@ -43,16 +45,27 @@ export class ChatService {
 		});
 	  
 		const savedChannel = await this.channelRepository.save(newChannel);
-	  
+		console.log('new channel:', newChannel);
+		// console.log('saved channel:', savedChannel);
+		
+
 		// Add the initial users
-		const userEntities = users.map(user => ({
-		  user_id: user.id,
-		  channel_id: savedChannel.channel_id,
-		  member_role: user.role,
-		}));
+		// console.log(users);
+		const userEntities = users.map(user => {
+			console.log('user.nameIntra:', user.nameIntra);  // Check if this is null/undefined
+			return {
+				user_id: user.id,
+				name: user.nameIntra,
+		  		channel_id: savedChannel.channel_id,
+		  		member_role: user.role,
+			}	
+		});
 	  
 		await this.channelMemberRepository.save(userEntities);
 	  
+		console.log('userEntities:', userEntities);
+
+
 		return savedChannel;
 	}
 	  
@@ -135,6 +148,9 @@ export class ChatService {
 
  	// Fetch all channels
 	async getAllChannels(): Promise<Channel[]> {
-		return this.channelRepository.find(); // Fetches all channels from the database
+		return this.channelRepository.find({               // Fetches all channels from the database
+			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password',],
+			relations: ['members'],
+		});     
  	}
 }

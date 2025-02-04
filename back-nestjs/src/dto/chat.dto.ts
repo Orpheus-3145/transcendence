@@ -2,12 +2,21 @@ import { IsArray, IsInt , IsEnum, IsOptional, IsString, MaxLength, ValidateNeste
 import { Type } from 'class-transformer';
 import { UserDTO } from './user.dto';
 import { MessageDTO } from './message.dto';
-import { each } from 'cheerio/dist/commonjs/api/traversing';
+import { ChannelMember } from 'src/entities/chat.entity';
+// import { each } from 'cheerio/dist/commonjs/api/traversing';
 
 export class ChatDTO {
+
+  @IsOptional() // Only required for updates
+  @IsInt()
+  channel_id?: number;
+
   @IsString()
   @MaxLength(50)
   title: string;
+  
+  @IsString()
+  ch_owner: string;
 
   @IsEnum(['public', 'protected', 'private', 'chat'])
   ch_type: string;
@@ -22,8 +31,6 @@ export class ChatDTO {
   @Type(() => UserDTO)
   users?: UserDTO[];
 
-  @IsString()
-  ch_owner: string;
 
   @IsOptional()
   @IsString()
@@ -34,3 +41,15 @@ export class ChatDTO {
   @Type (() => MessageDTO)
   messages?: MessageDTO[];
 }
+
+export class ChannelMemberDTO {
+	@IsInt()
+	user_id: number;
+
+	
+
+
+
+
+}
+

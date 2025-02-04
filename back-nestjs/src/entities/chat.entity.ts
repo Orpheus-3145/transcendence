@@ -1,4 +1,5 @@
-import { Entity,	PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
+import { User } from './user.entity';
 
 // Channel entity
 @Entity('Channels')
@@ -15,7 +16,7 @@ export class Channel {
 	@Column()
 	ch_type: string;
 
-	@Column()
+	@Column({ type: 'varchar', nullable: false })
 	ch_owner: string;
 
 	@Column({ type: 'varchar', nullable: true })
@@ -46,11 +47,15 @@ export class ChannelMember {
 	@PrimaryColumn()
 	channel_id: number;
 
+	@Column({ nullable: true })
+	name: string;
+
 	@Column({
 		type: 'enum',
 		enum: ['owner', 'admin', 'member'],
 		default: 'member',
 	})
+	
 	member_role: string;
 
 	@ManyToOne(() => Channel, (channel: Channel) => channel.members)

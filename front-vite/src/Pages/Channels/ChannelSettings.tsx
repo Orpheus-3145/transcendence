@@ -4,7 +4,8 @@ import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons
 import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl} from '@mui/material';
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
-import { myself, userInChannel, userIsAdmin } from '.';
+import { myself, userInChannel, userIsAdmin } from '../Channels/index';
+import { useUser } from '../../Providers/UserContext/User';
 
 interface SettingsModalProps {
     open: boolean;
@@ -35,6 +36,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
 	const [friendName, setFriendName] = useState('');
 	const theme = useTheme();
+	const { user } = useUser();
 
 	const handleAddFriend = () => {
 		console.log('"Add Friend" clicked!');
@@ -101,7 +103,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		//--> CALL TO BACKEND <-- //
 
 		console.log("'Delete Channel' clicked!");
-		if (selectedChannel.settings.owner === myself.name) {
+		if (selectedChannel.settings.owner === user.nameIntra) {
 			const updatedChannels = chatProps.chatRooms.filter((chat) => chat.name !== selectedChannel.name);
 			setChatProps({...chatProps, chatRooms: updatedChannels});
 			setSelectedChannel(null);
@@ -116,17 +118,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			...prevState,
 			chatRooms:  prevState.chatRooms.filter((channel) => channel.name !== selectedChannel.name),
 		}));
-		if (selectedChannel.settings.users.length === 1 && userInChannel(myself.name, selectedChannel)) {
+		if (selectedChannel.settings.users.length === 1 && userInChannel(user.nameIntra, selectedChannel)) {
 			setSelectedChannel(null);
 			return ;
 		}
-		const filteredUsers = selectedChannel.settings.users.filter((user) => user.name !== myself.name);
+		const filteredUsers = selectedChannel.settings.users.filter((user) => user.name !== user.nameIntra);
 		const updatedChannel: ChatRoom = {
 			...selectedChannel,
 			settings: {
 				...selectedChannel.settings,
 				users: filteredUsers,
-				owner: selectedChannel.settings.owner === myself.name ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
+				owner: selectedChannel.settings.owner === user.nameIntra ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
 			},
 		};
 		setAvailableChannels((prevState) => ([
@@ -143,7 +145,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		  <Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
 			<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
 			<Divider sx={{ my: 2 }} />
-			{(selectedChannel.settings.owner === myself.name) && (
+			{(selectedChannel.settings.owner === user.nameInta) && (
 			<>
 			{/* Privacy Options */}
 			<Stack direction="row" spacing={2}>
@@ -181,7 +183,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   			    Add Friend
   			  </Button>
 
-			  {(selectedChannel.settings.owner === myself.name) &&
+			  {(selectedChannel.settings.owner === user.nameIntra) &&
 				<Button
 					variant="contained"
 					onClick={handleDeleteChannel}
@@ -193,7 +195,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		  	</Box>
 			</>
 			)}
-			{(selectedChannel.settings.owner === myself.name) ? (
+			{(selectedChannel.settings.owner === user.nameIntra) ? (
 				<Box sx={{display: 'flex'}}>
 					<Button
 						variant="contained"
@@ -218,19 +220,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				<Stack spacing={1} mt={2}>
 				  <Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
 				  <Divider />
-				  {settings?.users.map(user => (
+				  {settings.users.map(user => (
 					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
 					  <Typography sx={{whiteSpace: 'pre-line'}} >
-							{user.name.length > 10 ? user.name.slice(0, 9) + '...' : user.name}
-					  		{(userIsAdmin(myself.name, selectedChannel) || 
-					  			selectedChannel.settings.owner === myself.name) ? 
+							{user.name?.length > 10 ? user.name.slice(0, 9) + '...' : user.name}
+					  		{(userIsAdmin(user.nameIntra, selectedChannel) || 
+					  			selectedChannel.settings.owner === user.nameIntra) ? 
 									'\n' :
 									' '}
 							{`(${user.role})`}
 					  </Typography>
-					  {(userIsAdmin(myself.name, selectedChannel) ||
-					  	selectedChannel.settings.owner === myself.name) && 
-						myself.name !== user.name && (
+					  {(userIsAdmin(user.nameIntra, selectedChannel) ||
+					  	selectedChannel.settings.owner === user.nameIntra) && 
+						user.nameIntra !== user.name && (
 					  <Stack direction="row" spacing={0.3}>
 						<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
 							{user.role === 'Guest' ? 'Make Admin' : 'Make Guest' }

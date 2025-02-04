@@ -42,7 +42,7 @@ export interface ChatSettings {
 }
 
 export interface ChatRoom {
-  id: string,
+  id: number,
   name: string;
   icon: React.ReactElement;
   messages: ChatMessage[];
