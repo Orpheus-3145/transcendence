@@ -31,7 +31,7 @@ export default class MatchmakingService {
 
 		if (this._checker === null) this._checker = setInterval(() => this.checkNewGame(), 100);
 
-		this.logger.debug(`client ${client.handshake.address} joined the queue`);
+		this.logger.debug(`client [${client.handshake.address}] joined the queue, power ups: ${JSON.stringify(info.extras)}`);
 	}
 
 	removePlayerFromQueue(leaver: Socket) {
@@ -82,7 +82,7 @@ export default class MatchmakingService {
 	}
 
 	doTheyMatch(player1: WaitingPlayer, player2: WaitingPlayer) {
-		return JSON.stringify(player1.extras) === JSON.stringify(player2.extras);
+		return player1.extras.sort().toString() === player2.extras.sort().toString();
 	}
 
 	isPlayerWaiting(client: WaitingPlayer) {

@@ -50,8 +50,8 @@ export default class RematchGateway implements OnGatewayDisconnect {
 		this.rematchService.startGame();
 	}
 
-	@SubscribeMessage('refuseRematch')
-	refuseRematch(@ConnectedSocket() client: Socket): void {
+	@SubscribeMessage('abortRematch')
+	abortRematch(@ConnectedSocket() client: Socket): void {
 		this.rematchService.abortRematch(client);
 	}
 }

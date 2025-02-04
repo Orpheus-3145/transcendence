@@ -3,7 +3,7 @@ import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 
 import SimulationService from './simulation.service';
-import { PaddleDirection } from '../game.types';
+import { GameMode, PaddleDirection } from '../game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import GameInitDTO from 'src/dto/gameInit.dto';
@@ -25,13 +25,13 @@ export default class RoomManagerService {
 	}
 
 	createRoom(data: GameInitDTO): void {
-		this.logger.log(`session [${data.sessionToken}] - creating new room, mode: ${data.mode}`);
+		this.logger.log(`session [${data.sessionToken}] - creating new room`);
 
 		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));
 	}
 
 	dropRoom(sessionToken: string, trace: string): void {
-		this.logger.log(`session [${sessionToken}] - removing room, trace: ${trace}`);
+ 		this.logger.log(`session [${sessionToken}] - removing room, trace: ${trace}`);
 
 		this._getRoom(sessionToken).interruptGame(trace);
 		this._deleteRoom(sessionToken);

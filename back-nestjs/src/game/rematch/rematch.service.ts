@@ -37,14 +37,16 @@ export default class RematchService {
 			this.player1 = waitingPlayer;
 		else if (this.player2 === null)
 			this.player2 = waitingPlayer;
-		this.logger.debug(`client ${client.id} joined room for a rematch`);
+
+		this.logger.debug(`client ${client.id} joined room for rematch`);
 	}
 
 	askForRematch(client: Socket): void {
 
+		// doesn't emit the clients directly, it wait for both of them to connect
 		if (this._lastGamedata.mode === GameMode.multi)
 			this._checker = setInterval(() => this.checkRematch(client), 100);
-		// else it should thorw an error!
+		// else it should throw an error!
 	}
 
 	checkRematch(client: Socket): void {
@@ -52,41 +54,50 @@ export default class RematchService {
 		if (! this.player1 || ! this.player2)
 			return ;
 
-		if (client.id === this.player1.clientSocket.id)
-			this.player2.clientSocket.emit('askForRematch');
-		else if (client.id === this.player2.clientSocket.id)
-			this.player1.clientSocket.emit('askForRematch');
+		if (this.player1.clientSocket.id === client.id)
+			this.player2.clientSocket.emit('rematchConfirm');
+		else if (this.player2.clientSocket.id === client.id)
+			this.player1.clientSocket.emit('rematchConfirm');
 
 		clearInterval(this._checker);
 		this._checker = null;
 	}
 
 	startGame(): void {
-		
-		this._lastGamedata.sessionToken = uuidv4();
-		this.player1.clientSocket.emit('acceptRematch', this._lastGamedata);
-
-		if (this._lastGamedata.mode === GameMode.multi)
-			this.player2.clientSocket.emit('acceptRematch', this._lastGamedata);
 
 		this.logger.log(
 			`rematch started - sessionToken: ${this._lastGamedata.sessionToken}`,
 		);
-		this.roomManager.createRoom(this._lastGamedata);
+		
+		this._lastGamedata.sessionToken = uuidv4();
+		
+		this.player1.clientSocket.emit('acceptRematch', this._lastGamedata);
+		if (this._lastGamedata.mode === GameMode.multi) {
+			
+			this.player2.clientSocket.emit('acceptRematch', this._lastGamedata);
+			this.roomManager.createRoom(this._lastGamedata);
+		}
 	}
 
 	abortRematch(client: Socket): void {
 
-		if (this.player1 && this.player2 && client.id === this.player1.clientSocket.id)
-			this.player2.clientSocket.emit('refuseRematch');
-		else if (this.player1 && this.player2 && client.id === this.player2.clientSocket.id) 
-			this.player1.clientSocket.emit('refuseRematch');
+		if (this.player1 && this.player2 && this.player1.clientSocket.id === client.id)
+			this.player2.clientSocket.emit('abortRematch', 'player refused rematch');
+		else if (this.player1 && this.player2 && this.player2.clientSocket.id === client.id)
+			this.player1.clientSocket.emit('abortRematch', 'player refused rematch');
 	}
 
 	leaveQueue(client: Socket): void {
-		if (this.player1 && client.id === this.player1.clientSocket.id) 
+		if (this.player1 && this.player1.clientSocket.id === client.id) {
 			this.player1 = null;
-		else if (this.player2 && client.id === this.player2.clientSocket.id) 
+			if (this.player2)
+				this.player2.clientSocket.emit('abortRematch', 'player left queue');
+		}
+		else if (this.player2 && this.player2.clientSocket.id === client.id) {
 			this.player2 = null;
+			if (this.player1)
+				this.player1.clientSocket.emit('abortRematch', 'player left queue');
+		}
+		this._lastGamedata = null;
 	}
 }

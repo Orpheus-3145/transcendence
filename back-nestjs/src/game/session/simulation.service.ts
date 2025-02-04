@@ -77,13 +77,19 @@ export default class SimulationService {
 		if (
 			data.mode === GameTypes.GameMode.unset ||
 			(data.mode === GameTypes.GameMode.single &&
-				data.difficulty === GameTypes.GameDifficulty.unset)
+				data.difficulty === GameTypes.GameDifficulty.unset) ||
+			data.sessionToken === ''
 		)
 			this.thrower.throwGameExcp(
-				`Game mode or difficuly are is unset`,
+				`Invalid data received: ${JSON.stringify(data)}`,
 				data.sessionToken,
 				`${SimulationService.name}.${this.constructor.prototype.setInitInfo.name}()`,
 			);
+
+		this.logger.log(`session [${data.sessionToken}] - new game, mode: ${data.mode}`);
+		this.logger.log(`session [${data.sessionToken}] - new game, powerups: [${data.extras.join(', ')}]`);
+		if (data.mode === GameTypes.GameMode.single)
+			this.logger.log(`session [${data.sessionToken}] - new game, difficulty: ${data.difficulty}`);
 
 		this.sessionToken = data.sessionToken;
 		this.mode = data.mode;
@@ -233,10 +239,8 @@ export default class SimulationService {
 					`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}`,
 				);
 		}
-		if (this.mode === GameTypes.GameMode.single && nameNick === this.botName)
-			this.logger.debug(
-				`session [${this.sessionToken}] - bot added to game, difficulty: ${GameTypes.GameDifficulty[this.difficulty]}`,
-			);
+		if (nameNick === this.botName)
+			this.logger.debug(`session [${this.sessionToken}] - bot added to game`);
 		else this.logger.debug(`session [${this.sessionToken}] - player ${nameNick} added to game`);
 	}
 
@@ -462,7 +466,7 @@ export default class SimulationService {
 	setRandomPowerUp(): void {
 		const randomIndex = Math.floor(Math.random() * this.powerUpSelected.length); // Pick a random index
 		this.powerUpType = this.powerUpSelected[randomIndex];
-		this.logger.log(`power up of type ${GameTypes.PowerUpType[this.powerUpType]} selected`);
+		this.logger.log(`spawning power up ${GameTypes.PowerUpType[this.powerUpType]} selected`);
 	}
 
 	spawnPowerUp(): void {
@@ -495,13 +499,19 @@ export default class SimulationService {
 				this.sendMsgToPlayer(this.player2.clientSocket, 'powerUpUpdate', powerUpData);
 			}
 
-			if (this.paddleHit(0, this.powerUpPosition.x, this.powerUpPosition.y))
+			if (this.paddleHit(0, this.powerUpPosition.x, this.powerUpPosition.y)) {
+				this.logger.log(`player ${this.player1.nameNick} got power up ${GameTypes.PowerUpType[this.powerUpType]} selected`);
 				this.handlePowerUpCollisionWithPaddle(0);
-			else if (this.paddleHit(1, this.powerUpPosition.x, this.powerUpPosition.y))
+			}
+			else if (this.paddleHit(1, this.powerUpPosition.x, this.powerUpPosition.y)) {
+				this.logger.log(`player ${this.player2.nameNick} got power up ${GameTypes.PowerUpType[this.powerUpType]} selected`);
 				this.handlePowerUpCollisionWithPaddle(1);
+			}
 
-			if (this.powerUpPosition.x <= this.ballRadius || this.powerUpPosition.x >= this.windowWidth - this.ballRadius)
+			if (this.powerUpPosition.x <= this.ballRadius || this.powerUpPosition.x >= this.windowWidth - this.ballRadius) {
+				this.logger.log(`power up ${GameTypes.PowerUpType[this.powerUpType]} lost`);
 				this.deactivatePowerUp();
+			}
 		}
 	}
 

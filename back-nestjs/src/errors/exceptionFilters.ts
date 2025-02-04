@@ -30,7 +30,6 @@ export class GameExceptionFilter implements ExceptionFilter {
 		const ctx = host.switchToWs();
 		const client = ctx.getClient();
 		const data = ctx.getData();
-		console.log(exception.message);
 		try {
 			this.roomManager.dropRoom(data.sessionToken, exception.message);
 		} catch {
