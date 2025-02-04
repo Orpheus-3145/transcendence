@@ -9,6 +9,7 @@ import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import GameInitDTO from 'src/dto/gameInit.dto';
 
+
 @Injectable({ scope: Scope.TRANSIENT })
 export default class SimulationService {
 	private readonly maxScore: number = parseInt(this.config.get('GAME_MAX_SCORE'), 10);
@@ -68,12 +69,11 @@ export default class SimulationService {
 		private readonly config: ConfigService,
 	) {
 		this.logger.setContext(SimulationService.name);
-		// do not log all the emits to clients if not really necessary
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	setInitInfo(data: GameInitDTO) {
+	setInitInfo(data: GameInitDTO): void {
 		if (
 			data.mode === GameTypes.GameMode.unset ||
 			(data.mode === GameTypes.GameMode.single &&
@@ -138,27 +138,32 @@ export default class SimulationService {
 		clearInterval(this.gameStateInterval);
 		this.gameStateInterval = null;
 
+		// if players are using powerup
 		if (this.powerUpSelected.length > 0) {
 			clearInterval(this.powerUpInterval);
 			this.powerUpInterval = null;
+			
+			if (this.powerUpStatus[0])
+				this.removePowerUp(0);
+			if (this.powerUpStatus[1])
+				this.removePowerUp(1);
 		}
 
-		// if one of the two players have a powerup active
-		if (this.powerUpStatus[0]) this.removePowerUp(0);
-		else if (this.powerUpStatus[1]) this.removePowerUp(1);
-
 		this.engineRunning = false;
+		this.gameOver = false;
+		this.ballSpeed = this._defaultBallSpeed
+		this.ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
 
 		if (this.player1 !== null) {
 			this.player1.clientSocket.disconnect(true);
 			this.player1 = null;
 		}
-		if (this.mode === GameTypes.GameMode.multi && this.player2 !== null) {
-			this.player2.clientSocket.disconnect(true);
+		if (this.player2 !== null) {
+			if (this.mode === GameTypes.GameMode.multi)
+				this.player2.clientSocket.disconnect(true);
 			this.player2 = null;
 		}
 
-		this.mode = GameTypes.GameMode.unset;
 		this.logger.debug(`session [${this.sessionToken}] - engine stopped`);
 	}
 
@@ -169,10 +174,13 @@ export default class SimulationService {
 			if (this.mode === GameTypes.GameMode.single) this.updateBotPaddle();
 
 			this.sendPowerUpUpdate();
+			this.sendUpdateToPlayers('gameState');
 			if (this.gameOver) {
-				if (this.player2.score === this.maxScore) this.endGame(this.player2);
-				else this.endGame(this.player1);
-			} else this.sendUpdateToPlayers('gameState');
+				if (this.player2.score === this.maxScore)
+					this.endGame(this.player2);
+				else 
+					this.endGame(this.player1);
+			}
 		} catch (error) {
 			this.interruptGame(error.message);
 		}
@@ -259,7 +267,7 @@ export default class SimulationService {
 			);
 	}
 
-	sendUpdateToPlayers(msgType: string) {
+	sendUpdateToPlayers(msgType: string): void {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
@@ -307,8 +315,8 @@ export default class SimulationService {
 			this.ball.dy = -this.ball.dy;
 
 		// Collision detection with paddles
-		const leftPaddleOffset = this.paddleHit(this.player1.posX, this.player1.posY, this.ball.x, this.ball.y);
-		const rightPaddleOffset = this.paddleHit(this.player2.posX, this.player2.posY, this.ball.x, this.ball.y);
+		const leftPaddleOffset = this.paddleHit(0, this.ball.x, this.ball.y);
+		const rightPaddleOffset = this.paddleHit(1, this.ball.x, this.ball.y);
 		const maxAngle = Math.PI / 4; // Maximum bounce angle from paddle center (45 degrees)
 
 		if (leftPaddleOffset !== null) {
@@ -390,14 +398,22 @@ export default class SimulationService {
 	}
 
 	paddleHit(
-		player_x: number,
-		player_y: number,
+		player_no: number,
 		item_x: number,
 		item_y: number,
 	): number | null {
+		let player_x: number = 0;
+		let player_y: number = 0;
+		if (player_no === 0) {
+			player_x = this.player1.posX;
+			player_y = this.player1.posY;
+		} else if (player_no === 1) {
+			player_x = this.player2.posX;
+			player_y = this.player2.posY;
+		}
 
-		const checkHitX = Math.abs(player_x - item_x) < this.paddleWidth / 2;
-		const checkHitY = Math.abs(player_y - item_y) < this._defaultPaddleHeight / 2;
+		const checkHitX = Math.abs(player_x - item_x) < (this.paddleWidth / 2 + this.ballRadius);
+		const checkHitY = Math.abs(player_y - item_y) < (this.paddleHeights[player_no] / 2 + this.ballRadius);
 
 		if (checkHitX && checkHitY)
 			return player_y - item_y; // Return offset
@@ -405,7 +421,7 @@ export default class SimulationService {
 			return null; // No collision
 	}
 
-	addSpeedBall(player_no): void {
+	addSpeedBall(player_no: number): void {
 		if (this.powerUpType === GameTypes.PowerUpType.speedBall) {
 			this.ballSpeed =
 				this.powerUpStatus[player_no] === true
@@ -479,22 +495,10 @@ export default class SimulationService {
 				this.sendMsgToPlayer(this.player2.clientSocket, 'powerUpUpdate', powerUpData);
 			}
 
-			const leftPaddle = this.paddleHit(
-				this.player1.posX,
-				this.player1.posY,
-				this.powerUpPosition.x,
-				this.powerUpPosition.y,
-			);
-
-			const rightPaddle = this.paddleHit(
-				this.player2.posX,
-				this.player2.posY,
-				this.powerUpPosition.x,
-				this.powerUpPosition.y,
-			);
-
-			if (leftPaddle != null) this.handlePowerUpCollisionWithPaddle(0);
-			else if (rightPaddle != null) this.handlePowerUpCollisionWithPaddle(1);
+			if (this.paddleHit(0, this.powerUpPosition.x, this.powerUpPosition.y))
+				this.handlePowerUpCollisionWithPaddle(0);
+			else if (this.paddleHit(1, this.powerUpPosition.x, this.powerUpPosition.y))
+				this.handlePowerUpCollisionWithPaddle(1);
 
 			if (this.powerUpPosition.x <= this.ballRadius || this.powerUpPosition.x >= this.windowWidth - this.ballRadius)
 				this.deactivatePowerUp();
@@ -508,7 +512,7 @@ export default class SimulationService {
 		if (this.player1) {
 			this.sendMsgToPlayer(this.player1.clientSocket, 'powerUpDeactivated'); // yellow ball disappears
 		}
-		if (this.mode == GameTypes.GameMode.multi) {
+		if (this.player2 && this.mode == GameTypes.GameMode.multi) {
 			this.sendMsgToPlayer(this.player2.clientSocket, 'powerUpDeactivated');
 		}
 	}
@@ -558,7 +562,7 @@ export default class SimulationService {
 		player_no: number,
 		player_id: number,
 		active: boolean,
-	) {
+	): void {
 		const powerUpStatus = {
 			active: active,
 			player: player_id,
@@ -567,7 +571,7 @@ export default class SimulationService {
 		this.sendMsgToPlayer(playerBonus.clientSocket, 'powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
 	}
 
-	sendMsgToPlayer(client: Socket, msg: string, data?: any) {
+	sendMsgToPlayer(client: Socket, msg: string, data?: any): void {
 		if (this.hardDebugMode == true)
 			this.logger.debug(
 				`session [${this.sessionToken}] - emitting to client ${client.handshake.address} data: ${JSON.stringify(data)}`,
@@ -580,7 +584,7 @@ export default class SimulationService {
 	handleDisconnect(client: Socket): void {
 		if (this.engineRunning === false) return;
 
-		if (this.player1 && this.player1.clientSocket.id === client.handshake.address) {
+		if (this.player1 && this.player1.clientSocket.id === client.id) {
 			this.logger.log(
 				`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`,
 			);
@@ -591,17 +595,16 @@ export default class SimulationService {
 					'gameError',
 					`Game interrupted, player ${this.player1.nameNick} left the game`,
 				);
-		} else if (this.player2) {
+		} else if (this.player2 && (this.mode === GameTypes.GameMode.multi) && this.player2.clientSocket.id === client.id) {
 			this.logger.log(
 				`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`,
 			);
 
-			if (this.mode === GameTypes.GameMode.multi)
-				this.sendMsgToPlayer(
-					this.player1.clientSocket,
-					'gameError',
-					`Game interrupted, player ${this.player2.nameNick} left the game`,
-				);
+			this.sendMsgToPlayer(
+				this.player1.clientSocket,
+				'gameError',
+				`Game interrupted, player ${this.player2.nameNick} left the game`,
+			);
 		}
 
 		this.stopEngine();
@@ -619,10 +622,10 @@ export default class SimulationService {
 		this.logger.log(`session [${this.sessionToken}] - game over, winner: ${winner.nameNick}`);
 
 		if (this.player1)
-			this.sendMsgToPlayer(this.player1.clientSocket, 'endGame', { winner: winner.nameNick });
+			this.sendMsgToPlayer(this.player1.clientSocket, 'endGame', winner.nameNick);
 
 		if (this.player2 && this.mode === GameTypes.GameMode.multi)
-			this.sendMsgToPlayer(this.player2.clientSocket, 'endGame', { winner: winner.nameNick });
+			this.sendMsgToPlayer(this.player2.clientSocket, 'endGame', winner.nameNick);
 
 		this.stopEngine();
 	}

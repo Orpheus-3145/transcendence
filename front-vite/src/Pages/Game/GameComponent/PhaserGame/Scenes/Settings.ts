@@ -21,7 +21,7 @@ export default class SettingsScene extends BaseScene {
 		this.mode = data.mode;
 	}
 
-	buildGraphicObjects() {
+	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
 		this.add.text(this.scale.width * 0.5, this.scale.height * 0.17, 'SETTINGS', { 

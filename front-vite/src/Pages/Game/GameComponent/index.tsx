@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
 import { styled } from '@mui/system';
 import Phaser from 'phaser';
@@ -69,6 +69,21 @@ const GameComponent: React.FC = () => {
 					},
 					scale: {
 						autoCenter: Phaser.Scale.CENTER_BOTH,
+					},
+					fps: {
+						target: 60, // Mantiene il framerate fisso
+						forceSetTimeOut: true, // Forza il setTimeout per il loop
+					},
+					autoFocus: true, // Imposta il focus automatico
+					render: {
+						antialias: true,
+					},
+					// Disabilita la pausa quando il tab perde il focus
+					input: {
+						keyboard: true,
+						mouse: true,
+						touch: true,
+						gamepad: true
 					}
 				};
 			

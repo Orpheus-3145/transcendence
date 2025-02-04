@@ -2,12 +2,15 @@ import GameScene from '../Scenes/Game';
 
 
 export default class Ball {
+  private readonly radiusRatio: number;
 	private readonly radius: number;
 	private _graphic: Phaser.GameObjects.Circle;
 
 	constructor(scene: GameScene, x: number, y: number) {
 
-		this.radius = scene.scale.width / (parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_BALL_RADIUS));
+		this.radiusRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_BALL_RADIUS);
+		this.radius = scene.scale.width / this.radiusRatio;
+		
 		this._graphic = scene.add.circle(x, y, this.radius, 0x0000ff);
 	}
 

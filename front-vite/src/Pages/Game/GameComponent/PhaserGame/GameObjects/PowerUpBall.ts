@@ -1,4 +1,5 @@
 export default class PowerUpBall extends Phaser.GameObjects.Graphics {
+  private readonly radiusRatio: number;
   private readonly radius: number;
 
 	constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -7,7 +8,8 @@ export default class PowerUpBall extends Phaser.GameObjects.Graphics {
 		// Add this graphics object to the scene
 		scene.add.existing(this);
 
-		this.radius = scene.scale.width / (parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_BALL_RADIUS));
+		this.radiusRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_BALL_RADIUS);
+		this.radius = scene.scale.width / this.radiusRatio;
 	
 		// Set position and draw the initial circle
 		this.setPosition(x, y);
