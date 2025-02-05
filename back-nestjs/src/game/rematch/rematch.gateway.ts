@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 
 import RematchService from './rematch.service';
 import { GameExceptionFilter } from 'src/errors/exceptionFilters';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_REMATCH,
@@ -34,7 +34,7 @@ export default class RematchGateway implements OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('joinQueue')
-	joinQueue(@ConnectedSocket() client: Socket, @MessageBody() data: GameInitDTO): void {
+	joinQueue(@ConnectedSocket() client: Socket, @MessageBody() data: GameDataDTO): void {
 		this.rematchService.joinQueue(client, data);
 	}
 

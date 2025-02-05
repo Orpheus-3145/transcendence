@@ -6,7 +6,7 @@ import SimulationService from './simulation.service';
 import { GameMode, PaddleDirection } from 'src/game/game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @Injectable()
 export default class RoomManagerService {
@@ -17,14 +17,14 @@ export default class RoomManagerService {
 		private readonly logger: AppLoggerService,
 		@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
 		@Inject('GAME_SPAWN')
-		private readonly gameRoomFactory: (data: GameInitDTO) => SimulationService,
+		private readonly gameRoomFactory: (data: GameDataDTO) => SimulationService,
 	) {
 		this.logger.setContext(RoomManagerService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	createRoom(data: GameInitDTO): void {
+	createRoom(data: GameDataDTO): void {
 		this.logger.log(`session [${data.sessionToken}] - creating new room`);
 
 		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));

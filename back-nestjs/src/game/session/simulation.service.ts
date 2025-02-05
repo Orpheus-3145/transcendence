@@ -7,7 +7,7 @@ import GameSizeDTO from 'src/dto/gameSize.dto'
 import * as GameTypes from 'src/game/game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -73,7 +73,7 @@ export default class SimulationService {
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	setInitInfo(data: GameInitDTO): void {
+	setInitInfo(data: GameDataDTO): void {
 		if (
 			data.mode === GameTypes.GameMode.unset ||
 			(data.mode === GameTypes.GameMode.single &&

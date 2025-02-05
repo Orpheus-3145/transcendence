@@ -14,7 +14,7 @@ import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import RoomManagerService from './roomManager.service';
 import { GameExceptionFilter } from 'src/errors/exceptionFilters';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_SIMULATION,
@@ -39,7 +39,7 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('createRoomSinglePlayer')
-	setInitData(@MessageBody() data: GameInitDTO): void {
+	setInitData(@MessageBody() data: GameDataDTO): void {
 		this.roomManager.createRoom(data);
 	}
 

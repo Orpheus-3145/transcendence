@@ -1,7 +1,7 @@
 import { IsString, IsEnum, IsArray } from 'class-validator';
 import { GameDifficulty, GameMode, PowerUpType } from 'src/game/game.types';
 
-export default class GameInitDTO {
+export default class GameDataDTO {
 	@IsString()
 	sessionToken: string;
 

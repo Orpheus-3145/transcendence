@@ -7,7 +7,7 @@ import { GameDifficulty, GameMode } from 'src/game/game.types';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import { WaitingPlayer } from 'src/game/game.types';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @Injectable()
 export default class MatchmakingService {
@@ -22,7 +22,7 @@ export default class MatchmakingService {
 		this.logger.setContext(MatchmakingService.name);
 	}
 
-	addPlayerToQueue(client: Socket, info: GameInitDTO): void {
+	addPlayerToQueue(client: Socket, info: GameDataDTO): void {
 		const waitingPlayer: WaitingPlayer = {
 			clientSocket: client,
 			extras: info.extras,
@@ -62,7 +62,7 @@ export default class MatchmakingService {
 				const player2: WaitingPlayer = this._waitingPlayersIP[j];
 
 				if (this.doTheyMatch(player1, player2)) {
-					const initData: GameInitDTO = {
+					const initData: GameDataDTO = {
 						sessionToken: uuidv4(),
 						mode: GameMode.multi,
 						difficulty: GameDifficulty.unset,

@@ -6,13 +6,13 @@ import AppLoggerService from 'src/log/log.service';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import { GameMode, WaitingPlayer } from 'src/game/game.types';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @Injectable()
 export default class RematchService {
 	private player1: WaitingPlayer | null = null;
 	private player2: WaitingPlayer | null = null;
-	private _lastGamedata: GameInitDTO | null = null;
+	private _lastGamedata: GameDataDTO | null = null;
 	private _checker: NodeJS.Timeout | null = null;
 
 	constructor(
@@ -23,7 +23,7 @@ export default class RematchService {
 		this.logger.setContext(RematchService.name);
 	}
 
-	joinQueue(client: Socket, data: GameInitDTO): void {
+	joinQueue(client: Socket, data: GameDataDTO): void {
 		
 		if (this._lastGamedata === null)
 			this._lastGamedata = data;
@@ -112,7 +112,7 @@ export default class RematchService {
 	}
 
 	sendMsgToPlayer(client: Socket, msg: string, data?: any): void {
-		this.logger.debug(`emitting to client ${client.id} data: ${JSON.stringify({data})}`);
+		this.logger.debug(`emitting to client ${client.} data: ${JSON.stringify({data})}`);
 
 		client.emit(msg, data);
 	}
