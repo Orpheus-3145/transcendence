@@ -24,7 +24,6 @@ import { ChatDTO } from '../dto/chat.dto';
 })
 
 export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
-
 	@WebSocketServer()
 	server: Server;
 
@@ -33,12 +32,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	handleConnection(client: Socket) {
 		console.log(`Client connected: ${client.id}`);
 	}
-
 	handleDisconnect(client: Socket) {
 		console.log(`Client disconnected: ${client.id}`);
 	}
-
-
   	// Handle channel creation
   	@SubscribeMessage('createChannel')
   	async handleCreateChannel(
@@ -142,13 +138,33 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	// Get all channels
 	@SubscribeMessage('getChannels')
   	async handleGetChannels(@ConnectedSocket() client: Socket): Promise<void> {
-    try {
-      const channels = await this.chatService.getAllChannels();
-      client.emit('channelsList', channels);  // Emit back the channels to the client
-    } catch (error) {
-      console.error('Error fetching channels:', error);
-      client.emit('error', { message: 'Failed to fetch channels' });
-    }
-  }
+    	try {
+    	  const channels = await this.chatService.getAllChannels();
+    	  client.emit('channelsList', channels);  // Emit back the channels to the client
+    	} catch (error) {
+    	  console.error('Error fetching channels:', error);
+    	  client.emit('error', { message: 'Failed to fetch channels' });
+    	}
+  	}
+
+	// Delete a channel
+	@SubscribeMessage('deleteChannel')
+	async handleDeleteChannel(
+		@MessageBody() channel_id: number,
+		@ConnectedSocket() client: Socket,
+	): Promise<void> {
+		try {
+			const deletedChannel = await this.chatService.deleteChannel(channel_id);
+			if (deletedChannel) {
+				console.log(`Channel deleted: ${deletedChannel.title}`);
+				client.emit('channelDeleted', deletedChannel);
+			} else {
+				client.emit('error', { message: 'Channel not found or could not be deleted' });
+			}
+		} catch (error) {
+			console.error('Error deleting channel:', error);
+			client.emit('error', { message: 'Error deleting channel' });
+		}
+	}
 
 };

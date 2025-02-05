@@ -152,4 +152,22 @@ export class ChatService {
 			relations: ['members'],
 		});     
  	}
+
+	// Delete a channel
+	async deleteChannel(channel_id: number): Promise<Channel | null> {
+		try {
+			const channel = await this.getChannelById(channel_id);
+			if (!channel) {
+				return null;
+			}
+			// Delete associated channel members if necessary
+			await this.channelMemberRepository.delete({ channel_id: channel_id });
+			// Delete the channel itself
+			await this.channelRepository.remove(channel);
+			return channel;
+		} catch (error) {
+			console.error('Error in deleting channel:', error);
+			throw new Error('Error deleting channel');
+		}
+	}
 }

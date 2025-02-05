@@ -6,6 +6,7 @@ import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } 
 import { Add as AddIcon } from '@mui/icons-material';
 import { myself, userInChannel, userIsAdmin } from '../Channels/index';
 import { useUser } from '../../Providers/UserContext/User';
+import { socket } from '../../Layout/Chat/ChatContext';
 
 interface SettingsModalProps {
     open: boolean;
@@ -101,16 +102,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		setSettings({ ...settings, type, password });
 	};
 
-	const handleDeleteChannel = () => {
-		//--> CALL TO BACKEND <-- //
+	// const handleDeleteChannel = (channel_id: number) => {
+	// 	console.log("'Delete Channel' clicked!");
 
+	// 	socket.emit('deleteChannel', channel_id);
+
+	// 	// if (selectedChannel.settings.owner === user.nameIntra) {
+	// 		const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== channel_id);
+	// 		setChatProps({...chatProps, chatRooms: updatedChannels});
+	// 		setSelectedChannel(null);
+
+	// 	// }
+	// 	socket.on('error', (error) => {
+	// 		console.error(error.message);
+	// 	})
+	// }
+	
+	const handleDeleteChannel = (channel_id: number) => {
 		console.log("'Delete Channel' clicked!");
-		if (selectedChannel.settings.owner === user.nameIntra) {
-			const updatedChannels = chatProps.chatRooms.filter((chat) => chat.name !== selectedChannel.name);
-			setChatProps({...chatProps, chatRooms: updatedChannels});
-			setSelectedChannel(null);
-		}
-	}
+		socket.emit('deleteChannel', channel_id);
+	
+		// Listen for success or error response from the server
+		socket.on('channelDeleted', (deletedChannel) => {
+			if (deletedChannel) {
+				const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== channel_id);
+				setChatProps({ ...chatProps, chatRooms: updatedChannels });
+				setSelectedChannel(null);
+				console.log(`Channel deleted: ${deletedChannel.title}`);
+			} else {
+				console.error('Failed to delete channel');
+			}
+		});
+	
+		socket.on('error', (error) => {
+			console.error(error.message);
+		});
+	};
+	
 
 	const handleLeaveChannel = () => {
 		//--> CALL TO BACKEND <-- //
@@ -190,7 +218,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			  {(selectedChannel.settings.owner === user.nameIntra) &&
 				<Button
 					variant="contained"
-					onClick={handleDeleteChannel}
+					onClick={() => handleDeleteChannel(selectedChannel.id)}
 					sx={{ mt: 1, minWidth: '155px', color: 'rgb(247, 77, 57)' }}
 					>
 					Delete Channel
@@ -234,7 +262,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 									' '}
 							{`(${user.role})`}
 					  </Typography>
-					  {console.log(user.nameIntra)}
+					  {/* {console.log(user.nameIntra)} */}
 					  
 					  {(userIsAdmin(user.name, selectedChannel) ||
 					  	selectedChannel.settings.owner === user.nameIntra) && 
