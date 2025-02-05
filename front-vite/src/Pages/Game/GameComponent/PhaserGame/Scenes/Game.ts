@@ -18,7 +18,8 @@ export default class GameScene extends BaseScene {
 	private _gameState: GameTypes.GameState;
 	private _powerUpState: GameTypes.PowerUpPosition | null;
 	private _gameStarted: boolean;
-
+	private _closeConnection: boolean;
+	
 	private _gameSizeBackEnd: GameTypes.GameSize;
 	private _widthRatio: number;
 	private _heightRatio: number;
@@ -58,6 +59,7 @@ export default class GameScene extends BaseScene {
 		}
 		this._powerUpState = null;
 		this._gameStarted = false;
+		this._closeConnection = false;
 		
 		this._gameSizeBackEnd = {width: 0, height: 0}
 		this._widthRatio = 0;
@@ -88,6 +90,8 @@ export default class GameScene extends BaseScene {
 		}
 		this._powerUpState = null;
 		this._gameStarted = false;
+		this._closeConnection = false;
+		
 		// Key bindings
 		this._cursors =
 			this.input.keyboard!.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
@@ -197,18 +201,13 @@ export default class GameScene extends BaseScene {
 			}
 		});
 
-		this._socketIO.on('endGame', (winner: string) => {
+		this._socketIO.on('endGame', (winner: string) => this.switchScene('Results', {winner: winner, score: this._gameState.score, sessionToken: this._sessionToken, socket: this._socketIO}));
 
-			const nextGameData: GameTypes.InitData = {
-				sessionToken: uuidv4(),
-				mode: this._mode,
-				difficulty: this._difficulty,
-				extras: this._powerUpSelection,
-			}
-			this.switchScene('Results', {winner: winner, score: this._gameState.score, nextGameData: nextGameData})
+		this._socketIO.on('gameError', (trace: string) => {
+			
+			this._closeConnection = true;
+			this.switchScene('Error', { trace });
 		});
-
-		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
 		// power ups handling
 		this._socketIO.on('powerUpUpdate', (state: GameTypes.PowerUpPosition) => {
@@ -293,6 +292,7 @@ export default class GameScene extends BaseScene {
 	}
 
 	onPreLeave(): void {
-		this._socketIO.disconnect();
+		if (this._closeConnection === true)
+			this._socketIO.disconnect();
 	}
 }

@@ -5,10 +5,9 @@ import { io, Socket } from 'socket.io-client';
 
 export default class ResultsScene extends BaseScene {
 
-	private _urlWebsocket: string = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_REMATCH;
 	private _winner!: string;
 	private _score!: {p1: number, p2: number};
-	private _nextGameData!: InitData;
+	private _sessionToken!: string;
 
 	private _playAgainPopup!: Phaser.GameObjects.Container;
 	private _waitingPopup!: Phaser.GameObjects.Container;
@@ -20,21 +19,15 @@ export default class ResultsScene extends BaseScene {
 		super({ key: 'Results' });
 	}
 
-	init(data: { winner: string, score: {p1: number, p2: number}, nextGameData: InitData }): void {
+		init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string, socket: Socket }): void {
 		super.init();
 
 		this._winner = data.winner;
 		this._score = data.score;
-		this._nextGameData = data.nextGameData
+		this._sessionToken = data.sessionToken;
+		this._socketIO = data.socket;
 
 		this.setupSocket();
-	}
-
-	// Create game objects and establish WebSocket connection
-	create(): void {
-		super.create()
-
-		this.sendMsgToServer('joinQueue', this._nextGameData);
 	}
 
 	buildGraphicObjects(): void {
@@ -72,14 +65,9 @@ export default class ResultsScene extends BaseScene {
 		.on('pointerout', () => playAgainBtn.setStyle({ fill: '#fff' }))
 		.on('pointerup', () => {
 
+			this.sendMsgToServer('askForRematch', {sessionToken: this._sessionToken});
 			playAgainBtn.visible = false;
-			if (this._nextGameData.mode === GameMode.single)
-				this.sendMsgToServer('acceptRematch');
-			else if (this._nextGameData.mode === GameMode.multi) {
-
-				this.sendMsgToServer('askForRematch');
-				this._waitingPopup.setVisible(true);
-			}
+			this._waitingPopup.setVisible(true);
 		});
 
 		const goHomeButton = this.add
@@ -109,11 +97,6 @@ export default class ResultsScene extends BaseScene {
 
 	setupSocket(): void {
 
-		this._socketIO = io(this._urlWebsocket, {
-			withCredentials: true,
-			transports: ['websocket'],
-		});
-
 		this._socketIO.on('acceptRematch', (data: InitData) => {
 
 			if (this._waitingPopup.visible === true)
@@ -136,10 +119,16 @@ export default class ResultsScene extends BaseScene {
 			this._refusePopup.setVisible(true);
 		});
 
-		this._socketIO.on('rematchConfirm', () => this._playAgainPopup.setVisible(true));
+		this._socketIO.on('askForRematch', (info: string) => {
+			(this.children.getByName('playAgainBtn') as Phaser.GameObjects.Text).visible = false;
+
+			(this._playAgainPopup.getByName('textTitle') as Phaser.GameObjects.Text).setText(info);
+			this._playAgainPopup.setVisible(true);
+		
+		});
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
-		
+
 		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
 	}
 
@@ -195,11 +184,12 @@ export default class ResultsScene extends BaseScene {
 			.setInteractive()
 			.setOrigin(0.5, 0.5);
 
-		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, 'user asked to play again', {
+		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, '/', {
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
 			align: 'center',
 			color: '#fff',
 		})
+		.setName('textTitle')
 		.setOrigin(0.5, 0.5);
 
 		const yesButton = this.add.text(background.width * 0.2, background.height * 0.75, 'yes', {
@@ -211,7 +201,7 @@ export default class ResultsScene extends BaseScene {
 		.setInteractive()
 		.on('pointerdown', () => {
 			
-			this.sendMsgToServer('acceptRematch');
+			this.sendMsgToServer('acceptRematch', {sessionToken: this._sessionToken});
 			this._playAgainPopup.setVisible(false);
 		});
 
@@ -224,7 +214,7 @@ export default class ResultsScene extends BaseScene {
 		.setInteractive()
 		.on('pointerdown', () => {
 
-			this.sendMsgToServer('abortRematch');
+			this.sendMsgToServer('abortRematch', {sessionToken: this._sessionToken});
 			this._playAgainPopup.setVisible(false);
 			this.switchScene('MainMenu');
 		});
@@ -262,8 +252,8 @@ export default class ResultsScene extends BaseScene {
 			align: 'center',
 			color: '#fff',
 		})
+		.setName('textTitle')
 		.setOrigin(0.5, 0.5);
-		textTitle.name = 'textTitle';
 	
 		const closeButton = this.add.text(background.width * 0.5, background.height * 0.75, 'close', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width) - 10}px`,

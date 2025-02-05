@@ -57,4 +57,20 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	movePaddle(@MessageBody() data: PaddleDirectionDTO, @ConnectedSocket() client: Socket): void {
 		this.roomManager.movePaddle(data.sessionToken, client.id, data.direction);
 	}
+
+	@SubscribeMessage('askForRematch')
+	askForRematch(@MessageBody() data: {sessionToken: string}, @ConnectedSocket() client: Socket): void {
+		this.roomManager.askForRematch(data.sessionToken, client);
+	}
+
+	@SubscribeMessage('acceptRematch')
+	acceptRematch(@MessageBody() data: {sessionToken: string}): void {
+		
+		this.roomManager.acceptRematch(data.sessionToken);
+	}
+
+	@SubscribeMessage('abortRematch')
+	abortRematch(@MessageBody() data: {sessionToken: string}, @ConnectedSocket() client: Socket): void {
+		this.roomManager.abortRematch(data.sessionToken, client);
+	}
 }

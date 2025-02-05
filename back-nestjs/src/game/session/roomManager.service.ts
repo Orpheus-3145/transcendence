@@ -85,4 +85,21 @@ export default class RoomManagerService {
 	_deleteRoom(sessionToken: string): void {
 		this.rooms.delete(sessionToken);
 	}
+
+	askForRematch(sessionToken: string, client: Socket): void {
+		
+		this._getRoom(sessionToken).askForRematch(client);
+	}
+
+	acceptRematch(sessionToken: string): void {
+
+		const gameData = this._getRoom(sessionToken).acceptRematch();
+		if (gameData)
+			this.createRoom(gameData);
+	}
+
+	abortRematch(sessionToken: string, client: Socket): void {
+
+		this._getRoom(sessionToken).abortRematch(client);
+	}
 }

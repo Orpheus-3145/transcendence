@@ -1,6 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Socket } from 'socket.io';
+import { v4 as uuidv4 } from 'uuid';
 
 import GameStateDTO from 'src/dto/gameState.dto';
 import GameSizeDTO from 'src/dto/gameSize.dto'
@@ -39,6 +40,7 @@ export default class SimulationService {
 
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
+	private rematchPhase: boolean = false;
 	private player1: GameTypes.PlayingPlayer = null;
 	private player2: GameTypes.PlayingPlayer = null;
 	private ballSpeed: number = this._defaultBallSpeed;
@@ -57,8 +59,8 @@ export default class SimulationService {
 	private powerUpActive: boolean = false; // Is powerUp active or not? Maybe we can remove this.
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
 	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight];
-
 	private powerUpType: GameTypes.PowerUpType;
+
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
 	private powerUpInterval: NodeJS.Timeout = null; // Timer for spawning power up
@@ -144,7 +146,7 @@ export default class SimulationService {
 		clearInterval(this.gameStateInterval);
 		this.gameStateInterval = null;
 
-		// if players are using powerup
+		// if players are using powerups
 		if (this.powerUpSelected.length > 0) {
 			clearInterval(this.powerUpInterval);
 			this.powerUpInterval = null;
@@ -159,16 +161,6 @@ export default class SimulationService {
 		this.gameOver = false;
 		this.ballSpeed = this._defaultBallSpeed
 		this.ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
-
-		if (this.player1 !== null) {
-			this.player1.clientSocket.disconnect(true);
-			this.player1 = null;
-		}
-		if (this.player2 !== null) {
-			if (this.mode === GameTypes.GameMode.multi)
-				this.player2.clientSocket.disconnect(true);
-			this.player2 = null;
-		}
 
 		this.logger.debug(`session [${this.sessionToken}] - engine stopped`);
 	}
@@ -581,6 +573,58 @@ export default class SimulationService {
 		this.sendMsgToPlayer(playerBonus.clientSocket, 'powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
 	}
 
+	askForRematch(client: Socket): void {
+
+		this.logger.debug(`session [${this.sessionToken}] - client ${client.id} proposed a rematch`);
+		
+		if (this.mode === GameTypes.GameMode.single)
+			this.acceptRematch();
+		else if (this.mode === GameTypes.GameMode.multi) {
+			
+			if (this.player1.clientSocket.id === client.id)
+				this.sendMsgToPlayer(this.player2.clientSocket, 'askForRematch', `${this.player1.nameNick} proposed a rematch`);
+			else if (this.player2.clientSocket.id === client.id)
+				this.sendMsgToPlayer(this.player1.clientSocket, 'askForRematch', `${this.player2.nameNick} proposed a rematch`);
+		}
+	}
+
+	acceptRematch(): GameDataDTO | null {
+
+		this.logger.log(`session [${this.sessionToken}] - rematch accepted`);
+		
+		const gameData: GameDataDTO = {
+			sessionToken: uuidv4(),
+			mode: this.mode,
+			difficulty: this.difficulty,
+			extras: this.powerUpSelected,
+		};
+		this.rematchPhase = false;
+
+		this.sendMsgToPlayer(this.player1.clientSocket, 'acceptRematch', gameData);
+		if (this.mode === GameTypes.GameMode.multi) {
+			this.sendMsgToPlayer(this.player2.clientSocket, 'acceptRematch', gameData);
+			return (gameData);
+		}
+		else
+			return (null);
+	}
+
+	abortRematch(client: Socket): void {
+
+		if (this.mode !== GameTypes.GameMode.multi)
+			return ;
+
+		this.rematchPhase = false;
+		if (this.player1 && this.player2 && this.player1.clientSocket.id === client.id) {
+			this.logger.debug(`session [${this.sessionToken}] - player ${this.player1.nameNick} rejected rematch`);
+			this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${this.player1.nameNick} rejected rematch`);
+		}
+		else if (this.player1 && this.player2 && this.player2.clientSocket.id === client.id) {
+			this.logger.debug(`session [${this.sessionToken}] - player ${this.player2.nameNick} rejected rematch`);
+			this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${this.player2.nameNick} rejected rematch`);
+		}
+	}
+
 	sendMsgToPlayer(client: Socket, msg: string, data?: any): void {
 		if (this.hardDebugMode == true)
 			this.logger.debug(
@@ -592,32 +636,42 @@ export default class SimulationService {
 
 	// if a player disconnects unexpectedly
 	handleDisconnect(client: Socket): void {
-		if (this.engineRunning === false) return;
+		if (this.mode === GameTypes.GameMode.multi) {
 
-		if (this.player1 && this.player1.clientSocket.id === client.id) {
-			this.logger.log(
-				`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`,
-			);
-
-			if (this.mode === GameTypes.GameMode.multi)
-				this.sendMsgToPlayer(
-					this.player2.clientSocket,
-					'gameError',
-					`Game interrupted, player ${this.player1.nameNick} left the game`,
-				);
-		} else if (this.player2 && (this.mode === GameTypes.GameMode.multi) && this.player2.clientSocket.id === client.id) {
-			this.logger.log(
-				`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`,
-			);
-
-			this.sendMsgToPlayer(
-				this.player1.clientSocket,
-				'gameError',
-				`Game interrupted, player ${this.player2.nameNick} left the game`,
-			);
+			if (this.engineRunning === true) {
+				
+				if (this.player1 && this.player1.clientSocket.id === client.id) {
+					this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`);
+					
+					if (this.player2)
+						this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted, player ${this.player1.nameNick} left the game`);
+	
+				} else if (this.player2 && this.player2.clientSocket.id === client.id) {
+					this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`);
+	
+					if (this.player1)
+						this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted, player ${this.player2.nameNick} left the game`);
+	
+				}
+				this.stopEngine();
+				
+			} else if (this.rematchPhase === true) {
+	
+				if (this.player1 && this.player1.clientSocket.id === client.id) {
+					this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${this.player1.nameNick} left the queue`);
+			
+					if (this.player2)
+						this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${this.player1.nameNick} left the queue`);
+				}
+				if (this.player2 && this.player2.clientSocket.id === client.id) {
+					this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${this.player2.nameNick} left the queue`);
+	
+					if (this.player1)
+						this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${this.player2.nameNick} left the queue`);
+				}
+			}
 		}
-
-		this.stopEngine();
+		this.closeSimulation();
 	}
 
 	// if the game ends gracefully
@@ -638,6 +692,7 @@ export default class SimulationService {
 			this.sendMsgToPlayer(this.player2.clientSocket, 'endGame', winner.nameNick);
 
 		this.stopEngine();
+		this.rematchPhase = true;
 	}
 
 	// for server error
@@ -649,6 +704,7 @@ export default class SimulationService {
 			this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game error - ${trace}`);
 
 		this.stopEngine();
+		this.closeSimulation();
 
 		if (this.gameSetupInterval) clearInterval(this.gameSetupInterval);
 	}
@@ -657,5 +713,19 @@ export default class SimulationService {
 		if (!this.player1 || !this.player2) return false;
 
 		return clientId === this.player1.clientSocket.id || clientId === this.player2.clientSocket.id;
+	}
+
+	closeSimulation(): void {
+
+		if (this.player1 !== null) {
+			this.player1.clientSocket.disconnect(true);
+			this.player1 = null;
+		}
+		if (this.player2 !== null) {
+			if (this.mode === GameTypes.GameMode.multi)
+				this.player2.clientSocket.disconnect(true);
+			this.player2 = null;
+		}
+		this.rematchPhase = false;
 	}
 }

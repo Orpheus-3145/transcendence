@@ -41,7 +41,7 @@ export default class MatchmakingService {
 			const currentPlayer: WaitingPlayer = this._waitingPlayersIP.pop();
 
 			if (leaver.id == currentPlayer.clientSocket.id)
-				this.logger.debug(`client ${currentPlayer.clientSocket.id} left the queue`);
+				this.logger.debug(`client ${currentPlayer.clientSocket.id} left the queue for matchmaking`);
 			else tmpWaitingPlayers.push(currentPlayer);
 		}
 		this._waitingPlayersIP = tmpWaitingPlayers;
