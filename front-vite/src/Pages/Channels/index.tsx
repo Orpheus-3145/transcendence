@@ -38,7 +38,7 @@ export const myself: UserProps =  {
 export const userIsAdmin = (userName: string, channel: ChatRoom): boolean => {
 	// 
 	const found = channel.settings.users.find((user) => user.name === userName);
-	return found?.role === 'Admin';
+	return found?.role === 'admin';
 };
 
 export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
@@ -252,6 +252,7 @@ const ChannelsPage: React.FC = () => {
 						settings: {
 							type: 'public',
 							password: null,
+							// users: [{...user, role: 'admin'}],
 							users: [{...user, role: 'admin'}],
 							owner: user.nameIntra,
 						},

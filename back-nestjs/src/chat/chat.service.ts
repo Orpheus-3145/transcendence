@@ -62,7 +62,7 @@ export class ChatService {
 	  
 		await this.channelMemberRepository.save(userEntities);
 	  
-		// console.log('userEntities:', userEntities);
+		console.log('userEntities:', userEntities);
 
 
 		return savedChannel;

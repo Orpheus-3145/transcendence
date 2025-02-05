@@ -55,7 +55,6 @@ export class ChannelMember {
 		enum: ['owner', 'admin', 'member'],
 		default: 'member',
 	})
-	
 	member_role: string;
 
 	@ManyToOne(() => Channel, (channel: Channel) => channel.members)

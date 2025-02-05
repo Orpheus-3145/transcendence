@@ -38,6 +38,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const theme = useTheme();
 	const { user } = useUser();
 
+	console.log(user);
+
 	const handleAddFriend = () => {
 		console.log('"Add Friend" clicked!');
 		if (friendName) {
@@ -139,13 +141,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 		setSelectedChannel(null);
 	};
-
+	// console.log(selectedChannel.settings.owner, user.nameIntra);
 	return (
 		<Modal open={open} onClose={onClose}>
 		  <Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
 			<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
 			<Divider sx={{ my: 2 }} />
-			{(selectedChannel.settings.owner === user.nameInta) && (
+			{/* {console.log(user)} */}
+			{/* {console.log(selectedChannel.settings.owner, user.nameIntra)} */}
+			{(selectedChannel.settings.owner === user.nameIntra) && (
 			<>
 			{/* Privacy Options */}
 			<Stack direction="row" spacing={2}>
@@ -153,7 +157,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			  <Button variant={settings?.type === 'private' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('private', null)}>Private</Button>
 			  <Button variant={settings?.type === 'password' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('password', settings.password)}>Password Protected</Button>
 			</Stack>
-	
+
 			{/* Password field for password protected */}
 			{settings?.type === 'password' && (
 			  <TextField
@@ -221,16 +225,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				  <Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
 				  <Divider />
 				  {settings.users.map(user => (
-					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.name}>
+					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.id}>
 					  <Typography sx={{whiteSpace: 'pre-line'}} >
 							{user.name?.length > 10 ? user.name.slice(0, 9) + '...' : user.name}
-					  		{(userIsAdmin(user.nameIntra, selectedChannel) || 
-					  			selectedChannel.settings.owner === user.nameIntra) ? 
+					  		{(userIsAdmin(user.name, selectedChannel) || 
+					  			selectedChannel.settings.owner === user.name) ? 
 									'\n' :
 									' '}
 							{`(${user.role})`}
 					  </Typography>
-					  {(userIsAdmin(user.nameIntra, selectedChannel) ||
+					  {console.log(user.nameIntra)}
+					  
+					  {(userIsAdmin(user.name, selectedChannel) ||
 					  	selectedChannel.settings.owner === user.nameIntra) && 
 						user.nameIntra !== user.name && (
 					  <Stack direction="row" spacing={0.3}>

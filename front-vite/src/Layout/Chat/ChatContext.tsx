@@ -5,6 +5,7 @@ import { Group as GroupIcon } from '@mui/icons-material';
 import { Typography } from '@mui/material';
 import { PersonAdd as PersonAddIcon} from '@mui/icons-material';
 import { io } from 'socket.io-client';
+import Avatar from '@mui/material/Avatar'
 
 // export const socket = io('https://localhost:3000/chat', {
 // 	withCredentials: true,
@@ -53,7 +54,7 @@ export const ChatProvider: React.FC = ({ children }) => {
             socket.emit('getChannels');  // Request channels from backend
 
             socket.on('channelsList', (channels) => {
-                console.log('Received channels:', channels);
+                // console.log('Received from database:', channels);
                 setChatProps((prevState) => ({
                     ...prevState,
                     chatRooms: channels.map((channel) => ({
@@ -64,12 +65,21 @@ export const ChatProvider: React.FC = ({ children }) => {
                         settings: {
                             type: channel.ch_type,
                             password: null,
-                            users: channel.members, // Ensure users are loaded
+                            users: channel.members.map(( member ) =>({
+								id: member.user_id,
+								name: member.name,
+								role: member.member_role,
+								// email: '',
+								icon: <Avatar />
+
+							})) , // Ensure users are loaded
                             owner: channel?.ch_owner, // Ensure ch_owner is included
                         },
                     })),
                 }));
+				console.log('Chat Props:', chatProps);
             });
+
 
             return () => {
                 socket.off('channelsList'); // Cleanup to prevent duplicate listeners

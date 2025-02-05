@@ -10,9 +10,9 @@ export enum ChatStatus {
 }
 
 export enum UserRoles {
-  Admin = 'Admin',
-  Guest = 'Guest',
-  Owner = 'Owner',
+  Admin = 'admin',
+  Guest = 'guest',
+  Owner = 'owner',
 }
 
 export interface ChatMessage {
