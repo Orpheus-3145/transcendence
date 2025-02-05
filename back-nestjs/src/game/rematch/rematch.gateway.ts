@@ -10,7 +10,7 @@ import { UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 import RematchService from './rematch.service';
-import { GameExceptionFilter } from '../../errors/exceptionFilters';
+import { GameExceptionFilter } from 'src/errors/exceptionFilters';
 import GameInitDTO from 'src/dto/gameInit.dto';
 
 @WebSocketGateway({
@@ -30,13 +30,11 @@ export default class RematchGateway implements OnGatewayDisconnect {
 	constructor(private rematchService: RematchService) {}
 
 	handleDisconnect(@ConnectedSocket() client: Socket): void {
-		
 		this.rematchService.leaveQueue(client);
 	}
 
 	@SubscribeMessage('joinQueue')
 	joinQueue(@ConnectedSocket() client: Socket, @MessageBody() data: GameInitDTO): void {
-		
 		this.rematchService.joinQueue(client, data);
 	}
 

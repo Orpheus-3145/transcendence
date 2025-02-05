@@ -10,7 +10,7 @@ import { UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 import MatchmakingService from './matchmaking.service';
-import { GameExceptionFilter } from '../../errors/exceptionFilters';
+import { GameExceptionFilter } from 'src/errors/exceptionFilters';
 import GameInitDTO from 'src/dto/gameInit.dto';
 
 @WebSocketGateway({

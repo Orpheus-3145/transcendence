@@ -3,7 +3,7 @@ import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 
 import SimulationService from './simulation.service';
-import { GameMode, PaddleDirection } from '../game.types';
+import { GameMode, PaddleDirection } from 'src/game/game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import GameInitDTO from 'src/dto/gameInit.dto';
@@ -39,7 +39,7 @@ export default class RoomManagerService {
 
 	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
 		this.logger.log(
-			`session [${sessionToken}] - player ${nameNick} [id client ${client.handshake.address}] joined the room`,
+			`session [${sessionToken}] - player ${nameNick} [id ${client.id}] joined the room`,
 		);
 
 		this._getRoom(sessionToken).addPlayer(client, playerId, nameNick);

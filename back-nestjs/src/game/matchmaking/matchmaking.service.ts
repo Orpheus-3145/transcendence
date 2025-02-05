@@ -3,10 +3,10 @@ import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import AppLoggerService from 'src/log/log.service';
-import { GameDifficulty, GameMode } from '../game.types';
-import RoomManagerService from '../session/roomManager.service';
+import { GameDifficulty, GameMode } from 'src/game/game.types';
+import RoomManagerService from 'src/game/session/roomManager.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import { WaitingPlayer } from '../game.types';
+import { WaitingPlayer } from 'src/game/game.types';
 import GameInitDTO from 'src/dto/gameInit.dto';
 
 @Injectable()
@@ -31,7 +31,7 @@ export default class MatchmakingService {
 
 		if (this._checker === null) this._checker = setInterval(() => this.checkNewGame(), 100);
 
-		this.logger.debug(`client [${client.handshake.address}] joined the queue, power ups: ${JSON.stringify(info.extras)}`);
+		this.logger.debug(`client ${client.id} joined the queue for matchmaking, power ups: ${JSON.stringify(info.extras)}`);
 	}
 
 	removePlayerFromQueue(leaver: Socket) {
@@ -68,8 +68,8 @@ export default class MatchmakingService {
 						difficulty: GameDifficulty.unset,
 						extras: player1.extras,
 					};
-					player1.clientSocket.emit('ready', initData.sessionToken); // message player1
-					player2.clientSocket.emit('ready', initData.sessionToken); // message player2
+					player1.clientSocket.emit('ready', initData.sessionToken);
+					player2.clientSocket.emit('ready', initData.sessionToken);
 
 					this.logger.log(
 						`found players ${player1.clientSocket.id}, ${player2.clientSocket.id} - sessionToken: ${initData.sessionToken}`,

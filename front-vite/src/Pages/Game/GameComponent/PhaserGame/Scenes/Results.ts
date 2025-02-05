@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client';
 
 export default class ResultsScene extends BaseScene {
 
-	private _urlWebsocket: string = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION;
+	private _urlWebsocket: string = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_REMATCH;
 	private _winner!: string;
 	private _score!: {p1: number, p2: number};
 	private _nextGameData!: InitData;
@@ -93,7 +93,7 @@ export default class ResultsScene extends BaseScene {
 		.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) 	// Change color on hover
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 	// Change color back when not hovered
 		.on('pointerup', () => {
-			this.sendMsgToServer('abortRematch');
+			// this.sendMsgToServer('abortRematch');
 			this.switchScene('MainMenu');
 		}); 				// Start the main game
 
@@ -123,7 +123,7 @@ export default class ResultsScene extends BaseScene {
 			this.switchScene('Game', data);
 		});
 
-		this._socketIO.on('abortRematch', (reason: string) => {
+		this._socketIO.on('abortRematch', (info: string) => {
 
 			if (this._waitingPopup.visible === true)
 				this._waitingPopup.setVisible(false);
@@ -132,7 +132,7 @@ export default class ResultsScene extends BaseScene {
 
 			(this.children.getByName('playAgainBtn') as Phaser.GameObjects.Text).visible = false;
 
-			(this._refusePopup.getByName('textTitle') as Phaser.GameObjects.Text).setText(reason);
+			(this._refusePopup.getByName('textTitle') as Phaser.GameObjects.Text).setText(info);
 			this._refusePopup.setVisible(true);
 		});
 
