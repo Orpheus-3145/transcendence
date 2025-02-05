@@ -45,14 +45,13 @@ export class ChatService {
 		});
 	  
 		const savedChannel = await this.channelRepository.save(newChannel);
-		console.log('new channel:', newChannel);
-		// console.log('saved channel:', savedChannel);
-		
+		// console.log('new channel:', newChannel);
 
 		// Add the initial users
 		// console.log(users);
+
 		const userEntities = users.map(user => {
-			console.log('user.nameIntra:', user.nameIntra);  // Check if this is null/undefined
+			// console.log('user.nameIntra:', user.nameIntra);
 			return {
 				user_id: user.id,
 				name: user.nameIntra,
@@ -63,7 +62,7 @@ export class ChatService {
 	  
 		await this.channelMemberRepository.save(userEntities);
 	  
-		console.log('userEntities:', userEntities);
+		// console.log('userEntities:', userEntities);
 
 
 		return savedChannel;
