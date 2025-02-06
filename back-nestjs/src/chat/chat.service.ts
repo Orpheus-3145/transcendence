@@ -48,8 +48,6 @@ export class ChatService {
 		// console.log('new channel:', newChannel);
 
 		// Add the initial users
-		// console.log(users);
-
 		const userEntities = users.map(user => {
 			// console.log('user.nameIntra:', user.nameIntra);
 			return {
@@ -59,13 +57,17 @@ export class ChatService {
 		  		member_role: user.role,
 			}	
 		});
-	  
+		// console.log('userEntities:', userEntities);
+
 		await this.channelMemberRepository.save(userEntities);
-	  
-		console.log('userEntities:', userEntities);
-
-
-		return savedChannel;
+		// Fetch the full channel, including relations (users and messages)
+		
+		const fullChannel = await this.channelRepository.findOne({
+			where: { channel_id: savedChannel.channel_id },
+			relations: ['members'],
+		});
+		console.log('full channel:', fullChannel);
+		return fullChannel;
 	}
 	  
 

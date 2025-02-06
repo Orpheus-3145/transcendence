@@ -46,6 +46,9 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 	return found ? true : false;
 };
 
+//////////////////////////////////////////////////////////////////////
+
+
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
 	// console.log(user);
@@ -213,7 +216,9 @@ const ChannelsPage: React.FC = () => {
 		}
 	}, [selectedAvailableChannel]);
 
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+	
+	
 	const handleCreateChannel = () => {
 		if (channelName.trim()) {
 			const newChannelData = {
@@ -229,6 +234,34 @@ const ChannelsPage: React.FC = () => {
 
 			socket.emit('createChannel', newChannelData);
 		
+			// socket.on('channelCreated', (newChannel) => {
+			// 	console.log(newChannel);
+			// 	setChatProps((prevState) => ({
+			// 		...prevState,
+			// 		chatRooms: [
+			// 			...prevState.chatRooms,
+			// 			{
+			// 				id: newChannel.channel_id,
+			// 				name: newChannel.title,
+			// 				icon: <GroupIcon />,
+			// 				messages: [],
+			// 				settings: {
+			// 					type: newChannel.ch_type,
+			// 					password: newChannel.password,
+			// 					// users: [{...user, role: 'admin'}],
+			// 					users: newChannel.members.map((member) => ({
+			// 						id: member.user_id,
+			// 						name: member.name,
+			// 						role: member.member_role,
+			// 						icon: <Avatar />,
+			// 					})),
+			// 					owner: newChannel.ch_owner,
+			// 				},
+			// 			},
+			// 		],
+			// 	}))
+			// });
+
 			setChatProps((prevState) => ({
 				...prevState,
 				chatRooms: [
@@ -241,12 +274,18 @@ const ChannelsPage: React.FC = () => {
 							type: 'public',
 							password: null,
 							// users: [{...user, role: 'admin'}],
-							users: [{...user, role: 'admin'}],
+							users: [{ 
+								id: user.id,
+								name: user.nameIntra ,
+								role: 'admin',
+								icon: <Avatar />, 
+							}],
 							owner: user.nameIntra,
 						},
 					},
 				],
 			}));
+
 			setChannelName('');
 			setIsAddingChannel(false);
 		}
@@ -295,22 +334,10 @@ const ChannelsPage: React.FC = () => {
 	// 	  });
 	// 	}
 	//   };
-	// const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
-	// 	event.stopPropagation();
-	// 	// event.preventDefault();
-	// 	console.log('Available channel clicked!');
-	// 	setSelectedAvailableChannel(channel);
-	// 	setIsSettingsView(false);
-	//   	setIsAddingChannel(false);
-	// 	if (channel.settings.type === 'password') {
-	// 		setIsPasswordModal(true);
-	// 	}
-	// 	//  else {
-	// 	// 	moveSelectedChToJoinedCh();
-	// 	// }
-	// };
+
 	  
-//-------------------------------------------------------------------///
+//////////////////////////////////////////////////////////////////////
+
 	const handleCancelNewChannel = () => {
 		setIsAddingChannel(false);
 		setChannelName('');
@@ -322,7 +349,8 @@ const ChannelsPage: React.FC = () => {
 	  setIsAddingChannel(false);
 	  
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
 		console.log('Available channel clicked!');
@@ -334,22 +362,9 @@ const ChannelsPage: React.FC = () => {
 		if (channel.settings.type === 'password') {
 			setIsPasswordModal(true);
 		} 
-		// else { 
-		// 	console.log('Socket instance:', socket);
-		// 	console.log('Emitting joinChannel with channel ID:', channel.id);
-		// 	// Emit to the backend to join the channel
-		// 	socket.emit('joinChannel', { channel: channel.id }, (response: any) => {
-		// 		if (response && response.message) {
-		// 			console.log('Success:', response.message);
-		// 			// Optionally add logic to update UI upon successful join
-		// 			moveSelectedChToJoinedCh();
-		// 		} else {
-		// 			console.error('Error:', response.message);
-		// 		}
-		// 	});
-		// }
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 
 	const handleSettingsClick = (event: React.MouseEvent, channel: ChatRoom) => {
 	  event.stopPropagation(); // Prevent triggering the channel click
@@ -357,18 +372,21 @@ const ChannelsPage: React.FC = () => {
 	  setIsAddingChannel(false);
 	  setIsSettingsView(true);
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const handleSendGameInvite = (event: React.MouseEvent) => {
 		//--> CALL TO BACKEND <-- //
 
 		event.stopPropagation();
 		console.log("'Send Game Invite' clicked!");
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const handleSetMessage = (event: React.KeyboardEvent) => {
 		setNewMessage(event.target.value);
 	};
-//-------------------------------------------------------------------//	
+//////////////////////////////////////////////////////////////////////
+	
 	const handleSendMessage = () => {
 		if (newMessage) {
 			const newChatMessage: ChatMessage = {
@@ -395,14 +413,16 @@ const ChannelsPage: React.FC = () => {
 			setNewMessage('');
 		}
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const handleEnterPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
 		if (event.key === 'Enter') {
 			event.preventDefault();
 			handleSendMessage();
 		}
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const moveSelectedChToJoinedCh = () => {
 		if (!selectedAvailableChannel) {
 			return;
@@ -431,7 +451,8 @@ const ChannelsPage: React.FC = () => {
 		setSelectedChannel(null);
 	};
 	
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
 		event.preventDefault();
 
@@ -489,7 +510,8 @@ const ChannelsPage: React.FC = () => {
 		</Stack>
 	  );
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const AvailableChannelLine : React.FC<{channel: ChatRoom}> = ({channel}) => {
 		return (
 			<Stack
@@ -529,7 +551,8 @@ const ChannelsPage: React.FC = () => {
 			</Stack>
 		  );
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const PlayerLine: React.FC<{player: UserProps}> = ({player}) => {
 		return (
 			<Stack
@@ -568,7 +591,8 @@ const ChannelsPage: React.FC = () => {
 			</Stack>
 		);
 	};
-//-------------------------------------------------------------------//
+//////////////////////////////////////////////////////////////////////
+
 	const renderPlayers = () => (
 		<Stack gap={1}>
 			{onlinePlayers.map((player) => (

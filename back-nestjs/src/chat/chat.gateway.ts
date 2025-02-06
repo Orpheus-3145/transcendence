@@ -35,6 +35,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	handleDisconnect(client: Socket) {
 		console.log(`Client disconnected: ${client.id}`);
 	}
+
   	// Handle channel creation
   	@SubscribeMessage('createChannel')
   	async handleCreateChannel(
@@ -157,12 +158,13 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			const deletedChannel = await this.chatService.deleteChannel(channel_id);
 			if (deletedChannel) {
 				console.log(`Channel deleted: ${deletedChannel.title}`);
-				client.emit('channelDeleted', deletedChannel);
+				this.server.emit('channelDeleted', deletedChannel);
+				// client.emit('channelDeleted', deletedChannel);
 			} else {
 				client.emit('error', { message: 'Channel not found or could not be deleted' });
 			}
 		} catch (error) {
-			console.error('Error deleting channel:', error);
+			console.error(error);
 			client.emit('error', { message: 'Error deleting channel' });
 		}
 	}
