@@ -43,6 +43,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleAddFriend = () => {
 		console.log('"Add Friend" clicked!');
+		
 		if (friendName) {
 			const newUser: UserProps = {
 				name: friendName,
