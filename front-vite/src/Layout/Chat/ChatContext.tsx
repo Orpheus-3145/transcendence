@@ -54,7 +54,7 @@ export const ChatProvider: React.FC = ({ children }) => {
             socket.emit('getChannels');  // Request channels from backend
 
             socket.on('channelsList', (channels) => {
-                // console.log('Received from database:', channels);
+                console.log('Channels from database:', channels);
                 setChatProps((prevState) => ({
                     ...prevState,
                     chatRooms: channels.map((channel) => ({

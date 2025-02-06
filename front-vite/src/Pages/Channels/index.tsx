@@ -218,79 +218,6 @@ const ChannelsPage: React.FC = () => {
 
 //////////////////////////////////////////////////////////////////////
 	
-	
-	// const handleCreateChannel = () => {
-	// 	if (channelName.trim()) {
-	// 		const newChannelData = {
-	// 			title: channelName,
-	// 			ch_type: 'public',  // or another type based on UI
-	// 			ch_owner: user.nameIntra,
-	// 			users: [
-	// 			  { id: user.id, nameIntra: user.nameIntra, role: 'admin', email: user.email }
-	// 			],
-	// 			password: null,  // set password if needed
-	// 		};
-	// 		// console.log('NEW CHANNEL:', newChannelData);
-
-	// 		socket.emit('createChannel', newChannelData);
-		
-	// 		// socket.on('channelCreated', (newChannel) => {
-	// 		// 	console.log(newChannel);
-	// 		// 	setChatProps((prevState) => ({
-	// 		// 		...prevState,
-	// 		// 		chatRooms: [
-	// 		// 			...prevState.chatRooms,
-	// 		// 			{
-	// 		// 				id: newChannel.channel_id,
-	// 		// 				name: newChannel.title,
-	// 		// 				icon: <GroupIcon />,
-	// 		// 				messages: [],
-	// 		// 				settings: {
-	// 		// 					type: newChannel.ch_type,
-	// 		// 					password: newChannel.password,
-	// 		// 					// users: [{...user, role: 'admin'}],
-	// 		// 					users: newChannel.members.map((member) => ({
-	// 		// 						id: member.user_id,
-	// 		// 						name: member.name,
-	// 		// 						role: member.member_role,
-	// 		// 						icon: <Avatar />,
-	// 		// 					})),
-	// 		// 					owner: newChannel.ch_owner,
-	// 		// 				},
-	// 		// 			},
-	// 		// 		],
-	// 		// 	}))
-	// 		// });
-
-	// 		setChatProps((prevState) => ({
-	// 			...prevState,
-	// 			chatRooms: [
-	// 				...prevState.chatRooms,
-	// 				{
-	// 					name: channelName,
-	// 					icon: <GroupIcon />,
-	// 					messages: [],
-	// 					settings: {
-	// 						type: 'public',
-	// 						password: null,
-	// 						// users: [{...user, role: 'admin'}],
-	// 						users: [{ 
-	// 							id: user.id,
-	// 							name: user.nameIntra ,
-	// 							role: 'admin',
-	// 							icon: <Avatar />, 
-	// 						}],
-	// 						owner: user.nameIntra,
-	// 					},
-	// 				},
-	// 			],
-	// 		}));
-
-	// 		setChannelName('');
-	// 		setIsAddingChannel(false);
-	// 	}
-	// };
-
 	const handleCreateChannel = () => {
 		if (channelName.trim()) {
 			const newChannelData = {
@@ -305,92 +232,47 @@ const ChannelsPage: React.FC = () => {
 	
 			// Emit the event to create the channel on the server
 			socket.emit('createChannel', newChannelData);
-	
-			// Listen for the server's response with the created channel data
-			socket.on('channelCreated', (newChannel) => {
-				// Update the state with the new channel data received from the server
-				setChatProps((prevState) => ({
-					...prevState,
-					chatRooms: [
-						...prevState.chatRooms,
-						{
-							id: newChannel.channel_id, // Use the ID returned by the server
-							name: newChannel.title,
-							icon: <GroupIcon />,
-							messages: [],
-							settings: {
-								type: newChannel.ch_type,
-								password: newChannel.password,
-								users: newChannel.members.map((member) => ({
-									id: member.user_id,
-									name: member.name,
-									role: member.member_role,
-									icon: <Avatar />,
-								})),
-								owner: newChannel.ch_owner,
-							},
-						},
-					],
-				}));
-	
-				// Clear the input field and close the channel creation modal
-				setChannelName('');
-				setIsAddingChannel(false);
-			});
-	
-			// You might also want to add a cleanup to remove the event listener when the component unmounts:
-			return () => {
-				socket.off('channelCreated'); // Ensure cleanup to prevent multiple listeners
-			};
 		}
-	};
-	
-
-	// const handleCreateChannel = () => {
-	// 	if (channelName.trim()) {
-	// 	  // Prepare the data for creating a new channel
-	// 	  const newChannelData = {
-	// 		title: channelName,
-	// 		ch_type: 'public',  // or another type based on UI
-	// 		ch_owner: myself.name,
-	// 		users: [
-	// 		  { id: myself.id, name: myself.name, role: 'owner', email: myself.email }
-	// 		],
-	// 		password: null,  // set password if needed
-	// 	  };
-	// 	  // Emit the createChannel event to the backend
-	// 	  socket.emit('createChannel', newChannelData, (response) => {
-	// 		if (response && response.channel) {
-	// 		  // Assuming the response includes the full channel object (including id, members, etc.)
-	// 		  setChatProps((prevState) => ({
-	// 			...prevState,
-	// 			chatRooms: [
-	// 			  ...prevState.chatRooms,
-	// 			  {
-	// 				id: response.channel.channel_id,  // Use the id from the backend response
-	// 				name: response.channel.title,
-	// 				icon: <GroupIcon />,
-	// 				messages: [],
-	// 				settings: {
-	// 				  type: response.channel.ch_type,
-	// 				  password: response.channel.password,
-	// 				  users: response.channel.members || [],  // Include users from the response
-	// 				  owner: response.channel.ch_owner,  // Include the owner from the response
-	// 				},
-	// 			  },
-	// 			],
-	// 		  }));
-	// 		  // Clear the channel name and hide the add channel form
-	// 		  setChannelName('');
-	// 		  setIsAddingChannel(false);
-	// 		} else {
-	// 		  console.log('Error creating channel:', response.message);
-	// 		}
-	// 	  });
-	// 	}
-	//   };
-
-	  
+	};	
+			
+	useEffect(() => {
+		const handleChannelCreated = (newChannel) => {
+			// Update the state with the new channel data received from the server
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: [
+					...prevState.chatRooms,
+					{
+						id: newChannel.channel_id, // Use the ID returned by the server
+						name: newChannel.title,
+						icon: <GroupIcon />,
+						messages: [],
+						settings: {
+							type: newChannel.ch_type,
+							password: newChannel.password,
+							users: newChannel.members.map((member) => ({
+								id: member.user_id,
+								name: member.name,
+								role: member.member_role,
+								icon: <Avatar />,
+							})),
+							owner: newChannel.ch_owner,
+						},
+					},
+				],
+			}));
+			// Clear the input field and close the channel creation modal
+			setChannelName('');
+			setIsAddingChannel(false);
+		};
+		// Listen for the server's response with the created channel data
+		socket.on('channelCreated', handleChannelCreated);
+		// You might also want to add a cleanup to remove the event listener when the component unmounts:
+		return () => {
+			socket.off('channelCreated', handleChannelCreated); // Ensure cleanup to prevent multiple listeners
+		};
+	}, []);
+ 
 //////////////////////////////////////////////////////////////////////
 
 	const handleCancelNewChannel = () => {
