@@ -50,12 +50,12 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage('playerData')
 	addPlayer(@MessageBody() data: PlayerDataDTO, @ConnectedSocket() client: Socket): void {
-		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
+		this.roomManager.addPlayer(data, client);
 	}
 
 	@SubscribeMessage('playerMovedPaddle')
 	movePaddle(@MessageBody() data: PaddleDirectionDTO, @ConnectedSocket() client: Socket): void {
-		this.roomManager.movePaddle(data.sessionToken, client.id, data.direction);
+		this.roomManager.movePaddle(data, client);
 	}
 
 	@SubscribeMessage('askForRematch')
@@ -65,7 +65,6 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage('acceptRematch')
 	acceptRematch(@MessageBody() data: {sessionToken: string}, @ConnectedSocket() client: Socket): void {
-		
 		this.roomManager.acceptRematch(data.sessionToken, client);
 	}
 

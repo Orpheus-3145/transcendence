@@ -38,7 +38,7 @@ export default class BaseScene extends Phaser.Scene {
 	// @param delta: amount of time (in ms) passed since last time time update() was called
 	update(time: number, delta: number): void {
 
-		if (this._keyEsc.isDown) this.switchScene('MainMenu');
+		if (this._keyEsc!.isDown) this.switchScene('MainMenu');
 	}
 
 	// method to call whenever the scene is switched

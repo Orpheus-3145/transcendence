@@ -10,23 +10,23 @@ import Field from '../GameObjects/Field';
 
 export default class GameScene extends BaseScene {
 
-	private _id: number;
-	private _nameNick: string;
-	private _sessionToken: string;
-	private _mode: GameTypes.GameMode;
-	private _difficulty: GameTypes.GameDifficulty;
-	private _gameState: GameTypes.GameState;
-	private _powerUpState: GameTypes.PowerUpPosition | null;
-	private _gameStarted: boolean;
-	private _closeConnection: boolean;
+	private _id!: number;
+	private _nameNick!: string;
+	private _sessionToken!: string;
+	private _mode!: GameTypes.GameMode;
+	private _difficulty!: GameTypes.GameDifficulty;
+	private _gameState!: GameTypes.GameState;
+	private _powerUpState!: GameTypes.PowerUpPosition | null;
+	private _gameStarted!: boolean;
+	private _closeConnection!: boolean;
 	
-	private _gameSizeBackEnd: GameTypes.GameSize;
-	private _widthRatio: number;
-	private _heightRatio: number;
+	private _gameSizeBackEnd!: GameTypes.GameSize;
+	private _widthRatio!: number;
+	private _heightRatio!: number;
 
-	private _powerUpSelection: Array<GameTypes.PowerUpType>;
-	private _powerUpType: GameTypes.PowerUpType;
-	private _powerUpActive: { [key: number]: boolean }; // Tracks if a player has the power-up
+	private _powerUpSelection!: Array<GameTypes.PowerUpType>;
+	private _powerUpType!: GameTypes.PowerUpType | null;
+	private _powerUpActive!: { [key: number]: boolean }; // Tracks if a player has the power-up
 
 	private _urlWebsocket: string;
 	private _socketIO!: Socket;
@@ -46,11 +46,21 @@ export default class GameScene extends BaseScene {
 	constructor() {
 		super({ key: 'Game' });
 		
-		this._id = -1;
-		this._nameNick = '';
-		this._sessionToken = '';
-		this._mode = GameTypes.GameMode.unset;
-		this._difficulty = GameTypes.GameDifficulty.unset;
+		this._urlWebsocket = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION;
+	}
+
+	// Initialize players and key bindings
+	init(data: GameTypes.InitData): void {
+		super.init();
+
+		this._id = this.registry.get('user42data').id;
+		this._nameNick = this.registry.get('user42data').nameNick;
+
+		this._sessionToken = data.sessionToken;
+		this._mode = data.mode;
+		this._difficulty = data.difficulty;
+		this._powerUpSelection = data.extras;
+		
 		this._gameState = {
 			ball: { x: 0, y: 0 },
 			p1: { y: 0 },
@@ -65,33 +75,9 @@ export default class GameScene extends BaseScene {
 		this._widthRatio = 0;
 		this._heightRatio = 0;
 		
-		this._powerUpSelection = new Array();
 		this._powerUpActive = { 0: false, 1: false };
-		this._powerUpType = GameTypes.PowerUpType.speedBall;
-		
-		this._urlWebsocket = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION;
-	}
+		this._powerUpType = null;
 
-	// Initialize players and key bindings
-	init(data: GameTypes.InitData): void {
-		super.init();
-
-		this._id = this.registry.get('user42data').id;
-		this._nameNick = this.registry.get('user42data').nameNick;
-		this._sessionToken = data.sessionToken;
-		this._mode = data.mode;
-		this._difficulty = data.difficulty;
-		this._powerUpSelection = data.extras;
-		this._gameState = {
-			ball: { x: 0, y: 0 },
-			p1: { y: 0 },
-			p2: { y: 0 },
-			score: { p1: 0, p2: 0 }
-		}
-		this._powerUpState = null;
-		this._gameStarted = false;
-		this._closeConnection = false;
-		
 		// Key bindings
 		this._cursors =
 			this.input.keyboard!.createCursorKeys() as Phaser.Types.Input.Keyboard.CursorKeys;
@@ -203,11 +189,7 @@ export default class GameScene extends BaseScene {
 
 		this._socketIO.on('endGame', (winner: string) => this.switchScene('Results', {winner: winner, score: this._gameState.score, sessionToken: this._sessionToken, socket: this._socketIO}));
 
-		this._socketIO.on('gameError', (trace: string) => {
-			
-			this._closeConnection = true;
-			this.switchScene('Error', { trace });
-		});
+		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
 		// power ups handling
 		this._socketIO.on('powerUpUpdate', (state: GameTypes.PowerUpPosition) => {
@@ -294,5 +276,13 @@ export default class GameScene extends BaseScene {
 	onPreLeave(): void {
 		if (this._closeConnection === true)
 			this._socketIO.disconnect();
+	}
+
+	switchScene(sceneName: string, initSceneData?: any): void {
+		
+		if (sceneName !== 'Results')
+			this._closeConnection = true;
+
+		super.switchScene(sceneName, initSceneData);
 	}
 }

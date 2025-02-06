@@ -3,10 +3,12 @@ import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 
 import SimulationService from './simulation.service';
-import { GameMode, PaddleDirection, PlayingPlayer } from 'src/game/game.types';
+import { PlayingPlayer } from 'src/game/game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import GameDataDTO from 'src/dto/gameData.dto';
+import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
+import PlayerDataDTO from 'src/dto/playerData.dto';
 
 @Injectable()
 export default class RoomManagerService {
@@ -25,67 +27,40 @@ export default class RoomManagerService {
 	}
 
 	createRoom(data: GameDataDTO): void {
-		this.logger.log(`session [${data.sessionToken}] - creating new room`);
 
 		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));
 	}
 
-	dropRoomCauseError(sessionToken: string, trace: string): void {
- 		this.logger.error(`session [${sessionToken}] - removing room`);
-
-		this.getRoom(sessionToken).interruptGame(trace);
-		this.deleteRoom(sessionToken);
-	}
-
-	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
-		this.logger.log(
-			`session [${sessionToken}] - player ${nameNick} [id ${client.id}] joined the room`,
-		);
-
-		this.getRoom(sessionToken).addPlayer(client, playerId, nameNick);
-	}
-
 	handleDisconnect(client: Socket): void {
 		for (const [sessionToken, simulationService] of this.rooms.entries()) {
-			if (simulationService.clientIsPlayer(client.id)) {
-				simulationService.handleDisconnect(client);
-				this.deleteRoom(sessionToken); // Cleanup room
-
+			try {
+				const player: PlayingPlayer = simulationService.getPlayerFromClient(client);
+				simulationService.handleDisconnect(player);
+				this.deleteRoom(sessionToken);
 				break;
+			}
+			catch (GameException) {	// client doesn't belong to the room, check others
+				continue ;
 			}
 		}
 	}
 
-	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection) {
-		const room = this.getRoom(sessionToken);
-		const playerId = this.getPlayerId(room, clientId);
-		room.movePaddle(clientId, data, playerId);
+	addPlayer(data: PlayerDataDTO, client: Socket): void {
+
+		const gameRoom = this.getRoom(data.sessionToken);
+		gameRoom.addPlayer(data, client);
+	}
+
+	movePaddle(data: PaddleDirectionDTO, client: Socket) {
+		
+		const gameRoom = this.getRoom(data.sessionToken);
+		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
+
+		gameRoom.movePaddle(player, data.direction);
 
 		this.logger.debug(
-			`session [${sessionToken}] - update from client ${clientId} , move '${data}'`,
+			`session [${data.sessionToken}] - update from ${player.nameNick} , move '${data.direction}'`,
 		);
-	}
-
-	getRoom(sessionToken: string): SimulationService {
-		const room = this.rooms.get(sessionToken);
-		if (!room)
-			this.thrower.throwGameExcp(
-				'room not found',
-				sessionToken,
-				`${RoomManagerService.name}.${this.constructor.prototype._getRoom.name}()`,
-			);
-
-		return room;
-	}
-
-	getPlayerId(room: SimulationService, clientId: string): number {
-
-		return room.getPlayerId(clientId);
-	}
-
-	deleteRoom(sessionToken: string): void {
-
-		this.rooms.delete(sessionToken);
 	}
 
 	askForRematch(sessionToken: string, client: Socket): void {
@@ -93,8 +68,6 @@ export default class RoomManagerService {
 		const gameRoom: SimulationService = this.getRoom(sessionToken);
 		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
 
-		if (player === null) {}
-			// do something
 		gameRoom.askForRematch(player);
 	}
 
@@ -103,12 +76,9 @@ export default class RoomManagerService {
 		const gameRoom: SimulationService = this.getRoom(sessionToken);
 		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
 
-		if (player === null) {}
-			// do something
-		
-		const gameData = this.getRoom(sessionToken).acceptRematch();
-		// SimulationService.acceptRematch() returns the gameData if the rematch is multiplayer
-		// to create the new room for the simulation
+		const gameData = gameRoom.acceptRematch(player);
+		// SimulationService.acceptRematch() returns the gameData (if the rematch is multiplayer)
+		// to RoomManagerService can create the new room directly
 		if (gameData)
 			this.createRoom(gameData);
 	}
@@ -118,9 +88,30 @@ export default class RoomManagerService {
 		const gameRoom: SimulationService = this.getRoom(sessionToken);
 		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
 
-		if (player === null) {}
-			// do something
-
 		gameRoom.abortRematch(player);
+	}
+
+	dropRoomCauseError(sessionToken: string, trace: string): void {
+
+		this.getRoom(sessionToken).interruptGame(trace);
+		this.deleteRoom(sessionToken);
+	}
+
+	getRoom(sessionToken: string): SimulationService {
+		const room = this.rooms.get(sessionToken);
+		if (!room)
+			this.thrower.throwGameExcp(
+				`room [session: ${sessionToken}] not found`,
+				sessionToken,
+				`${RoomManagerService.name}.${this.constructor.prototype.getRoom.name}()`,
+			);
+
+		return room;
+	}
+
+	deleteRoom(sessionToken: string): void {
+
+		if (this.rooms.delete(sessionToken) === true)
+			this.logger.log(`session [${sessionToken}] - room removed`);
 	}
 }

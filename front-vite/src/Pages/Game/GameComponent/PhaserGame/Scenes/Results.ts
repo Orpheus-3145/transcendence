@@ -150,7 +150,7 @@ export default class ResultsScene extends BaseScene {
 			.setInteractive()
 			.setOrigin(0.5, 0.5);
 
-		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, 'waiting for other player', {
+		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, 'waiting for confirmation', {
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
 			align: 'center',
 			color: '#fff',

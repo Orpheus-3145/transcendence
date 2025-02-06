@@ -38,6 +38,7 @@ export class GameExceptionFilter implements ExceptionFilter {
 			this.logger.error(
 				`Client [${client.handshake.address} - ${client.handshake.address}] forced to disconnect`,
 			);
+			this.roomManager.deleteRoom(data.sessionToken)
 		}
 	}
 }
