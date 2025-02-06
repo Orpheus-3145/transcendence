@@ -77,7 +77,7 @@ export const ChatProvider: React.FC = ({ children }) => {
                         },
                     })),
                 }));
-				console.log('Chat Props:', chatProps);
+				// console.log('Chat Props:', chatProps);
             });
 
 

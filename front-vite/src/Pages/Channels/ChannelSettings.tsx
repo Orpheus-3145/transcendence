@@ -262,8 +262,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 									' '}
 							{`(${_user.role})`}
 					  </Typography>
-					  {/* {console.log(_user.nameIntra)} */}
-					  {(userIsAdmin(_user.name, selectedChannel) ||
+					  {console.log(user.nameIntra)}
+					  {(
 					  	selectedChannel.settings.owner === user.nameIntra) && 
 						user.nameIntra !== _user.name && (
 					  <Stack direction="row" spacing={0.3}>

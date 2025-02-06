@@ -100,7 +100,7 @@ const ChannelsPage: React.FC = () => {
 
 	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([ //--> CALL TO BACKEND <-- //
 		{
-			id: 3,
+			id: -7,
 			name: 'chaaaaaaaaaaaaaaaaannel1',
 			icon: <GroupIcon />,
 			messages:  [],
@@ -111,7 +111,7 @@ const ChannelsPage: React.FC = () => {
 				users: [
 					{
 						name: 'User1',
-						role: 'Admin',
+						role: 'admin',
 						email: 'iamgroot@avengers.com',
 						password: '',
 						icon: React.ReactElement ,
@@ -122,7 +122,7 @@ const ChannelsPage: React.FC = () => {
 			  },
 		},
 		{
-			id: 4,
+			id: -4,
 			name: 'channel2',
 			icon: <GroupIcon />,
 			messages: [],
@@ -133,7 +133,7 @@ const ChannelsPage: React.FC = () => {
 				users: [
 					{
 						name: 'User2',
-						role: 'Admin',
+						role: 'admin',
 						email: 'iamgroot@avengers.com',
 						password: '',
 						icon: React.ReactElement ,
@@ -144,7 +144,7 @@ const ChannelsPage: React.FC = () => {
 			  },
 		},
 		{
-			id: 5,
+			id: -5,
 			name: 'channel3',
 			icon: <GroupIcon />,
 			messages: [
@@ -159,7 +159,7 @@ const ChannelsPage: React.FC = () => {
 				type: 'password',
 				password: 'pass',
 				users: [],
-				owner: 'MYSELF',
+				owner: user.nameIntra,
 			  },
 		},
 	]);
@@ -219,6 +219,78 @@ const ChannelsPage: React.FC = () => {
 //////////////////////////////////////////////////////////////////////
 	
 	
+	// const handleCreateChannel = () => {
+	// 	if (channelName.trim()) {
+	// 		const newChannelData = {
+	// 			title: channelName,
+	// 			ch_type: 'public',  // or another type based on UI
+	// 			ch_owner: user.nameIntra,
+	// 			users: [
+	// 			  { id: user.id, nameIntra: user.nameIntra, role: 'admin', email: user.email }
+	// 			],
+	// 			password: null,  // set password if needed
+	// 		};
+	// 		// console.log('NEW CHANNEL:', newChannelData);
+
+	// 		socket.emit('createChannel', newChannelData);
+		
+	// 		// socket.on('channelCreated', (newChannel) => {
+	// 		// 	console.log(newChannel);
+	// 		// 	setChatProps((prevState) => ({
+	// 		// 		...prevState,
+	// 		// 		chatRooms: [
+	// 		// 			...prevState.chatRooms,
+	// 		// 			{
+	// 		// 				id: newChannel.channel_id,
+	// 		// 				name: newChannel.title,
+	// 		// 				icon: <GroupIcon />,
+	// 		// 				messages: [],
+	// 		// 				settings: {
+	// 		// 					type: newChannel.ch_type,
+	// 		// 					password: newChannel.password,
+	// 		// 					// users: [{...user, role: 'admin'}],
+	// 		// 					users: newChannel.members.map((member) => ({
+	// 		// 						id: member.user_id,
+	// 		// 						name: member.name,
+	// 		// 						role: member.member_role,
+	// 		// 						icon: <Avatar />,
+	// 		// 					})),
+	// 		// 					owner: newChannel.ch_owner,
+	// 		// 				},
+	// 		// 			},
+	// 		// 		],
+	// 		// 	}))
+	// 		// });
+
+	// 		setChatProps((prevState) => ({
+	// 			...prevState,
+	// 			chatRooms: [
+	// 				...prevState.chatRooms,
+	// 				{
+	// 					name: channelName,
+	// 					icon: <GroupIcon />,
+	// 					messages: [],
+	// 					settings: {
+	// 						type: 'public',
+	// 						password: null,
+	// 						// users: [{...user, role: 'admin'}],
+	// 						users: [{ 
+	// 							id: user.id,
+	// 							name: user.nameIntra ,
+	// 							role: 'admin',
+	// 							icon: <Avatar />, 
+	// 						}],
+	// 						owner: user.nameIntra,
+	// 					},
+	// 				},
+	// 			],
+	// 		}));
+
+	// 		setChannelName('');
+	// 		setIsAddingChannel(false);
+	// 	}
+	// };
+
 	const handleCreateChannel = () => {
 		if (channelName.trim()) {
 			const newChannelData = {
@@ -226,70 +298,53 @@ const ChannelsPage: React.FC = () => {
 				ch_type: 'public',  // or another type based on UI
 				ch_owner: user.nameIntra,
 				users: [
-				  { id: user.id, nameIntra: user.nameIntra, role: 'admin', email: user.email }
+					{ id: user.id, nameIntra: user.nameIntra, role: 'admin', email: user.email }
 				],
 				password: null,  // set password if needed
 			};
-			// console.log('NEW CHANNEL:', newChannelData);
-
+	
+			// Emit the event to create the channel on the server
 			socket.emit('createChannel', newChannelData);
-		
-			// socket.on('channelCreated', (newChannel) => {
-			// 	console.log(newChannel);
-			// 	setChatProps((prevState) => ({
-			// 		...prevState,
-			// 		chatRooms: [
-			// 			...prevState.chatRooms,
-			// 			{
-			// 				id: newChannel.channel_id,
-			// 				name: newChannel.title,
-			// 				icon: <GroupIcon />,
-			// 				messages: [],
-			// 				settings: {
-			// 					type: newChannel.ch_type,
-			// 					password: newChannel.password,
-			// 					// users: [{...user, role: 'admin'}],
-			// 					users: newChannel.members.map((member) => ({
-			// 						id: member.user_id,
-			// 						name: member.name,
-			// 						role: member.member_role,
-			// 						icon: <Avatar />,
-			// 					})),
-			// 					owner: newChannel.ch_owner,
-			// 				},
-			// 			},
-			// 		],
-			// 	}))
-			// });
-
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: [
-					...prevState.chatRooms,
-					{
-						name: channelName,
-						icon: <GroupIcon />,
-						messages: [],
-						settings: {
-							type: 'public',
-							password: null,
-							// users: [{...user, role: 'admin'}],
-							users: [{ 
-								id: user.id,
-								name: user.nameIntra ,
-								role: 'admin',
-								icon: <Avatar />, 
-							}],
-							owner: user.nameIntra,
+	
+			// Listen for the server's response with the created channel data
+			socket.on('channelCreated', (newChannel) => {
+				// Update the state with the new channel data received from the server
+				setChatProps((prevState) => ({
+					...prevState,
+					chatRooms: [
+						...prevState.chatRooms,
+						{
+							id: newChannel.channel_id, // Use the ID returned by the server
+							name: newChannel.title,
+							icon: <GroupIcon />,
+							messages: [],
+							settings: {
+								type: newChannel.ch_type,
+								password: newChannel.password,
+								users: newChannel.members.map((member) => ({
+									id: member.user_id,
+									name: member.name,
+									role: member.member_role,
+									icon: <Avatar />,
+								})),
+								owner: newChannel.ch_owner,
+							},
 						},
-					},
-				],
-			}));
-
-			setChannelName('');
-			setIsAddingChannel(false);
+					],
+				}));
+	
+				// Clear the input field and close the channel creation modal
+				setChannelName('');
+				setIsAddingChannel(false);
+			});
+	
+			// You might also want to add a cleanup to remove the event listener when the component unmounts:
+			return () => {
+				socket.off('channelCreated'); // Ensure cleanup to prevent multiple listeners
+			};
 		}
 	};
+	
 
 	// const handleCreateChannel = () => {
 	// 	if (channelName.trim()) {
@@ -434,7 +489,15 @@ const ChannelsPage: React.FC = () => {
 			...selectedAvailableChannel,
 			settings: {
 				...selectedAvailableChannel.settings,
-				users: [...selectedAvailableChannel.settings.users, myself],
+				users: [
+					...selectedAvailableChannel.settings.users,
+					{
+						id: user.id,
+						name: user.nameIntra ,
+						role: 'guest',
+						icon: <Avatar />,
+					},
+				],
 			},
 		}; 
 		
@@ -446,7 +509,7 @@ const ChannelsPage: React.FC = () => {
 		}));
 		
 		setAvailableChannels((prevState) => 
-		  prevState.filter((channel) => channel.name !== updatedChannel.name)
+		  prevState.filter((channel) => channel.id !== updatedChannel.id)
 		);
 		setSelectedChannel(null);
 	};
