@@ -64,9 +64,9 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('acceptRematch')
-	acceptRematch(@MessageBody() data: {sessionToken: string}): void {
+	acceptRematch(@MessageBody() data: {sessionToken: string}, @ConnectedSocket() client: Socket): void {
 		
-		this.roomManager.acceptRematch(data.sessionToken);
+		this.roomManager.acceptRematch(data.sessionToken, client);
 	}
 
 	@SubscribeMessage('abortRematch')

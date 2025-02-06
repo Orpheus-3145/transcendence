@@ -13,46 +13,39 @@ import GameDataDTO from 'src/dto/gameData.dto';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export default class SimulationService {
+	// generic game data
 	private readonly maxScore: number = parseInt(this.config.get('GAME_MAX_SCORE'), 10);
+	private readonly botName: string = this.config.get<string>('GAME_BOT_NAME', 'DTR');
+	private readonly frameRateUpdate: number = parseInt(this.config.get('GAME_FPS'), 10);
+	private readonly hardDebugMode: boolean = this.config.get<boolean>('HARD_DEBUG_MODE', false);
+	private readonly forbidAutoPlay: boolean = this.config.get<boolean>('GAME_FORBID_AUTO_PLAY', false);
+	// gamte item sizes
 	private readonly windowWidth: number = parseInt(this.config.get('GAME_WIDTH'), 10);
 	private readonly windowHeight: number = parseInt(this.config.get('GAME_HEIGHT'), 10);
-	private readonly botName: string = this.config.get<string>('GAME_BOT_NAME');
 	private readonly paddleWidth: number = parseInt(this.config.get('GAME_PADDLE_WIDTH'), 10);
-	private readonly _defaultPaddleHeight: number = parseInt(
-		this.config.get('GAME_PADDLE_HEIGHT'),
-		10,
-	);
+	private readonly _defaultPaddleHeight: number = parseInt(this.config.get('GAME_PADDLE_HEIGHT'), 10);
 	private readonly _defaultpaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_SPEED'), 10);
-	private readonly _highPaddleSpeed: number = parseInt(
-		this.config.get('GAME_PADDLE_HIGH_SPEED'),
-		10,
-	);
+	private readonly _highPaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_HIGH_SPEED'), 10);
 	private readonly _lowPaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_LOW_SPEED'), 10);
 	private readonly ballRadius: number = Number(this.config.get('GAME_BALL_RADIUS'));
 	private readonly _defaultBallSpeed: number = parseInt(this.config.get('GAME_BALL_SPEED'), 10);
-	private readonly frameRate: number = parseInt(this.config.get('GAME_FPS'), 10);
-	private readonly hardDebugMode: boolean = this.config.get<boolean>('HARD_DEBUG_MODE', false);
-	private readonly forbidAutoPlay: boolean = this.config.get<boolean>('GAME_FORBID_AUTO_PLAY', false); // if true the same user cannot play against themself
-
+	// game data
 	private sessionToken: string = '';
 	private mode: GameTypes.GameMode = GameTypes.GameMode.unset;
 	private difficulty: GameTypes.GameDifficulty = GameTypes.GameDifficulty.unset;
+	private powerUpSelected: GameTypes.PowerUpType[] = new Array();
+	// players data
+	private player1: GameTypes.PlayingPlayer = null;
+	private player2: GameTypes.PlayingPlayer = null;
 
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
-	private rematchPhase: boolean = false;
-	private player1: GameTypes.PlayingPlayer = null;
-	private player2: GameTypes.PlayingPlayer = null;
+	private waitingForRematch: boolean = false;
 	private ballSpeed: number = this._defaultBallSpeed;
 	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
-
-	// Extras
-	private powerUpSelected: GameTypes.PowerUpType[] = new Array();
+	// Power-up
 	private paddleSpeed: number[] = [this._defaultpaddleSpeed, this._defaultpaddleSpeed];
-
-	private powerUpIntervalTime: number = Number(
-		this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000),
-	);
+	private powerUpIntervalTime: number = Number(this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000));
 	// Power-up state
 	private powerUpStatus: boolean[] = [false, false]; // Power up status for players
 	private powerUpDuration: number = Number(this.config.get<number>('GAME_POWERUP_DURATION', 8000)); // Duration for power-up
@@ -60,7 +53,7 @@ export default class SimulationService {
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
 	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight];
 	private powerUpType: GameTypes.PowerUpType;
-
+	// intervals for periodic updates
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
 	private powerUpInterval: NodeJS.Timeout = null; // Timer for spawning power up
@@ -75,7 +68,7 @@ export default class SimulationService {
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	setInitInfo(data: GameDataDTO): void {
+	setGameData(data: GameDataDTO): void {
 		if (
 			data.mode === GameTypes.GameMode.unset ||
 			(data.mode === GameTypes.GameMode.single &&
@@ -88,20 +81,19 @@ export default class SimulationService {
 				`${SimulationService.name}.${this.constructor.prototype.setInitInfo.name}()`,
 			);
 
-		this.logger.log(`session [${data.sessionToken}] - new game, mode: ${data.mode}`);
-		this.logger.log(`session [${data.sessionToken}] - new game, powerups: [${data.extras.join(', ')}]`);
-		if (data.mode === GameTypes.GameMode.single)
-			this.logger.log(`session [${data.sessionToken}] - new game, difficulty: ${data.difficulty}`);
-
 		this.sessionToken = data.sessionToken;
 		this.mode = data.mode;
+		this.difficulty = data.difficulty;
 		this.powerUpSelected = data.extras;
 
+		this.logger.log(`session [${this.sessionToken}] - new game, mode: ${this.mode}`);
+		this.logger.log(`session [${this.sessionToken}] - new game, powerups: [${this.powerUpSelected.join(', ')}]`);
+		if (this.mode === GameTypes.GameMode.single)
+			this.logger.log(`session [${this.sessionToken}] - new game, difficulty: ${this.difficulty}`);
+
 		// add bot if single mode
-		if (this.mode === GameTypes.GameMode.single) {
-			this.difficulty = data.difficulty;
+		if (this.mode === GameTypes.GameMode.single)
 			this.addPlayer(null, -1, this.botName);
-		}
 
 		this.gameSetupInterval = setInterval(() => {
 			// missing info, not ready to play yet
@@ -110,34 +102,36 @@ export default class SimulationService {
 			if (this.forbidAutoPlay == true && this.player1.nameNick == this.player2.nameNick)
 				this.interruptGame(`cannot play against yourself: ${this.player1.nameNick}`);
 
+			this.logger.log(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
+			this.logger.log(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
+			
+			// received all data, game can start
 			this.startEngine();
-		}, this.frameRate);
+		}, this.frameRateUpdate);
 	}
 
 	startEngine(): void {
-		if (this.engineRunning) return;
+		if (this.engineRunning) return;	// NB or throw error?
 
 		this.engineRunning = true;
 
 		clearInterval(this.gameSetupInterval);
 		this.gameSetupInterval = null;
 
-		this.gameStateInterval = setInterval(() => this.gameIteration(), this.frameRate);
-
-		this.logger.debug(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
-		this.logger.debug(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
-		this.logger.log(`session [${this.sessionToken}] - game started`);
+		this.gameStateInterval = setInterval(() => this.gameIteration(), this.frameRateUpdate);
 
 		this.resetBall();
-		
-		const sizeGame: GameSizeDTO = {width: this.windowWidth, height: this.windowHeight}
-		this.sendMsgToPlayer(this.player1.clientSocket, 'gameStart', sizeGame);
-		if (this.mode === GameTypes.GameMode.multi)
-			this.sendMsgToPlayer(this.player2.clientSocket, 'gameStart', sizeGame);
 		
 		// if at least one powerup is select start spawning timer
 		if (this.powerUpSelected.length > 0)
 			this.startpowerUpTimer();
+
+		const sizeGame: GameSizeDTO = {width: this.windowWidth, height: this.windowHeight}
+		this.sendMsgToPlayer(this.player1.clientSocket, 'gameStart', sizeGame);
+		if (this.mode === GameTypes.GameMode.multi)
+			this.sendMsgToPlayer(this.player2.clientSocket, 'gameStart', sizeGame);
+
+		this.logger.debug(`session [${this.sessionToken}] - engine started`);
 	}
 
 	stopEngine(): void {
@@ -173,6 +167,7 @@ export default class SimulationService {
 
 			this.sendPowerUpUpdate();
 			this.sendUpdateToPlayers('gameState');
+			
 			if (this.gameOver) {
 				if (this.player2.score === this.maxScore)
 					this.endGame(this.player2);
@@ -202,7 +197,6 @@ export default class SimulationService {
 		};
 
 		if (nameNick === this.botName) {
-
 			// set bot, always player2
 			this.player2 = newPlayer;
 			this.player2.posX = this.windowWidth - this.paddleWidth / 2;
@@ -573,24 +567,24 @@ export default class SimulationService {
 		this.sendMsgToPlayer(playerBonus.clientSocket, 'powerUpActivated', powerUpStatus); // Color turns back to original paddle colour
 	}
 
-	askForRematch(client: Socket): void {
+	askForRematch(player: GameTypes.PlayingPlayer): void {
 
-		this.logger.debug(`session [${this.sessionToken}] - client ${client.id} proposed a rematch`);
+		this.logger.debug(`session [${this.sessionToken}] - ${player.nameNick} proposed a rematch`);
 		
 		if (this.mode === GameTypes.GameMode.single)
-			this.acceptRematch();
+			this.acceptRematch(player);
 		else if (this.mode === GameTypes.GameMode.multi) {
 			
-			if (this.player1.clientSocket.id === client.id)
-				this.sendMsgToPlayer(this.player2.clientSocket, 'askForRematch', `${this.player1.nameNick} proposed a rematch`);
-			else if (this.player2.clientSocket.id === client.id)
-				this.sendMsgToPlayer(this.player1.clientSocket, 'askForRematch', `${this.player2.nameNick} proposed a rematch`);
+			if (this.player1.nameNick === player.nameNick)
+				this.sendMsgToPlayer(this.player2.clientSocket, 'askForRematch', `${player.nameNick} proposed a rematch`);
+			else if (this.player2.nameNick === player.nameNick)
+				this.sendMsgToPlayer(this.player1.clientSocket, 'askForRematch', `${player.nameNick} proposed a rematch`);
 		}
 	}
 
-	acceptRematch(): GameDataDTO | null {
+	acceptRematch(player: GameTypes.PlayingPlayer): GameDataDTO | null {
 
-		this.logger.log(`session [${this.sessionToken}] - rematch accepted`);
+		this.logger.debug(`session [${this.sessionToken}] - ${player.nameNick} accepted the rematch`);
 		
 		const gameData: GameDataDTO = {
 			sessionToken: uuidv4(),
@@ -598,7 +592,9 @@ export default class SimulationService {
 			difficulty: this.difficulty,
 			extras: this.powerUpSelected,
 		};
-		this.rematchPhase = false;
+		this.waitingForRematch = false;
+
+		this.logger.debug(`session [${this.sessionToken}] - rematch phase ending`);
 
 		this.sendMsgToPlayer(this.player1.clientSocket, 'acceptRematch', gameData);
 		if (this.mode === GameTypes.GameMode.multi) {
@@ -609,20 +605,20 @@ export default class SimulationService {
 			return (null);
 	}
 
-	abortRematch(client: Socket): void {
+	abortRematch(player: GameTypes.PlayingPlayer): void {
 
 		if (this.mode !== GameTypes.GameMode.multi)
 			return ;
 
-		this.rematchPhase = false;
-		if (this.player1 && this.player2 && this.player1.clientSocket.id === client.id) {
-			this.logger.debug(`session [${this.sessionToken}] - player ${this.player1.nameNick} rejected rematch`);
-			this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${this.player1.nameNick} rejected rematch`);
-		}
-		else if (this.player1 && this.player2 && this.player2.clientSocket.id === client.id) {
-			this.logger.debug(`session [${this.sessionToken}] - player ${this.player2.nameNick} rejected rematch`);
-			this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${this.player2.nameNick} rejected rematch`);
-		}
+		this.waitingForRematch = false;
+		this.logger.debug(`session [${this.sessionToken}] - player ${player.nameNick} rejected rematch`);
+		
+		if (this.player1.nameNick === player.nameNick)
+			this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${player.nameNick} rejected rematch`);
+		else if (this.player2.nameNick === player.nameNick)
+			this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${player.nameNick} rejected rematch`);
+		
+		this.logger.debug(`session [${this.sessionToken}] - rematch phase ending`);
 	}
 
 	sendMsgToPlayer(client: Socket, msg: string, data?: any): void {
@@ -636,42 +632,39 @@ export default class SimulationService {
 
 	// if a player disconnects unexpectedly
 	handleDisconnect(client: Socket): void {
-		if (this.mode === GameTypes.GameMode.multi) {
+		
+		if (this.mode === GameTypes.GameMode.multi && this.engineRunning === true) {
+			if (this.player1 && this.player1.clientSocket.id === client.id) {
+				this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`);
+				
+				if (this.player2)
+					this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted, player ${this.player1.nameNick} left the game`);
 
-			if (this.engineRunning === true) {
-				
-				if (this.player1 && this.player1.clientSocket.id === client.id) {
-					this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player1.nameNick} left the game`);
-					
-					if (this.player2)
-						this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted, player ${this.player1.nameNick} left the game`);
-	
-				} else if (this.player2 && this.player2.clientSocket.id === client.id) {
-					this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`);
-	
-					if (this.player1)
-						this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted, player ${this.player2.nameNick} left the game`);
-	
-				}
-				this.stopEngine();
-				
-			} else if (this.rematchPhase === true) {
-	
-				if (this.player1 && this.player1.clientSocket.id === client.id) {
-					this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${this.player1.nameNick} left the queue`);
+			} else if (this.player2 && this.player2.clientSocket.id === client.id) {
+				this.logger.log(`session [${this.sessionToken}] - game stopped, player ${this.player2.nameNick} left the game`);
+
+				if (this.player1)
+					this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted, player ${this.player2.nameNick} left the game`);
+
+			}
+			this.stopEngine();
 			
-					if (this.player2)
-						this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${this.player1.nameNick} left the queue`);
-				}
-				if (this.player2 && this.player2.clientSocket.id === client.id) {
-					this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${this.player2.nameNick} left the queue`);
-	
-					if (this.player1)
-						this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${this.player2.nameNick} left the queue`);
-				}
+		} else if (this.mode === GameTypes.GameMode.multi && this.waitingForRematch === true) {
+
+			if (this.player1 && this.player1.clientSocket.id === client.id) {
+				this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${this.player1.nameNick} left the queue`);
+		
+				if (this.player2)
+					this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${this.player1.nameNick} left the queue`);
+			}
+			if (this.player2 && this.player2.clientSocket.id === client.id) {
+				this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${this.player2.nameNick} left the queue`);
+
+				if (this.player1)
+					this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${this.player2.nameNick} left the queue`);
 			}
 		}
-		this.closeSimulation();
+		this.terminateSimulation();
 	}
 
 	// if the game ends gracefully
@@ -692,11 +685,16 @@ export default class SimulationService {
 			this.sendMsgToPlayer(this.player2.clientSocket, 'endGame', winner.nameNick);
 
 		this.stopEngine();
-		this.rematchPhase = true;
+
+		this.logger.debug(`session [${this.sessionToken}] - rematch phase starting`);
+		this.waitingForRematch = true;
 	}
 
 	// for server error
 	interruptGame(trace: string): void {
+
+		this.logger.error(`session [${this.sessionToken}] - interrupting simulation, error occurred: ${trace}`);
+		
 		if (this.player1)
 			this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game error - ${trace}`);
 
@@ -704,18 +702,21 @@ export default class SimulationService {
 			this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game error - ${trace}`);
 
 		this.stopEngine();
-		this.closeSimulation();
+		this.terminateSimulation();
 
 		if (this.gameSetupInterval) clearInterval(this.gameSetupInterval);
 	}
 
-	checkClientId(clientId: string): boolean {
-		if (!this.player1 || !this.player2) return false;
-
-		return clientId === this.player1.clientSocket.id || clientId === this.player2.clientSocket.id;
+	clientIsPlayer(clientId: string): boolean {
+		if (this.player1 && this.player1.clientSocket.id === clientId)
+			return true;
+		else if (this.player2 && (this.mode === GameTypes.GameMode.multi) && this.player2.clientSocket.id === clientId)
+			return true;
+		else
+			return false;
 	}
 
-	closeSimulation(): void {
+	terminateSimulation(): void {
 
 		if (this.player1 !== null) {
 			this.player1.clientSocket.disconnect(true);
@@ -726,6 +727,14 @@ export default class SimulationService {
 				this.player2.clientSocket.disconnect(true);
 			this.player2 = null;
 		}
-		this.rematchPhase = false;
+		this.logger.log(`session [${this.sessionToken}] - terminating simulation`);
+	}
+
+	getPlayerFromClient(client: Socket): GameTypes.PlayingPlayer | null {
+		const player: GameTypes.PlayingPlayer = null;
+
+		// try:
+		// 	if (this)
+		return player;
 	}
 }

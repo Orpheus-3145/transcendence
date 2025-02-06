@@ -21,7 +21,7 @@ import GameDataDTO from 'src/dto/gameData.dto';
 			useFactory: (logger: AppLoggerService, thrower: ExceptionFactory, config: ConfigService) => {
 				return (data: GameDataDTO) => {
 					const newInstance = new SimulationService(logger, thrower, config);
-					newInstance.setInitInfo(data);
+					newInstance.setGameData(data);
 
 					return newInstance;
 				};

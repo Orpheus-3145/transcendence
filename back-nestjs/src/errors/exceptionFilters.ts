@@ -31,7 +31,7 @@ export class GameExceptionFilter implements ExceptionFilter {
 		const client = ctx.getClient();
 		const data = ctx.getData();
 		try {
-			this.roomManager.dropRoom(data.sessionToken, exception.message);
+			this.roomManager.dropRoomCauseError(data.sessionToken, exception.message);
 		} catch {
 			client.emit('gameError', `Internal error: ${exception.message}`);
 			client.disconnect(true);

@@ -261,7 +261,7 @@ export default class GameScene extends BaseScene {
 		else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle)
 			colour = 0xcc0000;  // Deep red for stretchPaddle
 		else
-			this.switchScene('Error', {trace: "Error with power up type"});
+			this.switchScene('Error', {trace: `Error with power up type: ${this._powerUpType} not existing`});
 		return colour;
 	}
 
@@ -283,9 +283,9 @@ export default class GameScene extends BaseScene {
 	resetWindowRatio(): void {
 
 		if (this._gameSizeBackEnd.width * this._gameSizeBackEnd.height === 0)
-			this.switchScene('Error', `Invalid resize ratio, got zero value(s): ${this._gameSizeBackEnd.width} : ${this._gameSizeBackEnd.height}`);
+			this.switchScene('Error', {trace: `Invalid resize ratio, got zero value(s) w:${this._gameSizeBackEnd.width}, h: ${this._gameSizeBackEnd.height}`});
 		else if (this.scale.width * this.scale.height === 0)
-			this.switchScene('Error', `Invalid window size, got zero value(s): ${this.scale.width} : ${this.scale.height}`);
+			this.switchScene('Error', {trace: `Invalid window size, got zero value(s) w: ${this.scale.width}, h: ${this.scale.height}`});
 		
 		this._widthRatio = this._gameSizeBackEnd.width / this.scale.width;
 		this._heightRatio = this._gameSizeBackEnd.height / this.scale.height;

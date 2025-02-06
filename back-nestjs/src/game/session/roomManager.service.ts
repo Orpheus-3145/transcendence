@@ -3,7 +3,7 @@ import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 
 import SimulationService from './simulation.service';
-import { GameMode, PaddleDirection } from 'src/game/game.types';
+import { GameMode, PaddleDirection, PlayingPlayer } from 'src/game/game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import GameDataDTO from 'src/dto/gameData.dto';
@@ -30,11 +30,11 @@ export default class RoomManagerService {
 		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));
 	}
 
-	dropRoom(sessionToken: string, trace: string): void {
- 		this.logger.log(`session [${sessionToken}] - removing room, trace: ${trace}`);
+	dropRoomCauseError(sessionToken: string, trace: string): void {
+ 		this.logger.error(`session [${sessionToken}] - removing room`);
 
-		this._getRoom(sessionToken).interruptGame(trace);
-		this._deleteRoom(sessionToken);
+		this.getRoom(sessionToken).interruptGame(trace);
+		this.deleteRoom(sessionToken);
 	}
 
 	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
@@ -42,14 +42,14 @@ export default class RoomManagerService {
 			`session [${sessionToken}] - player ${nameNick} [id ${client.id}] joined the room`,
 		);
 
-		this._getRoom(sessionToken).addPlayer(client, playerId, nameNick);
+		this.getRoom(sessionToken).addPlayer(client, playerId, nameNick);
 	}
 
 	handleDisconnect(client: Socket): void {
 		for (const [sessionToken, simulationService] of this.rooms.entries()) {
-			if (simulationService.checkClientId(client.id)) {
+			if (simulationService.clientIsPlayer(client.id)) {
 				simulationService.handleDisconnect(client);
-				this._deleteRoom(sessionToken); // Cleanup room
+				this.deleteRoom(sessionToken); // Cleanup room
 
 				break;
 			}
@@ -57,8 +57,8 @@ export default class RoomManagerService {
 	}
 
 	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection) {
-		const room = this._getRoom(sessionToken);
-		const playerId = this._getPlayerId(room, clientId);
+		const room = this.getRoom(sessionToken);
+		const playerId = this.getPlayerId(room, clientId);
 		room.movePaddle(clientId, data, playerId);
 
 		this.logger.debug(
@@ -66,7 +66,7 @@ export default class RoomManagerService {
 		);
 	}
 
-	_getRoom(sessionToken: string): SimulationService {
+	getRoom(sessionToken: string): SimulationService {
 		const room = this.rooms.get(sessionToken);
 		if (!room)
 			this.thrower.throwGameExcp(
@@ -78,28 +78,49 @@ export default class RoomManagerService {
 		return room;
 	}
 
-	_getPlayerId(room: SimulationService, clientId: string): number {
+	getPlayerId(room: SimulationService, clientId: string): number {
+
 		return room.getPlayerId(clientId);
 	}
 
-	_deleteRoom(sessionToken: string): void {
+	deleteRoom(sessionToken: string): void {
+
 		this.rooms.delete(sessionToken);
 	}
 
 	askForRematch(sessionToken: string, client: Socket): void {
-		
-		this._getRoom(sessionToken).askForRematch(client);
+
+		const gameRoom: SimulationService = this.getRoom(sessionToken);
+		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
+
+		if (player === null) {}
+			// do something
+		gameRoom.askForRematch(player);
 	}
 
-	acceptRematch(sessionToken: string): void {
+	acceptRematch(sessionToken: string, client: Socket): void {
 
-		const gameData = this._getRoom(sessionToken).acceptRematch();
+		const gameRoom: SimulationService = this.getRoom(sessionToken);
+		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
+
+		if (player === null) {}
+			// do something
+		
+		const gameData = this.getRoom(sessionToken).acceptRematch();
+		// SimulationService.acceptRematch() returns the gameData if the rematch is multiplayer
+		// to create the new room for the simulation
 		if (gameData)
 			this.createRoom(gameData);
 	}
 
 	abortRematch(sessionToken: string, client: Socket): void {
 
-		this._getRoom(sessionToken).abortRematch(client);
+		const gameRoom: SimulationService = this.getRoom(sessionToken);
+		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
+
+		if (player === null) {}
+			// do something
+
+		gameRoom.abortRematch(player);
 	}
 }
