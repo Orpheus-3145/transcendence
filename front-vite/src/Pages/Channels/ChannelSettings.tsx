@@ -252,24 +252,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				<Stack spacing={1} mt={2}>
 				  <Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
 				  <Divider />
-				  {settings.users.map(user => (
-					<Stack direction="row" justifyContent="space-between" alignItems="center" key={user.id}>
+				  {settings.users.map(_user => (
+					<Stack direction="row" justifyContent="space-between" alignItems="center" key={_user.id}>
 					  <Typography sx={{whiteSpace: 'pre-line'}} >
-							{user.name?.length > 10 ? user.name.slice(0, 9) + '...' : user.name}
-					  		{(userIsAdmin(user.name, selectedChannel) || 
-					  			selectedChannel.settings.owner === user.name) ? 
+							{_user.name?.length > 10 ? _user.name.slice(0, 9) + '...' : _user.name}
+					  		{(userIsAdmin(_user.name, selectedChannel) || 
+					  			selectedChannel.settings.owner === _user.name) ? 
 									'\n' :
 									' '}
-							{`(${user.role})`}
+							{`(${_user.role})`}
 					  </Typography>
-					  {/* {console.log(user.nameIntra)} */}
-					  
-					  {(userIsAdmin(user.name, selectedChannel) ||
+					  {/* {console.log(_user.nameIntra)} */}
+					  {(userIsAdmin(_user.name, selectedChannel) ||
 					  	selectedChannel.settings.owner === user.nameIntra) && 
-						user.nameIntra !== user.name && (
+						user.nameIntra !== _user.name && (
 					  <Stack direction="row" spacing={0.3}>
 						<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
-							{user.role === 'Guest' ? 'Make Admin' : 'Make Guest' }
+							{_user.role === 'guest' ? 'Make Admin' : 'Make Guest' }
 						</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
