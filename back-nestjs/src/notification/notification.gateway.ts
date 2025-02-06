@@ -43,18 +43,26 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	handleDisconnect(client: Socket) {
-		// var websock: Websock = this.sockets.find((socket) => socket.client.id === client.id);
-		// this.userService.setStatus(websock?.userId, UserStatus.Offline);
+		var websock: Websock = this.sockets.find((socket) => socket.client.id === client.id);
+		if (websock != undefined && websock != null)
+		{
+			this.userService.setStatus(websock.userId, UserStatus.Offline);
+			console.log("WebSocket for user: " + websock.userId + " has been removed!");
+		}
 		this.sockets = this.sockets.filter((s) => s.client.id !== client.id);
-		console.log(`Noti Client disconnected: ${client.id}`);
 	}
 
 	@SubscribeMessage('getFromUser')
 	async handleNotificationEvent(@ConnectedSocket() client: Socket, @MessageBody() data: { id: string }): Promise<void> 
 	{
-		// this.userService.setStatus(data.id, UserStatus.Online);
-		var newwebsock: Websock = {client: client, userId: data.id};
-		this.sockets.push(newwebsock);
+		var newwebsock: Websock = { client: client, userId: data.id };
+		
+		if (!this.sockets.find(sock => sock.userId === newwebsock.userId)) 
+		{
+			console.log("Adding new WebSocket for user:", data.id);
+			this.sockets.push(newwebsock);
+			this.userService.setStatus(data.id, UserStatus.Online);
+		} 
 		var Noti = await this.notificationService.findNotificationReceiver(data.id);
 	  	client.emit('getAllNotifications', Noti);
 	}

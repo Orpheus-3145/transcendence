@@ -108,21 +108,6 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 	}
 }
 
-export async function setUserStatus(username:string, status:UserStatus): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/setStatus', {
-		method: "POST",
-		headers: {
-		'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({ status: status }),
-	});
-
-	const response = await fetch(request)
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO SET STATUS!");
-}
-
-
 export async function setNewNickname(username:string, nickname:string): Promise<string> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick', {
 		method: "POST",

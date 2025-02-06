@@ -84,27 +84,6 @@ export const Bar: React.FC = () => {
 		);
 	}
 
-	// let showNotiDot = () =>
-	// {
-	// 	if (showNotificationDot == true)
-	// 	{
-	// 		return (
-	// 			<Box
-	// 				sx={{
-	// 					width: 12,
-	// 					height: 12,
-	// 					backgroundColor: 'red',
-	// 					borderRadius: '50%',
-	// 					position: 'relative',
-	// 					left: '-10px',
-	// 					top: '10px',
-	// 				}}
-	// 			/>
-	// 		);
-	// 	}	
-	// } 
-
-
 	let headerBar = () =>
 	{
 		return (
@@ -143,24 +122,9 @@ export const Bar: React.FC = () => {
 			</Box>
 		);
 	}
-
-	// let getNotificationUser = async () : Promise<void> =>
-	// {
-	// 	let arr = await getUserNotifications(user);
-	// 	if (arr?.length === 0)
-	// 	{
-	// 		setShowNotificationDot(false);
-	// 	}
-	// 	else
-	// 	{
-	// 		setShowNotificationDot(true);
-	// 	}
-	// }
 	
 	let pageWrapper = () =>
 	{
-		
-
 		return (headerBar());
 	}
 

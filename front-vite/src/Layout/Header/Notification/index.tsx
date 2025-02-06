@@ -19,9 +19,7 @@ import {NotificationStruct,
 		acceptGameInvite, 
 		declineGameInvite,
 		NotificationType,
-		NotificationStatus,
 		socket} from '../../../Providers/NotificationContext/Notification'
-import { posix } from 'path';
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
@@ -466,16 +464,26 @@ export const Notification: React.FC = () => {
 		);
 	}
 
+	let openBool = () =>
+	{
+		setOpenDrawer(true);
+		setShowNotificationDot(false);
+	}
+
 	let notificationBar = () =>
 	{
+		var color = 'white';
+		if (showNotificationDot)
+			color = 'orange';
 		return (
 			<Stack>
 				<Tooltip title="Notifications" arrow>
 					<IconButton
-						onClick={toggleDrawer(true)}
+						onClick={() => openBool()}
 						sx={{
 							position: 'absolute',
 							left: '30px',
+							color: color,
 							'&:hover': {
 								color: 'orange',
 							},
@@ -515,17 +523,17 @@ export const Notification: React.FC = () => {
 				var gameArr: NotificationStruct[]  = [];
 				arr?.map((item: NotificationStruct) =>
 				{
-					if (item.type == NotificationType.Message)
+					if (item.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
 					{
-						messageArr.push(item);
+						messageArray.push(item);
 					}
-					else if (item.type == NotificationType.friendRequest)
+					else if (item.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === item.id))
 					{
-						friendsArr.push(item);
+						friendRequestArray.push(item);
 					}
-					else if (item.type == NotificationType.gameInvite)
+					else if (item.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === item.id))
 					{
-						gameArr.push(item);
+						gameInviteArray.push(item);
 					}
 				})
 				setFriendRequestArray(friendsArr);
@@ -537,15 +545,15 @@ export const Notification: React.FC = () => {
 
 		const addNotification = (noti: NotificationStruct) =>
 		{
-			if (noti.type == NotificationType.Message)
+			if (noti.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === noti.id))
 			{
 				messageArray.push(noti);
 			}
-			else if (noti.type == NotificationType.friendRequest)
+			else if (noti.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === noti.id))
 			{
 				friendRequestArray.push(noti);
 			}
-			else if (noti.type == NotificationType.gameInvite)
+			else if (noti.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === noti.id))
 			{
 				gameInviteArray.push(noti);
 			}
@@ -573,6 +581,7 @@ export const Notification: React.FC = () => {
 
 			return () => {
 				socket.off('getAllNotifications');
+				socket.off('sendNoti');
 			};
 
 		  }, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);

@@ -43,10 +43,7 @@ export class UsersService {
 		user.blocked = [];
 		try {
 			if (await this.userAlreadyExist(user) == true)
-			{
-				this.setStatus(user.intraId.toString(), UserStatus.Online);
 				return (new UserDTO(user));
-			}
 			await user.validate();
 			await this.usersRepository.save(user);
 			return new UserDTO(user);
@@ -89,11 +86,11 @@ export class UsersService {
 		return (this.findOneIntra(numb));
 	}
 
-	async setStatus(intraId: string, status: UserStatus)
+	async setStatus(Id: string, status: UserStatus)
 	{
-		var user = this.getUserIntraId(intraId);
-		(await user).status = status;
-		this.usersRepository.save(await user);
+		var user = await this.getUserId(Id);
+		user.status = status;
+		this.usersRepository.save(user);
 	}
 
 	async setNameNick(user: User, nameNick: string)

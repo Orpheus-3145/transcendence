@@ -21,7 +21,8 @@ import { useUser,
 		removeFriend, 
 		blockFriend, 
 		changePFP, 
-		User} from '../../Providers/UserContext/User';
+		User,
+		UserStatus} from '../../Providers/UserContext/User';
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -42,6 +43,7 @@ const ProfilePage: React.FC = () => {
 	const [profileImage, setProfileImage] = useState();
 	const [friendsList, setFriendsList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
+	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
 	
 	
 	let RemoveFriend = (id:string) => {
@@ -116,6 +118,11 @@ const ProfilePage: React.FC = () => {
 			fetchFriendDetails(intraid);
 			return <Stack></Stack>;
 		}
+		var namenick = friend.nameNick;
+		if (namenick?.length > 10)
+		{
+			namenick = namenick?.slice(0, 10) + "...";
+		}
 
 		return (
 			<Stack direction={'row'}
@@ -153,7 +160,7 @@ const ProfilePage: React.FC = () => {
 							},
 						}}
 					>
-						<a href="" onClick={() => redirectFriend(friend.id)}>{friend.nameNick}</a>
+						<a href="" onClick={() => redirectFriend(friend.id)}>{namenick}</a>
 					</Typography>
 				</Stack>
 				{friendLineButtons(intraid)}
@@ -490,17 +497,13 @@ const ProfilePage: React.FC = () => {
 	}
 
 	let GetUserStatus = () =>
-	{
-		userProfile.status = 'offline';
-		
+	{		
 		let color;
-		if (user.status == 'offline')
+		if (whichStatus == UserStatus.Offline)
 			color = '#df310e';
-		else if (user.status == 'idle')
-			color = '#cfdf0e';
-		else if (user.status == 'online')
+		else if (whichStatus ==  UserStatus.Online)
 			color = '#0fc00c';
-		else if (user.status == 'ingame')
+		else if (whichStatus ==  UserStatus.InGame)
 			color = '#0dddc4';
 		
 		return (
@@ -716,6 +719,7 @@ const ProfilePage: React.FC = () => {
 			showOwnPage(true);
 			setProfileImage(tmp.image);
 			setFriendsList(tmp.friends);
+			setWhichStatus(tmp.status);
 			setUserProfile(tmp);
 		}
 		else 

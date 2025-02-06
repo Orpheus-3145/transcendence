@@ -68,9 +68,9 @@ export class NotificationService {
 		{
 			var noti = new Notification();
 			noti.senderId = sender.id;
-			noti.senderName = sender.nameIntra;
+			noti.senderName = sender.nameNick;
 			noti.receiverId = receiver.id;
-			noti.receiverName = receiver.nameIntra;
+			noti.receiverName = receiver.nameNick;
 			noti.type = type;
 			noti.status = NotificationStatus.Pending;
 			noti.message = null;
@@ -95,9 +95,9 @@ export class NotificationService {
 		{
 			var noti = new Notification();
 			noti.senderId = sender.id;
-			noti.senderName = sender.nameIntra;
+			noti.senderName = sender.nameNick;
 			noti.receiverId = receiver.id;
-			noti.receiverName = receiver.nameIntra;
+			noti.receiverName = receiver.nameNick;
 			noti.type = NotificationType.Message;
 			noti.status = NotificationStatus.None;
 			noti.message = message;

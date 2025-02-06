@@ -70,6 +70,11 @@ const ProfilePageOther: React.FC = () => {
 			fetchFriendDetails(intraid);
 			return <Stack>Loading...</Stack>;
 		}
+		var namenick = friend.nameNick;
+		if (namenick?.length > 10)
+		{
+			namenick = namenick?.slice(0, 10) + "...";
+		}
 
 		return (
 			<Stack direction={'row'}
@@ -107,7 +112,7 @@ const ProfilePageOther: React.FC = () => {
 							},
 						}}
 					>
-						<a href="" onClick={() => redirectFriend(friend.id)}>{friend.nameNick}</a>
+						<a href="" onClick={() => redirectFriend(friend.id)}>{namenick}</a>
 					</Typography>
 				</Stack>
 			</Stack>
@@ -346,7 +351,6 @@ const ProfilePageOther: React.FC = () => {
 
 	let GameBox = () => 
 	{
-		
 		return (
 			<Stack
 			width={'100%'}
@@ -522,7 +526,7 @@ const ProfilePageOther: React.FC = () => {
 		{
 			return (messageBlockedSend);
 		}
-		return ("ERROR");
+		return ("ERROR: something went wrong, try again!");
 	}
 
 	let AddingFriendIcon = () => 
@@ -590,7 +594,6 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageGR(false);
 		setShowMessageBL(false);
 		addFriend(user.id, userProfile.id);
-
 	}
 
 	let InviteToGameIcon = () => 

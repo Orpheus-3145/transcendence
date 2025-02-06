@@ -23,16 +23,10 @@ export class UsersController {
 
 	@Get('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
-		var user = this.UserService.getUserId(username);
+		var user = await this.UserService.getUserId(username);
 		if (!user)
 			throw new HttpException('Not Found', 404);
 		return (user);
-	}
-
-	@Post('/profile/:username/setStatus')
-	async setStatus(@Param('username') intraID: string, @Body('status') status: UserStatus): Promise<void>
-	{
-		return (this.UserService.setStatus(intraID, status));
 	}
 
 	@Post('/profile/:username/newnick')
