@@ -39,7 +39,7 @@ export default class RoomManagerService {
 				this.deleteRoom(sessionToken);
 				break;
 			}
-			catch (GameException) {	// client doesn't belong to the room, check others
+			catch (GameException) {	// client doesn't belong to the room, check the others
 				continue ;
 			}
 		}

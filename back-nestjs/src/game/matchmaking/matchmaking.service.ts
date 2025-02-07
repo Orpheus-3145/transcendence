@@ -31,7 +31,7 @@ export default class MatchmakingService {
 
 		if (this._checker === null) this._checker = setInterval(() => this.checkNewGame(), 100);
 
-		this.logger.debug(`client ${client.id} joined the queue for matchmaking, power ups: ${JSON.stringify(info.extras)}`);
+		this.logger.debug(`client ${client.id} joined the queue for matchmaking, power ups: [${info.extras.join(', ')}]`);
 	}
 
 	removePlayerFromQueue(leaver: Socket) {
@@ -71,9 +71,7 @@ export default class MatchmakingService {
 					player1.clientSocket.emit('ready', initData.sessionToken);
 					player2.clientSocket.emit('ready', initData.sessionToken);
 
-					this.logger.log(
-						`found players ${player1.clientSocket.id}, ${player2.clientSocket.id} - sessionToken: ${initData.sessionToken}`,
-					);
+					this.logger.log(`found two players, token for game session: ${initData.sessionToken}`);
 					this.roomManager.createRoom(initData);
 					return;
 				}

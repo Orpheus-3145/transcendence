@@ -151,13 +151,13 @@ export default class SimulationService {
 				this.thrower.throwGameExcp(
 					`${data.nameNick} is already in this game`,
 					this.sessionToken,
-					`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}`,
+					`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}()`,
 				);
 			else		// unknown player
 				this.thrower.throwGameExcp(
 					`room full, failed to add ${data.nameNick} to game`,
 					this.sessionToken,
-					`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}`,
+					`${SimulationService.name}.${this.constructor.prototype.addPlayer.name}()`,
 				);
 		}
 		if (data.playerId === -1)
@@ -219,7 +219,7 @@ export default class SimulationService {
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
 				this.sessionToken,
-				`${SimulationService.name}.updateBall()`,
+				`${SimulationService.name}.${this.constructor.prototype.updateBall.name}()`,
 			);
 
 		// Move the ball
@@ -271,7 +271,7 @@ export default class SimulationService {
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
 				this.sessionToken,
-				`${SimulationService.name}.updateBotPaddle()`,
+				`${SimulationService.name}.${this.constructor.prototype.updateBotPaddle.name}()`,
 			);
 
 		// The 30 is to prevent the paddle from getting stuck when the y coordinate is the same. Allows smooth movement.
@@ -297,7 +297,7 @@ export default class SimulationService {
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
 				this.sessionToken,
-				`${SimulationService.name}.sendUpdateToPlayers()`,
+				`${SimulationService.name}.${this.constructor.prototype.sendPowerUpUpdate.name}()`,
 			);
 
 		this.powerUpPosition.x += this.powerUpPosition.dx * 5;
@@ -327,7 +327,7 @@ export default class SimulationService {
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
 				this.sessionToken,
-				`${SimulationService.name}.sendUpdateToPlayers()`,
+				`${SimulationService.name}.${this.constructor.prototype.sendUpdateToPlayers.name}()`,
 			);
 
 		const dataPlayer1: GameStateDTO = {
@@ -358,7 +358,7 @@ export default class SimulationService {
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
 				this.sessionToken,
-				`${SimulationService.name}.endGame()`,
+				`${SimulationService.name}.${this.constructor.prototype.endGame.name}()`,
 			);
 
 		this.logger.log(`session [${this.sessionToken}] - game over, winner: ${winner.nameNick}`);
@@ -519,22 +519,19 @@ export default class SimulationService {
 		if (this.engineRunning === false)
 			return;
 		
-		const playerIndex: number = (this.player1.intraId === player.intraId) ? 0 : 1;
+		let playerIndex: number = -1;
+		if (this.mode === GameTypes.GameMode.single)
+			playerIndex = (this.player1.nameNick === player.nameNick) ? 0 : 1;
+		else if (this.mode === GameTypes.GameMode.multi)		// for multiplayer check client.id, cause in development players can use the same intra42 user
+			playerIndex = (this.player1.clientSocket.id === player.clientSocket.id) ? 0 : 1;
+	
 		this.addPowerUp(playerIndex);
-		const delta =
-			direction === GameTypes.PaddleDirection.up
-				? this.paddleSpeed[playerIndex] * -1
-				: this.paddleSpeed[playerIndex];
-		if (this.player1.intraId === player.intraId)
-			this.player1.posY = Math.max(
-				this.paddleHeights[playerIndex] / 2,
-				Math.min(this.windowHeight - this.paddleHeights[playerIndex] / 2, this.player1.posY + delta),
-			);
-		else if (this.player2.intraId === player.intraId)
-			this.player2.posY = Math.max(
-				this.paddleHeights[playerIndex] / 2,
-				Math.min(this.windowHeight - this.paddleHeights[playerIndex] / 2, this.player2.posY + delta),
-			);
+		const delta = (direction === GameTypes.PaddleDirection.up) ? this.paddleSpeed[playerIndex] * -1 : this.paddleSpeed[playerIndex];
+		
+		player.posY = Math.max(
+			this.paddleHeights[playerIndex] / 2,
+			Math.min(this.windowHeight - this.paddleHeights[playerIndex] / 2, player.posY + delta),
+		);
 	}
 
 	randomDelta(): { dx: number; dy: number } {
@@ -729,7 +726,7 @@ export default class SimulationService {
 			this.thrower.throwGameExcp(
 				`client [id ${client.id}] does not belong to the game session`,
 				this.sessionToken,
-				`${SimulationService.name}.getPlayerFromClient()`
+				`${SimulationService.name}.${this.constructor.prototype.getPlayerFromClient.name}()`
 			);
 	}
 }

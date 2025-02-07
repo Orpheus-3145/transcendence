@@ -17,7 +17,7 @@ export default class ErrorScene extends BaseScene {
 		super.buildGraphicObjects();
 
 		this.add
-			.text(this.scale.width * 0.5, this.scale.height * 0.4, `ERROR: ${this._errorTrace}`, {
+			.text(this.scale.width * 0.5, this.scale.height * 0.4, this._errorTrace, {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 18}px`,
 				align: 'center',
 				color: '#f00',
