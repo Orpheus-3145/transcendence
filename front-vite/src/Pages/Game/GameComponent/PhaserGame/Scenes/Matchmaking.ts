@@ -60,6 +60,10 @@ export default class MatchmakingScene extends BaseScene {
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
-		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
+		this.events.on('shutdown', () => this.disconnect(), this);
+	}
+
+	disconnect(): void {
+		this._socketIO.disconnect();
 	}
 }

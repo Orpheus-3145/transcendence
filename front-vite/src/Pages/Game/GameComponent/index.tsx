@@ -37,7 +37,6 @@ const GameComponent: React.FC = () => {
 			gameInstance.scale.resize(width, width * 9 / 16);
 			
 			gameInstance.scene.getScenes(true).forEach( (scene: Phaser.Scene) => {
-				
 				// resize all the objects inside of every scene
 				if (scene instanceof BaseScene) {
 					scene.killChildren();
@@ -71,14 +70,13 @@ const GameComponent: React.FC = () => {
 						autoCenter: Phaser.Scale.CENTER_BOTH,
 					},
 					fps: {
-						target: 60, // Mantiene il framerate fisso
-						forceSetTimeOut: true, // Forza il setTimeout per il loop
+						target: 60,
+						forceSetTimeOut: true,
 					},
-					autoFocus: true, // Imposta il focus automatico
+					autoFocus: true,
 					render: {
 						antialias: true,
 					},
-					// Disabilita la pausa quando il tab perde il focus
 					input: {
 						keyboard: true,
 						mouse: true,
@@ -100,11 +98,13 @@ const GameComponent: React.FC = () => {
 			window.removeEventListener('resize', handleResize);
 
 			if (gameInstance) {
-				// if game is running client needs to be disconnected
-				if (gameInstance.scene.isActive('Game')) {
-					
-					const gameScene = gameInstance?.scene.getScene('Game') as GameScene;
-					if (gameScene) gameScene.onPreLeave();
+				const scenesToDisconnect = ['Matchmaking', 'Game', 'Results'];
+				for (const sceneName of scenesToDisconnect) {
+					if (gameInstance.scene.isActive(sceneName)) {	// if game is running client needs to be disconnected
+						const gameScene = gameInstance.scene.getScene(sceneName) as BaseScene;
+						if (gameScene)
+							gameScene.disconnect();
+					}
 				}
 				gameInstance.destroy(true);
 				gameInstance = null;

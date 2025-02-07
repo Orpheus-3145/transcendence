@@ -44,8 +44,6 @@ export default class BaseScene extends Phaser.Scene {
 	// method to call whenever the scene is switched
 	switchScene(sceneName: string, initSceneData?: any): void {
 
-		this.onPreLeave();
-
 		this.scene.start(sceneName, initSceneData);
 	}
 
@@ -62,5 +60,5 @@ export default class BaseScene extends Phaser.Scene {
 		this.children.list.forEach((gameObject) => gameObject.destroy());
 	}
 
-	onPreLeave(): void {}
+	disconnect(): void {}
 };

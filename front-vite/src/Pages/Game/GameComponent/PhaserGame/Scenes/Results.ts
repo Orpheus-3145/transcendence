@@ -129,7 +129,7 @@ export default class ResultsScene extends BaseScene {
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
-		this.events.on('shutdown', () => this._socketIO.disconnect(), this);
+		this.events.on('shutdown', () => this.disconnect(), this);
 	}
 
 	sendMsgToServer(msgType: string, content?: any): void {
@@ -276,5 +276,9 @@ export default class ResultsScene extends BaseScene {
 		});	
 
 		return refusePopup;
+	}
+
+	disconnect(data?: any): void {
+		this._socketIO.disconnect();
 	}
 }

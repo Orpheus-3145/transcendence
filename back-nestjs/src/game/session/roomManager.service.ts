@@ -59,7 +59,7 @@ export default class RoomManagerService {
 		gameRoom.movePaddle(player, data.direction);
 
 		this.logger.debug(
-			`session [${data.sessionToken}] - update from ${player.nameNick} , move '${data.direction}'`,
+			`session [${data.sessionToken}] - update from ${player.nameNick}, move '${data.direction}'`,
 		);
 	}
 

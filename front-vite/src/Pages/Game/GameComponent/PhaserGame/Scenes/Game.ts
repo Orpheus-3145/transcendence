@@ -18,7 +18,7 @@ export default class GameScene extends BaseScene {
 	private _gameState!: GameTypes.GameState;
 	private _powerUpState!: GameTypes.PowerUpPosition | null;
 	private _gameStarted!: boolean;
-	private _closeConnection!: boolean;
+	private _keepConnectionOpen!: boolean;
 	
 	private _gameSizeBackEnd!: GameTypes.GameSize;
 	private _widthRatio!: number;
@@ -69,7 +69,7 @@ export default class GameScene extends BaseScene {
 		}
 		this._powerUpState = null;
 		this._gameStarted = false;
-		this._closeConnection = false;
+		this._keepConnectionOpen = false;
 		
 		this._gameSizeBackEnd = {width: 0, height: 0}
 		this._widthRatio = 0;
@@ -187,7 +187,7 @@ export default class GameScene extends BaseScene {
 			}
 		});
 
-		this._socketIO.on('endGame', (winner: string) => this.switchScene('Results', {winner: winner, score: this._gameState.score, sessionToken: this._sessionToken, socket: this._socketIO}));
+		this._socketIO.on('endGame', (winner: string) => this.endGame(winner));
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
@@ -223,7 +223,7 @@ export default class GameScene extends BaseScene {
 	
 		});
 
-		this.events.on('shutdown', () => this.onPreLeave(), this);
+		this.events.on('shutdown', () => this.disconnect(), this);
 	}
 
 	sendMsgToServer(msgType: string, content?: any): void {
@@ -273,16 +273,24 @@ export default class GameScene extends BaseScene {
 		this._heightRatio = this._gameSizeBackEnd.height / this.scale.height;
 	}
 
-	onPreLeave(): void {
-		if (this._closeConnection === true)
-			this._socketIO.disconnect();
+	endGame(winner: string): void {
+
+		// stay connected to websocket, because the next scene needs it
+		this._keepConnectionOpen = true;
+		this.switchScene(
+			'Results', 
+			{
+				winner: winner,
+				score: this._gameState.score,
+				sessionToken: this._sessionToken,
+				socket: this._socketIO
+			}
+		);
 	}
 
-	switchScene(sceneName: string, initSceneData?: any): void {
-		
-		if (sceneName !== 'Results')
-			this._closeConnection = true;
-
-		super.switchScene(sceneName, initSceneData);
+	disconnect(): void {
+		if (this._keepConnectionOpen === false) {
+			this._socketIO.disconnect();
+		}
 	}
 }
