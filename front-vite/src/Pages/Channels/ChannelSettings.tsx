@@ -8,6 +8,12 @@ import { myself, userInChannel, userIsAdmin } from '../Channels/index';
 import { useUser } from '../../Providers/UserContext/User';
 import { socket } from '../../Layout/Chat/ChatContext';
 
+// User test data
+// const testUser = {
+// 	name: 'user_test',
+
+// };
+
 interface SettingsModalProps {
     open: boolean;
     onClose: () => void;
@@ -21,6 +27,8 @@ interface SettingsModalProps {
 	setAvailableChannels: (availableChannels: ChatRoom[]) => void;
 	setIsSettingsView: boolean
 }
+
+let testUserId = 20;
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ 
 	open,
@@ -43,7 +51,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleAddFriend = () => {
 		console.log('"Add Friend" clicked!');
-		
 		if (friendName) {
 			const newUser: UserProps = {
 				name: friendName,
@@ -52,8 +59,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				password: '',
 				icon: <PersonAddIcon />
 			};
-			//--> CALL TO BACKEND <-- //
+			
 			setSettings({ ...settings, users: [...settings.users, newUser] });
+			
+			const data = {
+				channel_id: selectedChannel.id,
+				user_id: testUserId++,
+			};
+
+			// Emit the user to the backend
+			socket.emit('joinChannel', data);
+			
 			setFriendName('');
 		}
 	}

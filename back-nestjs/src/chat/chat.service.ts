@@ -66,7 +66,7 @@ export class ChatService {
 			where: { channel_id: savedChannel.channel_id },
 			relations: ['members'],
 		});
-		console.log('full channel:', fullChannel);
+		// console.log('full channel:', fullChannel);
 		return fullChannel;
 	}
 	  
@@ -78,6 +78,7 @@ export class ChatService {
 			channel_id,
 			member_role: role,
 		});
+		console.log(membership);
 		return this.channelMemberRepository.save(membership);
 	}
 

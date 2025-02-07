@@ -220,7 +220,7 @@ const ChannelsPage: React.FC = () => {
 	
 	const handleCreateChannel = () => {
 		if (channelName.trim()) {
-			const newChannelData = {
+			const channelDTO = {
 				title: channelName,
 				ch_type: 'public',  // or another type based on UI
 				ch_owner: user.nameIntra,
@@ -231,7 +231,7 @@ const ChannelsPage: React.FC = () => {
 			};
 	
 			// Emit the event to create the channel on the server
-			socket.emit('createChannel', newChannelData);
+			socket.emit('createChannel', channelDTO);
 		}
 	};	
 			

@@ -45,6 +45,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
   	  try {
   	    // Assuming chatDTO contains channel information like title, type, users, etc.
   	    const newChannel = await this.chatService.createChannel(chatDTO);
+		// Join the channel
+		client.join(newChannel.channel_id.toString());
   	    // Emit back the created channel to the client
   	    this.server.emit('channelCreated', newChannel);
 		// Send success message to the user who created the channel
@@ -56,74 +58,44 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
   	  }
   	}
 
-
-	// // Join a specific room/channel
+	// Join a specific room/channel (ORIGINAL VERSION)
 	// @SubscribeMessage('joinChannel')
 	// async handleJoinChannel(
 	// 	@MessageBody('channel') channel: string,
 	// 	@ConnectedSocket() client: Socket,
 	// ): Promise<void> {
-	// 	const userId = 777; // --> FOR TESTING ONLY <--
-
-	// 	console.log(`Client ${userId} joined channel ${channel}`);
-	// 	console.log(`Received channel from client:`, channel);
-
-	// 	const channelId = +channel;
-	// 	if (isNaN(channelId)) {
-	// 		console.error("Invalid channel ID:", channel);
-	// 		client.emit('error', { message: 'Invalid channel ID' });
-	// 		return; // Handle invalid case
-	// 	}
-
-	// 	// const userId = +client.id;
-	// 	// if (isNaN(userId)) {
-	// 	// 	console.error("Invalid user ID:", client.id);
-	// 	// 	client.emit('error', { message: 'Invalid user ID' });
-	// 	// 	return;
-	// 	// }
-
-	// 	console.log(`Valid channel ID: ${channelId}`);
-
+	// 	console.log(`Client ${client.id} joined channel ${channel}`);
 	// 	// Add the user to the database if needed
-	// 	await this.chatService.addUserToChannel(userId, channelId);
-	  
+	// 	await this.chatService.addUserToChannel(+client.id, +channel);
 	// 	// Join the channel
 	// 	client.join(channel);
 	// 	client.emit('joinedChannel', { channel });
 	// }
 
-
-	// Join a specific room/channel (ORIGINAL VERSION)
+	// Join a specific room/channel
+	
 	@SubscribeMessage('joinChannel')
 	async handleJoinChannel(
-		@MessageBody('channel') channel: string,
+		@MessageBody() data: { channel_id: number, user_id: number},
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		console.log(`Client ${client.id} joined channel ${channel}`);
+		const {channel_id, user_id} = data;
+		// console.log(`User ${client.id} joined channel ${channel}`);
+		try {
+			// Add the user to the database
+			await this.chatService.addUserToChannel(user_id, channel_id);
+			// Join the channel
+			client.join(channel_id.toString());
+			// Notify the user that they successfully joined
+			client.emit('joinedChannel', { channel_id });
+			// Notify all channel members
+			this.server.to(channel_id.toString()).emit('userJoinedChannel', { user_id, channel_id });
+			console.log(`User ${user_id} successfully joined channel ${channel_id}`);
 
-		// Add the user to the database if needed
-		await this.chatService.addUserToChannel(+client.id, +channel);
-	  
-		// Join the channel
-		client.join(channel);
-		client.emit('joinedChannel', { channel });
-	}
-
-	// Join a specific room/channel (ORIGINAL VERSION)
-	@SubscribeMessage('addFriendToChannel')
-	async handleAddFriendToChannel(
-		@MessageBody('channel') channel: string,
-		@MessageBody('channel') user_id: number,
-		@ConnectedSocket() client: Socket,
-	): Promise<void> {
-		console.log(`User ${client.id} joined channel ${channel}`);
-
-		// Add the user to the database if needed
-		await this.chatService.addUserToChannel(user_id, +channel);
-	  
-		// Join the channel
-		client.join(channel);
-		client.emit('joinedChannel', { channel });
+		} catch (error) {
+			console.error(`Error joining channel: ${error.message}`);
+			client.emit('error', { message: 'Could not join channel' });
+		}
 	}
 
 	// Leave a specific room/channel
