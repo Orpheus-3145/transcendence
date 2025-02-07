@@ -76,14 +76,14 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	
 	@SubscribeMessage('joinChannel')
 	async handleJoinChannel(
-		@MessageBody() data: { channel_id: number, user_id: number},
+		@MessageBody() data: { channel_id: number, name: string, user_id: number, },
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		const {channel_id, user_id} = data;
+		const {channel_id, name, user_id,} = data;
 		// console.log(`User ${client.id} joined channel ${channel}`);
 		try {
 			// Add the user to the database
-			await this.chatService.addUserToChannel(user_id, channel_id);
+			await this.chatService.addUserToChannel(user_id, name, channel_id, );
 			// Join the channel
 			client.join(channel_id.toString());
 			// Notify the user that they successfully joined

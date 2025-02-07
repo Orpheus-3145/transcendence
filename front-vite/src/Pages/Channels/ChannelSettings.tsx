@@ -65,6 +65,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			const data = {
 				channel_id: selectedChannel.id,
 				user_id: testUserId++,
+				name: friendName,
 			};
 
 			// Emit the user to the backend

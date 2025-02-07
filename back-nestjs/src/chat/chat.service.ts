@@ -72,9 +72,10 @@ export class ChatService {
 	  
 
 	// Add user to a channel
-	async addUserToChannel(user_id: number, channel_id: number, role = 'member') {
+	async addUserToChannel(user_id: number, name: string, channel_id: number, role = 'member') {
 		const membership = this.channelMemberRepository.create({
 			user_id,
+			name,
 			channel_id,
 			member_role: role,
 		});
