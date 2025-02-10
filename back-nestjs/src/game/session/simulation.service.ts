@@ -22,7 +22,7 @@ export default class SimulationService {
 	// generic game data
 	private readonly maxScore: number = parseInt(this.config.get('GAME_MAX_SCORE'), 10);
 	private readonly botName: string = this.config.get<string>('GAME_BOT_NAME', 'DTR');
-	private readonly frameRateUpdate: number = parseInt(this.config.get('GAME_FPS'), 10);
+	private readonly frameRateUpdate: number = 1000 / parseInt(this.config.get('GAME_FRAME_UPDATE'), 10);
 	private readonly hardDebugMode: boolean = this.config.get<boolean>('HARD_DEBUG_MODE', false);
 	private readonly forbidAutoPlay: boolean = this.config.get<boolean>('GAME_FORBID_AUTO_PLAY', false);
 	// gamte item sizes
@@ -30,7 +30,7 @@ export default class SimulationService {
 	private readonly windowHeight: number = parseInt(this.config.get('GAME_HEIGHT'), 10);
 	private readonly paddleWidth: number = parseInt(this.config.get('GAME_PADDLE_WIDTH'), 10);
 	private readonly _defaultPaddleHeight: number = parseInt(this.config.get('GAME_PADDLE_HEIGHT'), 10);
-	private readonly _defaultpaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_SPEED'), 10);
+	private readonly _defaultPaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_SPEED'), 10);
 	private readonly _highPaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_HIGH_SPEED'), 10);
 	private readonly _lowPaddleSpeed: number = parseInt(this.config.get('GAME_PADDLE_LOW_SPEED'), 10);
 	private readonly ballRadius: number = Number(this.config.get('GAME_BALL_RADIUS'));
@@ -43,14 +43,14 @@ export default class SimulationService {
 	// players data
 	private player1: PlayingPlayer = null;
 	private player2: PlayingPlayer = null;
-
+	// game simulation data
 	private engineRunning: boolean = false;
 	private gameOver: boolean = false;
 	private waitingForRematch: boolean = false;
 	private ballSpeed: number = this._defaultBallSpeed;
 	private ball = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 5, dy: 5 };
 	// Power-up
-	private paddleSpeed: number[] = [this._defaultpaddleSpeed, this._defaultpaddleSpeed];
+	private paddleSpeed: number[] = [this._defaultPaddleSpeed, this._defaultPaddleSpeed];
 	private powerUpIntervalTime: number = Number(this.config.get<number>('GAME_POWERUP_CYCLE_TIME', 15000));
 	// Power-up state
 	private powerUpStatus: boolean[] = [false, false]; // Power up status for players
@@ -62,6 +62,7 @@ export default class SimulationService {
 	// intervals for periodic updates
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
+	private botInterval: NodeJS.Timeout = null; // Timer for handling the bot
 	private powerUpInterval: NodeJS.Timeout = null; // Timer for spawning power up
 
 	constructor(
@@ -108,6 +109,20 @@ export default class SimulationService {
 		}
 
 		this.gameSetupInterval = setInterval(() => this.preGameIteration(), this.frameRateUpdate);
+	}
+
+	preGameIteration(): void {
+		// missing info, not ready to play yet
+		if (!this.player1 || !this.player2) return;
+
+		if (this.forbidAutoPlay === true && this.player1.intraId === this.player2.intraId)
+			this.interruptGame(`cannot play against yourself`);
+
+		this.logger.log(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
+		this.logger.log(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
+
+		// received all data, game can start
+		this.startEngine();
 	}
 
 	addPlayer(data: PlayerDataDTO, client: Socket): void {
@@ -160,7 +175,7 @@ export default class SimulationService {
 	}
 
 	startEngine(): void {
-		if (this.engineRunning) return;	// NB or throw error?
+		if (this.engineRunning) return;
 
 		this.engineRunning = true;
 
@@ -171,9 +186,12 @@ export default class SimulationService {
 
 		this.resetBall();
 		
-		// if at least one powerup is select start spawning timer
+		// if at least one powerup is selected start spawning timer
 		if (this.powerUpSelected.length > 0)
-			this.startPowerUpTimer();
+			this.startPowerUpInterval();
+
+		if (this.mode === GameMode.single)
+			this.startBotPaddleInterval();
 
 		const sizeGame: GameSizeDTO = {width: this.windowWidth, height: this.windowHeight}
 		this.sendMsgToPlayer(this.player1.clientSocket, 'gameStart', sizeGame);
@@ -183,31 +201,13 @@ export default class SimulationService {
 		this.logger.debug(`session [${this.sessionToken}] - engine started`);
 	}
 
-	preGameIteration(): void {
-		// missing info, not ready to play yet
-		if (!this.player1 || !this.player2) return;
-
-		if (this.forbidAutoPlay === true && this.player1.intraId === this.player2.intraId)
-			this.interruptGame(`cannot play against yourself`);
-
-		this.logger.log(`session [${this.sessionToken}] - player1: ${this.player1.nameNick}`);
-		this.logger.log(`session [${this.sessionToken}] - player2: ${this.player2.nameNick}`);
-
-		// received all data, game can start
-		this.startEngine();
-	}
-
 	gameIteration(): void {
 		try {
 			this.updateBall();
-
-			if (this.mode === GameMode.single)
-				this.updateBotPaddle();
+			this.sendUpdateToPlayers('gameState');
 
 			if (this.powerUpActive === true)
 				this.sendPowerUpUpdate();
-	
-			this.sendUpdateToPlayers('gameState');
 
 			if (this.gameOver) {
 				if (this.player2.score === this.maxScore)
@@ -269,6 +269,26 @@ export default class SimulationService {
 			if (this.player1.score === this.maxScore) this.gameOver = true;
 			else this.resetBall(); // Reset position and give random velocity
 		}
+	}
+
+	startBotPaddleInterval(): void {
+
+		let botUpdateRate: number = this.frameRateUpdate;
+
+		if (this.difficulty === GameDifficulty.easy)
+			botUpdateRate *= 2.5;
+		else if (this.difficulty === GameDifficulty.medium)
+			botUpdateRate *= 2;
+		else if (this.difficulty === GameDifficulty.hard)
+			botUpdateRate *= 1.25;
+
+		this.botInterval = setInterval(() => this.updateBotPaddle(), botUpdateRate);
+	}
+
+	stopBotPaddleInterval(): void {
+
+		clearInterval(this.botInterval);
+		this.botInterval = null;
 	}
 
 	// Callback opponent paddle
@@ -438,16 +458,11 @@ export default class SimulationService {
 		clearInterval(this.gameStateInterval);
 		this.gameStateInterval = null;
 
-		// if players are using powerups
-		if (this.powerUpSelected.length > 0) {
-			clearInterval(this.powerUpInterval);
-			this.powerUpInterval = null;
-			
-			if (this.powerUpStatus[0])
-				this.removePowerUp(0);
-			if (this.powerUpStatus[1])
-				this.removePowerUp(1);
-		}
+		if (this.mode === GameMode.single)
+			this.stopBotPaddleInterval();
+
+		if (this.powerUpSelected.length > 0)
+			this.stopPowerUpInterval()
 
 		this.engineRunning = false;
 		this.gameOver = false;
@@ -612,18 +627,29 @@ export default class SimulationService {
 					: this._defaultPaddleHeight;
 		} else if (this.powerUpType === PowerUpType.speedPaddle) {
 			this.paddleSpeed[player_no] =
-				this.powerUpStatus[player_no] === true ? this._highPaddleSpeed : this._defaultpaddleSpeed;
+				this.powerUpStatus[player_no] === true ? this._highPaddleSpeed : this._defaultPaddleSpeed;
 		} else if (this.powerUpType === PowerUpType.slowPaddle) {
 			this.paddleSpeed[player_no] =
-				this.powerUpStatus[player_no] === true ? this._lowPaddleSpeed : this._defaultpaddleSpeed;
+				this.powerUpStatus[player_no] === true ? this._lowPaddleSpeed : this._defaultPaddleSpeed;
 		}
 	}
 
-	startPowerUpTimer(): void {
+	startPowerUpInterval(): void {
 		this.powerUpInterval = setInterval(() => {
 			this.powerUpIntervalTime = Math.random() * (20000 - 10000) + 10000;
 			this.spawnPowerUp();
 		}, this.powerUpIntervalTime);
+	}
+
+	stopPowerUpInterval(): void {
+
+		clearInterval(this.powerUpInterval);
+		this.powerUpInterval = null;
+		
+		if (this.powerUpStatus[0])
+			this.removePowerUp(0);
+		if (this.powerUpStatus[1])
+			this.removePowerUp(1);
 	}
 
 	setRandomPowerUp(): void {
