@@ -547,27 +547,27 @@ export const Notification: React.FC = () => {
 		}
 		else
 		{
-			var friendsArr: NotificationStruct[]  = [];
-			var messageArr: NotificationStruct[]  = [];
-			var gameArr: NotificationStruct[]  = [];
+			var tmpfriendsArr: NotificationStruct[]  = [];
+			var tmpmessageArr: NotificationStruct[]  = [];
+			var tmpgameArr: NotificationStruct[]  = [];
 			arr?.map((item: NotificationStruct) =>
 			{
 				if (item.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
 				{
-					messageArray.push(item);
+					tmpmessageArr.push(item);
 				}
 				else if (item.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === item.id))
 				{
-					friendRequestArray.push(item);
+					tmpfriendsArr.push(item);
 				}
 				else if (item.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === item.id))
 				{
-					gameInviteArray.push(item);
+					tmpgameArr.push(item);
 				}
 			})
-			setFriendRequestArray(friendsArr);
-			setMessageArray(messageArr);
-			setGameInviteArray(gameArr);
+			setFriendRequestArray(tmpfriendsArr);
+			setMessageArray(tmpmessageArr);
+			setGameInviteArray(tmpgameArr);
 			setShowNotificationDot(true);
 		}
 	}
@@ -601,6 +601,7 @@ export const Notification: React.FC = () => {
 			socket.on('getAllNotifications', (notifications: NotificationStruct[]) => 
 			{
 				handleNotifications(notifications);
+				return (notificationBar());
 			});
 		}
 
