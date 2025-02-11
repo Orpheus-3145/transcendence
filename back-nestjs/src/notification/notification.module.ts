@@ -4,13 +4,12 @@ import { NotificationService } from './notification.service';
 import { UsersModule } from 'src/users/users.module';
 import { NotificationController } from './notification.controller';
 import { Notification } from '../entities/notification.entity';
-import { User } from 'src/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
+import { NotificationGateway } from './notification.gateway';
 
 @Module({
 	imports: [TypeOrmModule.forFeature([Notification]), forwardRef(() => UsersModule)],
 	controllers: [NotificationController],
-	providers: [NotificationService],
+	providers: [NotificationService, NotificationGateway], //need to add the NotificationGateway
 	exports: [NotificationService, TypeOrmModule],
 })
 export class NotificationModule {}

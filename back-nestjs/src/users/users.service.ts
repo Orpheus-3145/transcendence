@@ -19,14 +19,6 @@ export class UsersService {
 			private readonly notificationService: NotificationService,
  	) { }
 
-	async userAlreadyExist(user: User): Promise<Boolean>
-	{
-		var tmp: User | null = await this.findOne(user.intraId);
-		if (tmp == null)
-			return (false);
-		return (true);
-	}
-
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
 		const user = new User();
 		user.accessToken = access.access_token;
@@ -42,10 +34,10 @@ export class UsersService {
 		user.friends = [];
 		user.blocked = [];
 		try {
-			if (await this.userAlreadyExist(user) == true)
+			var tmp: User | null = await this.findOne(user.intraId);
+			if (tmp != null)
 			{
-				this.setStatus(user.intraId.toString(), UserStatus.Online);
-				return (new UserDTO(user));
+				return (new UserDTO(tmp));
 			}
 			await user.validate();
 			await this.usersRepository.save(user);
@@ -89,11 +81,11 @@ export class UsersService {
 		return (this.findOneIntra(numb));
 	}
 
-	async setStatus(intraId: string, status: UserStatus)
+	async setStatus(Id: string, status: UserStatus)
 	{
-		var user = this.getUserIntraId(intraId);
-		(await user).status = status;
-		this.usersRepository.save(await user);
+		var user = await this.getUserId(Id);
+		user.status = status;
+		this.usersRepository.save(user);
 	}
 
 	async setNameNick(user: User, nameNick: string)
@@ -107,11 +99,7 @@ export class UsersService {
 		const numb = Number(code);
 		return (this.findOneIntra(numb));
 	}
-  
-	async addFriend(user: User, other: User)
-	{
-		this.notificationService.initRequest( user, other, NotificationType.friendRequest);
-	}
+
 
   	async friendRequestAccepted(iduser:string, idother:string)
   	{
@@ -159,15 +147,5 @@ export class UsersService {
   	{
 		user.image = image;
 		this.usersRepository.save(user);
-  	}
-
-  	async inviteGame(user: User, other: User)
- 	{	
-		this.notificationService.initRequest(user, other, NotificationType.gameInvite);
- 	}
-
-  	async sendMessage(user :User, other: User, message:string)
-  	{
-		this.notificationService.initMessage(user, other, message);
   	}
 }

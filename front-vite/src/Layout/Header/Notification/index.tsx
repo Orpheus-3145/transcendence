@@ -12,15 +12,13 @@ import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClearIcon from '@mui/icons-material/Clear';
 import {NotificationStruct, 
-		getUserNotifications, 
 		removeNotificationDb, 
 		acceptFriendRequest, 
 		declineFriendRequest,
 		acceptGameInvite, 
 		declineGameInvite,
 		NotificationType,
-		NotificationStatus} from '../../../Providers/NotificationContext/Notification'
-import { posix } from 'path';
+		socket} from '../../../Providers/NotificationContext/Notification'
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
@@ -28,21 +26,43 @@ export const Notification: React.FC = () => {
 	const theme = useTheme();  
 	const [openDrawer, setOpenDrawer] = useState<Boolean>(false);
 	const [showNotificationDot, setShowNotificationDot] = useState<Boolean>(false);
-	const [messageArray, setMessageArray] = useState<NotificationStruct[] | null>(null);
-	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[] | null>(null);
-	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[] | null>(null);
+	const [messageArray, setMessageArray] = useState<NotificationStruct[]>([]);
+	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[]>([]);
+	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[]>([]);
+	const [isFirst, setIsFirst] = useState<Boolean>(true);
+
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)}
 
+	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
+	{
+		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);
+		
+		if (type == NotificationType.Message)
+		{
+			setMessageArray(tmparr);
+		}
+		else if (type == NotificationType.gameInvite)
+		{
+			setGameInviteArray(tmparr);
+		}
+		else if (type == NotificationType.friendRequest)
+		{
+			setFriendRequestArray(tmparr);
+		}
+	}
 
 	let removeNotification = (noti: NotificationStruct) =>
 	{
+		removeNotiFromArray(noti, messageArray, NotificationType.Message);
 		removeNotificationDb(noti.id.toString());
 	}
 
 	let initMessage = (noti: NotificationStruct) =>
 	{
+		if (noti.message == null)
+			return ;
 		var notiMessage = noti.message;
 		if (noti.message?.length > 23)
 		{
@@ -64,6 +84,12 @@ export const Notification: React.FC = () => {
 						borderColor: theme.palette.secondary.dark, 
 						borderRadius: '16px',
 						backgroundColor: 'black',
+						width: '270px',
+						position: 'relative',
+						display: 'flex',
+						justifyContent: 'center',
+						alignItems: 'center',
+						textAlign: 'center',
 					}}
 				>
 					<Tooltip title="Clear Notification" arrow>
@@ -72,8 +98,9 @@ export const Notification: React.FC = () => {
 							component="label"
 							onClick={() => removeNotification(noti)}
 							sx={{
-								left: '190px',
-								top: '-30px',
+								position: 'absolute',
+								left: '230px',
+								top: '5px',
 								width: '20px',
 								height: '20px',
 								fontSize: '20px',
@@ -89,12 +116,12 @@ export const Notification: React.FC = () => {
 					<Typography variant={'h1'}
 						sx={{
 							position: 'relative',
-							top: '-10px',
+							left: '0px',
 							fontSize: '0.9rem',
 						}}    
 					>
 						<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-						send you a message:
+						sent a message:
 						<br />
 						{notiMessage}
 					</Typography>
@@ -105,7 +132,7 @@ export const Notification: React.FC = () => {
 
 	let putMessages = () =>
 	{
-		if (messageArray == null)
+		if (messageArray == null || messageArray.length == 0)
 		{
 			return (
 				<Box
@@ -146,17 +173,29 @@ export const Notification: React.FC = () => {
 	let pressAcceptRequest = (noti: NotificationStruct) =>
 	{
 		if (noti.type == NotificationType.friendRequest)
+		{
+			removeNotiFromArray(noti, friendRequestArray, NotificationType.friendRequest);
 			acceptFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+		}
 		else if (noti.type == NotificationType.gameInvite)
+		{
+			removeNotiFromArray(noti, gameInviteArray, NotificationType.gameInvite);
 			acceptGameInvite(noti.senderId.toString(), noti.receiverId.toString());
+		}
 	}
 
 	let pressDeclineRequest = (noti: NotificationStruct) =>
 	{		
 		if (noti.type == NotificationType.friendRequest)
+		{
+			removeNotiFromArray(noti, friendRequestArray, NotificationType.friendRequest);
 			declineFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+		}
 		else if (noti.type == NotificationType.gameInvite)
+		{
+			removeNotiFromArray(noti, gameInviteArray, NotificationType.gameInvite);
 			declineGameInvite(noti.senderId.toString(), noti.receiverId.toString());
+		}
 	}
 
 	let initRequest = (noti: NotificationStruct) =>
@@ -183,44 +222,29 @@ export const Notification: React.FC = () => {
 						borderColor: theme.palette.secondary.dark, 
 						borderRadius: '16px',
 						backgroundColor: 'black',
+						width: '300px',
+						height: '150px',
+						display: 'flex',
+						flexDirection: 'column',
+						justifyContent: 'center',
+						alignItems: 'center',
+						textAlign: 'center',
 					}}
 				>
-					<Tooltip title="Clear Notification" arrow>
-						<IconButton 
-							variant="contained" 
-							component="label"
-							onClick={() => removeNotification(noti)}
-							sx={{
-								left: '240px',
-								top: '-30px',
-								width: '20px',
-								height: '20px',
-								fontSize: '20px',
-								color: theme.palette.secondary.main,
-								'&:hover': {
-									color: theme.palette.error.dark,
-								},
-							}}				
-						>
-							<ClearIcon fontSize="inherit" />
-						</IconButton>
-					</Tooltip>
 					<Typography variant={'h1'}
 						sx={{
 							position: 'relative',
-							top: '-20px',
+							top: '-10px',
 							fontSize: '0.9rem',
 						}}    
 					>
 						<a href="" onClick={() => navToUser('/profile/' + noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
 						{message}
 					</Typography>
-
 					<ButtonGroup 
 						variant="contained"
 						sx={{
 							position: 'relative',
-							left: '25px',
 							top: '10px',
 						}}
 					>
@@ -254,7 +278,7 @@ export const Notification: React.FC = () => {
 
 	let putFiendRequests = () =>
 	{
-		if (friendRequestArray == null)
+		if (friendRequestArray == null || friendRequestArray.length == 0)
 		{
 			return (
 				<Box
@@ -294,7 +318,7 @@ export const Notification: React.FC = () => {
 
 	let putGameInvites = () =>
 	{
-		if (gameInviteArray == null)
+		if (gameInviteArray == null || gameInviteArray.length == 0)
 			{
 				return (
 					<Box
@@ -425,12 +449,13 @@ export const Notification: React.FC = () => {
 			<Stack
 				style={{
 					overflowX: 'hidden',
+					overflowY: 'auto',
 				}}
 				width={'350px'}
-				minHeight={'600px'}
+				minHeight={'1000px'}
 			>
 				<Box 
-					component="section"         
+					component="section"
 					sx={{
 						position: 'relative',
 						left: '56px',
@@ -470,16 +495,26 @@ export const Notification: React.FC = () => {
 		);
 	}
 
+	let openBool = () =>
+	{
+		setOpenDrawer(true);
+		setShowNotificationDot(false);
+	}
+
 	let notificationBar = () =>
 	{
+		var color = 'white';
+		if (showNotificationDot)
+			color = 'orange';
 		return (
 			<Stack>
 				<Tooltip title="Notifications" arrow>
 					<IconButton
-						onClick={toggleDrawer(true)}
+						onClick={() => openBool()}
 						sx={{
 							position: 'absolute',
 							left: '30px',
+							color: color,
 							'&:hover': {
 								color: 'orange',
 							},
@@ -500,9 +535,8 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-	let getNotificationUser = async () : Promise<void> =>
+	let handleNotifications = (arr: NotificationStruct[]) => 
 	{
-		let arr = await getUserNotifications(user);
 		if (arr?.length === 0)
 		{
 			setShowNotificationDot(false);
@@ -518,20 +552,19 @@ export const Notification: React.FC = () => {
 			var gameArr: NotificationStruct[]  = [];
 			arr?.map((item: NotificationStruct) =>
 			{
-				if (item.type == NotificationType.Message)
+				if (item.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
 				{
-					messageArr.push(item);
+					messageArray.push(item);
 				}
-				else if (item.type == NotificationType.friendRequest)
+				else if (item.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === item.id))
 				{
-					friendsArr.push(item);
+					friendRequestArray.push(item);
 				}
-				else if (item.type == NotificationType.gameInvite)
+				else if (item.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === item.id))
 				{
-					gameArr.push(item);
+					gameInviteArray.push(item);
 				}
-			}
-			)
+			})
 			setFriendRequestArray(friendsArr);
 			setMessageArray(messageArr);
 			setGameInviteArray(gameArr);
@@ -539,16 +572,49 @@ export const Notification: React.FC = () => {
 		}
 	}
 
-  	let notificationWrapper = () =>
-  	{
+	let addNotification = (noti: NotificationStruct) =>
+	{
+		if (noti.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === noti.id))
+		{
+			messageArray.push(noti);
+		}
+		else if (noti.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === noti.id))
+		{
+			friendRequestArray.push(noti);
+		}
+		else if (noti.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === noti.id))
+		{
+			gameInviteArray.push(noti);
+		}
+		setFriendRequestArray(friendRequestArray);
+		setMessageArray(messageArray);
+		setGameInviteArray(gameInviteArray);
+		setShowNotificationDot(true);
+	}
+
+	let notificationWrapper = () =>
+	{
+		if (isFirst)
+		{
+			setIsFirst(false);
+			socket.emit('getFromUser', { id: user.id.toString() });
+			socket.on('getAllNotifications', (notifications: NotificationStruct[]) => 
+			{
+				handleNotifications(notifications);
+			});
+		}
+
 		useEffect(() => 
 		{
-			getNotificationUser();
-		
-		}, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);
+			socket.on('sendNoti', (noti: NotificationStruct) =>
+			{
+				if (noti != null)
+					addNotification(noti);
+			});
+		}, [friendRequestArray, messageArray, gameInviteArray]);
 
 		return (notificationBar());
-  	}
+	}
 
 	return (
 		notificationWrapper()

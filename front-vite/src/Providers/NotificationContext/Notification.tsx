@@ -2,6 +2,18 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { error } from 'console';
 import { useNavigate } from 'react-router-dom';
 import {User} from '../UserContext/User'
+import { io, Socket } from 'socket.io-client';
+
+export const socket = io(`${import.meta.env.URL_WEBSOCKET}${import.meta.env.WS_NS_NOTIFICATION}`, {
+    withCredentials: true,
+    transports: ['websocket'],
+});
+
+socket.on('connect', () => {});
+
+socket.on('connect_error', (error) => {
+	console.error('Connection failed:', error);
+});
 
 
 export enum NotificationType {
@@ -27,28 +39,9 @@ export interface NotificationStruct {
 	message: string | null;
 }
 
-const BACKEND_URL: string = 'https://localhost:4000';
+const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
-export async function getUserNotifications(user:User): Promise<Notification[] | null> 
-{
-	const request = new Request(BACKEND_URL + '/notification/getFromUser/' + user.id.toString(), {
-		method: "GET"
-	});
-	
-	try
-	{
-		const response = await fetch(request)
-			.then((raw) => raw.json())
-			.then((json) => json as Notification[]);
-		return response;
-	}
-	catch (error)
-	{
-		return (null);
-	}	
-}
-
-export async function removeNotificationDb(id:string): Promise<void> 
+export async function removeNotificationDb(id:string): Promise<void>
 {
 	const request = new Request(BACKEND_URL + '/notification/removeNotification/' + id, {
 		method: "GET",

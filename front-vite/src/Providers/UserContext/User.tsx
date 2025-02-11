@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { error } from 'console';
-import { stat } from 'fs';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { socket } from '../NotificationContext/Notification'
 
 export enum UserStatus {
 	Online = 'online',
@@ -37,7 +36,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	const [user, setUser] = useState<User>({ id: 0 });
 	const navigate = useNavigate();
 
-	const BACKEND_URL: string = 'https://localhost:4000';
+	const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 	useEffect(() => {
 		const validate = async () => {
 		try {
@@ -67,7 +66,7 @@ export const useUser = () => {
 	return context;
 };
 
-const BACKEND_URL: string = 'https://localhost:4000';
+const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export async function getAll(): Promise<User[]> {
 	const request = new Request(BACKEND_URL + '/users/profile/getAll', {
@@ -107,21 +106,6 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 	}
 }
 
-export async function setUserStatus(username:string, status:UserStatus): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/setStatus', {
-		method: "POST",
-		headers: {
-		'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({ status: status }),
-	});
-
-	const response = await fetch(request)
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO SET STATUS!");
-}
-
-
 export async function setNewNickname(username:string, nickname:string): Promise<string> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick', {
 		method: "POST",
@@ -150,16 +134,6 @@ export async function fetchFriend(friend:string): Promise<User> {
 		.then((raw) => raw.json())
 		.then((json) => json as User)
 	return response;
-}
-
-export async function addFriend(username:string, friend:string): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/add/' + friend, {
-		method: "GET",
-	});
-
-	const response = await fetch(request)
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO ADD FRIEND!");
 }
 
 export async function removeFriend(username:string, friend:string): Promise<void> {
@@ -192,32 +166,6 @@ export async function unBlockFriend(username:string, friend:string): Promise<voi
 		console.log("ERROR: FAILED TO BLOCK USER!");
 }
 
-export async function sendMessage(username:string, friend:string, message:string): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/sendMessage/' + friend, {
-		method: "POST",
-		headers: {
-		'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({ message: message }),
-	});
-
-	const response = await fetch(request);
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO FIND USER IN SENDMESSAGE!");
-	if (response.status == 400)
-		console.log("ERROR: INVALID MESSAGE!");
-}
-
-export async function inviteToGame(username:string, friend:string): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/invitegame/' + friend, {
-		method: "GET",
-	});
-
-	const response = await fetch(request)
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO FIND USER IN INVITETOGAME!");
-}
-
 export async function changePFP(username:string, image:FormData): Promise<void> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/changepfp', {
 		method: "POST",
@@ -229,4 +177,20 @@ export async function changePFP(username:string, image:FormData): Promise<void> 
 		console.log("ERROR: INVALID IMAGE IN CHANGEPFP!");
 	if (response.status == 404)
 		console.log("ERROR: FAILED TO FIND USER IN CHANGEPFP!");
+}
+
+
+export async function addFriend(username:string, friend:string): Promise<void> 
+{
+	socket.emit('sendFriendReq', {username: username, friend: friend});
+}
+
+export async function inviteToGame(username:string, friend:string): Promise<void> 
+{
+	socket.emit('sendGameInvite', {username: username, friend: friend});
+}
+
+export async function sendMessage(username:string, friend:string, message:string): Promise<void> 
+{
+	socket.emit('sendMessage', {username: username, friend: friend, message: message});
 }
