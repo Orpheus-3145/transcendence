@@ -19,14 +19,6 @@ export class UsersService {
 			private readonly notificationService: NotificationService,
  	) { }
 
-	async userAlreadyExist(user: User): Promise<Boolean>
-	{
-		var tmp: User | null = await this.findOne(user.intraId);
-		if (tmp == null)
-			return (false);
-		return (true);
-	}
-
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
 		const user = new User();
 		user.accessToken = access.access_token;
@@ -42,8 +34,11 @@ export class UsersService {
 		user.friends = [];
 		user.blocked = [];
 		try {
-			if (await this.userAlreadyExist(user) == true)
-				return (new UserDTO(user));
+			var tmp: User | null = await this.findOne(user.intraId);
+			if (tmp != null)
+			{
+				return (new UserDTO(tmp));
+			}
 			await user.validate();
 			await this.usersRepository.save(user);
 			return new UserDTO(user);

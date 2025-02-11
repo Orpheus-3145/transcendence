@@ -21,7 +21,7 @@ const team: Developer[] = [
   name: 'Temporary Place Holder Value',
   role: 'Me?',
   git: 'https://www.github.com/your-git-comes-here'
-  }
+  },
 ]
 
 export const Bar: React.FC = () => {

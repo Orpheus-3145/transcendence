@@ -21,7 +21,8 @@ import { useUser,
 	sendMessage,
 	blockFriend,
 	inviteToGame,
-	User} from '../../Providers/UserContext/User';
+	User,
+	UserStatus} from '../../Providers/UserContext/User';
 
 const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
@@ -50,7 +51,7 @@ const ProfilePageOther: React.FC = () => {
 	const messageMessageSend: string = "Message has been send!";
 	const messageBlockedSend: string = "User has been blocked!";
 	const messageUserBlocked: string = "This user has been blocked! Unblock him before doing the action!";
-	
+	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
 
 	let redirectFriend = (id:number) =>
 	{
@@ -412,15 +413,13 @@ const ProfilePageOther: React.FC = () => {
 	}
 
 	let GetUserStatus = () =>
-	{
-		userProfile.status = 'offline';
-		
+	{		
 		let color;
-		if (user.status == 'offline')
+		if (whichStatus == UserStatus.Offline)
 			color = '#df310e';
-		else if (user.status == 'online')
+		else if (whichStatus == UserStatus.Online)
 			color = '#0fc00c';
-		else if (user.status == 'ingame')
+		else if (whichStatus == UserStatus.InGame)
 			color = '#0dddc4';
 		
 		return (
@@ -932,6 +931,7 @@ const ProfilePageOther: React.FC = () => {
 		var friend = await getUserFromDatabase(user.id, navigate);
 		setIsFriend(tmp.friends.find((str:string) => str === friend.intraId.toString()));
 		setFriendsList(tmp.friends);
+		setWhichStatus(tmp.status);
 	}
 		
 	let PageWrapper = () =>

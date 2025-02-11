@@ -1,6 +1,4 @@
 import axios from 'axios';
-import { error } from 'console';
-import { stat } from 'fs';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../NotificationContext/Notification'
@@ -38,7 +36,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	const [user, setUser] = useState<User>({ id: 0 });
 	const navigate = useNavigate();
 
-	const BACKEND_URL: string = 'https://localhost:4000';
+	const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 	useEffect(() => {
 		const validate = async () => {
 		try {
@@ -68,7 +66,7 @@ export const useUser = () => {
 	return context;
 };
 
-const BACKEND_URL: string = 'https://localhost:4000';
+const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export async function getAll(): Promise<User[]> {
 	const request = new Request(BACKEND_URL + '/users/profile/getAll', {

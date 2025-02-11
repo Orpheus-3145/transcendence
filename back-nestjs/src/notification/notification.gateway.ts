@@ -47,7 +47,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		if (websock != undefined && websock != null)
 		{
 			this.userService.setStatus(websock.userId, UserStatus.Offline);
-			console.log("WebSocket for user: " + websock.userId + " has been removed!");
+			console.log("Noti webSocket for user: " + websock.userId + " has been removed!");
 		}
 		this.sockets = this.sockets.filter((s) => s.client.id !== client.id);
 	}
@@ -59,7 +59,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		
 		if (!this.sockets.find(sock => sock.userId === newwebsock.userId)) 
 		{
-			console.log("Adding new WebSocket for user:", data.id);
+			console.log("Adding new Noti webSocket for user:", data.id);
 			this.sockets.push(newwebsock);
 			this.userService.setStatus(data.id, UserStatus.Online);
 		} 
@@ -71,7 +71,9 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	{
 		var websock: Websock = this.sockets.find((socket) => socket.userId === Noti.receiverId.toString());
 		if (websock === undefined)
+		{
 			return ;
+		}
 		websock.client.emit('sendNoti', Noti);
 	}
 
@@ -120,18 +122,5 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		}
 		var Noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite);
 		this.sendNotiToFrontend(Noti);
-	}
-
-	@SubscribeMessage('changeStatus')
-	async changeStatus(@ConnectedSocket() client: Socket, @MessageBody() data: { userId: string, status: string}): Promise<void> 
-	{
-		console.log(data.userId);
-		console.log(data.status);
-		if (data.status == 'offline')
-			this.userService.setStatus(data.userId, UserStatus.Offline);
-		else if (data.status == 'online')
-			this.userService.setStatus(data.userId, UserStatus.Online);
-		else if (data.status == 'ingame')
-			this.userService.setStatus(data.userId, UserStatus.InGame);
 	}
 };

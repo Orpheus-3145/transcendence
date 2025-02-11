@@ -12,7 +12,6 @@ import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClearIcon from '@mui/icons-material/Clear';
 import {NotificationStruct, 
-		getUserNotifications, 
 		removeNotificationDb, 
 		acceptFriendRequest, 
 		declineFriendRequest,
@@ -30,13 +29,33 @@ export const Notification: React.FC = () => {
 	const [messageArray, setMessageArray] = useState<NotificationStruct[]>([]);
 	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[]>([]);
 	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[]>([]);
+	const [isFirst, setIsFirst] = useState<Boolean>(true);
+
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)}
 
+	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
+	{
+		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);
+		
+		if (type == NotificationType.Message)
+		{
+			setMessageArray(tmparr);
+		}
+		else if (type == NotificationType.gameInvite)
+		{
+			setGameInviteArray(tmparr);
+		}
+		else if (type == NotificationType.friendRequest)
+		{
+			setFriendRequestArray(tmparr);
+		}
+	}
 
 	let removeNotification = (noti: NotificationStruct) =>
 	{
+		removeNotiFromArray(noti, messageArray, NotificationType.Message);
 		removeNotificationDb(noti.id.toString());
 	}
 
@@ -154,17 +173,29 @@ export const Notification: React.FC = () => {
 	let pressAcceptRequest = (noti: NotificationStruct) =>
 	{
 		if (noti.type == NotificationType.friendRequest)
+		{
+			removeNotiFromArray(noti, friendRequestArray, NotificationType.friendRequest);
 			acceptFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+		}
 		else if (noti.type == NotificationType.gameInvite)
+		{
+			removeNotiFromArray(noti, gameInviteArray, NotificationType.gameInvite);
 			acceptGameInvite(noti.senderId.toString(), noti.receiverId.toString());
+		}
 	}
 
 	let pressDeclineRequest = (noti: NotificationStruct) =>
 	{		
 		if (noti.type == NotificationType.friendRequest)
+		{
+			removeNotiFromArray(noti, friendRequestArray, NotificationType.friendRequest);
 			declineFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+		}
 		else if (noti.type == NotificationType.gameInvite)
+		{
+			removeNotiFromArray(noti, gameInviteArray, NotificationType.gameInvite);
 			declineGameInvite(noti.senderId.toString(), noti.receiverId.toString());
+		}
 	}
 
 	let initRequest = (noti: NotificationStruct) =>
@@ -504,89 +535,85 @@ export const Notification: React.FC = () => {
 		);
 	}
 
-	let notificationWrapper = () =>
+	let handleNotifications = (arr: NotificationStruct[]) => 
 	{
-		const handleNotifications = (arr: NotificationStruct[]) => 
+		if (arr?.length === 0)
 		{
-			if (arr?.length === 0)
-			{
-				setShowNotificationDot(false);
-				setFriendRequestArray(null);
-				setMessageArray(null);
-				setGameInviteArray(null);
-				setShowNotificationDot(false);
-			}
-			else
-			{
-				var friendsArr: NotificationStruct[]  = [];
-				var messageArr: NotificationStruct[]  = [];
-				var gameArr: NotificationStruct[]  = [];
-				arr?.map((item: NotificationStruct) =>
-				{
-					if (item.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
-					{
-						messageArray.push(item);
-					}
-					else if (item.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === item.id))
-					{
-						friendRequestArray.push(item);
-					}
-					else if (item.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === item.id))
-					{
-						gameInviteArray.push(item);
-					}
-				})
-				setFriendRequestArray(friendsArr);
-				setMessageArray(messageArr);
-				setGameInviteArray(gameArr);
-				setShowNotificationDot(true);
-			}
+			setShowNotificationDot(false);
+			setFriendRequestArray(null);
+			setMessageArray(null);
+			setGameInviteArray(null);
+			setShowNotificationDot(false);
 		}
-
-		const addNotification = (noti: NotificationStruct) =>
+		else
 		{
-			if (noti.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === noti.id))
+			var friendsArr: NotificationStruct[]  = [];
+			var messageArr: NotificationStruct[]  = [];
+			var gameArr: NotificationStruct[]  = [];
+			arr?.map((item: NotificationStruct) =>
 			{
-				messageArray.push(noti);
-			}
-			else if (noti.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === noti.id))
-			{
-				friendRequestArray.push(noti);
-			}
-			else if (noti.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === noti.id))
-			{
-				gameInviteArray.push(noti);
-			}
-
-			setFriendRequestArray(friendRequestArray);
-			setMessageArray(messageArray);
-			setGameInviteArray(gameInviteArray);
+				if (item.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
+				{
+					messageArray.push(item);
+				}
+				else if (item.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === item.id))
+				{
+					friendRequestArray.push(item);
+				}
+				else if (item.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === item.id))
+				{
+					gameInviteArray.push(item);
+				}
+			})
+			setFriendRequestArray(friendsArr);
+			setMessageArray(messageArr);
+			setGameInviteArray(gameArr);
 			setShowNotificationDot(true);
 		}
-		
-		useEffect(() => 
+	}
+
+	let addNotification = (noti: NotificationStruct) =>
+	{
+		if (noti.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === noti.id))
 		{
-			getUserNotifications(user);
-		
+			messageArray.push(noti);
+		}
+		else if (noti.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === noti.id))
+		{
+			friendRequestArray.push(noti);
+		}
+		else if (noti.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === noti.id))
+		{
+			gameInviteArray.push(noti);
+		}
+		setFriendRequestArray(friendRequestArray);
+		setMessageArray(messageArray);
+		setGameInviteArray(gameInviteArray);
+		setShowNotificationDot(true);
+	}
+
+	let notificationWrapper = () =>
+	{
+		if (isFirst)
+		{
+			setIsFirst(false);
+			socket.emit('getFromUser', { id: user.id.toString() });
 			socket.on('getAllNotifications', (notifications: NotificationStruct[]) => 
 			{
 				handleNotifications(notifications);
 			});
+		}
 
+		useEffect(() => 
+		{
 			socket.on('sendNoti', (noti: NotificationStruct) =>
 			{
 				if (noti != null)
 					addNotification(noti);
 			});
+		}, [friendRequestArray, messageArray, gameInviteArray]);
 
-			return () => {
-				socket.off('getAllNotifications');
-				socket.off('sendNoti');
-			};
-
-		  }, [friendRequestArray, gameInviteArray, messageArray, showNotificationDot, openDrawer]);
-
-		  return (notificationBar());
+		return (notificationBar());
 	}
 
 	return (

@@ -39,12 +39,7 @@ export interface NotificationStruct {
 	message: string | null;
 }
 
-const BACKEND_URL: string = 'https://localhost:4000';
-
-export async function getUserNotifications(user:User): Promise<void> 
-{
-	socket.emit('getFromUser', { id: user.id.toString() });
-}
+const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export async function removeNotificationDb(id:string): Promise<void>
 {
