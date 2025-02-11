@@ -1,17 +1,18 @@
 import { io, Socket } from 'socket.io-client';
 
-import * as GameTypes from '../Types/types';
+import { GameData } from '../../Types/interfaces';
 import BaseScene from './Base';
+
 
 export default class MatchmakingScene extends BaseScene {
 	private _socketIO!: Socket;
-	private _gameInitData: GameTypes.InitData | null = null;
+	private _gameInitData: GameData | null = null;
 
 	constructor() {
 		super({ key: 'Matchmaking' });
 	}
 
-	init(data: GameTypes.InitData): void {
+	init(data: GameData): void {
 		super.init()
 
 		this._gameInitData = data;

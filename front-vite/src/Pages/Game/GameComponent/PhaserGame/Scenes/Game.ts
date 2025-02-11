@@ -1,31 +1,32 @@
-import { v4 as uuidv4 } from 'uuid';
 import { io, Socket } from 'socket.io-client';
-import BaseScene from './Base';
 
-import * as GameTypes from '../Types/types';
+import BaseScene from './Base';
+import { GameDifficulty, GameMode, PaddleDirection, PowerUpType } from '../../Types/enum';
+import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '../../Types/interfaces';
 import Ball from '../GameObjects/Ball';
 import PowerUpBall from '../GameObjects/PowerUpBall';
 import Paddle from '../GameObjects/Paddle';
 import Field from '../GameObjects/Field';
+
 
 export default class GameScene extends BaseScene {
 
 	private _id!: number;
 	private _nameNick!: string;
 	private _sessionToken!: string;
-	private _mode!: GameTypes.GameMode;
-	private _difficulty!: GameTypes.GameDifficulty;
-	private _gameState!: GameTypes.GameState;
-	private _powerUpState!: GameTypes.PowerUpPosition | null;
+	private _mode!: GameMode;
+	private _difficulty!: GameDifficulty;
+	private _gameState!: GameState;
+	private _powerUpState!: PowerUpPosition | null;
 	private _gameStarted!: boolean;
 	private _keepConnectionOpen!: boolean;
 	
-	private _gameSizeBackEnd!: GameTypes.GameSize;
+	private _gameSizeBackEnd!: GameSize;
 	private _widthRatio!: number;
 	private _heightRatio!: number;
 
-	private _powerUpSelection!: Array<GameTypes.PowerUpType>;
-	private _powerUpType!: GameTypes.PowerUpType | null;
+	private _powerUpSelection!: Array<PowerUpType>;
+	private _powerUpType!: PowerUpType | null;
 	private _powerUpActive!: { [key: number]: boolean }; // Tracks if a player has the power-up
 
 	private _urlWebsocket: string;
@@ -50,7 +51,7 @@ export default class GameScene extends BaseScene {
 	}
 
 	// Initialize players and key bindings
-	init(data: GameTypes.InitData): void {
+	init(data: GameData): void {
 		super.init();
 
 		this._id = this.registry.get('user42data').id;
@@ -95,8 +96,8 @@ export default class GameScene extends BaseScene {
 	create(): void {
 		super.create()
 
-		if (this._mode === GameTypes.GameMode.single) {
-			const initData: GameTypes.InitData = {
+		if (this._mode === GameMode.single) {
+			const initData: GameData = {
 				sessionToken: this._sessionToken,
 				mode: this._mode,
 				difficulty: this._difficulty,
@@ -105,7 +106,7 @@ export default class GameScene extends BaseScene {
 			this.sendMsgToServer('createRoomSinglePlayer', initData);
 		}
 
-		const playerData: GameTypes.PlayerData = {
+		const playerData: PlayerData = {
 			playerId: this._id,
 			nameNick: this._nameNick,
 			sessionToken: this._sessionToken,
@@ -121,12 +122,12 @@ export default class GameScene extends BaseScene {
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
 			this.sendMsgToServer('playerMovedPaddle', {
-				direction: GameTypes.PaddleDirection.up,
+				direction: PaddleDirection.up,
 				sessionToken: this._sessionToken,
 			});
 		else if (this._keyS.isDown || this._cursors.down.isDown)
 			this.sendMsgToServer('playerMovedPaddle', {
-				direction: GameTypes.PaddleDirection.down,
+				direction: PaddleDirection.down,
 				sessionToken: this._sessionToken,
 			});
 
@@ -164,14 +165,14 @@ export default class GameScene extends BaseScene {
 	setupSocket(): void {
 		this._socketIO = io(this._urlWebsocket, { withCredentials: true, transports: ['websocket'] });
 
-		this._socketIO.on('gameStart', (gameSize: GameTypes.GameSize) => {
+		this._socketIO.on('gameStart', (gameSize: GameSize) => {
 	
 			// adjust position objects because of the new scale
 			this._gameSizeBackEnd = gameSize;
 			this.resetWindowRatio();
 		});
 
-		this._socketIO.on('gameState', (state: GameTypes.GameState) => {
+		this._socketIO.on('gameState', (state: GameState) => {
 			
 			// apply ratio for current window size	
 			state.ball.x /= this._widthRatio;
@@ -192,7 +193,7 @@ export default class GameScene extends BaseScene {
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
 		// power ups handling
-		this._socketIO.on('powerUpUpdate', (state: GameTypes.PowerUpPosition) => {
+		this._socketIO.on('powerUpUpdate', (state: PowerUpPosition) => {
 
 			state.x /= this._widthRatio;
 			state.y /= this._heightRatio;
@@ -212,7 +213,7 @@ export default class GameScene extends BaseScene {
 			}
 		});
 
-		this._socketIO.on('powerUpActivated', (state: GameTypes.PowerUpStatus) => {
+		this._socketIO.on('powerUpActivated', (state: PowerUpStatus) => {
 			this._powerUpActive[state.player] = state.active;
 			this._powerUpType = state.type;
 		
@@ -232,15 +233,15 @@ export default class GameScene extends BaseScene {
 
 	getColour(): number {
 		let colour: number = 0;
-		if (this._powerUpType === GameTypes.PowerUpType.speedBall)
+		if (this._powerUpType === PowerUpType.speedBall)
 			colour = 0xff6600;  // Bright orange for speedBall
-		else if (this._powerUpType === GameTypes.PowerUpType.speedPaddle)
+		else if (this._powerUpType === PowerUpType.speedPaddle)
 			colour = 0x66ff33;  // Vibrant green for speedPaddle
-		else if (this._powerUpType === GameTypes.PowerUpType.slowPaddle)
+		else if (this._powerUpType === PowerUpType.slowPaddle)
 			colour = 0x9900cc;  // Calming purple for slowPaddle
-		else if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle)
+		else if (this._powerUpType === PowerUpType.shrinkPaddle)
 			colour = 0xff66cc;  // Light pink for shrinkPaddle
-		else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle)
+		else if (this._powerUpType === PowerUpType.stretchPaddle)
 			colour = 0xcc0000;  // Deep red for stretchPaddle
 		else
 			this.switchScene('Error', {trace: `Error with power up type: ${this._powerUpType} not existing`});
@@ -250,14 +251,14 @@ export default class GameScene extends BaseScene {
 	handlePowerUp(paddle: Paddle, active: boolean): void {
 		if (active === true) {
 			paddle.changeColor(this.getColour());
-			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle)
+			if (this._powerUpType === PowerUpType.shrinkPaddle)
 				paddle.resizeShrink();
-			else if (this._powerUpType === GameTypes.PowerUpType.stretchPaddle)
+			else if (this._powerUpType === PowerUpType.stretchPaddle)
 				paddle.resizeStretch();
 		}	
 		else if (paddle.getColor() != 0xffff00 && active === false) {
 			paddle.changeColor(0x0000ff);
-			if (this._powerUpType === GameTypes.PowerUpType.shrinkPaddle || this._powerUpType === GameTypes.PowerUpType.stretchPaddle)
+			if (this._powerUpType === PowerUpType.shrinkPaddle || this._powerUpType === PowerUpType.stretchPaddle)
 				paddle.resizeOriginal();
 		}
 	}
@@ -289,8 +290,7 @@ export default class GameScene extends BaseScene {
 	}
 
 	disconnect(): void {
-		if (this._keepConnectionOpen === false) {
+		if (this._keepConnectionOpen === false)
 			this._socketIO.disconnect();
-		}
 	}
 }

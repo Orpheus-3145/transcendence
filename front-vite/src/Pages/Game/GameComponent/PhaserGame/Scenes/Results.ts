@@ -1,7 +1,8 @@
+import { Socket } from 'socket.io-client';
 
-import { GameMode, InitData } from '../Types/types';
 import BaseScene from './Base';
-import { io, Socket } from 'socket.io-client';
+import { GameData } from '../../Types/interfaces';
+
 
 export default class ResultsScene extends BaseScene {
 
@@ -97,7 +98,7 @@ export default class ResultsScene extends BaseScene {
 
 	setupSocket(): void {
 
-		this._socketIO.on('acceptRematch', (data: InitData) => {
+		this._socketIO.on('acceptRematch', (data: GameData) => {
 
 			if (this._waitingPopup.visible === true)
 				this._waitingPopup.setVisible(false);

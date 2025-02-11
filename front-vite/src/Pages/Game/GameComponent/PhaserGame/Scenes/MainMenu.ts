@@ -1,6 +1,6 @@
-
-import * as GameTypes from '../Types/types';
 import BaseScene from './Base';
+import { GameMode } from '../../Types/enum';
+
 
 export default class MainMenuScene extends BaseScene {
 
@@ -22,7 +22,7 @@ export default class MainMenuScene extends BaseScene {
 		.on('pointerover', () => singleGameBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
 		.on('pointerout', () => singleGameBtn.setStyle({ fill: '#fff' }))
 		.on('pointerup', () =>
-			this.switchScene('Settings', { mode: GameTypes.GameMode.single }),
+			this.switchScene('Settings', { mode: GameMode.single }),
 		);
 
 		const multiGameBtn = this.add
@@ -36,7 +36,7 @@ export default class MainMenuScene extends BaseScene {
 		.on('pointerover', () => multiGameBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
 		.on('pointerout', () => multiGameBtn.setStyle({ fill: '#fff' }))
 		.on('pointerup', () =>
-			this.switchScene('Settings', { mode: GameTypes.GameMode.multi }),
+			this.switchScene('Settings', { mode: GameMode.multi }),
 		);
 	}
 }
