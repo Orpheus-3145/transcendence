@@ -64,7 +64,7 @@ export const ChatProvider: React.FC = ({ children }) => {
                         messages: [],
                         settings: {
                             type: channel.ch_type,
-                            password: null,
+                            password: channel.password,
                             users: channel.members.map(( member ) =>({
 								id: member.user_id,
 								name: member.name,

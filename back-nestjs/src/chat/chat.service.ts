@@ -174,4 +174,23 @@ export class ChatService {
 			throw new Error('Error deleting channel');
 		}
 	}
+
+	async changePrivacy(channel_type: string, channel_id: number, password: string) : Promise<Channel | null> {
+		try {
+			const channel = await this.getChannelById(channel_id);
+			if (!channel) {
+				return null;
+			}
+			channel.ch_type = channel_type;
+			channel.password = password;
+			await this.channelRepository.save(channel);
+			return channel;
+		} catch (error) {
+			console.error(`Error changing channel privacy: ${error}`);
+			return null;
+		}
+	}
+
 }
+
+

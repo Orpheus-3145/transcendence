@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
 import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl} from '@mui/material';
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
@@ -54,7 +54,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		if (friendName) {
 			const newUser: UserProps = {
 				name: friendName,
-				role: 'Guest',
+				role: 'member',
 				email: '',
 				password: '',
 				icon: <PersonAddIcon />
@@ -102,7 +102,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const handleRoleChange = (name: string, role: string) => {
 		console.log('"Change Role" clicked!');
 		// if (selectedChannel.settings.owner === 'MSELF') { 
-			const newRole = role === 'Guest' ? 'Admin' : 'Guest';
+			const newRole = role === 'member' ? 'admin' : 'member';
 			const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role: newRole } : user);
 			setSettings({ ...settings, users: updatedUsers });
 			// } 
@@ -114,11 +114,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	};
 
 	const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
-		//--> CALL TO BACKEND <-- //
-	
 		console.log('"Change Privacy" clicked!');
-		setSettings({ ...settings, type, password });
+
+		socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password }, (response) => {
+			if (response.success) {
+				console.log(`Response: ${response}`);
+				console.log(`Channel privacy changed (react) to: ${type}`);
+				// setSettings({ ...settings, type, password });
+			} else {
+				console.error('Failed to change channel privacy:', response.message);
+			}
+		});
 	};
+
+	// useEffect(() => {
+	// 	socket.on('privacyChanged', (updatedChannel) => {
+	// 		console.log('Channel privacy updated:', updatedChannel);
+	// 		setSettings({ ...settings, type: updatedChannel.ch_type, password: updatedChannel.password})
+	// });
+	// 	return () => socket.off('privacyChanged');
+	// }, []);
+
+	useEffect(() => {
+		const handlePrivacyChanged = (updatedChannel) => {
+			console.log('Channel privacy updated:', updatedChannel);
+			setSettings({ ...settings, type: updatedChannel.ch_type, password: updatedChannel.password})
+		};
+
+		socket.on('privacyChanged', handlePrivacyChanged);
+		
+		// Cleanup the listener when the component unmounts
+		return () => {
+		  socket.off('privacyChanged', handlePrivacyChanged);
+		};
+	}, []);
 
 	// const handleDeleteChannel = (channel_id: number) => {
 	// 	console.log("'Delete Channel' clicked!");
@@ -286,7 +315,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						user.nameIntra !== _user.name && (
 					  <Stack direction="row" spacing={0.3}>
 						<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
-							{_user.role === 'guest' ? 'Make Admin' : 'Make Guest' }
+							{_user.role === 'admin' ? 'Make Member' : 'Make Admin' }
 						</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
 						<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>

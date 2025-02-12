@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { UserDTO } from '../dto/user.dto';
 import { ChatDTO } from '../dto/chat.dto';
+import { Channel } from '../entities/chat.entity';
 
 
 @WebSocketGateway( {
@@ -155,6 +156,30 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		} catch (error) {
 			console.error(error);
 			client.emit('error', { message: 'Error deleting channel' });
+		}
+	}
+
+	// Change privacy
+	@SubscribeMessage('changePrivacy')
+	async handleChangePrivacy(
+		@MessageBody() data: { channel_type: string; channel_id: number; password: string },
+		@ConnectedSocket() client: Socket,
+	): Promise<{ success: boolean; updatedChannel?: Channel; message?: string }> {
+		const { channel_type, channel_id, password } = data;
+		try {
+			const updatedChannel = await this.chatService.changePrivacy(channel_type, channel_id, password);
+			if (updatedChannel) {
+				console.log(`Channel privacy changed (db) to: ${updatedChannel.ch_type}`);
+				// this.server.to(channel_id.toString()).emit('privacyChanged', updatedChannel);
+				this.server.emit('privacyChanged', updatedChannel);
+				return {success: true, updatedChannel};
+			} else {
+				client.emit('error', { message: 'Channel privacy could not be changed!' });
+				return { success: false, message: 'Channel privacy could not be changed!' };
+			}
+		} catch (error) {
+			console.error(error);
+			client.emit('error', { message: 'Channel privacy could not be changed!' });
 		}
 	}
 

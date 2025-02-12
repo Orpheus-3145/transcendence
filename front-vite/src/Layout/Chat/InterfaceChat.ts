@@ -11,7 +11,7 @@ export enum ChatStatus {
 
 export enum UserRoles {
   Admin = 'admin',
-  Guest = 'guest',
+  Member = 'member',
   Owner = 'owner',
 }
 

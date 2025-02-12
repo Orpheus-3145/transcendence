@@ -63,21 +63,21 @@ const ChannelsPage: React.FC = () => {
 	const [onlinePlayers, setOnlinePlayers] = useState<UserProps[]>([  //--> CALL TO BACKEND <-- //
 		{
 			name: 'Thooooooooooooooooooooooor',
-			role: 'Guest',
+			role: 'member',
 			email: 'thor@avengers.com',
 			password: '',
 			icon: React.ReactElement ,
 		},
 		{
 			name: 'Fuuuuuuury',
-			role: 'Guest',
+			role: 'member',
 			email: 'nick@fury.com',
 			password: '',
 			icon: React.ReactElement ,
 		},
 		{
 			name: 'Loki',
-			role: 'Guest',
+			role: 'member',
 			email: 'loki@avengers.com',
 			password: '',
 			icon: React.ReactElement ,
@@ -376,7 +376,7 @@ const ChannelsPage: React.FC = () => {
 					{
 						id: user.id,
 						name: user.nameIntra ,
-						role: 'guest',
+						role: 'member',
 						icon: <Avatar />,
 					},
 				],
