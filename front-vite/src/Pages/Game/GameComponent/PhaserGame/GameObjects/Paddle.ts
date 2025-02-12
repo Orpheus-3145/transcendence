@@ -1,12 +1,12 @@
-import { GAME_PADDLE } from '../Game.data';
-import GameScene from '../Scenes/GameScene';
+import GameScene from '../Scenes/Game';
+
 
 export default class Paddle {
 	private _startPos: Phaser.Math.Vector2;
 	private _graphic: Phaser.GameObjects.Rectangle;
-
-	private readonly _width: number = GAME_PADDLE.width;
-	private readonly _height: number = GAME_PADDLE.height;
+	
+	private readonly _width: number;
+	private readonly _height: number;
 
 	// @param scene: Phaser.Scene that contains the bar
 	// @param x: x pos
@@ -14,8 +14,13 @@ export default class Paddle {
 	constructor(scene: GameScene, x: number, y: number) {
 		this._startPos = new Phaser.Math.Vector2(x, y);
 
+		const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
+		const paddleHeightRatio = parseInt(import.meta.env.GAME_HEIGHT) / parseInt(import.meta.env.GAME_PADDLE_HEIGHT);	
+		this._width = scene.scale.width / paddleWidthRatio;
+		this._height = scene.scale.height / paddleHeightRatio;
+
 		// Create a graphical rectangle to represent the player bar
-		this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0x0000ff);
+		this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0x0000ff).setOrigin(0, 0.5);
 	}
 
 	// Update the position of the bar based on backend data

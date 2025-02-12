@@ -30,15 +30,15 @@ export class GameExceptionFilter implements ExceptionFilter {
 		const ctx = host.switchToWs();
 		const client = ctx.getClient();
 		const data = ctx.getData();
-
 		try {
-			this.roomManager.dropRoom(data.sessionToken, exception.message);
+			this.roomManager.dropRoomCauseError(data.sessionToken, exception.message);
 		} catch {
 			client.emit('gameError', `Internal error: ${exception.message}`);
 			client.disconnect(true);
 			this.logger.error(
 				`Client [${client.handshake.address} - ${client.handshake.address}] forced to disconnect`,
 			);
+			this.roomManager.deleteRoom(data.sessionToken)
 		}
 	}
 }
