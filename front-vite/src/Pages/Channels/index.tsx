@@ -51,7 +51,7 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
-	// console.log(user);
+	// console.log(user.intraId);
 	
 	const theme = useTheme();
 	const navigate = useNavigate();

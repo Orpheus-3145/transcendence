@@ -10,7 +10,8 @@ export enum UserStatus {
 export class UserDTO {
 
   constructor(user: User) {
-    this.id = user.id;
+	this.id = user.id;
+	this.intraId = user.intraId;
     this.nameNick = user.nameNick;
     this.nameIntra = user.nameNick;
     this.nameFirst = user.nameFirst;
@@ -25,6 +26,9 @@ export class UserDTO {
 
   @IsNumber()
   id: number;
+  
+  @IsNumber()
+  intraId: number;
 
   @IsString()
   nameNick: string | null;
