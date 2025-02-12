@@ -47,7 +47,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const theme = useTheme();
 	const { user } = useUser();
 
-	console.log(user);
+	// console.log(user);
 
 	const handleAddFriend = () => {
 		console.log('"Add Friend" clicked!');
@@ -309,9 +309,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 									' '}
 							{`(${_user.role})`}
 					  </Typography>
-					  {console.log(user.nameIntra)}
-					  {(
-					  	selectedChannel.settings.owner === user.nameIntra) && 
+					  {/* {console.log(user.nameIntra)} */}
+					  {(selectedChannel.settings.owner === user.nameIntra ||
+					  	userIsAdmin(_user.name, selectedChannel)) &&
 						user.nameIntra !== _user.name && (
 					  <Stack direction="row" spacing={0.3}>
 						<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>

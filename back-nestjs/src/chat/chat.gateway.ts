@@ -28,14 +28,27 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@WebSocketServer()
 	server: Server;
 
+	private connectedClients = new Map<string, Socket>();
+	
 	constructor(private chatService: ChatService) {};
-
+	
 	handleConnection(client: Socket) {
-		console.log(`Client connected: ${client.id}`);
+		console.log(`Client connected to ChatGateway: ${client.id}`);
+		this.connectedClients.set(client.id, client);
+		console.log('Connected clients to ChatGateway: ', Array.from(this.connectedClients.keys()));
+		this.server.emit('clientsUpdated', Array.from(this.connectedClients.keys()));
 	}
+
 	handleDisconnect(client: Socket) {
-		console.log(`Client disconnected: ${client.id}`);
+		console.log(`Client disconnected to ChatGateway: ${client.id}`);
+		this.connectedClients.delete(client.id);
+		console.log("Connected clients after disconnect from ChatGateway:", Array.from(this.connectedClients.keys()));
+		this.server.emit('clientsUpdated', Array.from(this.connectedClients.keys()));
 	}
+
+	// getAllConnectedClients(): string[] {
+	// 	return Array.from(this.connectedClients.keys());
+	// }
 
   	// Handle channel creation
   	@SubscribeMessage('createChannel')
@@ -182,5 +195,16 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			client.emit('error', { message: 'Channel privacy could not be changed!' });
 		}
 	}
+
+	// @SubscribeMessage('changeUserRole')
+	// async handleChangeUserRole(
+	// 	@MessageBody() data: {channel_id: number, user_id: number, role: string},
+	// 	@ConnectedSocket() client: Socket,
+	// ): Promise<void> {
+	// 	const [channel_id, intraId, ]
+	// 	try {
+
+	// 	} catch (error) {}
+	// }
 
 };

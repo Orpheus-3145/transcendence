@@ -225,7 +225,7 @@ const ChannelsPage: React.FC = () => {
 				ch_type: 'public',  // or another type based on UI
 				ch_owner: user.nameIntra,
 				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: 'admin', email: user.email }
+					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
 				],
 				password: null,  // set password if needed
 			};
