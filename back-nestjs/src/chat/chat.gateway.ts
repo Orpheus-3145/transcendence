@@ -33,8 +33,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	constructor(private chatService: ChatService) {};
 	
 	handleConnection(client: Socket) {
-		console.log(`Client connected to ChatGateway: ${client.id}`);
+		console.log(`New client connected to ChatGateway: ${client.id}`);
 		this.connectedClients.set(client.id, client);
+		// console.log(this.connectedClients);
 		console.log('Connected clients to ChatGateway: ', Array.from(this.connectedClients.keys()));
 		this.server.emit('clientsUpdated', Array.from(this.connectedClients.keys()));
 	}
@@ -126,18 +127,46 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	// Handle messages sent to a specific channel
 	@SubscribeMessage('sendMessage')
 	async handleMessage(
-		@MessageBody('channel') channel: string,
-		@MessageBody('message') message: string,
+		@MessageBody() data: {client_id: number, channel_id: number, message: string,}, 
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		console.log(`Message to channel ${channel} from ${client.id}: ${message}`);
+		const {client_id, channel_id, message,} = data; 
+
+		console.log(`Message to channel id ${channel_id} from user ${client_id} (socket id: ${client.id}): ${message}`);
 
 		// Save the message to the database
-		await this.chatService.sendMessage(+client.id, +channel, message);
+		await this.chatService.sendMessage(client_id, channel_id, message);
+
+		const updatedMessages = await this.chatService.getMessagesForChannel(channel_id);
+
+		console.log(updatedMessages);
+		this.server.emit('newMessage', {
+			channel_id,
+			messages: updatedMessages, // Send the full list of messages for the channel
+		});
+
+		// // Broadcast the updated messages to clients in the channel
+  		// this.server.to(channel_id.toString()).emit('newMessage', {
+  		// 	channel_id,
+  		// 	messages: updatedMessages, // Send the full list of messages for the channel
+  		// });
+	}
+
+	// // Handle messages sent to a specific channel
+	// @SubscribeMessage('sendMessage')
+	// // async handleMessage(
+	// 	// @MessageBody('channel') channel: string,
+		// // @MessageBody('message') message: string,
+	// 	// @ConnectedSocket() client: Socket,
+	// // ): Promise<void> {
+	// 	// console.log(`Message to channel ${channel} from ${client.id}: ${message}`);
+
+		// Save the message to the database
+		// // await this.chatService.sendMessage(+client.id, +channel, message);
 
 		// Broadcast to other clients in the channel
-		this.server.to(channel).emit('newMessage', { message, channel, senderId: client.id });
-	}
+	// 	// this.server.to(channel).emit('newMessage', { message, channel, senderId: client.id });
+	// // }
 
 	// Get all channels
 	@SubscribeMessage('getChannels')

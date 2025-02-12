@@ -325,20 +325,18 @@ const ChannelsPage: React.FC = () => {
 //////////////////////////////////////////////////////////////////////
 	
 	const handleSendMessage = () => {
-		if (newMessage) {
+		if (newMessage && selectedChannel) {
 			const newChatMessage: ChatMessage = {
 				message: newMessage,
-				user: <Typography>User1</Typography>,
+				user: <Typography>{user.nameIntra}</Typography>,
 				userPP: <Typography>img</Typography>,
-				timestamp: <Typography>20:00</Typography>,
+				timestamp: new Date().toLocaleTimeString(),
 			};
-
-			//--> CALL TO BACKEND <-- //
 
 			setChatProps((prevProps) => ({
 				...prevProps,
 				chatRooms: prevProps.chatRooms.map(room => 
-					room.name === selectedChannel?.name
+					room.id === selectedChannel.id
 						? {...room, messages: [...room.messages, newChatMessage]}
 						: room
 				),
@@ -347,9 +345,34 @@ const ChannelsPage: React.FC = () => {
 				...prevState,
 				messages: [...prevState.messages, newChatMessage]
 			}));
+
+			socket.emit('sendMessage', {client_id: user.id, channel_id: selectedChannel.id, message: newMessage});
+
 			setNewMessage('');
 		}
 	};
+
+	useEffect(() => {
+		const handleNewMessage = (updatedMessages) => {
+			console.log('Updated messages for channel:', updatedMessages);
+	
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: prevState.chatRooms.map((room) =>
+					room.id === updatedMessages.channel_id
+						? { ...room, messages: updatedMessages.messages } // Update with full messages list
+						: room
+				),
+			}));
+		};
+	
+		socket.on('newMessage', handleNewMessage);
+	
+		return () => {
+			socket.off('newMessage', handleNewMessage);
+		};
+	}, [])
+
 //////////////////////////////////////////////////////////////////////
 
 	const handleEnterPress = (event: React.KeyboardEvent<HTMLInputElement>) => {

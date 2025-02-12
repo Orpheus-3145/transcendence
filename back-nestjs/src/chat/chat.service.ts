@@ -134,13 +134,29 @@ export class ChatService {
 			receiver_id,
 			content,
 		});
+
+		console.log(message);
+
+		// const updatedMessages = await this.messageRepository.find({
+		// 	where: { receiver_id },
+		// 	relations: ['sender'],
+		// });
+
 		return this.messageRepository.save(message);
 	}
 
-	// Get messages for a channel
-	async getChannelMessages(channel_id: number): Promise<Message[]> {
-		return this.messageRepository.find({ where: { receiver_id: channel_id } });
+
+	async getMessagesForChannel(channel_id: number): Promise<Message[]> {
+		// Fetch all messages for the channel, including sender details if necessary
+		return this.messageRepository.find({
+		  where: { receiver_id: channel_id },
+		});
 	}
+	
+	// // Get messages for a channel
+	// async getChannelMessages(channel_id: number): Promise<Message[]> {
+	// 	return this.messageRepository.find({ where: { receiver_id: channel_id } });
+	// }
 
  	// Fetch channel by ID
  	async getChannelById(channel_id: number): Promise<Channel> {
@@ -153,7 +169,7 @@ export class ChatService {
 	async getAllChannels(): Promise<Channel[]> {
 		return this.channelRepository.find({               // Fetches all channels from the database
 			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password',],
-			relations: ['members'],
+			relations: ['members', 'messages'],
 		});     
  	}
 

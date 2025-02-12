@@ -61,7 +61,7 @@ export const ChatProvider: React.FC = ({ children }) => {
                         id: channel.channel_id,
                         name: channel.title,
                         icon: <GroupIcon />,
-                        messages: [],
+                        messages: channel.messages || [],
                         settings: {
                             type: channel.ch_type,
                             password: channel.password,
