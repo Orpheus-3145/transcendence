@@ -11,6 +11,11 @@ export enum GameDifficulty {
 	unset = 'unset', // This is only the case when the variable is initialised, it is always overwritten with 'single' or 'multi'
 }
 
+export enum PlayerIdentity {
+	self = 0,
+	opponent = 1,
+}
+
 export enum PaddleDirection {
 	up = 'up',
 	down = 'down',

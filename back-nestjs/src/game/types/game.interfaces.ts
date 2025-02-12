@@ -1,3 +1,4 @@
+import { Socket } from 'socket.io';
 import { GameDifficulty, GameMode, PowerUpType } from "./game.enum";
 
 
@@ -31,18 +32,16 @@ export interface GameState {
 	};
 }
 
-export interface GameSize {
-	width: number;
-	height: number;
+export interface WaitingPlayer {
+	clientSocket: Socket;
+	extras: Array<PowerUpType>;
 }
 
-export interface PowerUpPosition {
-	x: number;
-	y: number;
-}
-
-export interface PowerUpStatus {
-	active: boolean;
-	player: number;
-	type: PowerUpType;
+export interface PlayingPlayer {
+	clientSocket: Socket;
+	intraId: number;
+	nameNick: string;
+	score: number;
+	posX: number;
+	posY: number;
 }

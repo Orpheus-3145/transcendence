@@ -9,12 +9,12 @@ import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import GameDataDTO from 'src/dto/gameData.dto';
 import PlayerDataDTO from 'src/dto/playerData.dto';
+import { PlayingPlayer } from '../types/game.interfaces';
 import { GameMode,
 				GameDifficulty,
 				PowerUpType,
 				PlayerIdentity,
-				PlayingPlayer,
-				PaddleDirection} from 'src/game/game.types';
+				PaddleDirection} from 'src/game/types/game.enum';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -76,12 +76,9 @@ export default class SimulationService {
 	}
 
 	setGameData(data: GameDataDTO): void {
-		if (
-			data.mode === GameMode.unset ||
-			(data.mode === GameMode.single &&
-				data.difficulty === GameDifficulty.unset) ||
-			data.sessionToken === ''
-		)
+		if (data.mode === GameMode.unset ||
+			(data.mode === GameMode.single && data.difficulty === GameDifficulty.unset) ||
+			data.sessionToken === '')
 			this.thrower.throwGameExcp(
 				`Invalid data received: ${JSON.stringify(data)}`,
 				data.sessionToken,
@@ -608,7 +605,7 @@ export default class SimulationService {
 		if (this.powerUpType === PowerUpType.speedBall) {
 			this.ballSpeed =
 				this.powerUpStatus[player_no] === true
-					? this._defaultBallSpeed * 3
+					? this._defaultBallSpeed * 2
 					: this._defaultBallSpeed;
 		}
 	}

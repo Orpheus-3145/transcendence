@@ -14,11 +14,6 @@ export default class Ball {
 		this._graphic = scene.add.circle(x, y, this.radius, 0x0000ff);
 	}
 
-	private redraw(): void {
-		this._graphic.fillStyle(0xff0000, 1); // Set the fill style (red in this case)
-		this._graphic.fillCircle(0, 0, this.radius); // Draw the circle centered at (0, 0)
-	}
-
 	updatePosition(x: number, y: number): void {
 		this._graphic.setPosition(x, y); // Update the ball's position
 	}

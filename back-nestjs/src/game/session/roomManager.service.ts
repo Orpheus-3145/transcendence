@@ -3,12 +3,12 @@ import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 
 import SimulationService from './simulation.service';
-import { PlayingPlayer } from 'src/game/game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import GameDataDTO from 'src/dto/gameData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import PlayerDataDTO from 'src/dto/playerData.dto';
+import { PlayingPlayer } from 'src/game/types/game.interfaces';
 
 @Injectable()
 export default class RoomManagerService {

@@ -1,5 +1,5 @@
 import { IsString, IsEnum, IsArray } from 'class-validator';
-import { GameDifficulty, GameMode, PowerUpType } from 'src/game/game.types';
+import { GameDifficulty, GameMode, PowerUpType } from 'src/game/types/game.enum';
 
 export default class GameDataDTO {
 	@IsString()

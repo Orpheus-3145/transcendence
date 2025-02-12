@@ -3,10 +3,10 @@ import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import AppLoggerService from 'src/log/log.service';
-import { GameDifficulty, GameMode } from 'src/game/game.types';
+import { GameDifficulty, GameMode } from 'src/game/types/game.enum';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import { WaitingPlayer } from 'src/game/game.types';
+import { WaitingPlayer } from 'src/game/types/game.interfaces';
 import GameDataDTO from 'src/dto/gameData.dto';
 
 @Injectable()
