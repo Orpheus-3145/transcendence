@@ -1,10 +1,11 @@
+-include ./env/.env
+
 COMPOSE := docker compose --env-file ./env/.env
 
 all: build
 
 # re-build only image with an update in the build context (i.e. a file changed)
 build:
-	@mkdir -p back-nestjs/logs
 	@$(COMPOSE) build 
 
 # re-build images from scratch

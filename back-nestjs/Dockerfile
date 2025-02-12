@@ -6,6 +6,6 @@ COPY . .
 
 RUN npm install
 
-RUN mkdir tes_folder
+RUN mkdir logs
 
 CMD ["npm", "run", "start:debug"]
