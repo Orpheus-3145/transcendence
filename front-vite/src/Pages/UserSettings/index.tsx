@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
 	Container,
 	Typography,
@@ -10,13 +10,14 @@ import {
 	FormControlLabel,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/system';
+import axios from 'axios';
+import { useUser } from '../../Providers/UserContext/User';
 
 const SettingsContainer = styled(Container)(({ theme }) => ({
 	padding: theme.spacing(3),
 	backgroundColor: theme.palette.background.paper,
 	borderRadius: theme.shape.borderRadius,
 	marginTop: theme.spacing(4),
-	// boxShadow: theme.shadows[3],
 }));
 
 const SettingsSection = styled(Box)(({ theme }) => ({
@@ -29,8 +30,46 @@ const ProfileAvatar = styled(Avatar)(({ theme }) => ({
 	marginBottom: theme.spacing(2),
 }));
 
-const UserSettings: React.FC = () => {
+const UserSettings = () => {
 	const theme = useTheme();
+	const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+	const intraId = useUser().user.intraId; // Replace with the actual userId from session or context
+	console.log(`useuser: ${JSON.stringify(useUser().user)}`);
+	// ✅ Fetch 2FA status when component mounts
+	useEffect(() => {
+		const fetch2FAStatus = async () => {
+			try {
+				const response = await axios.get(`https://localhost:4000/auth/user-2fa-status?intraId=${intraId}`);
+				
+				setIs2FAEnabled(response.data.is2FAEnabled);
+			} catch (error) {
+				console.error('Error fetching 2FA status:', error);
+			}
+		};
+		fetch2FAStatus();
+	}, []);
+
+	// ✅ Handle 2FA toggle
+	const handle2FAToggle = async (event) => {
+		const isEnabled = event.target.checked;
+		setIs2FAEnabled(isEnabled);
+
+		try {
+			// ✅ Send userId as a query param instead of body
+			console.log(`Enalbed: ${isEnabled}`);
+			const url = isEnabled
+				? import.meta.env.URL_BACKEND_ENABLE + `?intraId=${intraId}`
+				: import.meta.env.URL_BACKEND_DISABLE + `?intraId=${intraId}`;
+
+			const response = await axios.get(url);
+
+			console.log(`2FA ${isEnabled ? 'enabled' : 'disabled'} successfully`);
+			console.log(response.data);
+		} catch (error) {
+			console.error('Error updating 2FA:', error);
+			setIs2FAEnabled(!isEnabled); // Revert state on failure
+		}
+	};
 
 	return (
 		<SettingsContainer>
@@ -48,9 +87,7 @@ const UserSettings: React.FC = () => {
 					variant='outlined'
 					margin='normal'
 					InputLabelProps={{ style: { color: theme.palette.text.secondary } }}
-					InputProps={{
-						style: { color: theme.palette.text.primary },
-					}}
+					InputProps={{ style: { color: theme.palette.text.primary } }}
 				/>
 				<ProfileAvatar src='/static/images/avatar/1.jpg' />
 				<Button variant='contained' component='label'>
@@ -59,17 +96,19 @@ const UserSettings: React.FC = () => {
 				</Button>
 			</SettingsSection>
 
+			{/* ✅ 2FA Toggle */}
 			<SettingsSection>
 				<Typography variant='h6' gutterBottom style={{ color: theme.palette.text.primary }}>
 					Security
 				</Typography>
 				<FormControlLabel
-					control={<Switch color='primary' />}
+					control={<Switch checked={is2FAEnabled} onChange={handle2FAToggle} color='primary' />}
 					label='Two-Factor Authentication'
 					labelPlacement='start'
 					style={{ marginLeft: 0 }}
 				/>
 			</SettingsSection>
+
 			<SettingsSection>
 				<Typography variant='h6' gutterBottom style={{ color: theme.palette.text.primary }}>
 					Status
@@ -80,11 +119,10 @@ const UserSettings: React.FC = () => {
 					variant='outlined'
 					margin='normal'
 					InputLabelProps={{ style: { color: theme.palette.text.secondary } }}
-					InputProps={{
-						style: { color: theme.palette.text.primary },
-					}}
+					InputProps={{ style: { color: theme.palette.text.primary } }}
 				/>
 			</SettingsSection>
+
 			<Button variant='contained' color='primary'>
 				Save Changes
 			</Button>

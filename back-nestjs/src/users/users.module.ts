@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import UsersService from 'src/users/users.service';
+import {UsersService} from 'src/users/users.service';
 import User from 'src/entities/user.entity';
 import AppLoggerModule from 'src/log/log.module';
 import ExceptionModule from 'src/errors/exception.module';

@@ -1,39 +1,43 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Box, Button, TextField, Typography, Alert } from '@mui/material';
-import { useUser } from '../../Providers/UserContext/User';
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
 
-const TwoFactorAuth: React.FC = () => {
-    const { user } = useUser();
-    const [token, setToken] = useState('');
-    const [message, setMessage] = useState('');
+const TwoFactorAuth = () => {
+    const [token, setToken] = useState("");
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const intraId = searchParams.get("intraId"); // Get intraId from URL
 
-    const verify2FA = async () => {
+    const handleVerify2FA = async () => {
         try {
-            const response = await axios.post(`/auth/verify-2fa`, {
-                userId: user.id,
+            const response = await axios.post(import.meta.env.URL_BACKEND_2FA, {
+                intraId,
                 token,
-            });
+            }, { withCredentials: true });
 
-            if (response.data.success) {
-                setMessage('2FA verification successful!');
-            } else {
-                setMessage('Invalid 2FA token. Please try again.');
+            if (response.status === 200) {
+                console.log("2FA verified, redirecting...");
+                navigate("/dashboard");
             }
         } catch (error) {
-            setMessage('Failed to verify 2FA.');
+            setError("Invalid 2FA token. Please try again.");
         }
     };
 
     return (
-        <Box sx={{ textAlign: 'center', p: 3 }}>
-            <Typography variant="h5">Verify Two-Factor Authentication</Typography>
-            <TextField label="2FA Token" value={token} onChange={(e) => setToken(e.target.value)} fullWidth />
-            <Button variant="contained" color="secondary" onClick={verify2FA}>
-                Verify 2FA
-            </Button>
-            {message && <Alert severity="info">{message}</Alert>}
-        </Box>
+        <div>
+            <h2>Two-Factor Authentication</h2>
+            <p>Enter your authentication code:</p>
+            <input
+                type="text"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="Enter 2FA code"
+            />
+            <button onClick={handleVerify2FA}>Verify</button>
+            {error && <p style={{ color: "red" }}>{error}</p>}
+        </div>
     );
 };
 

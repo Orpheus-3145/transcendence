@@ -10,7 +10,8 @@ export enum UserStatus {
 }
 
 export interface User {
-	id: number;
+	user_id: number;
+	intraId: number;
 	nameNick?: string | null;
 	nameFirst?: string;
 	nameLast?: string;

@@ -6,7 +6,7 @@ import { UserStatus } from 'src/dto/user.dto';
 @Entity()
 export default class User {
 	@PrimaryGeneratedColumn()
-	id: number;
+	user_id: number;
 
 	@Column({ nullable: false })
 	accessToken: string;
@@ -36,9 +36,6 @@ export default class User {
 	@Length(0, 100)
 	greeting: string | null;
 
-	// @Column({ nullable: true, default: null })
-	// auth2F: string | null;
-
 	@Column({
 		type: 'enum',
 		enum: UserStatus,
@@ -46,9 +43,7 @@ export default class User {
 	})
 	status: UserStatus;
 
-		// user.twoFactorSecret = secret.base32;
-		// user.twoFactorEnabled 
-	@Column({ nullable: false, default: false })
+	@Column({ nullable: false, default: false})
 	twoFactorEnabled: boolean;
 
 	@Column({ nullable: true, default: null })

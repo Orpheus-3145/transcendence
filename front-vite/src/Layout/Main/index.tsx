@@ -28,7 +28,7 @@ export const Main: React.FC = () => {
 	const unauthenticatedRoutes = (
 		<>
 			<Route path='/login' element={<LoginPage />} />
-			<Route path='/verify-2fa' element={<TwoFactorAuth />} />
+			<Route path='/2fa' element={<TwoFactorAuth />} />
 		</>
 	);
 

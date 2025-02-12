@@ -3,15 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 
-import UsersService from 'src/users/users.service';
+import {UsersService} from 'src/users/users.service';
 import AccessTokenDTO from 'src/dto/auth.dto';
 import { UserDTO } from 'src/dto/user.dto';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
-
-// Add 2FA to the existing authentication
 @Injectable()
 export class AuthService {
 	constructor(
@@ -26,7 +24,7 @@ export class AuthService {
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	async login(code: string, res: Response): Promise<UserDTO | null> {
+	async login(code: string, res: Response): Promise<UserDTO | void> {
 		if (!code)
 			this.thrower.throwSessionExcp(
 				`Login failed, no code provided`,
@@ -36,41 +34,126 @@ export class AuthService {
 
 		this.logger.debug(`Login attempt, code [${code}]`);
 
-		/// Step 1: Fetch user access token
 		const access: AccessTokenDTO = await this.getUserAccessToken(code);
 		this.logger.debug(`Found access token [${access.access_token}]`);
 
-		// Step 2: Get user information
 		const userMe = await this.getUserMe(access.access_token);
-		this.logger.debug(`Found user42 ${userMe.login}`);
 
-		// Step 3: Retrieve or create user in database
-		const user = await this.userService.createUser(access, userMe);
-		this.logger.log(`Login attempt with user ${user.nameNick}`);
 
-		// Step 4: Check if 2FA is enabled for the user
-		if (user.twoFactorSecret) {
-			this.logger.debug(`2FA is enabled for user ${user.nameNick}. Redirecting to 2FA verification.`);
-
-			// Redirect to the frontend for 2FA verification
-			res.redirect(`${this.config.get<string>('URL_FRONTEND_2FA')}?userId=${user.id}`);
-			return null; // Stop the login flow until 2FA is verified
+		// Check if user exists in DB or create a new one
+		let user = await this.userService.findOne(userMe.id);
+		let userDTO = null;
+		if (!user) {
+			userDTO = await this.userService.createUser(access, userMe);
 		}
-		// Step 5: Generate and set the JWT token if 2FA is not enabled
-		const signedToken = sign({ intraId: userMe.id }, this.config.get<string>('SECRET_KEY'));
+		if (!userDTO)
+			userDTO = new UserDTO(user);
+
+		this.logger.debug(`User 2FA enabled: ${user.twoFactorEnabled}`);
+
+		// If 2FA is enabled, send a response prompting for 2FA verification
+	
+		if (userDTO.twoFactorEnabled) {
+		this.logger.debug(`2FA required for user ${userMe.login}`);
+		const frontend2FARedirect = `${this.config.get<string>('URL_FRONTEND_2FA')}?intraId=${userMe.id}`;
+		console.log(`redirecting to: ${frontend2FARedirect}`);
+		return res.redirect(frontend2FARedirect);  // 🔹 Redirect to frontend 2FA page
+		// return ;
+	}
+
+		// Otherwise, proceed with normal login
+		const signedToken = sign({ intraId: userMe.id, passed2FA: false}, this.config.get<string>('SECRET_KEY'));
 		res.cookie('auth_token', signedToken, {
 			httpOnly: true,
 			maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
 		});
+
 		this.logger.debug(`Access token signed`);
+		this.logger.log(`Login successful with user ${user.nameNick}`);
+
+		res.redirect(this.config.get<string>('URL_FRONTEND'));
+		return userDTO;
+
+		// const twoFactorStatus = (await this.getTwoFactorAuthStatus(userMe.id)).is2FAEnabled;
+		// this.logger.debug(`Found user42 ${userMe.login}`);
+		// this.logger.debug(`User 2FA enabled: ${twoFactorStatus}`);
+		// // if twoFactorStatus is true, then 2FA should happen. Else, login with out 2FA should proceed
+		// const signedToken = sign({ intraId: userMe.id }, this.config.get<string>('SECRET_KEY'));
+		// res.cookie('auth_token', signedToken, {
+		// 	httpOnly: true,
+		// 	maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
+		// });
+		// this.logger.debug(`Access token signed`);
 
 		// const userDTOreturn = await this.userService.createUser(access, userMe);
 		// this.logger.log(`Login successful with user ${userDTOreturn.nameNick}`);
-		// Step 6: Redirect to frontend and return user
-		const userDTOreturn = user;
-		res.redirect(this.config.get<string>('URL_FRONTEND'));
-		return userDTOreturn;
+
+		// res.redirect(this.config.get<string>('URL_FRONTEND'));
+		// return userDTOreturn;
 	}
+
+	// async validate(req: Request, res: Response) {
+	// 	console.log("Were in the validate function!");
+	// 	const responseData = {
+	// 		message: '',
+	// 		redirectTo: '',
+	// 		user: null as UserDTO | null,
+	// 	};
+
+	// 	// 🔹 Extract token from cookies
+	// 	const token = req.cookies['auth_token'];
+	// 	if (!token) {
+	// 		return res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
+	// 	}
+
+	// 	this.logger.debug(`Validating token [${token}]`);
+
+	// 	// 🔹 Verify token
+	// 	let decoded: string | JwtPayload;
+	// 	try {
+	// 		decoded = verify(token, this.config.get<string>('SECRET_KEY'));
+	// 	} catch (error) {
+	// 		this.thrower.throwSessionExcp(
+	// 			`Token validation error: ${error.message}`,
+	// 			`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
+	// 			HttpStatus.UNAUTHORIZED,
+	// 		);
+	// 	}
+
+	// 	// 🔹 Ensure decoded token has necessary fields
+	// 	if (typeof decoded !== 'object' || isNaN(Number(decoded.intraId))) {
+	// 		this.thrower.throwSessionExcp(
+	// 			`Invalid token payload`,
+	// 			`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
+	// 			HttpStatus.UNAUTHORIZED,
+	// 		);
+	// 	}
+
+	// 	this.logger.debug(`Token [${token}] validated`);
+
+	// 	// 🔹 Find user in DB
+	// 	const user = await this.userService.findOne(Number(decoded.intraId));
+	// 	if (!user) {
+	// 		this.thrower.throwSessionExcp(
+	// 			`User not found`,
+	// 			`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
+	// 			HttpStatus.NOT_FOUND,
+	// 		);
+	// 	}
+
+	// 	// 🚨 **NEW: Check if 2FA is required and passed** 🚨
+	// 	if (user.twoFactorEnabled && !decoded.passed2FA) {
+	// 		responseData.redirectTo = this.config.get<string>('URL_FRONTEND_2FA'); // Tell FE to go to 2FA page
+	// 		return res.status(403).json(responseData);
+	// 	}
+
+	// 	// 🔹 Success: Return user data
+	// 	responseData.message = 'User successfully validated.';
+	// 	responseData.user = new UserDTO(user);
+	// 	return res.status(200).json(responseData);
+	// }
+
+
 
 	async validate(req: Request, res: Response) {
 		// Local variable to accumulate response data
@@ -120,7 +203,7 @@ export class AuthService {
 		// Success
 		responseData.message = 'User successfully validated.';
 		responseData.user = new UserDTO(user);
-		res.status(HttpStatus.OK).json(responseData);
+		res.status(200).json(responseData);
 	}
 
 	async logout(res: Response, redir?: string, mess?: string) {
@@ -161,6 +244,7 @@ export class AuthService {
 		});
 
 		if (!response.ok)
+			console.log("Its here!")
 			this.thrower.throwSessionExcp(
 				`Problem with Intra42 temp key fetching, response: ${response.body}`,
 				`${AuthService.name}.${this.constructor.prototype.getUserAccessToken.name}()`,
@@ -189,71 +273,126 @@ export class AuthService {
 		});
 
 		if (!response.ok)
+			console.log("No here!");
 			this.thrower.throwSessionExcp(
 				`Problem with Intra42 temp user fetching, response: ${response.body}`,
 				`${AuthService.name}.${this.constructor.prototype.getUserMe.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
 
-		return response.json();
+		const data = await response.json();
+		return data;
+
 	}
 
-	//2FA
-	async verifyTwoFactorLogin(userId: number, token: string, res: Response) {
-	const isValid = await this.verifyTwoFactorAuth(userId, token);
+	// 2FA
+	async verifyTwoFactorLogin(intraId: number, token: string, res: Response) {
+		const isValid = await this.verifyTwoFactorAuth(intraId, token);
 
-	if (!isValid) {
-		this.thrower.throwSessionExcp('Invalid 2FA token', 'AuthService.verifyTwoFactorLogin', HttpStatus.UNAUTHORIZED);
-	}
+		if (!isValid) {
+			this.thrower.throwSessionExcp(
+				'Invalid 2FA token',
+				'AuthService.verifyTwoFactorLogin',
+				HttpStatus.UNAUTHORIZED
+			);
+		}
 
-	// Generate and save the JWT token
-	const signedToken = sign({ intraId: userId }, this.config.get<string>('SECRET_KEY'));
-	res.cookie('auth_token', signedToken, {
-		httpOnly: true,
-		maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
-	});
+		// Generate and save the JWT token
+		const signedToken = sign({ intraId: intraId, passed2FA: true }, this.config.get<string>('SECRET_KEY'));
+		res.cookie('auth_token', signedToken, {
+			httpOnly: true,
+			maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
+		});
 
-	return { message: '2FA verified successfully and login completed.' };
+		// Redirect to frontend after successful login
+		res.redirect(this.config.get<string>('URL_FRONTEND'));
 	}
 
 	async verifyTwoFactorAuth(userId: number, token: string): Promise<boolean> {
-	const user = await this.userService.findOne(userId);
-
-	if (!user || !user.twoFactorSecret) {
-		this.thrower.throwSessionExcp('2FA not enabled or user not found', 'AuthService.verifyTwoFactorAuth', HttpStatus.NOT_FOUND);
-	}
-
-	return speakeasy.totp.verify({
-		secret: user.twoFactorSecret,
-		encoding: 'base32',
-		token,
-		window: 1, // Small time window for drift
-	});
-	}
-	async enableTwoFactorAuth(userId: number): Promise<{ qrCode: string; secret: string }> {
-	const user = await this.userService.findOne(userId);
+		const user = await this.userService.findOne(userId);
 
 		if (!user) {
-			this.thrower.throwSessionExcp('User not found', 'AuthService.enableTwoFactorAuth', HttpStatus.NOT_FOUND);
+			this.thrower.throwSessionExcp(
+				'User not found',
+				'AuthService.verifyTwoFactorAuth',
+				HttpStatus.NOT_FOUND
+			);
 		}
 
-		// this.logger.debug(`2FA is enabled for user ${user.nameNick}. Redirecting to 2FA verification.`);
-		console.log(`2FA is enabled for user ${user.nameNick}. Redirecting to 2FA verification.`);
-		// Generate a 2FA secret
+		if (!user.twoFactorSecret) {
+			this.thrower.throwSessionExcp(
+				'2FA not enabled for this user',
+				'AuthService.verifyTwoFactorAuth',
+				HttpStatus.UNAUTHORIZED
+			);
+		}
+
+		return speakeasy.totp.verify({
+			secret: user.twoFactorSecret,
+			encoding: 'base32',
+			token,
+			window: 1, // Small time window for drift
+		});
+	}
+
+	async enableTwoFactorAuth(intraId: number): Promise<{ qrCode: string; secret: string }> {
+		const user = await this.userService.findOne(intraId);
+		console.log(`User info with id ${intraId}: ${JSON.stringify(user)}`);
+
+		if (!user) {
+			this.thrower.throwSessionExcp(
+				'User not found',
+				'AuthService.enableTwoFactorAuth',
+				HttpStatus.NOT_FOUND
+			);
+		}
+		console.log(`Enable 2FA is being called.`);
+
+		// Generate a new 2FA secret
 		const secret = speakeasy.generateSecret({
 			name: `YourAppName (${user.email})`,
 			issuer: 'YourAppName',
 		});
 
-		// Save the secret in the database
+		// Update user with new 2FA settings
 		user.twoFactorSecret = secret.base32;
 		user.twoFactorEnabled = true;
 		await this.userService.update(user);
 
-		// Generate and return the QR code
+		// Generate and return QR code
 		const qrCode = await QRCode.toDataURL(secret.otpauth_url);
 		return { qrCode, secret: secret.base32 };
 	}
 
+	async disableTwoFactorAuth(userId: number): Promise<{ message: string }> {
+		const user = await this.userService.findOne(userId);
+
+		if (!user) {
+			this.thrower.throwSessionExcp(
+				'User not found',
+				'AuthService.disableTwoFactorAuth',
+				HttpStatus.NOT_FOUND
+			);
+		}
+
+		// Disable 2FA
+		user.twoFactorSecret = null;
+		user.twoFactorEnabled = false;
+		await this.userService.update(user);
+
+		return { message: '2FA has been disabled successfully.' };
+	}
+
+	async getTwoFactorAuthStatus(intraId: string): Promise<{ is2FAEnabled: boolean }> {
+		const user = await this.userService.findOne(Number(intraId));
+		if (!user) {
+			this.thrower.throwSessionExcp(
+				'User not found',
+				'2FA status',
+				HttpStatus.NOT_FOUND
+			);
+		}
+		return { is2FAEnabled: user.twoFactorEnabled };
+	}
 
 }

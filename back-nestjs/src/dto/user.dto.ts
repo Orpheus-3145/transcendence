@@ -9,7 +9,8 @@ export enum UserStatus {
 
 export class UserDTO {
 	constructor(user: User) {
-		this.id = user.id;
+		this.id = user.user_id;
+		this.intraId = user.intraId;
 		this.nameNick = user.nameNick;
 		this.nameFirst = user.nameFirst;
 		this.nameLast = user.nameLast;
@@ -17,12 +18,15 @@ export class UserDTO {
 		this.image = user.image;
 		this.greeting = user.greeting;
 		this.status = user.status;
-		user.twoFactorSecret = user.twoFactorSecret;
-		user.twoFactorEnabled = user.twoFactorEnabled;
+		// this.twoFactorSecret = user.twoFactorSecret;
+		this.twoFactorEnabled = user.twoFactorEnabled;
 	}
 
 	@IsNumber()
 	id: number;
+
+	@IsNumber()
+	intraId: number;
 
 	@IsString()
 	nameNick: string | null;
@@ -46,8 +50,8 @@ export class UserDTO {
 	@IsEnum(UserStatus)
 	status: UserStatus;
 
-	@IsString()
-	twoFactorSecret: string | null;
+	// @IsString()
+	// twoFactorSecret: string | null;
 
 	@IsBoolean()
 	twoFactorEnabled: boolean
