@@ -41,7 +41,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 				const userDTO = response.data.user;
 				setUser(userDTO);
 			} catch (error) {
-				navigate('/login');
+				console.log(`Printing ERROR: ${error}`)
+				if (error.response) {
+					console.log(`Error Status Code: ${error.response.status}`);
+					if (error.response.status === 403) {
+						navigate('/2fa');
+					}
+					else {
+						navigate('/login');
+					}
+				}
+				// navigate('/login');
 				setUser({ id: 0 });
 			}
 		};

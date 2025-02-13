@@ -25,11 +25,12 @@ export class AuthController {
 		this.authService.logout(res);
 	}
 
+	// Maybe make this post
 	@Get('enable-2fa')
 	async enableTwoFactorAuth(@Query('intraId') userId: string) {
 		console.log('Received request to enable 2FA for userId:', userId); // Debug log
 		try {
-			const result = await this.authService.enableTwoFactorAuth(Number(userId));
+			const result = await this.authService.enableTwoFactorAuth(userId);
 			console.log('Enable 2FA result:', result); // Check if this logs
 			return result;
 		} catch (error) {
@@ -37,9 +38,10 @@ export class AuthController {
 		}
 	}
 
+	// Maybe make this post
 	@Get('disable-2fa')
 	async disableTwoFactorAuth(@Query('intraId') intraId: string) {
-		return this.authService.disableTwoFactorAuth(Number(intraId));
+		return this.authService.disableTwoFactorAuth(intraId);
 	}
 
 	@Get('user-2fa-status')
@@ -47,10 +49,15 @@ export class AuthController {
 		return this.authService.getTwoFactorAuthStatus(intraId);
 	}
 
+	@Get('generate-2fa')
+	async generate2faCode(@Query('intraId') intraId: string) {
+		return this.authService.generateQRCode(intraId);
+	}
 
 	// ✅ NEW: Verify 2FA token during login
 	@Get('verify-2fa')
 	async verifyTwoFactorLogin(@Query('intraId') intraId: string, @Query('token') token: string, @Res() res: Response) {
-		return this.authService.verifyTwoFactorLogin(Number(intraId), token, res);
+		console.log(`Verify 2fa endpoint: intraId: ${intraId}, token: ${token}`);
+		return this.authService.verifyTwoFactorLogin(intraId, token, res);
 	}
 }

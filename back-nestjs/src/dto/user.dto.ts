@@ -50,8 +50,8 @@ export class UserDTO {
 	@IsEnum(UserStatus)
 	status: UserStatus;
 
-	// @IsString()
-	// twoFactorSecret: string | null;
+	@IsString()
+	twoFactorSecret: string | null;
 
 	@IsBoolean()
 	twoFactorEnabled: boolean

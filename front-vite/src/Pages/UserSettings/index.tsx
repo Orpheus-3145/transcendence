@@ -39,7 +39,7 @@ const UserSettings = () => {
 	useEffect(() => {
 		const fetch2FAStatus = async () => {
 			try {
-				const response = await axios.get(`https://localhost:4000/auth/user-2fa-status?intraId=${intraId}`);
+				const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`);
 				
 				setIs2FAEnabled(response.data.is2FAEnabled);
 			} catch (error) {
