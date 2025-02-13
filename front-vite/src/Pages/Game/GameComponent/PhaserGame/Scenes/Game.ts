@@ -1,8 +1,8 @@
 import { io, Socket } from 'socket.io-client';
 
 import BaseScene from './Base';
-import { GameDifficulty, GameMode, PaddleDirection, PowerUpType } from '../../Types/enum';
-import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '../../Types/interfaces';
+import { GameDifficulty, GameMode, PaddleDirection, PowerUpType } from '../../Types/Enum';
+import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '../../Types/Interfaces';
 import Ball from '../GameObjects/Ball';
 import PowerUpBall from '../GameObjects/PowerUpBall';
 import Paddle from '../GameObjects/Paddle';

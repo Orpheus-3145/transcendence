@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-import { GameData } from '../../Types/interfaces';
+import { GameData } from '../../Types/Interfaces';
 import BaseScene from './Base';
 
 

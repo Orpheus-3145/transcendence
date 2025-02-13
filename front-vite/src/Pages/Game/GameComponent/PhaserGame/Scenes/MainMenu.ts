@@ -1,5 +1,5 @@
 import BaseScene from './Base';
-import { GameMode } from '../../Types/enum';
+import { GameMode } from '../../Types/Enum';
 
 
 export default class MainMenuScene extends BaseScene {

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import BaseScene from './Base';
-import { GameMode, GameDifficulty, PowerUpType } from '../../Types/enum';
+import { GameMode, GameDifficulty, PowerUpType } from '../../Types/Enum';
 
 
 export default class SettingsScene extends BaseScene {

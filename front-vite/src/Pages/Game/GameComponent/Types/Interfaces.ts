@@ -1,4 +1,4 @@
-import { GameDifficulty, GameMode, PowerUpType } from "./enum";
+import { GameDifficulty, GameMode, PowerUpType } from "./Enum";
 
 
 export interface PlayerData {
