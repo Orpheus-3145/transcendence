@@ -51,7 +51,7 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
-	// console.log(user.intraId);
+	// console.log(user.id);
 	
 	const theme = useTheme();
 	const navigate = useNavigate();
@@ -324,54 +324,109 @@ const ChannelsPage: React.FC = () => {
 	};
 //////////////////////////////////////////////////////////////////////
 	
+	// const handleSendMessage = () => {
+	// 	if (newMessage && selectedChannel) {
+	// 		const newChatMessage: ChatMessage = {
+	// 			message: newMessage,
+	// 			user: <Typography>{user.nameIntra}</Typography>,
+	// 			userPP: <Typography>img</Typography>,
+	// 			timestamp: new Date().toLocaleTimeString(),
+	// 		};
+
+	// 		setChatProps((prevProps) => ({
+	// 			...prevProps,
+	// 			chatRooms: prevProps.chatRooms.map(room => 
+	// 				room.id === selectedChannel.id
+	// 					? {...room, messages: [...room.messages, newChatMessage]}
+	// 					: room
+	// 			),
+	// 		}));
+	// 		setSelectedChannel((prevState) => ({
+	// 			...prevState,
+	// 			messages: [...prevState.messages, newChatMessage]
+	// 		}));
+
+	// 		socket.emit('sendMessage', {client_id: user.id, channel_id: selectedChannel.id, message: newMessage});
+
+	// 		setNewMessage('');
+	// 	}
+	// };
+
 	const handleSendMessage = () => {
+		// console.log(user.id);
 		if (newMessage && selectedChannel) {
-			const newChatMessage: ChatMessage = {
-				message: newMessage,
-				user: <Typography>{user.nameIntra}</Typography>,
-				userPP: <Typography>img</Typography>,
-				timestamp: new Date().toLocaleTimeString(),
-			};
-
-			setChatProps((prevProps) => ({
-				...prevProps,
-				chatRooms: prevProps.chatRooms.map(room => 
-					room.id === selectedChannel.id
-						? {...room, messages: [...room.messages, newChatMessage]}
-						: room
-				),
-			}));
-			setSelectedChannel((prevState) => ({
-				...prevState,
-				messages: [...prevState.messages, newChatMessage]
-			}));
-
-			socket.emit('sendMessage', {client_id: user.id, channel_id: selectedChannel.id, message: newMessage});
-
-			setNewMessage('');
+		  const messageData = {
+			sender_id: user.id, // Replace with actual user ID
+			receiver_id: selectedChannel.id,
+			content: newMessage,
+		  };
+	  
+		  socket.emit('sendMessage', messageData);
+	  
+		  setNewMessage('');
 		}
-	};
-
-	useEffect(() => {
-		const handleNewMessage = (updatedMessages) => {
-			console.log('Updated messages for channel:', updatedMessages);
-	
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: prevState.chatRooms.map((room) =>
-					room.id === updatedMessages.channel_id
-						? { ...room, messages: updatedMessages.messages } // Update with full messages list
-						: room
-				),
-			}));
-		};
-	
-		socket.on('newMessage', handleNewMessage);
-	
+	  };
+	  
+	  useEffect(() => {
+		socket.on('newMessage', (message) => {
+		  console.log('Received new message (React):', message);
+	  
+		  setChatProps((prevProps) => ({
+			...prevProps,
+			chatRooms: prevProps.chatRooms.map((room) =>
+			  room.id === message.receiver_id
+				? {
+					...room,
+					messages: [
+					  ...room.messages, // Keep existing messages
+					  {
+						id: message.msg_id, // Map msg_id
+						message: message.content, // Map content
+						user: user.nameIntra, // Use the function or logic to fetch the sender's name
+						userPP: <Avatar />, // Can map dynamically later (e.g., userPP could be the sender's profile picture)
+						timestamp: message.send_time, // Map send_time
+					  },
+					],
+				  }
+				: room
+			),
+		  }));
+		});
+	  
 		return () => {
-			socket.off('newMessage', handleNewMessage);
+		  socket.off('newMessage'); // Cleanup listener
 		};
-	}, [])
+	  }, []);  // Only run once when the component mounts
+	  
+	  
+	  
+	// useEffect(() => {
+	// 	const handleNewMessage = (newMessage) => {
+	// 		// console.log('Updated messages for channel:', updatedMessages);
+	//         console.log('Received new message:', newMessage);
+
+	// 		setChatProps((prevState) => ({
+	// 			...prevState,
+	// 			chatRooms: prevState.chatRooms.map((room) =>
+	// 				room.id === newMessage.channel_id
+	// 					? { ...room, messages: [...room.messages, newMessage.message] } // Update with full messages list
+	// 					: room
+	// 			),
+	// 		}));
+
+	// 		setSelectedChannel((prevState) =>
+	// 			prevState.id === newMessage.channel_id
+	// 				? { ...prevState, messages: [...prevState.messages, newMessage.message] }
+	// 				: prevState
+	// 		);
+	// 	};
+	
+	// 	socket.on('newMessage', handleNewMessage);
+	
+	// 	return () => {
+	// 		socket.off('newMessage', handleNewMessage);
+	// 	};
+	// }, [])
 
 //////////////////////////////////////////////////////////////////////
 
@@ -718,6 +773,7 @@ const ChannelsPage: React.FC = () => {
 					}
 					}     
 				  >
+					{/* {console.log(selectedChannel.messages)}; */}
 					{selectedChannel.messages.map((msg, index) => (
 					  <Box
 						key={index}
@@ -736,13 +792,14 @@ const ChannelsPage: React.FC = () => {
 								maxWidth: "70%"}}
 							key={index}
 						>
-							{/* {msg.user} */}
+							{/* {console.log(msg.user)} */}
+							{`(${msg.user}): `}
 							{msg.message}
 						</Typography>
 					  </Box>
 					))}
 				  </Stack>
-				  
+				
 				  {/*---Render Input Box---*/}
 				  <Box
 				    sx={{

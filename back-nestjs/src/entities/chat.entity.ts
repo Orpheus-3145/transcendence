@@ -71,8 +71,8 @@ export class Message {
 	@Column()
 	sender_id: number;
 
-	@Column()
-	receiver_id: number;
+	// @Column()
+	// receiver_id: number;
 
 	@Column('text')
 	content: string;

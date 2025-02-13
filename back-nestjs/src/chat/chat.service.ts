@@ -64,7 +64,7 @@ export class ChatService {
 		
 		const fullChannel = await this.channelRepository.findOne({
 			where: { channel_id: savedChannel.channel_id },
-			relations: ['members'],
+			relations: ['members',],
 		});
 		// console.log('full channel:', fullChannel);
 		return fullChannel;
@@ -82,6 +82,20 @@ export class ChatService {
 		console.log(membership);
 		return this.channelMemberRepository.save(membership);
 	}
+
+	// async createMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {
+	// 	const message = this.messageRepository.create({
+	// 		sender_id,
+	// 		receiver_id,
+	// 		content,
+	// 	});
+	
+	// 	const savedMessage = await this.messageRepository.save(message);
+	// 	console.log('Saved Message in service', savedMessage);
+	
+	// 	return savedMessage;
+	// }
+	  
 
 	// Remove user to a channel
 	async removeUserFromChannel(user_id: number, channel_id: number, role: string) {
@@ -124,32 +138,51 @@ export class ChatService {
 }
 
 	// Send a message
-	async sendMessage(
-		sender_id: number,
-		receiver_id: number,
-		content: string,
-	): Promise<Message> {
-		const message = this.messageRepository.create({
-			sender_id,
-			receiver_id,
-			content,
+	// async sendMessage( sender_id: number, receiver_id: number, content: string ,
+	// ): Promise<Message> {
+	// 	const message = this.messageRepository.create({
+	// 		sender_id,
+	// 		receiver_id,
+	// 		content,
+	// 	});
+
+	// 	// const updatedMessages = await this.messageRepository.find({
+	// 	// 	where: { receiver_id },
+	// 	// 	relations: ['sender'],
+	// 	// });
+
+	// 	return this.messageRepository.save(message);
+	// }
+
+	async sendMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {
+		const channel = await this.channelRepository.findOne({
+		  where: { channel_id: receiver_id },
 		});
-
-		console.log(message);
-
-		// const updatedMessages = await this.messageRepository.find({
-		// 	where: { receiver_id },
-		// 	relations: ['sender'],
-		// });
-
-		return this.messageRepository.save(message);
+	  
+		if (!channel) {
+		  throw new Error(`Channel with id ${receiver_id} not found`);
+		}
+	  
+		const message = this.messageRepository.create({
+		  sender_id,
+		  content,
+		  channel,  // Directly link the message to the channel
+		});
+	  
+		const savedMessage = await this.messageRepository.save(message);
+		console.log('Saved Message->>', savedMessage);  // Log the saved message for debugging
+	  
+		return savedMessage;
 	}
+	  
 
 
 	async getMessagesForChannel(channel_id: number): Promise<Message[]> {
 		// Fetch all messages for the channel, including sender details if necessary
 		return this.messageRepository.find({
-		  where: { receiver_id: channel_id },
+		  	where: { channel: { channel_id } },
+		  	relations: ['channel'],
+		  	order: { send_time: 'ASC' },
 		});
 	}
 	
@@ -166,12 +199,23 @@ export class ChatService {
  	}
 
  	// Fetch all channels
+	// async getAllChannels(): Promise<Channel[]> {
+	// 	return this.channelRepository.find({               // Fetches all channels from the database
+	// 		select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password',],
+	// 		relations: ['members', 'messages'],
+	// 	});     
+ 	// }
+
 	async getAllChannels(): Promise<Channel[]> {
-		return this.channelRepository.find({               // Fetches all channels from the database
-			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password',],
-			relations: ['members', 'messages'],
-		});     
- 	}
+		const channels = await this.channelRepository.find({
+			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password'],
+			relations: ['members', 'messages'], // Ensure messages are included
+		});
+	
+		// console.log('Channels with messages:', JSON.stringify(channels, null, 2)); // Debugging log
+		return channels;
+	}
+	
 
 	// Delete a channel
 	async deleteChannel(channel_id: number): Promise<Channel | null> {
@@ -180,8 +224,10 @@ export class ChatService {
 			if (!channel) {
 				return null;
 			}
+			// Delete associated messages if necessary
+			await this.messageRepository.delete({ channel: { channel_id } });
 			// Delete associated channel members if necessary
-			await this.channelMemberRepository.delete({ channel_id: channel_id });
+			await this.channelMemberRepository.delete({ channel_id });
 			// Delete the channel itself
 			await this.channelRepository.remove(channel);
 			return channel;

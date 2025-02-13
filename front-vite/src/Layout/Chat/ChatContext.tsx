@@ -6,6 +6,7 @@ import { Typography } from '@mui/material';
 import { PersonAdd as PersonAddIcon} from '@mui/icons-material';
 import { io } from 'socket.io-client';
 import Avatar from '@mui/material/Avatar'
+import { useUser } from '../../Providers/UserContext/User';
 
 // export const socket = io('https://localhost:3000/chat', {
 // 	withCredentials: true,
@@ -42,6 +43,8 @@ export const useChatContext = (): ChatContextType => {
 };
 
 export const ChatProvider: React.FC = ({ children }) => {
+	const { user } = useUser();
+	// console.log(user.nameIntra);
     const [chatProps, setChatProps] = useState<ChatProps>({
         chatRooms: [],  // Start with an empty array, NOT hardcoded defaults
         chatStatus: ChatStatus.ChannelsPage,
@@ -50,45 +53,70 @@ export const ChatProvider: React.FC = ({ children }) => {
     });
 
     useEffect(() => {
+		if (!user || !user.nameIntra) {
+			return ;
+		}
+		console.log(user.nameIntra);
+
         const fetchAllChannels = () => {
             socket.emit('getChannels');  // Request channels from backend
+			console.log(user.nameIntra);
 
             socket.on('channelsList', (channels) => {
-                console.log('Channels from database:', channels);
-                setChatProps((prevState) => ({
-                    ...prevState,
+				setChatProps((prevState) => ({
+					...prevState,
                     chatRooms: channels.map((channel) => ({
-                        id: channel.channel_id,
+						id: channel.channel_id,
                         name: channel.title,
                         icon: <GroupIcon />,
-                        messages: channel.messages || [],
+                        messages: channel.messages.map(message => ({
+							id: message.msg_id,
+							message: message.content,
+							user: user.nameIntra,
+							userPP: <Avatar />,
+							timestamp: message.send_time,
+						})) || [],
                         settings: {
-                            type: channel.ch_type,
+							type: channel.ch_type,
                             password: channel.password,
-                            users: channel.members.map(( member ) =>({
+                            users: channel.members.map(member =>({
 								id: member.user_id,
 								name: member.name,
 								role: member.member_role,
 								// email: '',
 								icon: <Avatar />
-
+								
 							})) , // Ensure users are loaded
                             owner: channel?.ch_owner, // Ensure ch_owner is included
                         },
                     })),
                 }));
-				// console.log('Chat Props:', chatProps);
+				
+				console.log('Channels from database:', channels);
+				// console.log('Channels (frontend):', chatProps.chatRooms);
             });
-
-
+			
+			
             return () => {
-                socket.off('channelsList'); // Cleanup to prevent duplicate listeners
+				socket.off('channelsList'); // Cleanup to prevent duplicate listeners
             };
         };
-
+		
         fetchAllChannels();
-    }, []);
+    }, [user]);
 
+	// useEffect(() => {
+	// 	if (!user) {
+	// 		return;
+	// 	}
+	// 	fetchAllChannels
+
+	// }, [user]);
+	
+	useEffect(() => {
+		console.log('Channels (frontend):', chatProps.chatRooms);
+	}, [chatProps.chatRooms]); // This ensures we log the latest value
+	
     return (
         <ChatContext.Provider value={{ chatProps, setChatProps }}>
             {children}

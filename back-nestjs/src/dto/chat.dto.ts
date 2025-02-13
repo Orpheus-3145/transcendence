@@ -42,14 +42,14 @@ export class ChatDTO {
   messages?: MessageDTO[];
 }
 
-export class ChannelMemberDTO {
-	@IsInt()
-	user_id: number;
+// export class ChannelMemberDTO {
+// 	@IsInt()
+// 	user_id: number;
 
 	
 
 
 
 
-}
+// }
 

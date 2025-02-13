@@ -124,33 +124,67 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		client.emit('leftChannel', { channel });
 	}
 
-	// Handle messages sent to a specific channel
 	@SubscribeMessage('sendMessage')
-	async handleMessage(
-		@MessageBody() data: {client_id: number, channel_id: number, message: string,}, 
-		@ConnectedSocket() client: Socket,
+	async handleSendMessage(
+	  @MessageBody() messageData: { sender_id: number, receiver_id: number, content: string },
+	  @ConnectedSocket() client: Socket,
 	): Promise<void> {
-		const {client_id, channel_id, message,} = data; 
-
-		console.log(`Message to channel id ${channel_id} from user ${client_id} (socket id: ${client.id}): ${message}`);
-
-		// Save the message to the database
-		await this.chatService.sendMessage(client_id, channel_id, message);
-
-		const updatedMessages = await this.chatService.getMessagesForChannel(channel_id);
-
-		console.log(updatedMessages);
-		this.server.emit('newMessage', {
-			channel_id,
-			messages: updatedMessages, // Send the full list of messages for the channel
-		});
-
-		// // Broadcast the updated messages to clients in the channel
-  		// this.server.to(channel_id.toString()).emit('newMessage', {
-  		// 	channel_id,
-  		// 	messages: updatedMessages, // Send the full list of messages for the channel
-  		// });
+	  try {
+		const { sender_id, receiver_id, content } = messageData;
+	
+		// Save message to DB
+		const newMessage = await this.chatService.sendMessage(sender_id, receiver_id, content);
+		// console.log('New message (gateway):', newMessage);
+		// Emit the message to the specific channel
+		// this.server.to(receiver_id.toString()).emit('newMessage', newMessage);
+		this.server.emit('newMessage', newMessage);
+	
+		console.log(`Message sent from user ${sender_id} to channel ${receiver_id}: ${content}`);
+	  } catch (error) {
+		console.error('Error sending message:', error);
+		client.emit('error', { message: 'Error sending message' });
+	  }
 	}
+	
+
+
+
+	// // Handle messages sent to a specific channel
+	// @SubscribeMessage('sendMessage')
+	// async handleMessage(
+	// 	@MessageBody() data: {client_id: number, channel_id: number, message: string,}, 
+	// 	@ConnectedSocket() client: Socket,
+	// ): Promise<void> {
+	// 	const {client_id, channel_id, message,} = data; 
+
+	// 	console.log(`Message to channel_id ${channel_id} from user_id ${client_id} (socket id: ${client.id}): ${message}`);
+
+	// 	// Save the message to the database
+	// 	const savedMessage = await this.chatService.sendMessage(client_id, channel_id, message);
+	// 	console.log('New message:', savedMessage);
+
+	// 	// const updatedMessages = await this.chatService.getMessagesForChannel(channel_id);
+
+	// 	// console.log('updatedMessages: ', updatedMessages);
+
+	// 	// this.server.emit('newMessage', {
+	// 	// 	channel_id,
+	// 	// 	messages: updatedMessages, // Send the full list of messages for the channel
+	// 	// });
+
+	// 	// this.server.emit('newMessage', { channel_id, message: savedMessage });
+		
+	// 	this.server.to(channel_id.toString()).emit('newMessage', {
+	// 		channel_id,
+	// 		message: savedMessage, // Send only the new message
+	// 	});
+
+	// 	// // Broadcast the updated messages to clients in the channel
+  	// 	// this.server.to(channel_id.toString()).emit('newMessage', {
+  	// 	// 	channel_id,
+  	// 	// 	messages: updatedMessages, // Send the full list of messages for the channel
+  	// 	// });
+	// }
 
 	// // Handle messages sent to a specific channel
 	// @SubscribeMessage('sendMessage')
@@ -174,6 +208,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
     	try {
     	  const channels = await this.chatService.getAllChannels();
     	  client.emit('channelsList', channels);  // Emit back the channels to the client
+    	//   client.emit('channelsList', channels);  // Emit back the channels to the client
     	} catch (error) {
     	  console.error('Error fetching channels:', error);
     	  client.emit('error', { message: 'Failed to fetch channels' });
