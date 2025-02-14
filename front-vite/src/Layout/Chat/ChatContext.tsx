@@ -56,11 +56,11 @@ export const ChatProvider: React.FC = ({ children }) => {
 		if (!user || !user.nameIntra) {
 			return ;
 		}
-		console.log(user.nameIntra);
+		// console.log(user.nameIntra);
 
         const fetchAllChannels = () => {
             socket.emit('getChannels');  // Request channels from backend
-			console.log(user.nameIntra);
+			// console.log(user.nameIntra);
 
             socket.on('channelsList', (channels) => {
 				setChatProps((prevState) => ({
@@ -69,13 +69,16 @@ export const ChatProvider: React.FC = ({ children }) => {
 						id: channel.channel_id,
                         name: channel.title,
                         icon: <GroupIcon />,
-                        messages: channel.messages.map(message => ({
-							id: message.msg_id,
-							message: message.content,
-							user: user.nameIntra,
-							userPP: <Avatar />,
-							timestamp: message.send_time,
-						})) || [],
+						messages: (channel.messages || [])
+						.slice()
+          				.reverse()
+          				.map((message) => ({
+          				  	id: message.msg_id,
+          				  	message: message.content,
+          				  	user: user.nameIntra,
+          				  	userPP: <Avatar />,
+          				  	timestamp: message.send_time,
+          				})),
                         settings: {
 							type: channel.ch_type,
                             password: channel.password,

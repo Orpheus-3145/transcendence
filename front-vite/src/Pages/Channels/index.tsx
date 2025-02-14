@@ -355,51 +355,110 @@ const ChannelsPage: React.FC = () => {
 	const handleSendMessage = () => {
 		// console.log(user.id);
 		if (newMessage && selectedChannel) {
-		  const messageData = {
-			sender_id: user.id, // Replace with actual user ID
-			receiver_id: selectedChannel.id,
-			content: newMessage,
-		  };
-	  
-		  socket.emit('sendMessage', messageData);
-	  
-		  setNewMessage('');
+		  	const messageData = {
+				sender_id: user.id,
+				receiver_id: selectedChannel.id,
+				content: newMessage,
+			};
+
+			socket.emit('sendMessage', messageData);
+		
+			setNewMessage('');
 		}
-	  };
-	  
-	  useEffect(() => {
+	};
+
+	useEffect(() => {
 		socket.on('newMessage', (message) => {
 		  console.log('Received new message (React):', message);
-	  
-		  setChatProps((prevProps) => ({
-			...prevProps,
-			chatRooms: prevProps.chatRooms.map((room) =>
-			  room.id === message.receiver_id
-				? {
+			//   console.log('Receiver id:', message.channel.channel_id);
+			console.log('Before update:', chatProps.chatRooms);
+			
+			const newMessage: ChatMessage = {
+				id: message.msg_id,
+				message: message.content,
+				user: user.nameIntra,
+				userPP: <Avatar />,
+				timestamp: message.send_time,
+			}
+
+			setChatProps((prevProps) => ({
+			  ...prevProps,
+			  chatRooms: prevProps.chatRooms.map((room) => {
+				// console.log('Checking room.id:', room.id);
+			  if (room.id === message.channel.channel_id) {
+				  return {
 					...room,
 					messages: [
-					  ...room.messages, // Keep existing messages
-					  {
-						id: message.msg_id, // Map msg_id
-						message: message.content, // Map content
-						user: user.nameIntra, // Use the function or logic to fetch the sender's name
-						userPP: <Avatar />, // Can map dynamically later (e.g., userPP could be the sender's profile picture)
-						timestamp: message.send_time, // Map send_time
-					  },
+					  ...room.messages,
+					  newMessage,
 					],
-				  }
-				: room
-			),
+					};
+				}
+				return room;
+		  	}),
 		  }));
+
+		 setSelectedChannel((prevState) => ({
+			...prevState,
+			messages: [...prevState.messages, newMessage]
+		  }));
+
 		});
+
+
 	  
 		return () => {
 		  socket.off('newMessage'); // Cleanup listener
 		};
-	  }, []);  // Only run once when the component mounts
+	  }, [selectedChannel]);  // Only run once when the component mounts
 	  
+
+
+	//   useEffect(() => {
+	// 	socket.on('newMessage', (message) => {
+	// 	  console.log('Before update:', chatProps.chatRooms);
 	  
+	// 	  setChatProps((prevProps) => {
+	// 		const updatedRooms = prevProps.chatRooms.map((room) =>
+	// 		  room.id === message.receiver_id
+	// 			? { ...room, messages: [...room.messages, message] }
+	// 			: room
+	// 		);
 	  
+	// 		console.log('After update:', updatedRooms);
+	// 		return { ...prevProps, chatRooms: updatedRooms };
+	// 	  });
+	// 	});
+	  
+	// 	return () => socket.off('newMessage');
+	//   }, []);
+	  
+	//   useEffect(() => {
+	// 		console.log('updated channels:', chatProps.chatRooms);
+	// 	}, [chatProps.chatRooms]);
+	
+	// 	useEffect(() => {
+	// 		const handleNewMessage = (message) => {
+	// 		  console.log('Received new message:', message);
+	// 		  setChatProps((prevProps) => ({
+	// 			...prevProps,
+	// 			chatRooms: prevProps.chatRooms.map((room) =>
+	// 			  room.id === message.receiver_id
+	// 				? { ...room, messages: [...room.messages, message] }
+	// 				: room
+	// 			),
+	// 		  }));
+	// 		};
+		  
+	// 		socket.on('newMessage', handleNewMessage);
+		  
+	// 		return () => {
+	// 		  socket.off('newMessage', handleNewMessage); // ✅ Proper cleanup
+	// 		};
+	// 	  }, []); // ✅ Empty dependency array ensures it runs only once
+		  
+
+
 	// useEffect(() => {
 	// 	const handleNewMessage = (newMessage) => {
 	// 		// console.log('Updated messages for channel:', updatedMessages);
