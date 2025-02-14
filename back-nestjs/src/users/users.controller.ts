@@ -1,12 +1,7 @@
-import { Controller, Inject, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, forwardRef, Body } from '@nestjs/common';
+import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
-import { NotificationService } from 'src/notification/notification.service';
-import { NotificationType } from 'src/entities/notification.entity';
-import {User} from '../entities/user.entity'
-import { UserStatus } from 'src/dto/user.dto';
-import { stat } from 'fs';
+import {leaderboardData, matchRatio, User} from '../entities/user.entity'
 
 @Controller('users')
 export class UsersController {
@@ -138,12 +133,28 @@ export class UsersController {
 			console.log("ERROR: image is invalid!");
 			throw new HttpException('Bad Request', 400);
 		}
-		var user = this.UserService.getUserId(username);
+		var user = await this.UserService.getUserId(username);
 		if (user == null)
 		{
 			console.log("ERROR: getting user in changePFP!");
 			throw new HttpException('Not Found', 404);
 		}
-		return (this.UserService.changeProfilePic(await user, image));
+		return (this.UserService.changeProfilePic(user, image));
+	}
+
+	@Get('/profile/fetchRatio/:username')
+	async fetchRatio(@Param('username') username:string) 
+	{
+		var user = await this.UserService.getUserIntraId(username);
+		var arr: matchRatio[] = await this.UserService.calculateRatio(user.matchHistory, user);
+		return (arr);
+	}
+
+	@Get('/fetchLeaderboard')
+	async fetchLeaderboard() 
+	{
+		return (this.UserService.leaderboardCalculator());
 	}
 }
+
+//ik heb de user nodig en de ratio, de array die ik return moet op volgworde staan van hoogste ratio

@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
 import {User} from '../entities/user.entity'
 import { UsersService } from 'src/users/users.service';
-import { send } from 'process';
 
 @Injectable()
 export class NotificationService {

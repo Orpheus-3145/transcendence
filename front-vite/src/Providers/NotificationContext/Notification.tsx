@@ -1,8 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { error } from 'console';
-import { useNavigate } from 'react-router-dom';
-import {User} from '../UserContext/User'
-import { io, Socket } from 'socket.io-client';
+import React from 'react';
+import { io } from 'socket.io-client';
 
 export const socket = io(`${import.meta.env.URL_WEBSOCKET}${import.meta.env.WS_NS_NOTIFICATION}`, {
     withCredentials: true,

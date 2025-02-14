@@ -341,7 +341,7 @@ const AllUsersPage: React.FC = () => {
 		fetchUsers();
 	}, [onlineUsers, offlineUsers, searchUsers, users, showOnline, showOffline]);
 
-	let pageWarpper = () =>
+	let pageWrapper = () =>
 	{
 		return (
 			<Stack>
@@ -362,7 +362,7 @@ const AllUsersPage: React.FC = () => {
 	}
 
 	return (
-		pageWarpper()
+		pageWrapper()
 	);
 };
 
