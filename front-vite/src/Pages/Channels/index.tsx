@@ -53,7 +53,7 @@ let joinedRooms: number[] = [];
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
 	// console.log(user.id);
-	
+
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const [channelName, setChannelName] = useState('');
@@ -281,6 +281,26 @@ const ChannelsPage: React.FC = () => {
 		setChannelName('');
 	};
 
+	//Needs implementation to Join only if user is member!!!
+	const joinRooms = () => {
+		// Check if the client has already joined this room
+		chatProps.chatRooms.forEach((room) => {
+			if (!joinedRooms.includes(room.id)) {
+			  // Join the room and add it to the joinedRooms list
+			  socket.emit('joinRoom', room.id);
+			  joinedRooms.push(room.id);
+			  console.log(`Joined room: ${room.id}`);
+			} else {
+			  console.log(`Already in room: ${room.id}`);
+			}
+		})
+	};
+
+	// useEffect(() => {
+
+	// }, [])
+
+	joinRooms();
 
 	const joinRoom = (roomId) => {
 		// Check if the client has already joined this room
@@ -292,7 +312,8 @@ const ChannelsPage: React.FC = () => {
 		} else {
 		  console.log(`Already in room: ${roomId}`);
 		}
-	};
+	
+	}
 
 	const handleChannelClick = (channel: ChatRoom) => {
 		setSelectedChannel(channel);
@@ -412,10 +433,12 @@ const ChannelsPage: React.FC = () => {
 		  	}),
 		  }));
 
-		 setSelectedChannel((prevState) => ({
-			...prevState,
-			messages: [...prevState.messages, newMessage]
-		  }));
+		  if (selectedChannel) {
+			setSelectedChannel((prevState) => ({
+				...prevState,
+				messages: [...prevState.messages, newMessage]
+			}));
+		  }
 
 		});
 

@@ -269,6 +269,17 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		console.log(`Socket ${client.id} joined room ${roomId}`);
 	}
 
+	@SubscribeMessage('joinRooms')
+	handleJoinRooms(
+		@MessageBody() roomIds: number[],
+		@ConnectedSocket() client: Socket) {
+
+		roomIds.forEach(roomId => {
+			client.join(roomId.toString());
+			console.log(`Socket ${client.id} joined room ${roomId}`);
+		})
+	}
+
 
 	// @SubscribeMessage('changeUserRole')
 	// async handleChangeUserRole(
