@@ -136,10 +136,10 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const newMessage = await this.chatService.sendMessage(sender_id, receiver_id, content);
 		// console.log('New message (gateway):', newMessage);
 		// Emit the message to the specific channel
-		// this.server.to(receiver_id.toString()).emit('newMessage', newMessage);
-		this.server.emit('newMessage', newMessage);
+		this.server.to(receiver_id.toString()).emit('newMessage', newMessage);
+		// this.server.emit('newMessage', newMessage);
 	
-		console.log(`Message sent from user ${sender_id} to channel ${receiver_id}: ${content}`);
+		console.log(`Message sent from user (id: ${sender_id}) (socket: ${client.id}) to channel (id: ${receiver_id}) : ${content}`);
 	  } catch (error) {
 		console.error('Error sending message:', error);
 		client.emit('error', { message: 'Error sending message' });
@@ -259,6 +259,16 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			client.emit('error', { message: 'Channel privacy could not be changed!' });
 		}
 	}
+
+	@SubscribeMessage('joinRoom')
+	handleJoinRoom(
+		@MessageBody() roomId: number,
+		@ConnectedSocket() client: Socket) {
+
+		client.join(roomId.toString());
+		console.log(`Socket ${client.id} joined room ${roomId}`);
+	}
+
 
 	// @SubscribeMessage('changeUserRole')
 	// async handleChangeUserRole(

@@ -170,7 +170,7 @@ export class ChatService {
 		});
 	  
 		const savedMessage = await this.messageRepository.save(message);
-		console.log('Saved Message->>', savedMessage);  // Log the saved message for debugging
+		// console.log('Saved Mdessage->>', savedMessage);  // Log the saved message for debugging
 	  
 		return savedMessage;
 	}

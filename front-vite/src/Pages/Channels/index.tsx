@@ -48,6 +48,7 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 
 //////////////////////////////////////////////////////////////////////
 
+let joinedRooms: number[] = [];
 
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
@@ -280,11 +281,24 @@ const ChannelsPage: React.FC = () => {
 		setChannelName('');
 	};
 
+
+	const joinRoom = (roomId) => {
+		// Check if the client has already joined this room
+		if (!joinedRooms.includes(roomId)) {
+		  // Join the room and add it to the joinedRooms list
+		  socket.emit('joinRoom', roomId);
+		  joinedRooms.push(roomId);
+		  console.log(`Joined room: ${roomId}`);
+		} else {
+		  console.log(`Already in room: ${roomId}`);
+		}
+	};
+
 	const handleChannelClick = (channel: ChatRoom) => {
-	  setSelectedChannel(channel);
-	  setIsSettingsView(false);
-	  setIsAddingChannel(false);
-	  
+		setSelectedChannel(channel);
+		setIsSettingsView(false);
+		setIsAddingChannel(false);
+		joinRoom(channel.id)
 	};
 //////////////////////////////////////////////////////////////////////
 
@@ -361,7 +375,7 @@ const ChannelsPage: React.FC = () => {
 				content: newMessage,
 			};
 
-			socket.emit('sendMessage', messageData);
+			socket.emit('sendMessage', messageData); 
 		
 			setNewMessage('');
 		}
@@ -852,7 +866,8 @@ const ChannelsPage: React.FC = () => {
 							key={index}
 						>
 							{/* {console.log(msg.user)} */}
-							{`(${msg.user}): `}
+							{`(${msg.user})`}
+							{`(${socket.id}): `}
 							{msg.message}
 						</Typography>
 					  </Box>
