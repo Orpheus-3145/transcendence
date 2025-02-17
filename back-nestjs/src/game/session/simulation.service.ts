@@ -94,8 +94,8 @@ export default class SimulationService {
 		this.logger.log(`session [${this.sessionToken}] - new game, powerups: [${this.powerUpSelected.join(', ')}]`);
 		if (this.mode === GameMode.single)
 			this.logger.log(`session [${this.sessionToken}] - new game, difficulty: ${this.difficulty}`);
-
-		// add bot if single mode
+			
+			// add bot if single mode
 		if (this.mode === GameMode.single) {
 			const botPlayer: PlayerDataDTO = {
 				playerId: -1,
