@@ -1,4 +1,3 @@
-
 export default class BaseScene extends Phaser.Scene {
 	
 	// background image
@@ -10,9 +9,9 @@ export default class BaseScene extends Phaser.Scene {
 	// if the windows is resized, the font size is derivated from new_size_wdth * ratio
 	protected readonly _textFontRatio: number = Number(import.meta.env.GAME_FONT_SIZE_RATIO);
 
-	constructor(arg?: any) {
-		super(arg);
-	}
+	// constructor(arg?: any) {
+	// 	super(arg);
+	// }
 
 	// method called when scene.start(nameScene, args) is run
 	init(arg?: any): void {
@@ -50,6 +49,9 @@ export default class BaseScene extends Phaser.Scene {
 	// the phaser objects will have to be definied
 	// inside the override of this function in the sub-classes
 	buildGraphicObjects(): void {
+
+		// if (this._background !== null)
+		// 	return ;
 
 		this._background = this.add.image(this.scale.width * 0.5, this.scale.height * 0.5, 'background');
 		this._background.setDisplaySize(this.scale.width, this.scale.height);

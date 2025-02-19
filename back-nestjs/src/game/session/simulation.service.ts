@@ -25,6 +25,7 @@ export default class SimulationService {
 	private readonly frameRateUpdate: number = 1000 / parseInt(this.config.get('GAME_FRAME_UPDATE'), 10);
 	private readonly hardDebugMode: boolean = this.config.get<boolean>('HARD_DEBUG_MODE', false);
 	private readonly forbidAutoPlay: boolean = this.config.get<boolean>('GAME_FORBID_AUTO_PLAY', false);
+	private readonly idleTime: number = parseInt(this.config.get('GAME_IDLE_TIME'), 10);
 	// gamte item sizes
 	private readonly windowWidth: number = parseInt(this.config.get('GAME_WIDTH'), 10);
 	private readonly windowHeight: number = parseInt(this.config.get('GAME_HEIGHT'), 10);
@@ -59,11 +60,13 @@ export default class SimulationService {
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
 	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight];
 	private powerUpType: PowerUpType;
-	// intervals for periodic updates
+	// intervals and timers
 	private gameStateInterval: NodeJS.Timeout = null; // loop for setting up the game
 	private gameSetupInterval: NodeJS.Timeout = null; // engine loop: data emitter to client(s)
 	private botInterval: NodeJS.Timeout = null; // Timer for handling the bot
 	private powerUpInterval: NodeJS.Timeout = null; // Timer for spawning power up
+	private idlePlayer1Interval: NodeJS.Timeout = null; // Timer for idle player 1
+	private idlePlayer2Interval: NodeJS.Timeout = null; // Timer for idle player 2
 
 	constructor(
 		private readonly logger: AppLoggerService,
@@ -181,12 +184,18 @@ export default class SimulationService {
 
 		this.gameStateInterval = setInterval(() => this.gameIteration(), this.frameRateUpdate);
 
+		// setting timers for idle 
+		this.idlePlayer1Interval = setTimeout(() => this.interruptGame(`${this.player1.nameNick} disconnected`), this.idleTime);
+		if (this.mode === GameMode.multi)
+			this.idlePlayer2Interval = setTimeout(() => this.interruptGame(`${this.player2.nameNick} disconnected`), this.idleTime);
+
 		this.resetBall();
-		
+
 		// if at least one powerup is selected start spawning timer
 		if (this.powerUpSelected.length > 0)
 			this.startPowerUpInterval();
 
+		// if single mode activate the bot
 		if (this.mode === GameMode.single)
 			this.startBotPaddleInterval();
 
@@ -455,6 +464,13 @@ export default class SimulationService {
 		clearInterval(this.gameStateInterval);
 		this.gameStateInterval = null;
 
+		clearTimeout(this.idlePlayer1Interval);
+		this.idlePlayer1Interval = null;
+		if (this.mode === GameMode.multi) {
+			clearTimeout(this.idlePlayer2Interval);
+			this.idlePlayer2Interval = null;
+		}
+
 		if (this.mode === GameMode.single)
 			this.stopBotPaddleInterval();
 
@@ -545,7 +561,16 @@ export default class SimulationService {
 			playerIndex = (this.player1.nameNick === player.nameNick) ? 0 : 1;
 		else if (this.mode === GameMode.multi)		// for multiplayer check client.id, cause in development players can use the same intra42 user
 			playerIndex = (this.player1.clientSocket.id === player.clientSocket.id) ? 0 : 1;
-	
+
+		// got new update, reset timer
+		if (playerIndex === 0) {
+			clearTimeout(this.idlePlayer1Interval);
+			this.idlePlayer1Interval = setTimeout(() => this.interruptGame(`${this.player1.nameNick} disconnected`), this.idleTime);
+		} else if (playerIndex === 1 && this.mode === GameMode.multi) {
+			clearTimeout(this.idlePlayer2Interval);
+			this.idlePlayer2Interval = setTimeout(() => this.interruptGame(`${this.player2.nameNick} disconnected`), this.idleTime);
+		}
+
 		this.addPowerUp(playerIndex);
 		const delta = (direction === PaddleDirection.up) ? this.paddleSpeed[playerIndex] * -1 : this.paddleSpeed[playerIndex];
 		
