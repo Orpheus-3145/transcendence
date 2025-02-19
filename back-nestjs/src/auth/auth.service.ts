@@ -143,7 +143,7 @@ export class AuthService {
 
 		if (!response.ok)
 			this.thrower.throwSessionExcp(
-				`Problem with Intra42 temp key fetching, response: ${response.body}`,
+				`Problem with Intra42 temp key fetching, response: ${JSON.stringify(response)}`,
 				`${AuthService.name}.${this.constructor.prototype.getUserAccessToken.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
@@ -171,7 +171,7 @@ export class AuthService {
 
 		if (!response.ok)
 			this.thrower.throwSessionExcp(
-				`Problem with Intra42 temp user fetching, response: ${response.body}`,
+				`Problem with Intra42 temp user fetching, response: ${JSON.stringify(response)}`,
 				`${AuthService.name}.${this.constructor.prototype.getUserMe.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
