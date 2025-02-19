@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Req, Res, UseFilters } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, Req, Res, UseFilters } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from 'src/auth/auth.service';
@@ -25,39 +25,50 @@ export class AuthController {
 		this.authService.logout(res);
 	}
 
-	// Maybe make this post
-	@Get('enable-2fa')
-	async enableTwoFactorAuth(@Query('intraId') userId: string) {
-		console.log('Received request to enable 2FA for userId:', userId); // Debug log
+	// Generate 2FA QRCode and send it to the FE
+	@Get('generate-qr')
+	async getQRCode(@Query('intraId') intraId: string) {
+		console.log('Received request to enable 2FA for intraId:', intraId); // Debug log
 		try {
-			const result = await this.authService.enableTwoFactorAuth(userId);
-			console.log('Enable 2FA result:', result); // Check if this logs
+			const result = await this.authService.generateQRCode();
+			// console.log('Enable 2FA result:', result); // Check if this logs
 			return result;
 		} catch (error) {
 			console.error('Error in enable-2FA:', error); // Log errors
 		}
 	}
 
-	// Maybe make this post
-	@Get('disable-2fa')
-	async disableTwoFactorAuth(@Query('intraId') intraId: string) {
-		return this.authService.disableTwoFactorAuth(intraId);
+	// @Post('verify-qr')
+	// async verifyQRCode(@Query('intraId') intraId: string, @Query('token') token: string, @Query ('secret') secret: string, @Res() res: Response) {
+		
+	// 	console.log(`Secret: ${secret}, Token: ${token}`);
+	// 	return await this.authService.verifyQRCode(intraId, secret, token);
+	// }
+	@Post('verify-qr')
+	async verifyQRCode(
+	@Body() body: { intraId: string; secret: string; token: string },
+	@Res() res: Response
+	) {
+	console.log(`Secret: ${body.secret}, Token: ${body.token}`);
+		const isVerified = await this.authService.verifyQRCode(body.intraId, body.secret, body.token);
+		return res.json({ success: isVerified });
+
 	}
 
-	@Get('user-2fa-status')
-	async getTwoFactorAuthStatus(@Query('intraId') intraId: string) {
-		return this.authService.getTwoFactorAuthStatus(intraId);
+	@Post('delete-2fa')
+	async deleteQRCode(@Query('intraId') intraId: string) {
+		console.log("TRYING TO DELETE");
+		return await this.authService.delete2FA(intraId);
 	}
 
-	@Get('generate-2fa')
-	async generate2faCode(@Query('intraId') intraId: string) {
-		return this.authService.generateQRCode(intraId);
+	@Get('status-2fa')
+	async get2FAStatus(@Query('intraId') intraId: string) {
+		return await this.authService.get2FAStatus(intraId);
 	}
 
-	// ✅ NEW: Verify 2FA token during login
-	@Get('verify-2fa')
-	async verifyTwoFactorLogin(@Query('intraId') intraId: string, @Query('token') token: string, @Res() res: Response) {
-		console.log(`Verify 2fa endpoint: intraId: ${intraId}, token: ${token}`);
-		return this.authService.verifyTwoFactorLogin(intraId, token, res);
+	@Post('verify-2fa')
+	async validate2FA(@Query('intraId') intraId: string, @Query('token') token: string, @Res() res: Response) {
+		console.log(`2FA code being verified: ${intraId}, token: ${token}`);
+		return await this.authService.validate2FA(intraId, token);
 	}
 }
