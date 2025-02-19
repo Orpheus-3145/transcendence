@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 import { IsAscii, Length, validateOrReject } from 'class-validator';
 import { UserStatus } from '../dto/user.dto';
 
-export type matchData = {
+export interface matchData {
 	player1: string;
 	player2: string;
 	player1Score: string;
@@ -11,13 +11,13 @@ export type matchData = {
 	type: string;
 }
 
-export class matchRatio {
+export interface matchRatio {
 	title: string;
 	value: number;
 	rate: number;
 }
 
-export class leaderboardData {
+export interface leaderboardData {
 	user: User;
 	ratio: matchRatio[];
 }

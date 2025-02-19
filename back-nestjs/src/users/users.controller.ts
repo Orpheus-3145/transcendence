@@ -156,5 +156,3 @@ export class UsersController {
 		return (this.UserService.leaderboardCalculator());
 	}
 }
-
-//ik heb de user nodig en de ratio, de array die ik return moet op volgworde staan van hoogste ratio

@@ -316,7 +316,7 @@ const ProfilePage: React.FC = () => {
 	let gameLine = (data: matchData) => 
 	{
 		var color;
-		if (data.whoWon === userProfile.nameNick)
+		if (data.whoWon === userProfile.intraId.toString())
 			color = '#1da517'
 		else
 			color = '#b01515';
@@ -765,16 +765,16 @@ const ProfilePage: React.FC = () => {
 			showOwnPage(false);
 	}
 	
+	useEffect(() => 
+	{
+		getUserProfile().then((number) => 
+		{
+			setUserProfileNumber(number);
+		});
+	}, [friendsList,whichStatus,profileImage]);
+
 	let whichPage = () =>
 	{
-		useEffect(() => 
-		{
-			getUserProfile().then((number) => 
-			{
-				setUserProfileNumber(number);
-			});
-		});
-		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;
 

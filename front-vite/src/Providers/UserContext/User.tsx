@@ -17,6 +17,11 @@ export interface matchRatio {
 	rate: number;
 }
 
+export interface leaderboardData {
+	user: User;
+	ratio: matchRatio[];
+}
+
 export interface matchData {
 	player1: string;
 	player2: string;
@@ -40,11 +45,6 @@ export interface User {
 	friends: string[];
 	blocked: string[];
 	matchHistory: matchData[];
-}
-
-export interface leaderboardData {
-	user: User;
-	arrMatches: matchRatio[];
 }
 
 interface UserContextType {

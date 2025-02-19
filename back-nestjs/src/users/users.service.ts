@@ -5,15 +5,6 @@ import { leaderboardData, matchRatio, User } from '../entities/user.entity';
 import { UserStatus, UserDTO, matchData } from '../dto/user.dto'
 import { AccessTokenDTO } from '../dto/auth.dto';
 
-const tmpGame: matchData = {
-	player1: 'hha',
-	player2: 'dhussain',
-	player1Score: "2",
-	player2Score: "5",
-	whoWon: 'hha',
-	type: "Normal",
-};
-
 @Injectable()
 export class UsersService {
   	constructor(
@@ -37,67 +28,6 @@ export class UsersService {
 		user.friends = [];
 		user.blocked = [];
 		user.matchHistory = [];
-		user.matchHistory.push(tmpGame);
-		const a = new User();
-		a.accessToken = access.access_token;
-		a.intraId = 23244;
-		a.nameNick = "a";
-		a.nameIntra = "a";
-		a.nameFirst = "a";
-		a.nameLast = "a";
-		a.email = userMe.email;
-		a.image = userMe.image.link;
-		a.greeting = 'Hello, I have just landed!';
-		a.status = UserStatus.Online;
-		a.friends = [];
-		a.blocked = [];
-		a.matchHistory = [];
-		a.matchHistory.push(tmpGame);
-		const b = new User();
-		b.accessToken = access.access_token;
-		b.intraId = 432424;
-		b.nameNick = "ab";
-		b.nameIntra = "ab";
-		b.nameFirst = "ab";
-		b.nameLast = "ab";
-		b.email = userMe.email;
-		b.image = userMe.image.link;
-		b.greeting = 'Hello, I have just landed!';
-		b.status = UserStatus.Online;
-		b.friends = [];
-		b.blocked = [];
-		b.matchHistory = [];
-		b.matchHistory.push(tmpGame);
-		const c = new User();
-		c.accessToken = access.access_token;
-		c.intraId = 312424;
-		c.nameNick = "abc";
-		c.nameIntra = "abc";
-		c.nameFirst = "abc";
-		c.nameLast = "abc";
-		c.email = userMe.email;
-		c.image = userMe.image.link;
-		c.greeting = 'Hello, I have just landed!';
-		c.status = UserStatus.Online;
-		c.friends = [];
-		c.blocked = [];
-		c.matchHistory = [];
-		c.matchHistory.push(tmpGame);
-		const d = new User();
-		d.accessToken = access.access_token;
-		d.intraId = 518424;
-		d.nameNick = "abcd";
-		d.nameIntra = "abcd";
-		d.nameFirst = "abcd";
-		d.nameLast = "abcd";
-		d.email = userMe.email;
-		d.image = userMe.image.link;
-		d.greeting = 'Hello, I have just landed!';
-		d.status = UserStatus.Online;
-		d.friends = [];
-		d.blocked = [];
-		d.matchHistory = [];
-		d.matchHistory.push(tmpGame);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
 			if (tmp != null)
@@ -105,15 +35,7 @@ export class UsersService {
 				return (new UserDTO(tmp));
 			}
 			await user.validate();
-			await a.validate();
-			await b.validate();
-			await c.validate();
-			await d.validate();
 			await this.usersRepository.save(user);
-			await this.usersRepository.save(a);
-			await this.usersRepository.save(b);
-			await this.usersRepository.save(c);
-			await this.usersRepository.save(d);
 			return new UserDTO(user);
 		} 
 		catch (error) {
@@ -264,9 +186,9 @@ export class UsersService {
 				allWin += 1;
 		});
 			
-		var ratioNormal = (normalWin / normalAll) * 100;
-		var ratioPower = (powerWin / powerAll) * 100;
-		var ratioAll = (allWin / allAll) * 100;
+		var ratioNormal = Math.round((normalWin / normalAll) * 100);
+		var ratioPower = Math.round((powerWin / powerAll) * 100);
+		var ratioAll = Math.round((allWin / allAll) * 100);
 
 		if (normalAll === 0)
 			ratioNormal = 0;
@@ -299,13 +221,11 @@ export class UsersService {
 		var arr: leaderboardData[] = [];
 		allData.forEach((item: leaderboardData) =>
 		{
-			if (arr.length === 5)
-				return (arr);
 			item.ratio.forEach((values: matchRatio) =>
 			{
 				var tmpType = values.title;
 				var tmpRate = values.rate;
-				if (tmpType === type)
+				if (tmpType === type && values.value > 0)
 				{
 					if (arr.length === 0)
 						arr.push(item);
@@ -329,22 +249,32 @@ export class UsersService {
 				}
 			});
 		});
+		arr.splice(5);
 		return (arr);
 	}
 
-	async leaderboardCalculator(): Promise<leaderboardData[][]>
+	async initLeaderboardArr(allUser: User[]): Promise<leaderboardData[]>
 	{
-		var allUser = await this.findAll();
-		var allData: leaderboardData[] = [];
 		var tmpratio: matchRatio[] = [];
+		var allData: leaderboardData[] = [];
 
 		allUser.forEach(async (item: User) => 
 		{
 			tmpratio = await this.calculateRatio(item.matchHistory, item);
 			var tmp: leaderboardData = { user: item, ratio: tmpratio };
 			allData.push(tmp);
-		});
+		});	
 
+		return (allData);
+	}
+
+	async leaderboardCalculator(): Promise<leaderboardData[][]>
+	{
+		var allUser = await this.findAll();
+		var allData: leaderboardData[] = [];
+
+		allData = await this.initLeaderboardArr(allUser);
+	
 		var normalArr: leaderboardData[] = await this.fillArray(allData, "Normal");
 		var powerArr: leaderboardData[] = await this.fillArray(allData, "Power ups");
 		var allArr: leaderboardData[] = await this.fillArray(allData, "All");
