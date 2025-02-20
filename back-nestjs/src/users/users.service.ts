@@ -138,9 +138,5 @@ export class UsersService {
 	async findOne(intraId: number): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { intraId } });
 	}
-
-
-
-
   
 }

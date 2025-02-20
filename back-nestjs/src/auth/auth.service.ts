@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Request, Response } from 'express';
+import { Request, response, Response } from 'express';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 
 import {UsersService} from 'src/users/users.service';
@@ -24,6 +24,43 @@ export class AuthService {
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
+	async checkCode(code: string): Promise<{access: AccessTokenDTO, intraId: number, userMe: Record<string, any>}> {
+		const access: AccessTokenDTO = await this.getUserAccessToken(code);
+		if (access === null)
+			return null;
+		const userMe = await this.getUserMe(access.access_token);
+		if (userMe ===null)
+			return null;
+		const intraId: number = userMe.id;
+		return {access: access, intraId: intraId, userMe: userMe};
+	}
+
+	async getUserDTO(intraId: number, access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO>{
+		// Check if user exists in DB or create a new one
+		const user = await this.userService.findOne(intraId);
+		let userDTO = null;
+		if (user === null)
+			try {
+				userDTO = await this.userService.createUser(access, userMe);
+			}
+			catch (error){
+				this.thrower.throwSessionExcp(
+				`Creating user failed`,
+				`${AuthService.name}.${this.constructor.prototype.login.name}()`,
+				HttpStatus.UNAUTHORIZED,
+			)
+			} 
+		if (userDTO === null)
+			userDTO = new UserDTO(user);
+		return userDTO;
+	}
+
+	// authType is either auth-token or 2fa-token
+	addCookie(authType: string, intraId: number, res: Response) {
+		const signedToken = sign({ intraId: intraId }, this.config.get<string>('SECRET_KEY'));
+		res.cookie(authType, signedToken, {httpOnly: true, maxAge: 10 * 365 * 24 * 60 * 60 * 1000,});
+	}
+
 	async login(code: string, res: Response): Promise<UserDTO | void> {
 		if (!code)
 			this.thrower.throwSessionExcp(
@@ -31,64 +68,46 @@ export class AuthService {
 				`${AuthService.name}.${this.constructor.prototype.login.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
-
 		this.logger.debug(`Login attempt, code [${code}]`);
+		const {access, intraId, userMe} = await this.checkCode(code);
+		if (access === null || userMe === null || intraId === null) {
+			res.status(HttpStatus.UNAUTHORIZED).clearCookie('auth_token');
+			this.thrower.throwSessionExcp(
+				`Login failed, invalid code`,
+				`${AuthService.name}.${this.constructor.prototype.login.name}()`,
+				HttpStatus.UNAUTHORIZED,
+			)
+		}
+		console.log("Check of code ok.");
+		const userDTO = await this.getUserDTO(intraId, access, userMe);
 
-		const access: AccessTokenDTO = await this.getUserAccessToken(code);
-		this.logger.debug(`Found access token [${access.access_token}]`);
-
-		const userMe = await this.getUserMe(access.access_token);
-
-
-		// Check if user exists in DB or create a new one
-		let user = await this.userService.findOne(userMe.id);
-		let userDTO = null;
-		if (user === null)
-			userDTO = await this.userService.createUser(access, userMe);
-		if (userDTO === null)
-			userDTO = new UserDTO(user);
-
-		this.logger.debug(`User 2FA enabled: ${userDTO.twoFactorEnabled}`);
-
-		
-		// Otherwise, proceed with normal login
-		const signedToken = sign({ intraId: userMe.id, passed2FA: false}, this.config.get<string>('SECRET_KEY'));
-		res.cookie('auth_token', signedToken, {
-			httpOnly: true,
-			maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
-		});
-		
-		this.logger.debug(`Access token signed`);
-		this.logger.log(`Login successful with user ${userDTO.nameNick}`);
-		
+	
 		// If 2FA is enabled, send a response prompting for 2FA verification
 		if (userDTO.twoFactorEnabled) {
-		this.logger.debug(`2FA required for user ${userMe.login}`);
-		const frontend2FARedirect = `${this.config.get<string>('URL_FRONTEND_2FA')}?intraId=${userMe.id}`;
-		console.log(`redirecting to: ${frontend2FARedirect}`);
-		return res.redirect(frontend2FARedirect);  // 🔹 Redirect to frontend 2FA page
-		// return ;
-	}
+			const responseData = {
+				message: '',
+				rediretTo: '',
+				user: null as UserDTO | null,
+			};
+			this.logger.debug(`2FA required for user ${userMe.login}`);
+			this.addCookie('2fa_token', intraId, res);
+			const frontend2FARedirect = `${this.config.get<string>('URL_FRONTEND_2FA')}?intraId=${intraId}`;
+			console.log(`redirecting to: ${frontend2FARedirect}`);
+			responseData.user = userDTO;
+			responseData.message = "Needs 2fa validation";
+			responseData.rediretTo = frontend2FARedirect;
+			res.redirect(frontend2FARedirect);
+			return userDTO
+			// return res.status(200).json(responseData);
+			// return res.status(HttpStatus.OK).redirect(frontend2FARedirect);  // 🔹 Redirect to frontend 2FA page
+		}
+		console.log("2fa not enabled ok.");
+		// Add auth cookie to complete authentication
+		this.addCookie('auth_token', intraId, res);
+		// const signedToken = sign({ intraId: intraId }, this.config.get<string>('SECRET_KEY'));
+		// res.cookie('auth-token', signedToken, {httpOnly: true, maxAge: 10 * 365 * 24 * 60 * 60 * 1000,});
 		res.redirect(this.config.get<string>('URL_FRONTEND'));
 		return userDTO;
-
-		// login function with 2fa:
-		// const twoFactorStatus = (await this.getTwoFactorAuthStatus(userMe.id)).is2FAEnabled;
-		// this.logger.debug(`Found user42 ${userMe.login}`);
-		// this.logger.debug(`User 2FA enabled: ${twoFactorStatus}`);
-		// // if twoFactorStatus is true, then 2FA should happen. Else, login with out 2FA should proceed
-		// const signedToken = sign({ intraId: userMe.id }, this.config.get<string>('SECRET_KEY'));
-		// res.cookie('auth_token', signedToken, {
-		// 	httpOnly: true,
-		// 	maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
-		// });
-		// this.logger.debug(`Access token signed`);
-
-		// const userDTOreturn = await this.userService.createUser(access, userMe);
-		// this.logger.log(`Login successful with user ${userDTOreturn.nameNick}`);
-
-		// res.redirect(this.config.get<string>('URL_FRONTEND'));
-		// return userDTOreturn;
 	}
 
 	async validate(req: Request, res: Response) {
@@ -96,8 +115,20 @@ export class AuthService {
 		const responseData = {
 			message: '',
 			rediretTo: '',
-			user: null as UserDTO | null,
+			user: {} as UserDTO | {},
 		};
+
+	    // Check for 2FA token
+		console.log("validate function");
+		const twoFAToken = req.cookies['2fa_token'];
+		if (twoFAToken) {
+			console.log("we are here!");
+			const user = { id: 0, auth2F: true };
+			responseData.user = user;
+			responseData.message = "2FA needed."
+			res.status(200).json(responseData);
+			return ;
+		}
 
 		// Extract token
 		const token = req.cookies['auth_token'];
@@ -216,18 +247,16 @@ export class AuthService {
 
 		const data = await response.json();
 		return data;
-
 	}
 
 	// 2FA
 
-	// this is the token
 	  verify2FACode(secretKey: string, token: string): boolean {
 	    return speakeasy.totp.verify({ secret: secretKey, encoding: 'base32', token: token, window: 1 });
 	  }
 
-	// Used when logging in
-	async validate2FA(intraId: string, token: string): Promise<boolean> {
+	// Validates 2fa code and completes authentication process
+	async validate2FA(intraId: string, token: string, res: Response): Promise<boolean> {
 		const user = await this.userService.findOne(Number(intraId));
 
 		if (!user) {
@@ -247,11 +276,20 @@ export class AuthService {
 		const isValid = this.verify2FACode(user.twoFactorSecret, token)
 		if (!isValid) {
 			this.logger.debug("2FA code could not be verified.");
+			this.thrower.throwSessionExcp(
+				'2FA code is invalid',
+				'AuthService.verifyTwoFactorAuth',
+				HttpStatus.UNAUTHORIZED
+			);
 		}
+		const userDTO = new UserDTO(user);
+		// Complete authentication after the 2fa code is validated
+		this.addCookie('auth-token', user.intraId, res);
+ 		res.clearCookie('2fa_token').status(200);
 		return (isValid);
 	}
 
-	// When 2FA is being set up
+	// Verify QRcode to enabled 2fa
 	async verifyQRCode(intraId: string, secret: string, token: string): Promise<boolean> {
 		const isValid = this.verify2FACode(secret, token);
 		if (!isValid) {
@@ -276,15 +314,16 @@ export class AuthService {
 			this.logger.debug(`Token verification was ${isValid}, but error updating database.`)
 			return (isValid);
 		}
+		
 		this.logger.debug("2FA successfully enabled.")
 		return (isValid);
 	}
-
 
 	generate2FASecret(): speakeasy.GeneratedSecret {
 		const secretCode = speakeasy.generateSecret({ name: this.config.get<string>('PROJECT_NAME')});
 		return secretCode;
 	}
+
 	async generateQRCode() :Promise<{ qrCode: string; secret: string }> {
 
 		// Generate a new 2FA secret
@@ -295,8 +334,7 @@ export class AuthService {
 		return { qrCode: qrCode, secret: secret.base32 };
 	}
 
-
-	async delete2FA(userId: string): Promise<{ message: string }> {
+	async delete2FA(userId: string, res: Response): Promise<{ message: string }> {
 		let user = await this.userService.findOne(Number(userId));
 
 		if (!user) {
@@ -308,10 +346,10 @@ export class AuthService {
 		}
 
 		// Disable 2FA
+		res.clearCookie('auth_token');
 		user.twoFactorSecret = null;
 		user.twoFactorEnabled = false;
 		await this.userService.update(user);
-
 		return { message: '2FA has been disabled successfully.' };
 	}
 

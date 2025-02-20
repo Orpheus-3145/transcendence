@@ -10,8 +10,7 @@ export enum UserStatus {
 }
 
 export interface User {
-	user_id: number;
-	intraId: number;
+	id: number;
 	nameNick?: string | null;
 	nameFirst?: string;
 	nameLast?: string;
@@ -35,22 +34,20 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	useEffect(() => {
 		const validate = async () => {
 			try {
-				const response = await axios.get(import.meta.env.URL_BACKEND_VALIDATE, {
-					withCredentials: true,
-				});
-				const userDTO = response.data.user;
-				setUser(userDTO);
+				const response = await axios.get(import.meta.env.URL_BACKEND_VALIDATE, 
+					{withCredentials: true}
+				);
+				console.log("comes here", response.data);
+				if (response.data) {
+
+					setUser(response.data.user);
+				}
+				if (response.data.user?.id === 0 && response.data.user?.auth2F) {
+					navigate('/2fa');
+				}
+
+
 			} catch (error) {
-				// console.log(`Printing ERROR: ${error}`)
-				// if (error.response) {
-				// 	console.log(`Error Status Code: ${error.response.status}`);
-				// 	if (error.response.status === 403) {
-				// 		navigate('/2fa');
-				// 	}
-				// 	else {
-				// 		navigate('/login');
-				// 	}
-				// }
 				navigate('/login');
 				setUser({ id: 0 });
 			}

@@ -268,7 +268,7 @@ const UserSettings = () => {
 				</Button>
 			</SettingsSection>
 
-			{/* ✅ 2FA Toggle */}
+			{/* 2FA Toggle */}
 			<SettingsSection>
 				<Typography variant='h6' gutterBottom style={{ color: theme.palette.text.primary }}>
 					Security

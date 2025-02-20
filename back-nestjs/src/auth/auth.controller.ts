@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { AuthService } from 'src/auth/auth.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 
+// Maybe add a guard
 @Controller('auth')
 @UseFilters(SessionExceptionFilter)
 export class AuthController {
@@ -11,13 +12,14 @@ export class AuthController {
 
 	@Get('login')
 	async login(@Query('code') code: string, @Res() res: Response) {
+		console.log("LOGIN!");
 		return this.authService.login(code, res);
 	}
 
 	@Get('validate')
 	async validate(@Req() req: Request, @Res() res: Response) {
-
-		return this.authService.validate(req, res);
+		console.log("VALIDATE!");
+		this.authService.validate(req, res);
 	}
 
 	@Get('logout')
@@ -31,19 +33,12 @@ export class AuthController {
 		console.log('Received request to enable 2FA for intraId:', intraId); // Debug log
 		try {
 			const result = await this.authService.generateQRCode();
-			// console.log('Enable 2FA result:', result); // Check if this logs
 			return result;
 		} catch (error) {
 			console.error('Error in enable-2FA:', error); // Log errors
 		}
 	}
 
-	// @Post('verify-qr')
-	// async verifyQRCode(@Query('intraId') intraId: string, @Query('token') token: string, @Query ('secret') secret: string, @Res() res: Response) {
-		
-	// 	console.log(`Secret: ${secret}, Token: ${token}`);
-	// 	return await this.authService.verifyQRCode(intraId, secret, token);
-	// }
 	@Post('verify-qr')
 	async verifyQRCode(
 	@Body() body: { intraId: string; secret: string; token: string },
@@ -56,9 +51,8 @@ export class AuthController {
 	}
 
 	@Post('delete-2fa')
-	async deleteQRCode(@Query('intraId') intraId: string) {
-		console.log("TRYING TO DELETE");
-		return await this.authService.delete2FA(intraId);
+	async deleteQRCode(@Query('intraId') intraId: string, @Res() res: Response) {
+		return await this.authService.delete2FA(intraId, res);
 	}
 
 	@Get('status-2fa')
@@ -69,6 +63,6 @@ export class AuthController {
 	@Post('verify-2fa')
 	async validate2FA(@Query('intraId') intraId: string, @Query('token') token: string, @Res() res: Response) {
 		console.log(`2FA code being verified: ${intraId}, token: ${token}`);
-		return await this.authService.validate2FA(intraId, token);
+		return await this.authService.validate2FA(intraId, token, res);
 	}
 }

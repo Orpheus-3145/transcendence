@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique } from 'typeorm';
 import { IsAscii, Length, validateOrReject } from 'class-validator';
 
 import { UserStatus } from 'src/dto/user.dto';
 
 @Entity()
+@Unique(['nameNick'])
 export default class User {
 	@PrimaryGeneratedColumn()
 	user_id: number;
