@@ -261,9 +261,10 @@ const ChannelsPage: React.FC = () => {
 			  socket.emit('joinRoom', room.id);
 			  joinedRooms.push(room.id);
 			  console.log(`Joined room: ${room.id}`);
-			} else {
-			  console.log(`Already in room: ${room.id}`);
-			}
+			} 
+			// else {
+			//   console.log(`Already in room: ${room.id}`);
+			// }
 		})
 	};
 
@@ -281,9 +282,10 @@ const ChannelsPage: React.FC = () => {
 		  socket.emit('joinRoom', roomId);
 		  joinedRooms.push(roomId);
 		  console.log(`Joined room: ${roomId}`);
-		} else {
-		  console.log(`Already in room: ${roomId}`);
-		}
+		} 
+		// else {
+		//   console.log(`Already in room: ${roomId}`);
+		// }
 	
 	}
 
@@ -697,22 +699,41 @@ const ChannelsPage: React.FC = () => {
 	);
 
 	//---Function to render the list of channels---//
-	const renderJoinedChannels = (channels: ChatRoom[]) => (
-		<Stack gap={1}>
-		{channels.map((channel) => (
-			<ChannelLine key={channel.id} channel={channel} />
-		))}
-	  </Stack>
-	);
+	const renderJoinedChannels = (channels: ChatRoom[]) => {
+		const filteredChannels = channels.filter(channel => userInChannel(user.nameIntra, channel));
+		
+		// if (filteredChannels.length === 0) {
+		// 	return null;
+		// }
 
-	const renderAvailableChannels = (channels: ChatRoom[]) => (
-		<Stack gap={1}>
-		{channels.map((channel, i) => (
-			(channel.settings.type !== 'private') && 
-			<AvailableChannelLine key={channel?.id} channel={channel} />
-		))}
-	  </Stack>
-	);
+		return (
+			<Stack gap={1}>
+			{filteredChannels.map(channel => (
+				<ChannelLine key={channel.id} channel={channel} />
+			))}
+	  		</Stack>
+	  	);
+	};
+
+	const renderAvailableChannels = (channels: ChatRoom[]) => {
+		const filteredChannels = channels.filter(
+			channel => 
+				!userInChannel(user.nameIntra, channel) 
+				&& channel.settings.type !== 'private'
+		);
+
+		// if (filteredChannels.length === 0) {
+		// 	return null;
+		// }
+
+		return (
+			<Stack gap={1}>
+			{filteredChannels.map((channel) => ( 
+				<AvailableChannelLine key={channel?.id} channel={channel} />
+			))}
+	 		</Stack>
+		);
+	};
 
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
@@ -752,7 +773,8 @@ const ChannelsPage: React.FC = () => {
 					Available Channels
 				</Typography>
 				{/* --> CALL TO BACKEND <-- */}
-				{renderAvailableChannels(availableChannels)} 
+				{/* {renderAvailableChannels(availableChannels)}  */}
+				{renderAvailableChannels(chatProps.chatRooms)} 
 			</Box>
 			<Divider/>
 			<Box sx={{ marginBottom: 1}}>
