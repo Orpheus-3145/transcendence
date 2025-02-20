@@ -92,28 +92,6 @@ export default class GameScene extends BaseScene {
 		this.setupSocket();
 	}
 
-	// Create game objects and establish WebSocket connection
-	create(): void {
-		super.create()
-
-		if (this._mode === GameMode.single) {
-			const initData: GameData = {
-				sessionToken: this._sessionToken,
-				mode: this._mode,
-				difficulty: this._difficulty,
-				extras: this._powerUpSelection,
-			};
-			this.sendMsgToServer('createRoomSinglePlayer', initData);
-		}
-
-		const playerData: PlayerData = {
-			playerId: this._id,
-			nameNick: this._nameNick,
-			sessionToken: this._sessionToken,
-		};
-		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
-	}
-
 	// Frame-by-frame update
 	update(time: number, delta: number): void {
 		super.update(time, delta);
@@ -140,6 +118,28 @@ export default class GameScene extends BaseScene {
 		// Update paddles based on player positions
 		this._leftPaddle.updatePosition(this._gameState.p1.y);
 		this._rightPaddle.updatePosition(this._gameState.p2.y);
+	}
+
+	// Create game objects and establish WebSocket connection
+	create(): void {
+		super.create()
+
+		if (this._mode === GameMode.single) {
+			const initData: GameData = {
+				sessionToken: this._sessionToken,
+				mode: this._mode,
+				difficulty: this._difficulty,
+				extras: this._powerUpSelection,
+			};
+			this.sendMsgToServer('createRoomSinglePlayer', initData);
+		}
+
+		const playerData: PlayerData = {
+			playerId: this._id,
+			nameNick: this._nameNick,
+			sessionToken: this._sessionToken,
+		};
+		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	}
 
   buildGraphicObjects(): void {
