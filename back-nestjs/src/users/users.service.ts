@@ -1,11 +1,12 @@
 import { Injectable, Inject, forwardRef, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, TopologyClosedEvent } from 'typeorm';
-import { leaderboardData, matchRatio, User } from '../entities/user.entity';
+import { leaderboardData, matchRatio } from '../entities/user.entity';
 import { UserStatus, UserDTO, matchData } from '../dto/user.dto'
 import AccessTokenDTO  from '../dto/auth.dto';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import User from '../entities/user.entity';
 
 
 @Injectable()

@@ -1,7 +1,8 @@
 import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {leaderboardData, matchRatio, User} from '../entities/user.entity'
+import {leaderboardData, matchRatio, } from '../entities/user.entity'
+import User from '../entities/user.entity';
 
 @Controller('users')
 export class UsersController {

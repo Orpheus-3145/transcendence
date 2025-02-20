@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 
-import UsersService from 'src/users/users.service';
+import { UsersService } from 'src/users/users.service';
 import AccessTokenDTO from 'src/dto/auth.dto';
 import { UserDTO } from 'src/dto/user.dto';
 import AppLoggerService from 'src/log/log.service';
