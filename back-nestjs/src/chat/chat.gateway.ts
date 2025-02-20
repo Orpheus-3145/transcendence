@@ -147,7 +147,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { sender_id, receiver_id, content } = messageData;
 	
 		// Save message to DB
-		const newMessage = await this.chatService.sendMessage(sender_id, receiver_id, content);
+		const newMessage = await this.chatService.saveMessage(sender_id, receiver_id, content);
 		// console.log('New message (gateway):', newMessage);
 		// Emit the message to the specific channel
 		this.server.to(receiver_id.toString()).emit('newMessage', newMessage);

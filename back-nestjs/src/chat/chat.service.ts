@@ -154,7 +154,7 @@ export class ChatService {
 	// 	return this.messageRepository.save(message);
 	// }
 
-	async sendMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {
+	async saveMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {
 		const channel = await this.channelRepository.findOne({
 		  where: { channel_id: receiver_id },
 		});
