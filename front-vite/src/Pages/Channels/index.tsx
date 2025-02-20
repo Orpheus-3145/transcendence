@@ -15,6 +15,8 @@ import { timeStamp } from 'console';
 import { index } from 'cheerio/dist/commonjs/api/traversing';
 import { useChatContext, socket } from '../../Layout/Chat/ChatContext';
 import { User, useUser } from '../../Providers/UserContext/User';
+import { getAll } from '../../Providers/UserContext/User';
+import { getRandomValues } from 'crypto';
 // import { Socket } from 'socket.io-client';
 
 
@@ -53,6 +55,7 @@ let joinedRooms: number[] = [];
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
 	// console.log(user.id);
+	// const allUsers = getAll();
 
 	const theme = useTheme();
 	const navigate = useNavigate();
@@ -61,7 +64,9 @@ const ChannelsPage: React.FC = () => {
 	const [isSettingsView, setIsSettingsView] = useState(false);
 	const [isPasswordModal, setIsPasswordModal] = useState(false);
 	const [enteredChannelPass, setEnteredChannelPass] = useState('');
-	const [onlinePlayers, setOnlinePlayers] = useState<UserProps[]>([  //--> CALL TO BACKEND <-- //
+	const [users, setUsers] = useState<UserProps>([]);
+
+	const [onlineUsers, setOnlineUsers] = useState<UserProps[]>([ 
 		{
 			name: 'Thooooooooooooooooooooooor',
 			role: 'member',
@@ -165,57 +170,25 @@ const ChannelsPage: React.FC = () => {
 		},
 	]);
   
-
-	// Using api call
-	// async function fetchAllChannels() {
-	// 	try {
-	// 	  const response = await axios.get('https://localhost:3000/channels', {
-	// 		withCredentials: true,  // If using cookies or sessions
-	// 	  });
-
-	// 	  console.log('Channels fetched:', response.data);
-	// 	//   setChatRooms(response.data); // Assuming setChatRooms is your state setter
-	// 	} catch (error) {
-	// 	  console.error('Error fetching channels:', error);
-	// 	}
-	//   }
-
-	// Using sockets
-
-	//   const fetchAllChannels = () => {
-	// 	socket.emit('getChannels');  // Emit event to request channels
-	  
-	// 	socket.on('channelsList', (channels) => {
-	// 	  console.log('Received channels:', channels);
-	// 	  // Update state with the received channels
-	// 	  setChatProps((prevState) => ({
-	// 		...prevState,
-	// 		chatRooms: channels.map((channel) => ({
-	// 		  	id: channel.channel_id,
-	// 		  	name: channel.title,
-	// 		  	icon: <GroupIcon />,
-	// 		  	messages: [],  // Initialize with empty messages
-	// 		  	settings: {
-	// 				type: channel.ch_tye,
-	// 				password: channel.password,
-	// 				users: channel.members || [],  // Load users as necessary
-	// 				owner: channel.settings.owner,
-	// 		  },
-	// 		})),
-	// 	  }));
-	// 	});
-	  
-	// 	socket.on('error', (error) => {
-	// 	  console.error('Error:', error);
-	// 	});
-	// };
-	
 	useEffect(() => {
 		if (selectedAvailableChannel &&
 			selectedAvailableChannel.settings.type === 'public') {
 			moveSelectedChToJoinedCh();
 		}
 	}, [selectedAvailableChannel]);
+
+	useEffect(() => {
+		const fetchUsers = async () => {
+			const usersList = await getAll();
+			console.log("Fetched users (channels page):", usersList);
+			setUsers(usersList);
+		}
+		fetchUsers();
+
+		// setUsers((prevUsers) => );
+
+		
+	}, []);
 
 //////////////////////////////////////////////////////////////////////
 	
@@ -283,10 +256,8 @@ const ChannelsPage: React.FC = () => {
 
 	//Needs implementation to Join only if user is member!!!
 	const joinRooms = () => {
-		// Check if the client has already joined this room
 		chatProps.chatRooms.forEach((room) => {
-			if (!joinedRooms.includes(room.id)) {
-			  // Join the room and add it to the joinedRooms list
+			if (!joinedRooms.includes(room.id) && userInChannel(user.nameIntra, room)) {
 			  socket.emit('joinRoom', room.id);
 			  joinedRooms.push(room.id);
 			  console.log(`Joined room: ${room.id}`);
@@ -300,6 +271,7 @@ const ChannelsPage: React.FC = () => {
 
 	// }, [])
 
+	// User socket joins the channels 
 	joinRooms();
 
 	const joinRoom = (roomId) => {
@@ -672,7 +644,7 @@ const ChannelsPage: React.FC = () => {
 	};
 //////////////////////////////////////////////////////////////////////
 
-	const PlayerLine: React.FC<{player: UserProps}> = ({player}) => {
+	const UserLine: React.FC<{user: User}> = ({user}) => {
 		return (
 			<Stack
 				onClick={() => {(navigate(`/profile/1`))}} // TO BE REPLACED!
@@ -698,7 +670,7 @@ const ChannelsPage: React.FC = () => {
 			>
 				<AccountCircleIcon sx={{ marginRight: 1}}/>
 				<Typography noWrap sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-					{player.name}
+					{user.nameIntra}
 		 		 </Typography>
 				<Box sx={{ flexGrow: 1 }} />
 				<IconButton
@@ -712,14 +684,14 @@ const ChannelsPage: React.FC = () => {
 	};
 //////////////////////////////////////////////////////////////////////
 
-	const renderPlayers = () => (
+	const renderUsers = () => (
 		<Stack gap={1}>
-			{onlinePlayers.map((player) => (
-				<PlayerLine key={player.name} player={player} />	
+			{users.map((user) => (
+				<UserLine key={user.id} user={user} />	
 			))}
 			
 			{/* {Array.from({ length: 20 }).map((_, index) => (
-				<PlayerLine key={index} />	
+				<UserLine key={index} />	
 			))} */}
 		</Stack>
 	);
@@ -785,10 +757,9 @@ const ChannelsPage: React.FC = () => {
 			<Divider/>
 			<Box sx={{ marginBottom: 1}}>
 				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
-					Online Players
+					Users
 				</Typography>
-				{/* --> CALL TO BACKEND <-- */}
-				{renderPlayers()}
+				{renderUsers()}
 			</Box>
 		  </Stack>
   

@@ -13,6 +13,11 @@ import { UserDTO } from '../dto/user.dto';
 import { ChatDTO } from '../dto/chat.dto';
 import { Channel } from '../entities/chat.entity';
 
+// export interface ConnectedUser {
+// 	clientSocket: Socket,
+// 	intraId: number,
+// 	nameIntra: string,
+// }
 
 @WebSocketGateway( {
 	namespace: process.env.WS_NS_CHAT, 		// Defines WebSocket namespace (e.g., "/chat")
@@ -28,12 +33,21 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@WebSocketServer()
 	server: Server;
 
+	// private connectedUsers: Array<ConnectedUser> = new Array(); 
 	private connectedClients = new Map<string, Socket>();
 	
 	constructor(private chatService: ChatService) {};
 	
 	handleConnection(client: Socket) {
 		console.log(`New client connected to ChatGateway: ${client.id}`);
+		
+		// const newConnectedUser = {
+		// 	clientSocket: client,
+		// 	intraId: ,
+		// 	nameIntra: string,
+		// };
+
+
 		this.connectedClients.set(client.id, client);
 		// console.log(this.connectedClients);
 		console.log('Connected clients to ChatGateway: ', Array.from(this.connectedClients.keys()));

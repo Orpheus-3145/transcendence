@@ -7,17 +7,31 @@ import { PersonAdd as PersonAddIcon} from '@mui/icons-material';
 import { io } from 'socket.io-client';
 import Avatar from '@mui/material/Avatar'
 import { useUser } from '../../Providers/UserContext/User';
+import { Socket } from 'socket.io';
 
 // export const socket = io('https://localhost:3000/chat', {
 // 	withCredentials: true,
 // });
 
+export interface ConnectedUser {
+	clientSocket: Socket,
+	intraId: number,
+	nameIntra: string,
+}
+
+const connectedUsers: ConnectedUser[] = []; 
+
 export const socket = io(`${import.meta.env.URL_WEBSOCKET}${import.meta.env.WS_NS_CHAT}`, {
-    withCredentials: true,    // Send credentials (e.g., cookies) with the WebSocket request
-    transports: ['websocket'], // Restrict to WebSocket transport
+    withCredentials: true,
+    transports: ['websocket'],
 });
 
 socket.on('connect', () => {
+	// const newConnectedUser = {
+	// 	clientSocket: socket,
+	// 	intraId: ,
+	// 	nameIntra: string,
+	// };
 	console.log('Socket connected:', socket.id);
 });
 
@@ -46,7 +60,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 	const { user } = useUser();
 	// console.log(user.nameIntra);
     const [chatProps, setChatProps] = useState<ChatProps>({
-        chatRooms: [],  // Start with an empty array, NOT hardcoded defaults
+        chatRooms: [],
         chatStatus: ChatStatus.ChannelsPage,
         selected: null,
         searchPrompt: null,
@@ -59,7 +73,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 		// console.log(user.nameIntra);
 
         const fetchAllChannels = () => {
-            socket.emit('getChannels');  // Request channels from backend
+            socket.emit('getChannels');
 			// console.log(user.nameIntra);
 
             socket.on('channelsList', (channels) => {
@@ -89,8 +103,8 @@ export const ChatProvider: React.FC = ({ children }) => {
 								// email: '',
 								icon: <Avatar />
 								
-							})) , // Ensure users are loaded
-                            owner: channel?.ch_owner, // Ensure ch_owner is included
+							})) ,
+                            owner: channel?.ch_owner,
                         },
                     })),
                 }));
@@ -101,7 +115,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 			
 			
             return () => {
-				socket.off('channelsList'); // Cleanup to prevent duplicate listeners
+				socket.off('channelsList');
             };
         };
 		
@@ -118,7 +132,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 	
 	useEffect(() => {
 		console.log('Channels (frontend):', chatProps.chatRooms);
-	}, [chatProps.chatRooms]); // This ensures we log the latest value
+	}, [chatProps.chatRooms]);
 	
     return (
         <ChatContext.Provider value={{ chatProps, setChatProps }}>
