@@ -9,7 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import {  Tooltip } from '@mui/material';
-import { getUserNotifications } from '../../Providers/NotificationContext/Notification';
+import Leaderboard from '../../Pages/Leaderboard';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 export const Bar: React.FC = () => {
 	const { user } = useUser();
@@ -19,6 +20,7 @@ export const Bar: React.FC = () => {
 
 	const navToProfile = () => { user && user.id && navigate(`/profile/${user.id}`) }
 	const navToAll = () => {navigate('/viewusers')}
+	const navToLeaderboard = () => {navigate('/leaderboard')}
 
 
 	let viewUsersWrapper = () =>
@@ -36,6 +38,26 @@ export const Bar: React.FC = () => {
 					}}
 				>
 					<ContactsIcon />
+				</IconButton>
+          </Tooltip>
+		);
+	}
+
+	let leaderboardWrapper = () =>
+	{
+		return (
+			<Tooltip title="View Leaderboard!" arrow>
+				<IconButton
+					onClick={() => navToLeaderboard()}
+					sx={{
+						position: 'absolute',
+						left: '-25px',
+						'&:hover': {
+						color: '#0c31df',
+						},
+					}}
+				>
+					<GroupsIcon />
 				</IconButton>
           </Tooltip>
 		);
@@ -115,6 +137,7 @@ export const Bar: React.FC = () => {
 						}}
 					>
 						{viewUsersWrapper()}
+						{leaderboardWrapper()}
 						<Notification />
 					</Box>
 					{viewProfileWrapper()}

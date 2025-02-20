@@ -1,8 +1,7 @@
 import { Controller, Inject, Get, Param, Post, HttpException, forwardRef} from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { User } from '../entities/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { NotificationStatus, NotificationType } from 'src/entities/notification.entity';
+import { NotificationType } from 'src/entities/notification.entity';
 
 
 @Controller('notification')

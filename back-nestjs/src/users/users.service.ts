@@ -1,24 +1,18 @@
 import { Injectable, Inject, forwardRef, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
-import { UserStatus, UserDTO } from '../dto/user.dto'
+import { leaderboardData, matchRatio, User } from '../entities/user.entity';
+import { UserStatus, UserDTO, matchData } from '../dto/user.dto'
 import { AccessTokenDTO } from '../dto/auth.dto';
-import { Notification, NotificationType } from 'src/entities/notification.entity';
-import { NotificationService } from 'src/notification/notification.service';
-import { Console } from 'console';
-import { stat } from 'fs';
-
 
 @Injectable()
 export class UsersService {
   	constructor(
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
-		@Inject(forwardRef(() => NotificationService))
-			private readonly notificationService: NotificationService,
  	) { }
 
+	
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
 		const user = new User();
 		user.accessToken = access.access_token;
@@ -33,6 +27,7 @@ export class UsersService {
 		user.status = UserStatus.Online;
 		user.friends = [];
 		user.blocked = [];
+		user.matchHistory = [];
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
 			if (tmp != null)
@@ -103,17 +98,17 @@ export class UsersService {
 
   	async friendRequestAccepted(iduser:string, idother:string)
   	{
-		var user = this.getUserId(iduser);
-		var otheruser = this.getUserId(idother);
+		var user = await this.getUserId(iduser);
+		var otheruser = await this.getUserId(idother);
 		if ((user == null) || (otheruser == null))
 		{
 			console.log("ERROR accepting friendreq");
 			throw new HttpException('Not Found', 404);
 		}
-		(await user).friends.push((await otheruser).intraId.toString());
-		this.usersRepository.save((await user));
-		(await otheruser).friends.push((await user).intraId.toString());
-		this.usersRepository.save((await otheruser));
+		(user).friends.push((otheruser).intraId.toString());
+		this.usersRepository.save((user));
+		(otheruser).friends.push((user).intraId.toString());
+		this.usersRepository.save((otheruser));
   	}
 
   	async removeFriend(user: User, other: User)
@@ -148,4 +143,145 @@ export class UsersService {
 		user.image = image;
 		this.usersRepository.save(user);
   	}
+
+	async calculateRatio(arr: matchData[], userProfile: User)
+	{
+		if (arr.length === 0)
+		{
+			var tmp: matchRatio[] = [
+			{
+				title: "Normal", value: 0, rate: 0
+			},
+			{
+				title: "Power ups", value: 0, rate: 0
+			},
+			{
+				title: "All", value: 0, rate: 0
+			}];
+			return (tmp);	
+		}
+
+		var normalWin = 0;
+		var normalAll = 0;
+		var powerWin = 0;
+		var powerAll = 0;
+		var allWin = 0;
+		var allAll = 0;
+		arr.forEach((item: matchData) =>
+		{
+			if (item.type === "Normal")
+			{
+				normalAll += 1;
+				if (item.whoWon === userProfile.intraId.toString())
+					normalWin += 1;
+			}
+			else
+			{
+				powerAll += 1;
+				if (item.whoWon === userProfile.intraId.toString())
+					powerWin += 1;
+			}
+			allAll += 1;
+			if (item.whoWon === userProfile.intraId.toString())
+				allWin += 1;
+		});
+			
+		var ratioNormal = Math.round((normalWin / normalAll) * 100);
+		var ratioPower = Math.round((powerWin / powerAll) * 100);
+		var ratioAll = Math.round((allWin / allAll) * 100);
+
+		if (normalAll === 0)
+			ratioNormal = 0;
+		if (powerAll === 0)
+			ratioPower = 0;
+
+		var resultArr: matchRatio[] = [
+		{
+			title: "Normal", value: normalAll, rate: ratioNormal
+		},
+		{
+			title: "Power ups", value: powerAll, rate: ratioPower
+		},
+		{
+			title: "All", value: allAll, rate: ratioAll
+		}];
+
+		return (resultArr);		
+	}
+
+
+	async fillArray(allData: leaderboardData[], type: string): Promise<leaderboardData[]>
+	{
+		var ratioIndex: number = 0;
+		if (type == "Power ups")
+			ratioIndex = 1;
+		if (type == "All")
+			ratioIndex = 2;
+
+		var arr: leaderboardData[] = [];
+		allData.forEach((item: leaderboardData) =>
+		{
+			item.ratio.forEach((values: matchRatio) =>
+			{
+				var tmpType = values.title;
+				var tmpRate = values.rate;
+				if (tmpType === type && values.value > 0)
+				{
+					if (arr.length === 0)
+						arr.push(item);
+					else
+					{
+						if (tmpRate >= arr[0].ratio[ratioIndex].rate)
+						{
+							arr.unshift(item);
+						}
+						else
+						{
+							var index = 0;
+							while (index < arr.length && tmpRate < arr[index].ratio[ratioIndex].rate)
+								index++;
+							if (index < arr.length)
+								arr.splice(index, 0, item);
+							else
+								arr.push(item);
+						}
+					}
+				}
+			});
+		});
+		arr.splice(5);
+		return (arr);
+	}
+
+	async initLeaderboardArr(allUser: User[]): Promise<leaderboardData[]>
+	{
+		var tmpratio: matchRatio[] = [];
+		var allData: leaderboardData[] = [];
+
+		allUser.forEach(async (item: User) => 
+		{
+			tmpratio = await this.calculateRatio(item.matchHistory, item);
+			var tmp: leaderboardData = { user: item, ratio: tmpratio };
+			allData.push(tmp);
+		});	
+
+		return (allData);
+	}
+
+	async leaderboardCalculator(): Promise<leaderboardData[][]>
+	{
+		var allUser = await this.findAll();
+		var allData: leaderboardData[] = [];
+
+		allData = await this.initLeaderboardArr(allUser);
+	
+		var normalArr: leaderboardData[] = await this.fillArray(allData, "Normal");
+		var powerArr: leaderboardData[] = await this.fillArray(allData, "Power ups");
+		var allArr: leaderboardData[] = await this.fillArray(allData, "All");
+
+		var result: leaderboardData[][] = [];
+		result.push(normalArr, powerArr, allArr);
+
+		return (result);
+	}
 }

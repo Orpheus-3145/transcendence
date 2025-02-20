@@ -10,6 +10,27 @@ export enum UserStatus {
 	Idle = 'idle',
 }
 
+
+export interface matchRatio {
+	title: string;
+	value: number;
+	rate: number;
+}
+
+export interface leaderboardData {
+	user: User;
+	ratio: matchRatio[];
+}
+
+export interface matchData {
+	player1: string;
+	player2: string;
+	player1Score: string;
+	player2Score: string;
+	whoWon: string;
+	type: string;
+}
+
 export interface User {
 	id: number;
 	intraId: number;
@@ -23,6 +44,7 @@ export interface User {
 	status: UserStatus;
 	friends: string[];
 	blocked: string[];
+	matchHistory: matchData[];
 }
 
 interface UserContextType {
@@ -31,12 +53,12 @@ interface UserContextType {
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
+const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [user, setUser] = useState<User>({ id: 0 });
 	const navigate = useNavigate();
 
-	const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 	useEffect(() => {
 		const validate = async () => {
 		try {
@@ -65,8 +87,6 @@ export const useUser = () => {
 	}
 	return context;
 };
-
-const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export async function getAll(): Promise<User[]> {
 	const request = new Request(BACKEND_URL + '/users/profile/getAll', {
@@ -193,4 +213,42 @@ export async function inviteToGame(username:string, friend:string): Promise<void
 export async function sendMessage(username:string, friend:string, message:string): Promise<void> 
 {
 	socket.emit('sendMessage', {username: username, friend: friend, message: message});
+}
+
+export async function fetchRatios(userProfile: User): Promise<matchRatio[]>
+{
+	const request = new Request(BACKEND_URL + '/users/profile/fetchRatio/' + userProfile.intraId.toString(), {
+		method: "GET",
+	});
+
+	try
+	{
+		const response = await fetch(request)
+		.then((raw) => raw.json())
+		.then((json) => json as matchRatio[]);
+		return response;
+	}
+	catch (error)
+	{
+		console.error("ERROR: matchRatio[] not found!");
+	}
+}
+
+export async function fetchLeaderboard(): Promise<leaderboardData[][]>
+{
+	const request = new Request(BACKEND_URL + '/users/fetchLeaderboard/', {
+		method: "GET",
+	});
+
+	try
+	{
+		const response = await fetch(request)
+		.then((raw) => raw.json())
+		.then((json) => json as leaderboardData[][]);
+		return response;
+	}
+	catch (error)
+	{
+		console.error("ERROR: Leaderboard[] not found!");
+	}	
 }

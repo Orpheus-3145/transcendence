@@ -7,11 +7,9 @@ import { WebSocketGateway,
 	OnGatewayConnection,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-
 import { NotificationService } from './notification.service';
 import { UsersService } from 'src/users/users.service';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
-import { User } from 'src/entities/user.entity';
 import { UserStatus } from 'src/dto/user.dto';
 import { HttpException } from '@nestjs/common';
 

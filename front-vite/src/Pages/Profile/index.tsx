@@ -22,7 +22,10 @@ import { useUser,
 		blockFriend, 
 		changePFP, 
 		User,
-		UserStatus} from '../../Providers/UserContext/User';
+		UserStatus,
+		matchData,
+		fetchRatios,
+		matchRatio} from '../../Providers/UserContext/User';
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -44,7 +47,8 @@ const ProfilePage: React.FC = () => {
 	const [friendsList, setFriendsList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
-	
+	const [matchHistory, setMatchHistory] = useState<matchData[]>([]);
+	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
 	
 	let RemoveFriend = (id:string) => {
 		removeFriend(userProfile.id, id);
@@ -239,17 +243,50 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	const stats = [
-		{ title: 'Games Played', value: 8, rate: '75%' },
-	];
-
-	const vanillaStats = [
-		{ title: 'Vanilla Games', value: 25, rate: '75%' },
-	];
-
-	const customStats = [
-		{ title: 'Custom Games', value: 100, rate: '75%' },
-	];
+	let gameStatsBox = (data: matchRatio) =>
+	{
+		return (
+			<Stack
+			direction="column"
+			flex={{ xs: '1 1 100%', sm: '1 1 33%' }}
+			justifyContent="center"
+			alignItems="center"
+			padding="0.3em"
+			>
+				<Stack
+					gap={1}
+					direction="row"
+				>
+					<Stack
+						direction="column"
+						textAlign="center"
+						alignItems="center"
+						justifyContent="center"
+						sx={{
+							position: 'relative',
+							left: '-10px',
+						}}
+					>
+						<Typography>{data.title}</Typography>
+						<Typography>{data.value}</Typography>
+					</Stack>
+					<Stack
+						direction="column"
+						alignItems="center"
+						sx={{
+							position: 'relative',
+							left: '10px',
+						}}
+					>
+						<Tooltip title="Win Ratio" arrow>
+						<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
+						</Tooltip>
+						<Typography>{data.rate}%</Typography>
+					</Stack>
+				</Stack>
+			</Stack>
+		);
+	}
 
 	let gameStats = () => 
 	{
@@ -270,63 +307,39 @@ const ProfilePage: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{[stats, vanillaStats, customStats].map((group, index) => (
-						<Stack
-							key={index}
-							direction="column"
-							flex={{ xs: '1 1 100%', sm: '1 1 33%' }}
-							justifyContent="center"
-							alignItems="center"
-							padding="0.3em"
-						>
-							{group.map((stat, idx) => (
-								<Stack
-									key={idx}
-									gap={1}
-									direction="row"
-									textAlign="center"
-									alignItems="center"
-									justifyContent="center"
-								>
-									<Stack
-										direction="column"
-										textAlign="center"
-										alignItems="center"
-										justifyContent="center"
-									>
-										<Typography>{stat.title}</Typography>
-										<Typography>{stat.value}</Typography>
-									</Stack>
-									<Stack
-										direction="column"
-										textAlign="center"
-										alignItems="center"
-										justifyContent="center"
-									>
-										<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
-										<Typography>{stat.rate}</Typography>
-									</Stack>
-								</Stack>
-							))}
-						</Stack>
-					))}
+					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
 	};
 
-	var scoreOwn = 5;
-	var scoreother = 2;
-	var won: Boolean = true;
-	var idOther = "Brother";
-	var typeGame = "Casual";
-
-	let gameLine = () => 
+	let gameLine = (data: matchData) => 
 	{
-		var color = '#1da517';
-		if (won === false)
+		var color;
+		if (data.whoWon === userProfile.intraId.toString())
+			color = '#1da517'
+		else
 			color = '#b01515';
-		// var friend = fetchFriend();
+
+		var nameOther;
+		var scoreUser;
+		var scoreOther;
+		var namep1 = data.player1;
+		var namep2 = data.player2;
+		if (namep1 === userProfile.nameNick)
+		{
+			scoreUser = data.player1Score;
+			scoreOther = data.player2Score;
+			nameOther = namep2;
+		}
+		else
+		{
+			scoreUser = data.player2Score;
+			scoreOther = data.player1Score;
+			nameOther = namep1;
+		}
+		var idOther = 2;
+		// var friend = fetchFriend(); need to call this since namep1/p2 won't be nameNick but intraId
 
 		return (
 			<Stack
@@ -343,7 +356,7 @@ const ProfilePage: React.FC = () => {
 						textAlign: 'center' 
 					}}
 				>
-					Game Type: {typeGame}
+					Game Type: {data.type}
 				</Typography>
 				<Typography 
 					style={{ 
@@ -351,7 +364,7 @@ const ProfilePage: React.FC = () => {
 						textAlign: 'center' 
 					}}
 				>
-					Score: {scoreOwn} | {scoreother}
+					Score: {scoreUser} | {scoreOther}
 				</Typography>
 				<Typography 
 					sx={{
@@ -370,7 +383,7 @@ const ProfilePage: React.FC = () => {
 						textAlign: 'center' 
 					}}
 				>
-					<a href="" onClick={() => redirectFriend()}>{idOther}</a>
+					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
 				</Typography>
 				<Avatar />
 			</Stack>
@@ -380,6 +393,30 @@ const ProfilePage: React.FC = () => {
 
 	let gameContainer = () => 
 	{
+		if (matchHistory.length == 0)
+		{
+			return (
+				<Stack
+				sx={{
+					alignItems: 'center',
+					position: 'relative',
+					top: '10px',
+				}}
+			>
+				<Typography variant={'h4'}
+					sx={{
+						fontFamily: 'Georgia, serif',
+						fontWeight: 'bold',
+						fontStyle: 'italic',
+						lineHeight: '5rem',
+					}}    
+				>
+					No matches played yet!
+				</Typography>
+			</Stack>
+			);
+		}
+
 		return (
 			<Box
 				sx={{
@@ -392,7 +429,7 @@ const ProfilePage: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{gameLine()}
+					{matchHistory.map((item: matchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -400,7 +437,6 @@ const ProfilePage: React.FC = () => {
 
 	let GameBox = () => 
 	{
-		
 		return (
 			<Stack
 				width={'100%'}
@@ -712,7 +748,7 @@ const ProfilePage: React.FC = () => {
 
 	let getUserProfile = async () : Promise<void> =>
 	{
-		const tmp = await getUserFromDatabase(lastSegment, navigate);
+		const tmp: User = await getUserFromDatabase(lastSegment, navigate);
 
 		if (user.id == tmp.id)
 		{
@@ -720,22 +756,25 @@ const ProfilePage: React.FC = () => {
 			setProfileImage(tmp.image);
 			setFriendsList(tmp.friends);
 			setWhichStatus(tmp.status);
+			setMatchHistory(tmp.matchHistory);
 			setUserProfile(tmp);
+			var allRatio = await fetchRatios(tmp);
+			setRatioArr(allRatio);
 		}
 		else 
 			showOwnPage(false);
 	}
 	
+	useEffect(() => 
+	{
+		getUserProfile().then((number) => 
+		{
+			setUserProfileNumber(number);
+		});
+	}, [friendsList,whichStatus,profileImage]);
+
 	let whichPage = () =>
 	{
-		useEffect(() => 
-		{
-			getUserProfile().then((number) => 
-			{
-				setUserProfileNumber(number);
-			});
-		});
-		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;
 

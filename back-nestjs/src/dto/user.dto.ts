@@ -1,10 +1,26 @@
-import { IsEmail, IsEnum, IsNumber, IsString, Length, IsArray } from 'class-validator';
+import { IsEmail, IsEnum, IsNumber, IsString, Length, IsArray, ValidateNested } from 'class-validator';
 import { User } from '../entities/user.entity'
+import { Type } from 'class-transformer';
 
 export enum UserStatus {
   Online = 'online',
   Offline = 'offline',
   InGame = 'ingame',
+}
+
+export class matchData {
+  @IsString()
+  player1: string;
+  @IsString()
+  player2: string;
+  @IsString()
+  player1Score: string;
+  @IsString()
+  player2Score: string;
+  @IsString()
+  whoWon: string;
+  @IsString()
+  type: string;
 }
 
 export class UserDTO {
@@ -22,6 +38,7 @@ export class UserDTO {
     this.status = user.status;
     this.friends = user.friends;
     this.blocked = user.blocked;
+    this.matchHistory = user.matchHistory
   }
 
   @IsNumber()
@@ -65,4 +82,12 @@ export class UserDTO {
   
   @IsString()
   role: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => matchData)
+  matchHistory: matchData[];
 }
+
+
+

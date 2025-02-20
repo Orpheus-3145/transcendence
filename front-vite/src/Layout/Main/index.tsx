@@ -10,6 +10,7 @@ import ChannelsPage from '../../Pages/Channels/index';
 import LogoutPage from '../../Pages/Logout';
 import AllUsersPage from '../../Pages/AllUsers';
 import { useUser } from '../../Providers/UserContext/User';
+import Leaderboard from '../../Pages/Leaderboard';
 
 export const Main: React.FC = () => {
   const { user } = useUser();
@@ -25,6 +26,7 @@ export const Main: React.FC = () => {
       <Route path="/profile/:username" element={<ProfilePage />} />
       <Route path="/404" element={<ErrorPage />} />
       <Route path="/viewusers" element={<AllUsersPage />} />
+      <Route path="/leaderboard" element={<Leaderboard/>} />
     </>
   );
 
