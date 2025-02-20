@@ -1,30 +1,120 @@
 import React, { useEffect, useRef } from 'react';
-import createGame from './PhaserGame/Game';
+import { Box } from '@mui/material';
+import { styled } from '@mui/system';
+import Phaser from 'phaser';
+
 import { useUser } from '../../../Providers/UserContext/User';
+import GameScene from './PhaserGame/Scenes/Game';
+import BaseScene from './PhaserGame/Scenes/Base';
+import MainMenuScene from './PhaserGame/Scenes/MainMenu';
+import MatchmakingScene from './PhaserGame/Scenes/Matchmaking';
+import ResultsScene from './PhaserGame/Scenes/Results';
+import SettingsScene from './PhaserGame/Scenes/Settings';
+import ErrorScene from './PhaserGame/Scenes/Error';
 
-const GameComponent:React.FC = () => {
 
-	const gameRef = useRef<Phaser.Game | null>(null);
-	const idDiv = 'game-container';
+const GameBox = styled(Box)(({ theme }) => ({
+	backgroundColor: theme.palette.primary.main,
+	width: '100%',
+	display: 'flex',				 			// Enable flexbox
+	justifyContent: 'center', 		// Center horizontally
+	alignItems: 'center', 				// Center vertically
+	position: 'relative',
+}));
+
+const GameComponent: React.FC = () => {
+
+	const containerRef = useRef<HTMLDivElement | null>(null);
 	const playerData = useUser().user;
 	
+	let gameInstance: Phaser.Game | null = null;
+
+	const handleResize = () => {
+		if (gameInstance && containerRef.current) {
+			
+			// resize game window keeping same ratio (16/9)
+			const { width, height } = containerRef.current.getBoundingClientRect();
+			gameInstance.scale.resize(width, width * 9 / 16);
+			
+			gameInstance.scene.getScenes(true).forEach( (scene: Phaser.Scene) => {
+				// resize all the objects inside of every scene
+				if (scene instanceof BaseScene) {
+					scene.killChildren();
+					if (scene instanceof GameScene)
+						scene.resetWindowRatio()
+
+					scene.buildGraphicObjects();
+				}
+			});
+		}
+	}
+
 	useEffect(() => {
 
-		if (gameRef.current === null)
-			gameRef.current = createGame(idDiv);
+		if (gameInstance === null) {
+			
+			const cnt = containerRef.current!;
+			const { width, height } = cnt.getBoundingClientRect();
+			
+			const config: Phaser.Types.Core.GameConfig = {
+					type: Phaser.AUTO,
+					width: width,
+					height: width * 9 / 16,
+					parent: containerRef.current,
+					backgroundColor: 0xe0e0e0,
+					scene: [MainMenuScene, GameScene, MatchmakingScene, SettingsScene, ResultsScene, ErrorScene],
+					physics: {
+						default: 'arcade',
+					},
+					scale: {
+						autoCenter: Phaser.Scale.CENTER_BOTH,
+					},
+					fps: {
+						target: 60,
+						forceSetTimeOut: true,
+					},
+					autoFocus: true,
+					render: {
+						antialias: true,
+					},
+					input: {
+						keyboard: true,
+						mouse: true,
+						touch: true,
+						gamepad: true
+					}
+				};
+			
+			gameInstance = new Phaser.Game({ ...config });
+		}
+		
+		// add hook the container of the game is resized
+		window.addEventListener('resize', handleResize);
 
-		gameRef.current.registry.set("user42data", playerData);
+		// passing to game info about user
+		gameInstance.registry.set('user42data', playerData);
 
 		return () => {
-			if (gameRef.current) {
-				gameRef.current.destroy(true);
-				gameRef.current = null;
+			window.removeEventListener('resize', handleResize);
+
+			if (gameInstance) {
+				const scenesToDisconnect = ['Matchmaking', 'Game', 'Results'];
+				for (const sceneName of scenesToDisconnect) {
+					if (gameInstance.scene.isActive(sceneName)) {	// if game is running client needs to be disconnected
+						const gameScene = gameInstance.scene.getScene(sceneName) as BaseScene;
+						if (gameScene)
+							gameScene.disconnect();
+					}
+				}
+				gameInstance.destroy(true);
+				gameInstance = null;
 			}
 		};
-
 	}, []);
 
-	return <div id={idDiv} />
+	return (
+		<GameBox ref={containerRef}/>
+	);
 };
 
 export default GameComponent;

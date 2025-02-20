@@ -7,21 +7,21 @@ import { fetchFriend, getUserFromDatabase, User, useUser, unBlockFriend } from '
 import { useNavigate } from 'react-router-dom';
 
 const SettingsContainer = styled(Container)(({ theme }) => ({
-  padding: theme.spacing(3),
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
-  marginTop: theme.spacing(4),
-  // boxShadow: theme.shadows[3],
+	padding: theme.spacing(3),
+	backgroundColor: theme.palette.background.paper,
+	borderRadius: theme.shape.borderRadius,
+	marginTop: theme.spacing(4),
+	// boxShadow: theme.shadows[3],
 }));
 
 const SettingsSection = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(4),
+	marginBottom: theme.spacing(4),
 }));
 
 const ProfileAvatar = styled(Avatar)(({ theme }) => ({
-  width: theme.spacing(10),
-  height: theme.spacing(10),
-  marginBottom: theme.spacing(2),
+	width: theme.spacing(10),
+	height: theme.spacing(10),
+	marginBottom: theme.spacing(2),
 }));
 
 const UserSettings: React.FC = () => {

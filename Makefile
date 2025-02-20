@@ -1,30 +1,34 @@
+-include ./env/.env
+
+COMPOSE := docker compose --env-file ./env/.env
+LOCAL_LOG_DIR := back-nestjs/logs
+
 all: build
 
 # re-build only image with an update in the build context (i.e. a file changed)
-build:
-	@docker compose build
-
-run:
-	@docker compose up
-
-re: down run
+build: $(LOCAL_LOG_DIR)
+	@$(COMPOSE) build 
 
 # re-build images from scratch
-build_debug:
-	@docker compose build --no-cache --pull
+build_debug: $(LOCAL_LOG_DIR)
+	@$(COMPOSE) build --no-cache --pull
 
-run_debug:
-	@docker compose up --build
+run: $(LOCAL_LOG_DIR)
+	@$(COMPOSE) up --build
 
-re_debug: clean run
+$(LOCAL_LOG_DIR):
+	@mkdir -p $@
+
+restart: down run
+
+re: down build run
+
+re_debug: clean build_debug run
 
 down:
-	@docker compose down
+	@$(COMPOSE) down
 
 clean:
-	@docker compose down --remove-orphans --volumes --rmi all
+	@$(COMPOSE) down --remove-orphans --volumes --rmi all
 
-check:
-	npx depcheck
-
-.PHONY: all build all debug down clean prune check
+.PHONY: all build build_debug run restart re re_debug down clean

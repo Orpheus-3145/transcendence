@@ -21,9 +21,9 @@ import { getRandomValues } from 'crypto';
 
 
 interface ChannelTypeEvent {
-  component: React.ReactNode;
-  newColor: string;
-  clickEvent: () => void;
+	component: React.ReactNode;
+	newColor: string;
+	clickEvent: () => void;
 }
 
 // export const myself: UserProps =  {

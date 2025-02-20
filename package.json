@@ -1,7 +1,19 @@
 {
-  "dependencies": {
-    "socket.io-client": "^4.8.1",
-    "uuid": "^11.0.3",
-    "uuidv4": "^6.2.13"
-  }
+	"devDependencies": {
+		"husky": "^9.1.7"
+	},
+	"lint-staged": {
+		"*.js": [
+			"npm run --prefix back-nestjs/ format",
+			"npm run --prefix front-vite/ format"
+		],
+		"*.ts": [
+			"npm run --prefix back-nestjs/ format",
+			"npm run --prefix front-vite/ format"
+		],
+		"*.tsx": [
+			"npm run --prefix back-nestjs/ format",
+			"npm run --prefix front-vite/ format"
+		]
+	}
 }

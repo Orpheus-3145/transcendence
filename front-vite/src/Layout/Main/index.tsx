@@ -13,7 +13,7 @@ import { useUser } from '../../Providers/UserContext/User';
 import Leaderboard from '../../Pages/Leaderboard';
 
 export const Main: React.FC = () => {
-  const { user } = useUser();
+	const { user } = useUser();
 
   const authenticatedRoutes = (
     <>
@@ -30,16 +30,14 @@ export const Main: React.FC = () => {
     </>
   );
 
-  const unauthenticatedRoutes = (
-  <Route path="/login" element={<LoginPage />} />
-  );
+	const unauthenticatedRoutes = <Route path='/login' element={<LoginPage />} />;
 
-  return (
-  <Routes>
-    {user.id === 0 ? unauthenticatedRoutes : authenticatedRoutes}
-    <Route path="*" element={<ErrorPage />} />
-  </Routes>
-  );
+	return (
+		<Routes>
+			{user.id === 0 ? unauthenticatedRoutes : authenticatedRoutes}
+			<Route path='*' element={<ErrorPage />} />
+		</Routes>
+	);
 };
 
 export default Main;

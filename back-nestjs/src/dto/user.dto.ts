@@ -3,9 +3,9 @@ import { User } from '../entities/user.entity'
 import { Type } from 'class-transformer';
 
 export enum UserStatus {
-  Online = 'online',
-  Offline = 'offline',
-  InGame = 'ingame',
+	Online = 'online',
+	Offline = 'offline',
+	InGame = 'ingame',
 }
 
 export class matchData {
@@ -24,7 +24,6 @@ export class matchData {
 }
 
 export class UserDTO {
-
   constructor(user: User) {
 	this.id = user.id;
 	this.intraId = user.intraId;
@@ -41,52 +40,52 @@ export class UserDTO {
     this.matchHistory = user.matchHistory
   }
 
-  @IsNumber()
-  id: number;
-  
-  @IsNumber()
-  intraId: number;
+	@IsNumber()
+	id: number;
 
-  @IsString()
-  nameNick: string | null;
+	@IsNumber()
+	intraId: number;
 
-  @IsString()
-  nameFirst: string;
+	@IsString()
+	nameFirst: string;
 
-  @IsString()
-  nameLast: string;
+	@IsString()
+	nameLast: string;
 
-  @IsString()
-  nameIntra: string;
+	@IsString()
+	image: string | null;
 
-  @IsEmail()
-  email: string;
+	@IsString()
+	nameNick: string;
 
-  @IsString()
-  image: string | null;
+	@IsEmail()
+	email: string;
 
-  @IsString()
-  @Length(0, 100)
-  greeting: string;
+	@IsString()
+	nameIntra: string;
 
-  @IsEnum(UserStatus)
-  status: UserStatus;
+	@IsString()
+	@Length(0, 100)
+	greeting: string;
 
-  @IsArray()
-  @IsString({ each: true })
-  friends: string[];
+	@IsEnum(UserStatus)
+	status: UserStatus;
 
-  @IsArray()
-  @IsString({ each: true })
-  blocked: string[];
-  
-  @IsString()
-  role: string;
+	@IsArray()
+	@IsString({ each: true })
+	friends: string[];
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => matchData)
-  matchHistory: matchData[];
+	@IsArray()
+	@IsString({ each: true })
+	blocked: string[];
+
+	@IsString()
+	role: string;
+
+	@IsArray()
+	@ValidateNested({ each: true })
+	@Type(() => matchData)
+	matchHistory: matchData[];
 }
 
 

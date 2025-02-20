@@ -23,32 +23,26 @@ export const Chat: React.FC = () => {
   return (true);
   }
 
-  function GetChatRooms(): ChatRoom[] {
+	function GetChatRooms(): ChatRoom[] {}
 
-  }
-
-  const renderChatContent = () => {
-  switch (chatProps.chatStatus) {
-    case ChatStatus.Drawer:
-    return <ContentDrawer chatProps={chatProps} setChatProps={setChatProps} />;
-    case ChatStatus.Chatbox:
-    return <ContentChat chatProps={chatProps} setChatProps={setChatProps} />;
-    case ChatStatus.Settings:
-    return <ContentSettings chatProps={chatProps} setChatProps={setChatProps} />;
-    default:
-    return <ContentBubble chatProps={chatProps} setChatProps={setChatProps} />;
-  }
-  };
-  // return (
-  //   {chatStatus === ChatStatus.Bubble && (<ChatBubble chatProps={chatProps} setChatProps={setChatProps} />)}
-  //   {chatStatus === ChatStatus.Drawer && (<ChatDrawer chatProps={chatProps} setChatProps={setChatProps} />)}
-  //   {chatStatus === ChatStatus.Chatbox && (<ChatBox chatProps={chatProps} setChatProps={setChatProps} />)}
-  // );
-  return (
-  <div >
-    {renderChatContent()}
-  </div>
-  );
+	const renderChatContent = () => {
+		switch (chatProps.chatStatus) {
+			case ChatStatus.Drawer:
+				return <ContentDrawer chatProps={chatProps} setChatProps={setChatProps} />;
+			case ChatStatus.Chatbox:
+				return <ContentChat chatProps={chatProps} setChatProps={setChatProps} />;
+			case ChatStatus.Settings:
+				return <ContentSettings chatProps={chatProps} setChatProps={setChatProps} />;
+			default:
+				return <ContentBubble chatProps={chatProps} setChatProps={setChatProps} />;
+		}
+	};
+	// return (
+	//   {chatStatus === ChatStatus.Bubble && (<ChatBubble chatProps={chatProps} setChatProps={setChatProps} />)}
+	//   {chatStatus === ChatStatus.Drawer && (<ChatDrawer chatProps={chatProps} setChatProps={setChatProps} />)}
+	//   {chatStatus === ChatStatus.Chatbox && (<ChatBox chatProps={chatProps} setChatProps={setChatProps} />)}
+	// );
+	return <div>{renderChatContent()}</div>;
 };
 
 export default Chat;

@@ -11,8 +11,8 @@ import{ Chat } from './Layout/Chat/index'
 import { ChatProvider } from './Layout/Chat/ChatContext'
 
 const MainAppComponent: React.FC = () => {
-  const theme = createTheme(themeOptions);
-  const { user } = useUser();
+	const theme = createTheme(themeOptions);
+	const { user } = useUser();
 
   return (
   <ThemeProvider theme={theme}>

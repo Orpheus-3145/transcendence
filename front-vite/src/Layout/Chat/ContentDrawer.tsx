@@ -10,8 +10,8 @@ import { useNavigate } from 'react-router-dom';
 
 
 interface ContentDrawerProps {
-  chatProps: ChatProps;
-  setChatProps: React.Dispatch<React.SetStateAction<ChatProps>>;
+	chatProps: ChatProps;
+	setChatProps: React.Dispatch<React.SetStateAction<ChatProps>>;
 }
 
 const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }) => {
@@ -23,20 +23,20 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
 	const [isAddingNewChat, setIsAddingNewChat] = useState(false);
 	const [newChatName, setNewChatName] = useState('');
 
-  const toggleChatStatus = (status: ChatStatus, selection: ChatRoom | null) => {
-  setChatProps({ ...chatProps, chatStatus: status, selected: selection });
-  };
+	const toggleChatStatus = (status: ChatStatus, selection: ChatRoom | null) => {
+		setChatProps({ ...chatProps, chatStatus: status, selected: selection });
+	};
 
-  const handleSearchClick = () => {
-  if (chatProps.searchPrompt == '') {
-    setChatProps({ ...chatProps, searchPrompt: 'Search...' });
-  }
-  };
+	const handleSearchClick = () => {
+		if (chatProps.searchPrompt == '') {
+			setChatProps({ ...chatProps, searchPrompt: 'Search...' });
+		}
+	};
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  setChatProps({ ...chatProps, searchPrompt: event.target.value });
-  console.log('Search Prompt onChange activated: ', chatProps.searchPrompt);
-  };
+	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setChatProps({ ...chatProps, searchPrompt: event.target.value });
+		console.log('Search Prompt onChange activated: ', chatProps.searchPrompt);
+	};
 
   const handleAddChatClick = (event: React.ChangeEvent<HTMLInputElement>) => {
 	setIsAddingNewChat(true);
@@ -169,21 +169,22 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
     </Stack>
   );
 
-  const handleClose = () => {
-  if (chatProps.selected == null)
-    toggleChatStatus(ChatStatus.Bubble, null);
-  }
+	const handleClose = () => {
+		if (chatProps.selected == null) toggleChatStatus(ChatStatus.Bubble, null);
+	};
 
-  return (
-  <Drawer
-    anchor="right"
-    open={chatProps.chatStatus == ChatStatus.Drawer}
-    onClose={handleClose}
-    sx={{ '& .MuiPaper-root': { backgroundColor: darken(theme.palette.background.default, 0.3) } }}
-  >
-    {DrawerContent}
-  </Drawer>
-  );
+	return (
+		<Drawer
+			anchor='right'
+			open={chatProps.chatStatus == ChatStatus.Drawer}
+			onClose={handleClose}
+			sx={{
+				'& .MuiPaper-root': { backgroundColor: darken(theme.palette.background.default, 0.3) },
+			}}
+		>
+			{DrawerContent}
+		</Drawer>
+	);
 };
 
 export default ContentDrawer;

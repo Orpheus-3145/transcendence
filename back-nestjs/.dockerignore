@@ -8,9 +8,10 @@ dist/
 .env.test.local
 .env.production.local
 coverage/
-logs/
+logs/*
 temp/
 .cache/
 test/
 .npmrc
 .yarnrc
+env/

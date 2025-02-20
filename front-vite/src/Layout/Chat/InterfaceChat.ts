@@ -34,11 +34,11 @@ export interface UserProps {
 }
 
 export interface ChatSettings {
-  icon: React.ReactElement;
-  type: 'public' | 'private' | 'password';
-  password: string | null;
-  users: UserProps[];
-  owner: string;
+	icon: React.ReactElement;
+	type: 'public' | 'private' | 'password';
+	password: string | null;
+	users: UserProps[];
+	owner: string;
 }
 
 export interface ChatRoom {
@@ -50,8 +50,8 @@ export interface ChatRoom {
 }
 
 export interface ChatProps {
-  chatRooms: ChatRoom[];
-  chatStatus: ChatStatus;
-  selected: ChatRoom | null;
-  searchPrompt: string | null;
+	chatRooms: ChatRoom[];
+	chatStatus: ChatStatus;
+	selected: ChatRoom | null;
+	searchPrompt: string | null;
 }

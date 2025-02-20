@@ -1,15 +1,10 @@
 import { Module } from '@nestjs/common';
 
-import MatchmakingGateway from './game.matchmaking.gateway';
-import SimulationGateway from './game.simulation.gateway';
-import MatchmakingService from './game.matchmaking.service';
-import SimulationService from './game.simulation.service';
-
+import MatchmakingModule from 'src/game/matchmaking/matchmaking.module';
+import RoomManagerModule from 'src/game/session/roomManager.module';
 
 @Module({
-  providers: [MatchmakingGateway,
-              MatchmakingService,
-              SimulationGateway,
-              SimulationService],
+	imports: [MatchmakingModule, RoomManagerModule],
+	exports: [MatchmakingModule, RoomManagerModule],
 })
-export default class MatchmakingModule {};
+export default class GameModule {}

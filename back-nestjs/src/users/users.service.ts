@@ -1,16 +1,23 @@
-import { Injectable, Inject, forwardRef, HttpException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, TopologyClosedEvent } from 'typeorm';
 import { leaderboardData, matchRatio, User } from '../entities/user.entity';
 import { UserStatus, UserDTO, matchData } from '../dto/user.dto'
-import { AccessTokenDTO } from '../dto/auth.dto';
+import AccessTokenDTO  from '../dto/auth.dto';
+import AppLoggerService from 'src/log/log.service';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
+
 
 @Injectable()
 export class UsersService {
   	constructor(
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
- 	) { }
+		private readonly logger: AppLoggerService,
+		private readonly thrower: ExceptionFactory,
+ 	) { 
+		this.logger.setContext(UsersService.name);	
+	}
 
 	
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
@@ -28,6 +35,7 @@ export class UsersService {
 		user.friends = [];
 		user.blocked = [];
 		user.matchHistory = [];
+		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
 			if (tmp != null)
@@ -40,7 +48,11 @@ export class UsersService {
 		} 
 		catch (error) {
 			console.error('User validation error: ', error);
-			throw error;
+			this.thrower.throwSessionExcp(
+				`User validation error: ${error}`,
+				`${UsersService.name}.${this.constructor.prototype.createUser.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			)
 		}
 	}
 
