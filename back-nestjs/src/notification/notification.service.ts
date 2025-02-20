@@ -2,7 +2,7 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
-import {User} from '../entities/user.entity'
+import User from '../entities/user.entity'
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
