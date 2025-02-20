@@ -104,72 +104,84 @@ const ChannelsPage: React.FC = () => {
 		owner: 'currentUser',
 	});
 
-	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([ //--> CALL TO BACKEND <-- //
-		{
-			id: -7,
-			name: 'chaaaaaaaaaaaaaaaaannel1',
-			icon: <GroupIcon />,
-			messages:  [],
-			settings: {
-				icon: <PersonAddIcon />,
-				type: 'public',
-				password: null,
-				users: [
-					{
-						name: 'User1',
-						role: 'admin',
-						email: 'iamgroot@avengers.com',
-						password: '',
-						icon: React.ReactElement ,
+	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([]);
+ 
+	// const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([ //--> CALL TO BACKEND <-- //
+	// 	{
+	// 		id: -7,
+	// 		name: 'chaaaaaaaaaaaaaaaaannel1',
+	// 		icon: <GroupIcon />,
+	// 		messages:  [],
+	// 		settings: {
+	// 			icon: <PersonAddIcon />,
+	// 			type: 'public',
+	// 			password: null,
+	// 			users: [
+	// 				{
+	// 					name: 'User1',
+	// 					role: 'admin',
+	// 					email: 'iamgroot@avengers.com',
+	// 					password: '',
+	// 					icon: React.ReactElement ,
 	
-					},
-				],
-				owner: 'User1',
-			  },
-		},
-		{
-			id: -4,
-			name: 'channel2',
-			icon: <GroupIcon />,
-			messages: [],
-			settings: {
-				icon: <PersonAddIcon />,
-				type: 'private',
-				password: null,
-				users: [
-					{
-						name: 'User2',
-						role: 'admin',
-						email: 'iamgroot@avengers.com',
-						password: '',
-						icon: React.ReactElement ,
+	// 				},
+	// 			],
+	// 			owner: 'User1',
+	// 		  },
+	// 	},
+	// 	{
+	// 		id: -4,
+	// 		name: 'channel2',
+	// 		icon: <GroupIcon />,
+	// 		messages: [],
+	// 		settings: {
+	// 			icon: <PersonAddIcon />,
+	// 			type: 'private',
+	// 			password: null,
+	// 			users: [
+	// 				{
+	// 					name: 'User2',
+	// 					role: 'admin',
+	// 					email: 'iamgroot@avengers.com',
+	// 					password: '',
+	// 					icon: React.ReactElement ,
 	
-					},
-				],
-				owner: 'User2',
-			  },
-		},
-		{
-			id: -5,
-			name: 'channel3',
-			icon: <GroupIcon />,
-			messages: [
-				{
-				  message: <Typography>Whazuuuuuuuuuuup!</Typography>,
-				  user: <Typography>User1</Typography>,
-				  userPP: <Typography>img</Typography>,
-				  timestamp: <Typography>20:00</Typography>,
-				}],
-			settings: {
-				icon: <PersonAddIcon />,
-				type: 'password',
-				password: 'pass',
-				users: [],
-				owner: user.nameIntra,
-			  },
-		},
-	]);
+	// 				},
+	// 			],
+	// 			owner: 'User2',
+	// 		  },
+	// 	},
+	// 	{
+	// 		id: -5,
+	// 		name: 'channel3',
+	// 		icon: <GroupIcon />,
+	// 		messages: [
+	// 			{
+	// 			  message: <Typography>Whazuuuuuuuuuuup!</Typography>,
+	// 			  user: <Typography>User1</Typography>,
+	// 			  userPP: <Typography>img</Typography>,
+	// 			  timestamp: <Typography>20:00</Typography>,
+	// 			}],
+	// 		settings: {
+	// 			icon: <PersonAddIcon />,
+	// 			type: 'password',
+	// 			password: 'pass',
+	// 			users: [],
+	// 			owner: user.nameIntra,
+	// 		  },
+	// 	},
+	// ]);
   
+	useEffect(() => {
+		if (chatProps.chatRooms) {
+			setAvailableChannels(chatProps.chatRooms.filter(
+				channel => 
+					!userInChannel(user.nameIntra, channel) 
+					&& channel.settings.type !== 'private'
+			));
+		}
+	}, [chatProps.chatRooms])
+
 	useEffect(() => {
 		if (selectedAvailableChannel &&
 			selectedAvailableChannel.settings.type === 'public') {
