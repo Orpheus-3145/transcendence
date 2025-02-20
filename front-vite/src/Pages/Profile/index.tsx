@@ -1,42 +1,135 @@
 import React from 'react';
+import { Avatar, Box, Stack, Typography, useTheme, Divider, Grid, IconButton, Container } from '@mui/material';
+import {Input} from '@mui/material'
+import { useMediaQuery, Tooltip } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
-	Avatar,
-	Box,
-	Button,
-	Stack,
-	Typography,
-	useTheme,
-	Divider,
-	Grid,
-	IconButton,
-	Container,
-} from '@mui/material';
-import { useMediaQuery } from '@mui/material';
-import { darken, alpha } from '@mui/material/styles';
-import {
-	AccountCircle as AccountCircleIcon,
 	EmojiEvents as Cup,
-	PersonAdd as AddIcon,
 	Block as BlockIcon,
-	VideogameAsset as GameIcon,
-	Message as MessageIcon,
 	PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
-import { useUser } from '../../Providers/UserContext/User';
+import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
+import EditIcon from '@mui/icons-material/Edit';
 import { useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ProfilePageOther from './other'
+import { useUser,
+		getUserFromDatabase, 
+		setNewNickname, 
+		fetchFriend, 
+		removeFriend, 
+		blockFriend, 
+		changePFP, 
+		User,
+		UserStatus,
+		matchData,
+		fetchRatios,
+		matchRatio} from '../../Providers/UserContext/User';
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
+	const navigate = useNavigate();
 	const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 	const { user } = useUser();
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
-	const lastSegment = pathSegments[pathSegments.length - 1];
+	const lastSegment = pathSegments[pathSegments.length - 1]
+	const [showInputMessage, setShowInputMessage] = useState<Boolean>(false);
+	const [showInput, setShowInput] = useState<Boolean>(false);
+	const [inputValue, setInputValue] = useState<string>("");
+	const [ownPage, showOwnPage] = useState<Boolean>(false);
+	const [userProfile, setUserProfile] = useState<User | null>(null);
+	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
+	const [showMessage, setShowMessage] = useState<Boolean>(false);
+	const [messageErrorNickname, setMessageErrorNickname] = useState<string>("");
+	const [profileImage, setProfileImage] = useState();
+	const [friendsList, setFriendsList] = useState<string[]>([]);
+	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
+	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
+	const [matchHistory, setMatchHistory] = useState<matchData[]>([]);
+	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
+	
+	let RemoveFriend = (id:string) => {
+		removeFriend(userProfile.id, id);
+	}
 
-	let friendLine = () => {
+	let BlockFriend = (id:string) => {
+		blockFriend(userProfile.id, id);
+	}
+
+	let friendLineButtons = (intraid:string) => 
+	{
 		return (
-			<Stack
-				direction={'row'}
+			<Stack direction={'row'} 
+				alignContent='center' 
+				alignItems={'center'} 
+				marginY={theme.spacing(.5)}
+			>
+				<Grid container gap={1} justifyContent={'center'} alignContent={'center'} flexGrow={1}></Grid>
+				<Grid item>
+					<Tooltip title="Remove user from friendlist!" arrow>
+						<IconButton
+							variant="contained"
+							onClick={() => {RemoveFriend(intraid)}}
+							sx={{
+								color: theme.palette.secondary.light, 
+								cursor: 'pointer', 
+								'&:hover': { 
+									color: theme.palette.error.dark 
+								},
+							}}
+						>
+							<PersonOffIcon />
+						</IconButton>
+					</Tooltip>
+				</Grid>
+				<Grid item>
+					<Tooltip title="Block user!" arrow>
+						<IconButton
+							variant="contained"
+							onClick={() => {BlockFriend(intraid)}}
+							sx={{color: theme.palette.secondary.light, 
+								cursor: 'pointer', 
+								'&:hover': { 
+									color: theme.palette.error.dark,
+								},
+							}}
+						>
+							<BlockIcon />
+						</IconButton>
+					</Tooltip>
+				</Grid>
+			</Stack>
+		);
+	}
+
+	let redirectFriend = (id:number) =>
+	{
+		navigate('/profile/' + id.toString());
+	}
+
+	const fetchFriendDetails = async (friendId: string) => {
+		const friend = await fetchFriend(friendId);
+		setFriendDetails((prev) => new Map(prev).set(friendId, friend));
+	};
+
+	let friendLine = (intraid:string) => 
+	{
+		const friend = friendDetails.get(intraid);
+
+		if (!friend) {
+			fetchFriendDetails(intraid);
+			return <Stack></Stack>;
+		}
+		var namenick = friend.nameNick;
+		if (namenick?.length > 10)
+		{
+			namenick = namenick?.slice(0, 10) + "...";
+		}
+
+		return (
+			<Stack direction={'row'}
 				sx={{
 					cursor: 'pointer',
 					justifyContent: 'space-between',
@@ -44,39 +137,43 @@ const ProfilePage: React.FC = () => {
 					alignItems: 'center',
 				}}
 			>
-				<Stack
-					direction={'row'}
-					spacing={2}
-					alignContent='center'
-					alignItems={'center'}
-					marginY={theme.spacing(0.5)}
+				<Stack direction={'row'} 
+					spacing={2} 
+					alignContent='center' 
+					alignItems={'center'} 
+					marginY={theme.spacing(.5)}
 				>
-					<AccountCircleIcon />
-					<Typography sx={{ '&:hover': { color: theme.palette.secondary.dark } }}>
-						UserName
+					<Avatar
+					sx={{
+						width: '40px',
+						height: '40px',
+						left: '-5px',
+						bgcolor: theme.palette.primary.light,
+					}}
+					src={friend.image}
+					>
+					</Avatar>
+					<Typography 
+						sx={{
+							'& a': {
+								textDecoration: 'none',
+								color: theme.palette.secondary.main,
+								'&:hover': { 
+									color: theme.palette.secondary.dark
+								}
+							},
+						}}
+					>
+						<a href="" onClick={() => redirectFriend(friend.id)}>{namenick}</a>
 					</Typography>
 				</Stack>
-				<Stack
-					direction={'row'}
-					spacing={2}
-					alignContent='center'
-					alignItems={'center'}
-					marginY={theme.spacing(0.5)}
-				>
-					<Stack
-						onClick={(event) => {
-							event.stopPropagation();
-						}}
-						sx={{ cursor: 'pointer', '&:hover': { color: theme.palette.error.dark } }}
-					>
-						<PersonOffIcon />
-					</Stack>
-				</Stack>
+				{friendLineButtons(intraid)}
 			</Stack>
 		);
 	};
 
-	let friendCategory = () => {
+	let friendCategory = () => 
+	{
 		return (
 			<Stack
 				direction='column'
@@ -106,261 +203,13 @@ const ProfilePage: React.FC = () => {
 					},
 				}}
 			>
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
-				{friendLine()}
+				{friendsList.map((friendId: string) => friendLine(friendId))}
 			</Stack>
 		);
 	};
 
-	const stats = [{ title: 'Games Played', value: 8, rate: '75%' }];
-
-	const vanillaStats = [{ title: 'Vanilla Games', value: 25, rate: '75%' }];
-
-	const customStats = [{ title: 'Custom Games', value: 100, rate: '75%' }];
-
-	let gameStats = () => {
-		return (
-			<Box
-				sx={{
-					width: '100%',
-					borderBottom: 2,
-					borderColor: 'divider',
-					padding: '0.3em',
-					bgcolor: (theme) => alpha(theme.palette.background.default, 0.1),
-				}}
-			>
-				<Stack
-					direction={{ xs: 'column', sm: 'row' }}
-					width='100%'
-					gap={2}
-					justifyContent='space-around'
-					divider={<Divider orientation='vertical' flexItem />}
-				>
-					{[stats, vanillaStats, customStats].map((group, index) => (
-						<Stack
-							key={index}
-							direction='column'
-							flex={{ xs: '1 1 100%', sm: '1 1 33%' }}
-							justifyContent='center'
-							alignItems='center'
-							padding='0.3em'
-						>
-							{group.map((stat, idx) => (
-								<Stack
-									key={idx}
-									gap={1}
-									direction='row'
-									textAlign='center'
-									alignItems='center'
-									justifyContent='center'
-								>
-									<Stack
-										direction='column'
-										textAlign='center'
-										alignItems='center'
-										justifyContent='center'
-									>
-										<Typography>{stat.title}</Typography>
-										<Typography>{stat.value}</Typography>
-									</Stack>
-									<Stack
-										direction='column'
-										textAlign='center'
-										alignItems='center'
-										justifyContent='center'
-									>
-										<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
-										<Typography>{stat.rate}</Typography>
-									</Stack>
-								</Stack>
-							))}
-						</Stack>
-					))}
-				</Stack>
-			</Box>
-		);
-	};
-
-	let gameLine = () => {
-		return (
-			<Stack
-				direction={'row'}
-				gap={1}
-				justifyContent={'space-around'}
-				alignContent={'center'}
-				textAlign={'center'}
-				bgcolor={alpha(theme.palette.background.default, 0.3)}
-				borderRadius={'2em'}
-				padding={'0.3em'}
-			>
-				<Typography alignContent={'center'} textAlign={'center'}>
-					Type
-				</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>
-					Custom
-				</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>
-					9:15
-				</Typography>
-				<Typography alignContent={'center'} textAlign={'center'}>
-					Opponent Name
-				</Typography>
-				<Avatar />
-			</Stack>
-		);
-	};
-
-	let gameContainer = () => {
-		return (
-			<Box
-				sx={{
-					width: '100%',
-					height: '100%',
-					overflowY: 'auto',
-					padding: '0.5em',
-				}}
-			>
-				<Stack gap={1} direction='column' width='100%'>
-					{Array.from({ length: 40 }).map((_, index) => (
-						<React.Fragment key={index}>{gameLine()}</React.Fragment>
-					))}
-				</Stack>
-			</Box>
-		);
-	};
-
-	let userInfo = () => {
-		return (
-			<Stack
-				direction={isSmallScreen ? 'column' : 'row'}
-				justifyContent={'space-between'}
-				margin={'1em'}
-				bgcolor={theme.palette.primary.dark}
-			>
-				<Stack
-					direction={'row'}
-					padding={'1em'}
-					gap={1}
-					bgcolor={alpha(theme.palette.background.default, 0.5)}
-				>
-					<Stack gap={1} direction={'column'} justifyContent={'center'} padding={'1em'}>
-						<Avatar
-							sx={{
-								alignItems: 'center',
-								justifyContent: 'center',
-								display: 'flex',
-								width: '100%',
-								height: 'auto',
-								minWidth: '115px',
-								minHeight: '115px',
-								maxHeight: '200px',
-								maxWidth: '200px',
-								bgcolor: theme.palette.success.main,
-							}}
-							src={user.image}
-						>
-							<AccountCircleIcon sx={{ width: '100%', height: 'auto' }} />
-						</Avatar>
-						<Stack
-							direction={'column'}
-							sx={{
-								alignItems: 'center',
-								justifyContent: 'center',
-								width: '100%',
-							}}
-						>
-							<Grid container justifyContent={'center'} alignContent={'center'} flexGrow={1}>
-								<Grid item>
-									<IconButton
-										sx={{
-											'&:hover': {
-												color: theme.palette.primary.light,
-											},
-										}}
-									>
-										<AddIcon />
-									</IconButton>
-								</Grid>
-								<Grid item>
-									<IconButton
-										sx={{
-											'&:hover': {
-												color: theme.palette.error.main,
-											},
-										}}
-									>
-										<BlockIcon />
-									</IconButton>
-								</Grid>
-								<Grid item>
-									<IconButton
-										sx={{
-											'&:hover': {
-												color: '#BF77F6',
-											},
-										}}
-									>
-										<GameIcon />
-									</IconButton>
-								</Grid>
-								<Grid item>
-									<IconButton
-										sx={{
-											'&:hover': {
-												color: theme.palette.secondary.main,
-											},
-										}}
-									>
-										<MessageIcon />
-									</IconButton>
-								</Grid>
-							</Grid>
-						</Stack>
-					</Stack>
-					<Stack direction={'column'} justifyContent={'center'} gap={1} padding={'1em'}>
-						<Typography style={{ wordBreak: 'break-word' }}>
-							<b>Username</b>
-						</Typography>
-						<Typography style={{ wordBreak: 'break-word' }}>
-							<b>Nickname</b>
-						</Typography>
-						<Typography style={{ wordBreak: 'break-word' }}>
-							<b>Greeting</b>
-						</Typography>
-					</Stack>
-				</Stack>
-				<Stack
-					justifyContent={'center'}
-					direction={isSmallScreen ? 'row' : 'column'}
-					padding={'1em'}
-					gap={2}
-					bgcolor={alpha(theme.palette.background.default, 0.5)}
-				>
-					<Typography>
-						<b>Phone Number:</b>
-						<br />
-						<b>9485498984894948</b>
-					</Typography>
-					<Typography>
-						<b>Email:</b>
-						<br />
-						<b>testeremail@outlook.com</b>
-					</Typography>
-				</Stack>
-			</Stack>
-		);
-	};
-
-	let friendsBox = () => {
+	let friendsBox = () => 
+	{
 		return (
 			<Stack
 				gap={1}
@@ -368,8 +217,13 @@ const ProfilePage: React.FC = () => {
 				borderColor={theme.palette.divider}
 				maxHeight={isSmallScreen ? '80vh' : '80vh'}
 			>
-				<Box alignContent={'center'} justifyContent={'center'} textAlign={'center'} marginTop={1}>
-					<Typography variant='h5' component='h2' align={'center'}>
+				<Box
+					alignContent={'center'}
+					justifyContent={'center'}
+					textAlign={'center'}
+					marginTop={1}
+				>
+					<Typography variant="h5" component="h2" align={'center'}>
 						Friends
 					</Typography>
 				</Box>
@@ -384,33 +238,552 @@ const ProfilePage: React.FC = () => {
 					}}
 				>
 					{friendCategory()}
-					{friendCategory()}
 				</Stack>
 			</Stack>
 		);
 	};
 
-	let pageWrapper = () => {
+	let gameStatsBox = (data: matchRatio) =>
+	{
+		return (
+			<Stack
+			direction="column"
+			flex={{ xs: '1 1 100%', sm: '1 1 33%' }}
+			justifyContent="center"
+			alignItems="center"
+			padding="0.3em"
+			>
+				<Stack
+					gap={1}
+					direction="row"
+				>
+					<Stack
+						direction="column"
+						textAlign="center"
+						alignItems="center"
+						justifyContent="center"
+						sx={{
+							position: 'relative',
+							left: '-10px',
+						}}
+					>
+						<Typography>{data.title}</Typography>
+						<Typography>{data.value}</Typography>
+					</Stack>
+					<Stack
+						direction="column"
+						alignItems="center"
+						sx={{
+							position: 'relative',
+							left: '10px',
+						}}
+					>
+						<Tooltip title="Win Ratio" arrow>
+						<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
+						</Tooltip>
+						<Typography>{data.rate}%</Typography>
+					</Stack>
+				</Stack>
+			</Stack>
+		);
+	}
+
+	let gameStats = () => 
+	{
+		return (
+			<Box
+				sx={{
+					width: '100%',
+					borderBottom: 2,
+					borderColor: 'divider',
+					padding: '0.3em',
+					bgcolor: (theme) => alpha(theme.palette.background.default, 0.1)
+				}}
+			>
+				<Stack
+					direction={{ xs: 'column', sm: 'row' }}
+					width="100%"
+					gap={2}
+					justifyContent="space-around"
+					divider={<Divider orientation="vertical" flexItem />}
+				>
+					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
+				</Stack>
+			</Box>
+		);
+	};
+
+	let gameLine = (data: matchData) => 
+	{
+		var color;
+		if (data.whoWon === userProfile.intraId.toString())
+			color = '#1da517'
+		else
+			color = '#b01515';
+
+		var nameOther;
+		var scoreUser;
+		var scoreOther;
+		var namep1 = data.player1;
+		var namep2 = data.player2;
+		if (namep1 === userProfile.nameNick)
+		{
+			scoreUser = data.player1Score;
+			scoreOther = data.player2Score;
+			nameOther = namep2;
+		}
+		else
+		{
+			scoreUser = data.player2Score;
+			scoreOther = data.player1Score;
+			nameOther = namep1;
+		}
+		var idOther = 2;
+		// var friend = fetchFriend(); need to call this since namep1/p2 won't be nameNick but intraId
+
+		return (
+			<Stack
+				direction="row"
+				justifyContent="space-around"
+				alignItems="center"
+				bgcolor={color}
+				borderRadius="2em"
+				padding="0.3em"
+			>
+				<Typography 
+					style={{ 
+						width: '150px', 
+						textAlign: 'center' 
+					}}
+				>
+					Game Type: {data.type}
+				</Typography>
+				<Typography 
+					style={{ 
+						width: '100px', 
+						textAlign: 'center' 
+					}}
+				>
+					Score: {scoreUser} | {scoreOther}
+				</Typography>
+				<Typography 
+					sx={{
+						'& a': {
+							textDecoration: 'none',
+							color: 'blue',
+							'&:hover': { 
+								color: 'black'
+							}
+						},
+					}}
+					style={{ 
+						width: '0px',
+						position: 'relative', 
+						left: '10px',
+						textAlign: 'center' 
+					}}
+				>
+					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
+				</Typography>
+				<Avatar />
+			</Stack>
+		);
+
+	};
+
+	let gameContainer = () => 
+	{
+		if (matchHistory.length == 0)
+		{
+			return (
+				<Stack
+				sx={{
+					alignItems: 'center',
+					position: 'relative',
+					top: '10px',
+				}}
+			>
+				<Typography variant={'h4'}
+					sx={{
+						fontFamily: 'Georgia, serif',
+						fontWeight: 'bold',
+						fontStyle: 'italic',
+						lineHeight: '5rem',
+					}}    
+				>
+					No matches played yet!
+				</Typography>
+			</Stack>
+			);
+		}
+
+		return (
+			<Box
+				sx={{
+					width: '90%',
+					position: 'relative',
+					left: '40px',
+					height: '100%',
+					overflowY: 'auto',
+					padding: '0.5em'
+				}}
+			>
+				<Stack gap={1} direction="column" width="100%">
+					{matchHistory.map((item: matchData) => gameLine(item))}
+				</Stack>
+			</Box>
+		);
+	};
+
+	let GameBox = () => 
+	{
+		return (
+			<Stack
+				width={'100%'}
+				padding={'0.3em'}
+				maxHeight={isSmallScreen ? '80vh' : '80vh'}
+			>
+				{gameStats()}
+				{gameContainer()}
+			</Stack>
+		);
+	}
+
+	let userInfo = () => 
+	{
+		return (
+			<Stack
+				justifyContent={'space-between'}
+				margin={'1em'}
+				bgcolor={theme.palette.primary.dark}
+				sx={{
+					maxWidth: '1200px',
+					maxHeight: '300px',
+				}}
+			>
+				{GetProfilePic()}
+				{SetChangePfpButton()}
+				{GetUserStatus()}
+				{putNickName()}
+				{EditNickName()}
+				{OtherInfo()}
+			</Stack>
+		);
+	};
+
+	let GetProfilePic = () => 
+	{
+		return (
+			<Stack
+				sx={{
+					position: 'relative',
+					top: '40px',
+					left: '50px',
+				}}
+			>
+				<Avatar
+					sx={{
+						width: '200px',
+						height: '200px',
+						bgcolor: theme.palette.primary.light,
+					}}
+					src={profileImage}
+				>
+				</Avatar>
+			</Stack>
+		);
+	}
+	
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => 
+	{
+		const image = event.target.files[0];
+		let formdata = new FormData();
+		formdata.append("name", "Profile Picture");
+		formdata.append("file", image);
+		if (image.type.startsWith("image/") && image.size > 0) 
+		{
+			changePFP(userProfile.id, formdata);
+			setProfileImage(image);
+		}
+	}
+	
+	let SetChangePfpButton = () =>
+	{
+		return (
+			<Tooltip title="Change your Profile Picture!" arrow>
+				<IconButton 
+					variant="contained" 
+					component="label"
+					sx={{
+						left: '60px',
+						top: '-10px',
+						width: '60px',
+						height: '60px',
+						fontSize: '40px',
+						'&:hover': {
+							color: '#09af07',
+						},
+					}}				
+				>
+					<AddToPhotosIcon fontSize="inherit" />
+					<input type="file" hidden accept="image/*" onChange={handleFileChange}/>
+				</IconButton>
+			</Tooltip>
+		);
+	}
+
+	let GetUserStatus = () =>
+	{		
+		let color;
+		if (whichStatus == UserStatus.Offline)
+			color = '#df310e';
+		else if (whichStatus ==  UserStatus.Online)
+			color = '#0fc00c';
+		else if (whichStatus ==  UserStatus.InGame)
+			color = '#0dddc4';
+		
+		return (
+			<Stack>
+				<Box
+					sx={{
+						width: 40,
+						height: 40,
+						backgroundColor: color,
+						borderRadius: '50%',
+						position: 'relative',
+						top: '-60px',
+						left: '190px',
+					}}
+				>
+				</Box>
+			</Stack>
+		);
+	}
+
+	let putNickName = () => 
+	{
+		let size = '4rem';
+		if (userProfile.nameNick.length > 10)
+			size = '3rem';
+		if (userProfile.nameNick.length > 18)
+			size = '2rem';
+		if (userProfile.nameNick.lenght > 25)
+			size = '1rem';
+		
+		return (
+			<Stack
+				sx={{
+					width: '100%',
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					position: 'relative',
+					top: '-210px',
+				}}
+			>
+				<Typography variant={'h2'}
+					sx={{
+						fontFamily: 'Georgia, serif',
+						fontWeight: 'bold',
+						fontStyle: 'italic',
+						fontSize: size,
+						lineHeight: '5rem',
+						height: '5rem',
+						overflow: 'hidden',
+						whiteSpace: 'nowrap',
+						transition: 'font-size 0.3s ease',
+					}}    
+				>
+					{userProfile.nameNick}
+				</Typography>
+			</Stack>
+		);
+	}
+  
+	const CheckChange = () => 
+	{
+		if (showInputMessage)
+			setShowInputMessage(false);
+		
+		if (showMessage)
+			setShowMessage(false);
+		
+		setShowInput((prev) => !prev);
+	};
+
+	const handleNicknameUpdate = async (event: React.KeyboardEvent<HTMLInputElement>): Promise<void> => 
+	{
+		const key = event.key;
+		if (key === 'Enter') 
+		{
+			const result = await setNewNickname(userProfile.id, inputValue);
+	  
+			if (result === "") 
+			{
+				userProfile.nameNick = inputValue;
+				setInputValue("");
+				setShowInput(false);
+				setShowMessage(false);
+			} 
+			else 
+			{
+				setMessageErrorNickname(result);
+				setShowMessage(true);
+			}
+		}
+	}
+
+	let EditNickName = () => 
+	{
+		return (
+			<Stack>
+				<Tooltip title="Edit Nickname!" arrow>
+					<IconButton
+						variant="contained"
+						onClick={CheckChange}
+						sx={{
+								fontSize: '30px',
+								top: '-190px',
+								left: '535px',
+								width: '50px',
+								'&:hover': {
+									color: '#09af07',
+								},
+						}}
+					>
+						<EditIcon fontSize="inherit"/>
+					</IconButton>
+				</Tooltip>
+				{showInput && (
+					<Input
+					value={inputValue}
+					onChange={(e) => setInputValue(e.target.value)}
+					onKeyDown={handleNicknameUpdate}
+					placeholder="Type new nickname..."
+					sx={{
+						top: '-180px',
+						left: '470px',
+						width: '200px',
+						height: '40px',
+					}}
+					/>
+				)}
+				{showMessage && (	
+					<Stack
+					sx={{
+						alignItems: "center",
+						position: 'relative',
+						color: 'red',
+						fontSize: '18px',
+						top: '-163px',
+					}}
+					>
+						{messageErrorNickname}
+					</Stack>
+				)}
+			</Stack>
+		);
+	}
+
+	let OtherInfo = () =>
+	{
+		let top = '-290px';
+		if (showInput)
+		{
+			top = '-330px';
+			if (showMessage)
+				top = '-357px';
+		}
+
+		return (
+			<Stack
+				direction={'column'}
+				justifyContent={'center'}
+				padding={'1em'}
+				sx={{
+					width: '100%',
+					height: '10px',
+					position: 'relative',
+					top: top,
+					left: '860px',
+				}}
+			>
+				<Typography>
+					<b>Intra name: </b>
+					<br />
+					{userProfile.nameIntra}
+					<br />
+					<br />
+					<b>Email: </b>
+					<br />
+					{userProfile.email}
+					<br />
+				</Typography>
+			</Stack>
+		);
+	}
+
+	let pageWrapperUser = () => 
+	{
 		return (
 			<Container sx={{ padding: theme.spacing(3) }}>
-				{userInfo()}
 				<Stack
-					direction={isSmallScreen ? 'column' : 'row'}
-					bgcolor={theme.palette.primary.dark}
-					margin={'1em'}
-					minHeight={'60vh'}
+						width={'100%'}
+						overflow={'hidden'}
 				>
-					{friendsBox()}
-					<Stack width={'100%'} padding={'0.3em'} maxHeight={isSmallScreen ? '80vh' : '80vh'}>
-						{gameStats()}
-						{gameContainer()}
+					{userInfo()}
+					<Stack
+						direction={isSmallScreen ? 'column' : 'row'}
+						bgcolor={theme.palette.primary.dark}
+						margin={'1em'}
+						minHeight={'60vh'}
+					>
+						{friendsBox()}
+						{GameBox()}
 					</Stack>
 				</Stack>
 			</Container>
 		);
 	};
 
-	return pageWrapper();
+	let getUserProfile = async () : Promise<void> =>
+	{
+		const tmp: User = await getUserFromDatabase(lastSegment, navigate);
+
+		if (user.id == tmp.id)
+		{
+			showOwnPage(true);
+			setProfileImage(tmp.image);
+			setFriendsList(tmp.friends);
+			setWhichStatus(tmp.status);
+			setMatchHistory(tmp.matchHistory);
+			setUserProfile(tmp);
+			var allRatio = await fetchRatios(tmp);
+			setRatioArr(allRatio);
+		}
+		else 
+			showOwnPage(false);
+	}
+	
+	useEffect(() => 
+	{
+		getUserProfile().then((number) => 
+		{
+			setUserProfileNumber(number);
+		});
+	}, [friendsList,whichStatus,profileImage]);
+
+	let whichPage = () =>
+	{
+		if (userProfileNumber === null) 
+			return <Stack>Loading...</Stack>;
+
+		return ownPage ? pageWrapperUser() : <ProfilePageOther />;
+	}
+
+	return (
+		whichPage()
+	);
 };
 
 export default ProfilePage;
