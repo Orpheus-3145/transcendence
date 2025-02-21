@@ -149,20 +149,19 @@ export default class SettingsScene extends BaseScene {
 	}
 
 	startGame(): void {
-		if (this.mode === GameMode.single) {
+		if (this.mode === GameMode.single)
 			this.switchScene('Game', {
 				sessionToken: uuidv4(),
 				mode: this.mode,
 				difficulty: this.difficulty,
 				extras: Array.from(this.powerUpSelection),
 			});
-		} else {
+		else
 			this.switchScene('Matchmaking', {
 				sessionToken: '',
 				mode: this.mode,
 				difficulty: GameDifficulty.unset,
 				extras: Array.from(this.powerUpSelection),
 			});
-		}
 	}
 }

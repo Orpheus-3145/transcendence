@@ -1,7 +1,6 @@
 import {
 	WebSocketGateway,
 	WebSocketServer,
-	OnGatewayDisconnect,
 	SubscribeMessage,
 	ConnectedSocket,
 	MessageBody,
@@ -23,15 +22,11 @@ import GameDataDTO from 'src/dto/gameData.dto';
 	transports: ['websocket'],
 })
 @UseFilters(GameExceptionFilter)
-export default class MatchmakingGateway implements OnGatewayDisconnect {
+export default class MatchmakingGateway{
 	@WebSocketServer()
 	server: Server;
 
 	constructor(private matchmakingService: MatchmakingService) {}
-
-	handleDisconnect(@ConnectedSocket() client: Socket): void {
-		this.matchmakingService.removePlayerFromQueue(client);
-	}
 
 	@SubscribeMessage('waiting')
 	clientWaitingAdd(@MessageBody() data: GameDataDTO, @ConnectedSocket() client: Socket): void {
