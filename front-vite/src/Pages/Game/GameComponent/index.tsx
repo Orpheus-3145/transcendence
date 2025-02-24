@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useLocation } from "react-router-dom";
 import { Box } from '@mui/material';
 import { styled } from '@mui/system';
 import Phaser from 'phaser';
@@ -26,6 +27,7 @@ const GameComponent: React.FC = () => {
 
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const playerData = useUser().user;
+	const location = useLocation();
 	
 	let gameInstance: Phaser.Game | null = null;
 
@@ -52,10 +54,10 @@ const GameComponent: React.FC = () => {
 	useEffect(() => {
 
 		if (gameInstance === null) {
-			
+
 			const cnt = containerRef.current!;
 			const { width, height } = cnt.getBoundingClientRect();
-			
+
 			const config: Phaser.Types.Core.GameConfig = {
 					type: Phaser.AUTO,
 					width: width,
@@ -84,10 +86,13 @@ const GameComponent: React.FC = () => {
 						gamepad: true
 					}
 				};
-			
+
 			gameInstance = new Phaser.Game({ ...config });
 		}
-		
+
+		if ( location.state.info )
+			gameInstance.scene.start(GameScene, location.state.info);
+
 		// add hook the container of the game is resized
 		window.addEventListener('resize', handleResize);
 

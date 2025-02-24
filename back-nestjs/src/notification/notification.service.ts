@@ -1,11 +1,15 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Socket } from 'socket.io';
+import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
 import User from '../entities/user.entity'
 import { UsersService } from 'src/users/users.service';
-import { PowerUpSelected } from 'src/game/types/game.enum';
 import { ChatService } from 'src/chat/chat.service';
+import RoomManagerService from 'src/game/session/roomManager.service';
+import { GameDifficulty, GameMode, PowerUpSelected } from 'src/game/types/game.enum';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @Injectable()
 export class NotificationService {
@@ -16,6 +20,7 @@ export class NotificationService {
 		private readonly userService: UsersService,
 		@Inject(forwardRef(() => ChatService))
 		private readonly chatService: ChatService,
+		private roomManager: RoomManagerService,
   ) { }
 
 	async findAll(): Promise<Notification[]>
@@ -78,6 +83,7 @@ export class NotificationService {
 			noti.message = null;
 			noti.powerUpsSelected = powerUps;
 			this.notificationRepository.save(noti);
+			console.log(noti);
 			return (noti);
 		}
 	}
@@ -130,5 +136,23 @@ export class NotificationService {
 				return ;
 			}
 		}
+	}
+
+	async startGameFromInvitation(sender: Socket, receiver: Socket, senderId: string, receiverId: string): Promise<void> {
+
+		const senderIdNumber = Number(senderId);
+		const receiverIdNumber = Number(receiverId);
+		const gameNotification: Notification = await this.notificationRepository.findOne({ where: { receiverId: receiverIdNumber, senderId: senderIdNumber, type: NotificationType.gameInvite } });
+		console.log(this.findAll(), JSON.stringify(gameNotification));
+		const initData: GameDataDTO = {
+			sessionToken: uuidv4(),
+			mode: GameMode.multi,
+			difficulty: GameDifficulty.unset,
+			extras: gameNotification.powerUpsSelected,
+		};
+		this.roomManager.createRoom(initData);
+
+		sender.emit('goToGame', initData);
+		receiver.emit('goToGame', initData);
 	}
 }

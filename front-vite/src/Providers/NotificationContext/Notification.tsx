@@ -1,5 +1,6 @@
 import React from 'react';
 import { io } from 'socket.io-client';
+import { PowerUpSelected } from '../../Pages/Game/GameComponent/Types/Enum';
 
 export const socket = io(`${import.meta.env.URL_WEBSOCKET}${import.meta.env.WS_NS_NOTIFICATION}`, {
     withCredentials: true,
@@ -42,7 +43,7 @@ export async function addFriend(username:string, friend:string): Promise<void>
 
 export async function inviteToGame(username:string, friend:string): Promise<void> 
 {
-	socket.emit('sendGameInvite', {username: username, friend: friend});
+	socket.emit('sendGameInvite', {username: username, friend: friend, powerUps: PowerUpSelected.noPowerUp});
 }
 
 export async function sendMessage(username:string, friend:string, message:string): Promise<void> 

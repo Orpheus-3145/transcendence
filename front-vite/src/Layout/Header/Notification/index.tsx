@@ -19,6 +19,7 @@ import {NotificationStruct,
 		declineGameInvite,
 		NotificationType,
 		socket} from '../../../Providers/NotificationContext/Notification'
+import { GameData } from '../../../Pages/Game/GameComponent/Types/Interfaces'
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
@@ -31,10 +32,9 @@ export const Notification: React.FC = () => {
 	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[]>([]);
 	const [isFirst, setIsFirst] = useState<Boolean>(true);
 
-
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
-	const navToGame = () => {navigate('/game')};
+	// const navToGame = (gameInfo: GameData) => {navigate('/game', { state: { info: gameInfo } })};
 
 	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
 	{
@@ -616,7 +616,10 @@ export const Notification: React.FC = () => {
 
 		}, [friendRequestArray, messageArray, gameInviteArray]);
 
-		socket.on('goToGame', navToGame);
+		socket.on('goToGame', (gameInfo: GameData) => {
+			console.log(`data: ${JSON.stringify(gameInfo)}`);
+				navigate('/game', { state: { info: gameInfo } });
+			});
 
 		return (notificationBar());
 	}
