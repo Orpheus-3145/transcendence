@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import BaseScene from './Base';
-import { GameMode, GameDifficulty, PowerUpType } from '../../Types/Enum';
+import { GameMode, GameDifficulty, PowerUpType, PowerUpSelected } from '../../Types/Enum';
 
 
 export default class SettingsScene extends BaseScene {
@@ -9,7 +9,7 @@ export default class SettingsScene extends BaseScene {
 	private mode: GameMode = GameMode.unset;
 	private difficulty: GameDifficulty = GameDifficulty.unset;
 
-	private powerUpSelection: Set<PowerUpType> = new Set();
+	private powerUpSelection: PowerUpSelected = PowerUpSelected.noPowerUp;
 
 	constructor() {
 		super({ key: 'Settings' });
@@ -18,7 +18,7 @@ export default class SettingsScene extends BaseScene {
 	init(data: { mode: GameMode }): void {
 		super.init()
 
-		this.powerUpSelection = new Set();
+		this.powerUpSelection = PowerUpSelected.noPowerUp;
 		this.mode = data.mode;
 	}
 
@@ -32,11 +32,41 @@ export default class SettingsScene extends BaseScene {
 		})
 		.setOrigin(0.5, 0.5);
 
-		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.3, PowerUpType.speedBall);
-		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.36, PowerUpType.speedPaddle);
-		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.42, PowerUpType.slowPaddle);
-		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.48, PowerUpType.shrinkPaddle);
-		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.54, PowerUpType.stretchPaddle);
+		this.add.text(this.scale.width * 0.25, this.scale.height * 0.3, `${PowerUpType.speedBall}`,
+			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+				align: 'center',
+				color: '#fff'}
+		)
+		.setOrigin(0, 0.5);
+		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.3, PowerUpSelected.speedBall);
+		this.add.text(this.scale.width * 0.25, this.scale.height * 0.36, `${PowerUpType.speedPaddle}`,
+			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+				align: 'center',
+				color: '#fff'}
+		)
+		.setOrigin(0, 0.5);
+		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.36, PowerUpSelected.speedPaddle);
+		this.add.text(this.scale.width * 0.25, this.scale.height * 0.42, `${PowerUpType.slowPaddle}`,
+			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+				align: 'center',
+				color: '#fff'}
+		)
+		.setOrigin(0, 0.5);
+		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.42, PowerUpSelected.slowPaddle);
+		this.add.text(this.scale.width * 0.25, this.scale.height * 0.48, `${PowerUpType.shrinkPaddle}`,
+			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+				align: 'center',
+				color: '#fff'}
+		)
+		.setOrigin(0, 0.5);
+		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.48, PowerUpSelected.shrinkPaddle);
+		this.add.text(this.scale.width * 0.25, this.scale.height * 0.54, `${PowerUpType.stretchPaddle}`,
+			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+				align: 'center',
+				color: '#fff'}
+		)
+		.setOrigin(0, 0.5);
+		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.54, PowerUpSelected.stretchPaddle);
 
 		const startBtn = this.add
 			.text(this.scale.width * 0.5, this.scale.height * 0.75, this.mode === GameMode.single ? 'START' : 'JOIN QUEUE', {
@@ -119,14 +149,7 @@ export default class SettingsScene extends BaseScene {
 			.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 	}
 
-	createTogglePowerUp(x: number, y: number, value: PowerUpType): void {
-		this.add.text(x, y, `${value}`, 
-			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
-		)
-		.setOrigin(0, 0.5);
-	
+	createTogglePowerUp(x: number, y: number, value: PowerUpSelected): void {
 		const toggle = this.add
 			.text(x + this.scale.width * 0.3, y, 'INACTIVE', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
@@ -136,12 +159,12 @@ export default class SettingsScene extends BaseScene {
 			.setOrigin(0, 0.5)
 			.setInteractive()
 			.on('pointerup', () => {
-				if (this.powerUpSelection.has(value)) {
-					this.powerUpSelection.delete(value);
+				if ( this.powerUpSelection & value ) {
+					this.powerUpSelection &= ~value;
 					toggle.setText('INACTIVE');
 					toggle.setStyle({ fill: '#ff0' }); // Green for ON, White for OFF
 				} else {
-					this.powerUpSelection.add(value);
+					this.powerUpSelection |= value;
 					toggle.setText('ACTIVE');
 					toggle.setStyle({ fill: '#0f0' }); // Green for ON, White for OFF
 				}}
@@ -154,14 +177,14 @@ export default class SettingsScene extends BaseScene {
 				sessionToken: uuidv4(),
 				mode: this.mode,
 				difficulty: this.difficulty,
-				extras: Array.from(this.powerUpSelection),
+				extras: this.powerUpSelection,
 			});
 		else
 			this.switchScene('Matchmaking', {
 				sessionToken: '',
 				mode: this.mode,
 				difficulty: GameDifficulty.unset,
-				extras: Array.from(this.powerUpSelection),
+				extras: this.powerUpSelection,
 			});
 	}
 }

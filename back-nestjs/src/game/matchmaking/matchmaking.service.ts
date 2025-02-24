@@ -3,7 +3,7 @@ import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import AppLoggerService from 'src/log/log.service';
-import { GameDifficulty, GameMode, PowerUpType } from 'src/game/types/game.enum';
+import { fromMaskToArray, GameDifficulty, GameMode } from 'src/game/types/game.enum';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import { WaitingPlayer } from 'src/game/types/game.interfaces';
@@ -32,22 +32,19 @@ export default class MatchmakingService {
 		if (this._checker === null)
 			this._checker = setInterval(() => this._checkNewGame(), 100);
 
-		this.logger.debug(`client ${client.id} joined the queue for matchmaking, power ups: [${info.extras.join(', ')}]`);
+		const powerUpsList: string = fromMaskToArray(info.extras).join(', ');
+		this.logger.debug(`client ${client.id} joined the queue for matchmaking, power ups: [${powerUpsList}]`);
 	}
 
 	_checkNewGame(): void {
-		if (this._waitingPlayers.length < 2)
-			return;
-
 		for (let i = 0; i < this._waitingPlayers.length - 1; i++) {
-			const player1: WaitingPlayer = this._waitingPlayers[i];
-
 			for (let j = i + 1; j < this._waitingPlayers.length; j++) {
-				const player2: WaitingPlayer = this._waitingPlayers[j];
-
-				if (!this._doTheyMatch(player1, player2))
+				if ( this._waitingPlayers[i].extras !== this._waitingPlayers[j].extras )
 					continue ;
+				
 				// found a match, a new game can start
+				const player1: WaitingPlayer = this._waitingPlayers[i];
+				const player2: WaitingPlayer = this._waitingPlayers[j];
 				// removing players from queue
 				this._waitingPlayers.splice(i, 1);
 				this._waitingPlayers.splice(j - 1, 1);
@@ -72,9 +69,5 @@ export default class MatchmakingService {
 				return;
 			}
 		}
-	}
-
-	_doTheyMatch(player1: WaitingPlayer, player2: WaitingPlayer) {
-		return player1.extras.sort().toString() === player2.extras.sort().toString();
 	}
 }

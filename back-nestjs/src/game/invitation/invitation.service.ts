@@ -3,7 +3,7 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import AppLoggerService from 'src/log/log.service';
-import { WaitingPlayer } from '../types/game.interfaces';
+import { WaitingPlayer } from 'src/game/types/game.interfaces';
 // import { GameDifficulty, GameMode, PowerUpType } from 'src/game/types/game.enum';
 // import { WaitingPlayer } from 'src/game/types/game.interfaces';
 // import GameDataDTO from 'src/dto/gameData.dto';
@@ -19,8 +19,8 @@ export default class InvitationService {
 		this.logger.setContext(InvitationService.name);
   }
 
-	// createGameInvitation(client: Socket, powerUps: Array<PowerUpType>): void {
   createGameInvitation(): void {}
+	// createGameInvitation(client: Socket, powerUps: Array<PowerUpType>): void {
 	// {
 	// 	const sessionToken = uuidv4();
 	// 	const invitator: WaitingPlayer = {
@@ -33,8 +33,8 @@ export default class InvitationService {
 	// 	this.logger.log(`session [${sessionToken}] - received invitation for custom game`);
 	// }
 
-	// acceptGameInvitation(client: Socket, sessionToken: string): void {
   acceptGameInvitation(): void {}
+	// acceptGameInvitation(client: Socket, sessionToken: string): void {
   // {
 	// 	const inviter: WaitingPlayer = this._gameInvitations.get(sessionToken);
 	// 	if ( inviter === undefined )
@@ -58,8 +58,8 @@ export default class InvitationService {
 	// 	this.roomManager.createRoom(initData);
 	// }
 
-	// refuseGameInvitation(sessionToken: string): void {
   refuseGameInvitation(): void {}
+	// refuseGameInvitation(sessionToken: string): void {
   // {
 	// 	const inviter: WaitingPlayer = this._gameInvitations.get(sessionToken);
 	// 	if ( inviter === undefined )

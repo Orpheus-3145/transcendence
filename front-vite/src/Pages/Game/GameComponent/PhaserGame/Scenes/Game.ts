@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
 import BaseScene from './Base';
-import { GameDifficulty, GameMode, PaddleDirection, PowerUpType } from '../../Types/Enum';
+import { GameDifficulty, GameMode, PaddleDirection, PowerUpSelected, PowerUpType } from '../../Types/Enum';
 import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '../../Types/Interfaces';
 import Ball from '../GameObjects/Ball';
 import PowerUpBall from '../GameObjects/PowerUpBall';
@@ -25,7 +25,8 @@ export default class GameScene extends BaseScene {
 	private _widthRatio!: number;
 	private _heightRatio!: number;
 
-	private _powerUpSelection!: Array<PowerUpType>;
+	private _powerUpSelection!: PowerUpSelected;
+	// private _powerUpSelection!: Array<PowerUpType>;
 	private _powerUpType!: PowerUpType | null;
 	private _powerUpActive!: { [key: number]: boolean }; // Tracks if a player has the power-up
 
@@ -71,11 +72,11 @@ export default class GameScene extends BaseScene {
 		this._powerUpState = null;
 		this._gameStarted = false;
 		this._keepConnectionOpen = false;
-		
+
 		this._gameSizeBackEnd = {width: 0, height: 0}
 		this._widthRatio = 0;
 		this._heightRatio = 0;
-		
+
 		this._powerUpActive = { 0: false, 1: false };
 		this._powerUpType = null;
 
@@ -90,6 +91,28 @@ export default class GameScene extends BaseScene {
 		) as Phaser.Input.Keyboard.Key;
 
 		this.setupSocket();
+	}
+
+	// Create game objects and establish WebSocket connection
+	create(): void {
+		super.create()
+
+		if (this._mode === GameMode.single) {
+			const initData: GameData = {
+				sessionToken: this._sessionToken,
+				mode: this._mode,
+				difficulty: this._difficulty,
+				extras: this._powerUpSelection,
+			};
+			this.sendMsgToServer('createRoomSinglePlayer', initData);
+		}
+
+		const playerData: PlayerData = {
+			playerId: this._id,
+			nameNick: this._nameNick,
+			sessionToken: this._sessionToken,
+		};
+		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	}
 
 	// Frame-by-frame update
@@ -118,28 +141,6 @@ export default class GameScene extends BaseScene {
 		// Update paddles based on player positions
 		this._leftPaddle.updatePosition(this._gameState.p1.y);
 		this._rightPaddle.updatePosition(this._gameState.p2.y);
-	}
-
-	// Create game objects and establish WebSocket connection
-	create(): void {
-		super.create()
-
-		if (this._mode === GameMode.single) {
-			const initData: GameData = {
-				sessionToken: this._sessionToken,
-				mode: this._mode,
-				difficulty: this._difficulty,
-				extras: this._powerUpSelection,
-			};
-			this.sendMsgToServer('createRoomSinglePlayer', initData);
-		}
-
-		const playerData: PlayerData = {
-			playerId: this._id,
-			nameNick: this._nameNick,
-			sessionToken: this._sessionToken,
-		};
-		this.sendMsgToServer('playerData', playerData); // send data to the backend, adds player
 	}
 
   buildGraphicObjects(): void {

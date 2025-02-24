@@ -14,7 +14,9 @@ import { GameMode,
 				GameDifficulty,
 				PowerUpType,
 				PlayerIdentity,
-				PaddleDirection} from 'src/game/types/game.enum';
+				PaddleDirection,
+				fromArrayToMask,
+				fromMaskToArray} from 'src/game/types/game.enum';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -90,7 +92,7 @@ export default class SimulationService {
 			this.sessionToken = data.sessionToken;
 			this.mode = data.mode;
 			this.difficulty = data.difficulty;
-			this.powerUpSelected = data.extras;
+			this.powerUpSelected = fromMaskToArray(data.extras);
 			
 		this.logger.log(`session [${data.sessionToken}] - room created`);
 		this.logger.log(`session [${this.sessionToken}] - new game, mode: ${this.mode}`);
@@ -518,7 +520,7 @@ export default class SimulationService {
 			sessionToken: uuidv4(),
 			mode: this.mode,
 			difficulty: this.difficulty,
-			extras: this.powerUpSelected,
+			extras: fromArrayToMask(this.powerUpSelected),
 		};
 		this.waitingForRematch = false;
 
