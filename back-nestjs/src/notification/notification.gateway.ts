@@ -110,7 +110,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('sendGameInvite')
-	async sendGameInvite(@ConnectedSocket() client: Socket, @MessageBody() data: { username: string, friend: string, powerUps: PowerUpSelected }): Promise<void> 
+	async sendGameInvite(@MessageBody() data: { username: string, friend: string, powerUps: PowerUpSelected }): Promise<void> 
 	{
 		var user = await this.userService.getUserId(data.username);
 		var other = await this.userService.getUserId(data.friend);
