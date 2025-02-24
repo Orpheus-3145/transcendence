@@ -13,7 +13,6 @@ export const Leaderboard: React.FC = () => {
 	const navigate = useNavigate();
 	const [leaderboard, setLeaderboard] = useState<leaderboardData[][]>([]);
 	const [loading, setLoading] = useState<number | null>(null);
-	const [tmpRatio, setTmpRatio] = useState<matchRatio[]>([])
 
 	let redirectUser = (id:number) =>
 	{
@@ -290,7 +289,6 @@ export const Leaderboard: React.FC = () => {
 	
 	let pageWrapper = () =>
 	{
-			
 		if (loading === null) 
 			return <Stack>Loading...</Stack>;
 	

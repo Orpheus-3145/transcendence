@@ -494,7 +494,7 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 	
-	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => 
+	const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => 
 	{
 		const image = event.target.files[0];
 		let formdata = new FormData();
@@ -502,8 +502,8 @@ const ProfilePage: React.FC = () => {
 		formdata.append("file", image);
 		if (image.type.startsWith("image/") && image.size > 0) 
 		{
-			changePFP(userProfile.id, formdata);
-			setProfileImage(image);
+			var newimage = await changePFP(userProfile.id, formdata);
+			setProfileImage(newimage);
 		}
 	}
 	
@@ -771,7 +771,7 @@ const ProfilePage: React.FC = () => {
 		{
 			setUserProfileNumber(number);
 		});
-	}, [friendsList,whichStatus,profileImage]);
+	}, []);
 
 	let whichPage = () =>
 	{

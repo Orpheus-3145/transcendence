@@ -51,7 +51,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('getFromUser')
-	async handleNotificationEvent(@ConnectedSocket() client: Socket, @MessageBody() data: { id: string }): Promise<void> 
+	async getFromUser(@ConnectedSocket() client: Socket, @MessageBody() data: { id: string }): Promise<void> 
 	{
 		var newwebsock: Websock = { client: client, userId: data.id };
 		
@@ -76,7 +76,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('sendMessage')
-	async sendMessage(@ConnectedSocket() client: Socket, @MessageBody() data: { username: string, friend: string, message: string }): Promise<void> 
+	async sendMessage(@MessageBody() data: { username: string, friend: string, message: string }): Promise<void> 
 	{
 		if (data.message.length == 0)
 		{
@@ -95,7 +95,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('sendFriendReq')
-	async sendFriendReq(@ConnectedSocket() client: Socket, @MessageBody() data: { username: string, friend: string, message: string }): Promise<void> 
+	async sendFriendReq(@MessageBody() data: { username: string, friend: string, message: string }): Promise<void> 
 	{
 		var user = await this.userService.getUserId(data.username);
 		var other = await this.userService.getUserId(data.friend);
@@ -109,7 +109,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('sendGameInvite')
-	async sendGameInvite(@ConnectedSocket() client: Socket, @MessageBody() data: { username: string, friend: string}): Promise<void> 
+	async sendGameInvite(@MessageBody() data: { username: string, friend: string}): Promise<void> 
 	{
 		var user = await this.userService.getUserId(data.username);
 		var other = await this.userService.getUserId(data.friend);
@@ -120,5 +120,49 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		}
 		var Noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite);
 		this.sendNotiToFrontend(Noti);
+	}
+
+	@SubscribeMessage('acceptNotiFr')
+	async acceptNotiFr(@MessageBody() data: { sender: string, receiver: string})
+	{
+		this.userService.friendRequestAccepted(data.sender, data.receiver);
+		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+	}
+
+	@SubscribeMessage('declineNotiFr')
+	async declineNotiFr(@MessageBody() data: { sender: string, receiver: string})
+	{
+		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+	}
+
+	@SubscribeMessage('acceptNotiGI')
+	async acceptNotiGI(@MessageBody() data: { sender: string, receiver: string})
+	{
+		//init game session
+
+		var senderSock: Websock = this.sockets.find((socket) => socket.userId === data.sender);
+		var receiverSock: Websock = this.sockets.find((socket) => socket.userId === data.receiver);
+		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
+		senderSock.client.emit('goToGame');
+		receiverSock.client.emit('goToGame');
+	}
+
+	@SubscribeMessage('declineNotiGI')
+	async declineNotiGI(@MessageBody() data: { sender: string, receiver: string})
+	{
+		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
+	}
+
+	@SubscribeMessage('removeNotification')
+	async removeNotification(@MessageBody() data: { id: string})
+	{
+		var numb = Number(data.id);
+		const noti = await this.notificationService.findNotificationId(numb);
+		if (noti == null)
+		{
+			console.log("ERROR: notification not found in rmvNotification!");
+			throw new HttpException('Not Found', 404);
+		}
+		this.notificationService.removeNotification(noti);		
 	}
 };

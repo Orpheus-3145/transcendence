@@ -13,59 +13,42 @@ export class NotificationController {
 		private readonly userService: UsersService,
 	) { }
 
+	// @Get('/acceptNotiFR/:sender/:receiver')
+	// async acceptNotificationFR(@Param('sender') sender: string, @Param('receiver') receiver: string)
+	// {
+	// 	this.userService.friendRequestAccepted(sender, receiver);
+	// 	this.notificationService.removeReq(sender, receiver, NotificationType.friendRequest);
+	// }
 
-	@Get('/getFromUser/:userid')
-	async getNotificationUser(@Param('userid') userid: string)
-	{
-		var user = this.userService.getUserId(userid);
-		if (!user)
-		{
-			console.log("nani da fuq!!");
-			throw new HttpException('Not Found', 404);
-		}
-		var arr = this.notificationService.findNotificationReceiver(userid);
-		if (!arr)
-			throw new HttpException('Not Found', 404);
+	// @Get('/declineNotiFR/:sender/:receiver')
+	// async declineNotificationFR(@Param('sender') sender: string, @Param('receiver') receiver: string)
+	// {
+	// 	this.notificationService.removeReq(sender, receiver, NotificationType.friendRequest);
+	// }
 
-		return (arr);
-	}
+	// @Get('/acceptNotiGI/:sender/:receiver')
+	// async acceptNotificationGI(@Param('sender') sender: string, @Param('receiver') receiver: string)
+	// {
+	// 	//need to init a game session
+	// 	this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
+	// }
 
-	@Get('/acceptNotiFR/:sender/:receiver')
-	async acceptNotificationFR(@Param('sender') sender: string, @Param('receiver') receiver: string)
-	{
-		this.userService.friendRequestAccepted(sender, receiver);
-		this.notificationService.removeReq(sender, receiver, NotificationType.friendRequest);
-	}
+	// @Get('/declineNotiGI/:sender/:receiver')
+	// async declineNotificationGI(@Param('sender') sender: string, @Param('receiver') receiver: string)
+	// {
+	// 	this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
+	// }
 
-	@Get('/declineNotiFR/:sender/:receiver')
-	async declineNotificationFR(@Param('sender') sender: string, @Param('receiver') receiver: string)
-	{
-		this.notificationService.removeReq(sender, receiver, NotificationType.friendRequest);
-	}
-
-	@Get('/acceptNotiGI/:sender/:receiver')
-	async acceptNotificationGI(@Param('sender') sender: string, @Param('receiver') receiver: string)
-	{
-		//need to init a game session
-		this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
-	}
-
-	@Get('/declineNotiGI/:sender/:receiver')
-	async declineNotificationGI(@Param('sender') sender: string, @Param('receiver') receiver: string)
-	{
-		this.notificationService.removeReq(sender, receiver, NotificationType.gameInvite);
-	}
-
-	@Get('removeNotification/:id')
-	async rmvNotification(@Param('id') id: string)
-	{
-		var numb = Number(id);
-		const noti = await this.notificationService.findNotificationId(numb);
-		if (noti == null)
-		{
-			console.log("ERROR: notification not found in rmvNotification!");
-			throw new HttpException('Not Found', 404);
-		}
-		this.notificationService.removeNotification(noti);
-	}
+	// @Get('removeNotification/:id')
+	// async rmvNotification(@Param('id') id: string)
+	// {
+	// 	var numb = Number(id);
+	// 	const noti = await this.notificationService.findNotificationId(numb);
+	// 	if (noti == null)
+	// 	{
+	// 		console.log("ERROR: notification not found in rmvNotification!");
+	// 		throw new HttpException('Not Found', 404);
+	// 	}
+	// 	this.notificationService.removeNotification(noti);
+	// }
 }

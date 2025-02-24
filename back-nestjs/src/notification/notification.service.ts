@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
 import User from '../entities/user.entity'
 import { UsersService } from 'src/users/users.service';
+import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class NotificationService {
@@ -12,8 +13,9 @@ export class NotificationService {
     private notificationRepository: Repository<Notification>,
 	@Inject(forwardRef(() => UsersService))
 	private readonly userService: UsersService,
+	@Inject(forwardRef(() => ChatService))
+	private readonly chatService: ChatService,
   ) { }
-
 
 	async findAll(): Promise<Notification[]>
 	{
@@ -87,7 +89,7 @@ export class NotificationService {
 		{
 			tmp.message = message;
 			this.notificationRepository.save(tmp);
-			//add message to dm
+			// this.chatService.saveMessage(sender.intraId, receiver.intraId, message);
 			return (tmp);
 		}
 		else
@@ -101,7 +103,7 @@ export class NotificationService {
 			noti.status = NotificationStatus.None;
 			noti.message = message;
 			this.notificationRepository.save(noti);
-			//add message to dm
+			// this.chatService.saveMessage(sender.intraId, receiver.intraId, message);
 			return (noti);
 		}
 	}
