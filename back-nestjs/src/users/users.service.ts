@@ -155,6 +155,7 @@ export class UsersService {
   	{
 		user.image = image;
 		this.usersRepository.save(user);
+		return (image);
   	}
 
 	async calculateRatio(arr: matchData[], userProfile: User)

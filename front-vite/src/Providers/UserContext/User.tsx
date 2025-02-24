@@ -184,33 +184,22 @@ export async function unBlockFriend(username:string, friend:string): Promise<voi
 		console.log("ERROR: FAILED TO BLOCK USER!");
 }
 
-export async function changePFP(username:string, image:FormData): Promise<void> {
+export async function changePFP(username:string, image:FormData): Promise<string> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/changepfp', {
 		method: "POST",
 		body: image,
 	});
 
-	const response = await fetch(request)
-	if (response.status == 400)
-		console.log("ERROR: INVALID IMAGE IN CHANGEPFP!");
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO FIND USER IN CHANGEPFP!");
-}
-
-
-export async function addFriend(username:string, friend:string): Promise<void> 
-{
-	socket.emit('sendFriendReq', {username: username, friend: friend});
-}
-
-export async function inviteToGame(username:string, friend:string): Promise<void> 
-{
-	socket.emit('sendGameInvite', {username: username, friend: friend});
-}
-
-export async function sendMessage(username:string, friend:string, message:string): Promise<void> 
-{
-	socket.emit('sendMessage', {username: username, friend: friend, message: message});
+	try
+	{
+		const response = await fetch(request)
+			.then((x) => x.text())
+		return (response);
+	}
+	catch (error)
+	{
+		console.error("ERROR: matchRatio[] not found!" + error);
+	}
 }
 
 export async function fetchRatios(userProfile: User): Promise<matchRatio[]>
@@ -228,7 +217,7 @@ export async function fetchRatios(userProfile: User): Promise<matchRatio[]>
 	}
 	catch (error)
 	{
-		console.error("ERROR: matchRatio[] not found!");
+		console.error("ERROR: matchRatio[] not found!" + error);
 	}
 }
 
@@ -247,6 +236,6 @@ export async function fetchLeaderboard(): Promise<leaderboardData[][]>
 	}
 	catch (error)
 	{
-		console.error("ERROR: Leaderboard[] not found!");
+		console.error("ERROR: Leaderboard[] not found!" + error);
 	}	
 }

@@ -33,7 +33,8 @@ export const Notification: React.FC = () => {
 
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
-	const navToUser = (id:string) => {navigate('/profile/' + id)}
+	const navToUser = (id:string) => {navigate('/profile/' + id)};
+	const navToGame = () => {navigate('/game')};
 
 	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
 	{
@@ -612,7 +613,10 @@ export const Notification: React.FC = () => {
 				if (noti != null)
 					addNotification(noti);
 			});
+
 		}, [friendRequestArray, messageArray, gameInviteArray]);
+
+		socket.on('goToGame', navToGame);
 
 		return (notificationBar());
 	}

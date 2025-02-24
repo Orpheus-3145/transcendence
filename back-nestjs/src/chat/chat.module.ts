@@ -11,6 +11,6 @@ import { Message, Channel, ChannelMember } from 'src/entities/chat.entity';
 	],
 	providers: [ChatService, ChatGateway],
 	controllers: [ChatController],
-	exports: [],
+	exports: [ChatService],
 })
 export class ChatModule {}

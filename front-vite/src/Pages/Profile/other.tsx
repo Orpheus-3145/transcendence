@@ -17,12 +17,11 @@ import { useNavigate } from 'react-router-dom';
 import { useUser,
 	getUserFromDatabase, 
 	fetchFriend, 
-	addFriend,
-	sendMessage,
 	blockFriend,
-	inviteToGame,
 	User,
 	UserStatus} from '../../Providers/UserContext/User';
+import { addFriend, inviteToGame, sendMessage } from '../../Providers/NotificationContext/Notification';
+
 
 const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
@@ -675,13 +674,13 @@ const ProfilePageOther: React.FC = () => {
 			{
 				if (checkIfBlocked() == true)
 					return ;
-				sendMessage(user.id, userProfile.id, inputMessage);
 				setInputMessage('');
 				setShowInputMessage(false);
 				setShowMessageMS(true);
 				setShowMessageFR(false);
 				setShowMessageGR(false);
 				setShowMessageBL(false);
+				sendMessage(user.id, userProfile.id, inputMessage);
 			}
 	 	}
   	}

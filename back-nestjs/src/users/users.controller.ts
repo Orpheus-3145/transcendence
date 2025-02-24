@@ -63,7 +63,7 @@ export class UsersController {
 		{	
 			return ("name needs atleast 1 letter or number!");
 		}
-		var user = this.UserService.getUserId(username);
+		var user = await this.UserService.getUserId(username);
 		if (user == null)
 		{
 			console.log("error");
@@ -75,7 +75,7 @@ export class UsersController {
 		{
 			return ("name already exists!");
 		}
-		this.UserService.setNameNick(await user, newname);
+		this.UserService.setNameNick(user, newname);
 		return ("");
 	}
 
@@ -88,40 +88,40 @@ export class UsersController {
 	@Get('profile/:username/friend/remove/:id')
 	async removeFriend(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserIntraId(id);
+		var user = await this.UserService.getUserId(username);
+		var other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
 		{
 			console.log("ERROR: failed to get user in removeFriend!");
 			throw new HttpException('Not Found', 404);
 		}
-		return (this.UserService.removeFriend(await user, await other));
+		return (this.UserService.removeFriend(user, other));
 	}
 
 	@Get('profile/:username/friend/block/:id')
 	async blockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserIntraId(id);
+		var user = await this.UserService.getUserId(username);
+		var other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
 		{
 			console.log("ERROR: failed to get user in blockUser!");
 			throw new HttpException('Not Found', 404);
 		}
-		return (this.UserService.blockUser(await user, await other));
+		return (this.UserService.blockUser(user, other));
 	}
 
 	@Get('profile/:username/friend/unBlock/:id')
 	async unBlockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserIntraId(id);
+		var user = await this.UserService.getUserId(username);
+		var other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
 		{
 			console.log("ERROR: failed to get user in blockUser!");
 			throw new HttpException('Not Found', 404);
 		}
-		return (this.UserService.unBlockUser(await user, await other));
+		return (this.UserService.unBlockUser(user, other));
 	}
 
 	@Post('profile/:username/changepfp')
