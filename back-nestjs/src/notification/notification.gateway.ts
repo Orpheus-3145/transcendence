@@ -12,6 +12,7 @@ import { UsersService } from 'src/users/users.service';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
 import { UserStatus } from 'src/dto/user.dto';
 import { HttpException } from '@nestjs/common';
+import { PowerUpSelected } from 'src/game/types/game.enum';
 
 interface Websock {
 	client: Socket;
@@ -104,12 +105,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			console.log("ERROR: failed to get user in sendGameInvite!");
 			throw new HttpException('Not Found', 404);
 		}
-		var Noti = await this.notificationService.initRequest(user, other, NotificationType.friendRequest);
+		var Noti = await this.notificationService.initRequest(user, other, NotificationType.friendRequest, null);
 		this.sendNotiToFrontend(Noti);
 	}
 
 	@SubscribeMessage('sendGameInvite')
-	async sendGameInvite(@ConnectedSocket() client: Socket, @MessageBody() data: { username: string, friend: string}): Promise<void> 
+	async sendGameInvite(@ConnectedSocket() client: Socket, @MessageBody() data: { username: string, friend: string, powerUps: PowerUpSelected }): Promise<void> 
 	{
 		var user = await this.userService.getUserId(data.username);
 		var other = await this.userService.getUserId(data.friend);
@@ -118,7 +119,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			console.log("ERROR: failed to get user in sendGameInvite!");
 			throw new HttpException('Not Found', 404);
 		}
-		var Noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite);
+		var Noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite, data.powerUps);
 		this.sendNotiToFrontend(Noti);
 	}
 };

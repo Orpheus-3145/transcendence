@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsArray } from 'class-validator';
+import { IsString, IsEnum } from 'class-validator';
 import { GameDifficulty, GameMode, PowerUpSelected } from 'src/game/types/game.enum';
 
 export default class GameDataDTO {

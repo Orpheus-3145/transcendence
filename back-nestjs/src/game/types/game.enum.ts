@@ -37,7 +37,7 @@ export enum PowerUpSelected {
   shrinkPaddle = 1 << 3, 	// (01000)
   stretchPaddle = 1 << 4  // (10000)
 }
-
+value = PowerUpSelected.speedBall | PowerUpSelected.slowPaddle;
 export function fromMaskToArray(values: PowerUpSelected): Array<PowerUpType> {
 		
 	let powerUps: Array<PowerUpType> = [];

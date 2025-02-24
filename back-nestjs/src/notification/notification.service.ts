@@ -4,22 +4,22 @@ import { Repository } from 'typeorm';
 import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
 import User from '../entities/user.entity'
 import { UsersService } from 'src/users/users.service';
+import { PowerUpSelected } from 'src/game/types/game.enum';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
-	@Inject(forwardRef(() => UsersService))
-	private readonly userService: UsersService,
-  ) { }
-
+		@Inject(forwardRef(() => UsersService))
+		private readonly userService: UsersService,
+  ) {}
 
 	async findAll(): Promise<Notification[]>
 	{
 		return (this.notificationRepository.find());
 	}
-  
+
 	async findNotificationReceiver(id: string): Promise<Notification[]>
 	{
 		var tmp = Number(id);
@@ -49,7 +49,7 @@ export class NotificationService {
 		return (false);
 	}
 
-	async initRequest(sender:User, receiver:User, type:NotificationType): Promise<Notification | null>
+	async initRequest(sender:User, receiver:User, type:NotificationType, powerUps: PowerUpSelected): Promise<Notification | null>
 	{
 		if (await this.isSenderBlocked(sender, receiver) == true)
 			return (null);
@@ -73,6 +73,7 @@ export class NotificationService {
 			noti.type = type;
 			noti.status = NotificationStatus.Pending;
 			noti.message = null;
+			noti.powerUpsSelected = powerUps;
 			this.notificationRepository.save(noti);
 			return (noti);
 		}
@@ -100,6 +101,7 @@ export class NotificationService {
 			noti.type = NotificationType.Message;
 			noti.status = NotificationStatus.None;
 			noti.message = message;
+			noti.powerUpsSelected = null;
 			this.notificationRepository.save(noti);
 			//add message to dm
 			return (noti);
