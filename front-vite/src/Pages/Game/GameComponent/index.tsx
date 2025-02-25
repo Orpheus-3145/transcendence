@@ -91,7 +91,7 @@ const GameComponent: React.FC = () => {
 		}
 
 		if ( location.state.info )
-			gameInstance.scene.start(GameScene, location.state.info);
+			gameInstance.scene.start('Game', location.state.info);
 
 		// add hook the container of the game is resized
 		window.addEventListener('resize', handleResize);
