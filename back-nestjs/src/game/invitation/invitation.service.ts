@@ -19,7 +19,7 @@ export default class InvitationService {
 		this.logger.setContext(InvitationService.name);
   }
 
-  createGameInvitation(): void {}
+  // createGameInvitation(): void {}
 	// createGameInvitation(client: Socket, powerUps: Array<PowerUpType>): void {
 	// {
 	// 	const sessionToken = uuidv4();
@@ -49,13 +49,13 @@ export default class InvitationService {
 	// 	client.emit('startInvitedGame', sessionToken);
 
 	// 	this.logger.log(`session [${sessionToken}] - creating custom game`);
-	// 	const initData: GameDataDTO = {
-	// 		sessionToken: sessionToken,
-	// 		mode: GameMode.multi,
-	// 		difficulty: GameDifficulty.unset,
-	// 		extras: inviter.extras,
-	// 	};
-	// 	this.roomManager.createRoom(initData);
+		// const initData: GameDataDTO = {
+		// 	sessionToken: sessionToken,
+		// 	mode: GameMode.multi,
+		// 	difficulty: GameDifficulty.unset,
+		// 	extras: inviter.extras,
+		// };
+		// this.roomManager.createRoom(initData);
 	// }
 
   refuseGameInvitation(): void {}

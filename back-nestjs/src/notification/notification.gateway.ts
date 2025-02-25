@@ -7,12 +7,14 @@ import { WebSocketGateway,
 	OnGatewayConnection,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+
 import { NotificationService } from './notification.service';
 import { UsersService } from 'src/users/users.service';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
 import { UserStatus } from 'src/dto/user.dto';
 import { HttpException } from '@nestjs/common';
-import { PowerUpSelected } from 'src/game/types/game.enum';
+import {  PowerUpSelected } from 'src/game/types/game.enum';
+
 
 interface Websock {
 	client: Socket;
@@ -139,13 +141,11 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	@SubscribeMessage('acceptNotiGI')
 	async acceptNotiGI(@MessageBody() data: { sender: string, receiver: string})
 	{
-		//init game session
-
 		var senderSock: Websock = this.sockets.find((socket) => socket.userId === data.sender);
 		var receiverSock: Websock = this.sockets.find((socket) => socket.userId === data.receiver);
-		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
-		senderSock.client.emit('goToGame');
-		receiverSock.client.emit('goToGame');
+		
+		await this.notificationService.startGameFromInvitation(senderSock.client, receiverSock.client, data.sender, data.receiver);
+		await this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
 	}
 
 	@SubscribeMessage('declineNotiGI')

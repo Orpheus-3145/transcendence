@@ -9,9 +9,10 @@ import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import SimulationService from 'src/game/session/simulation.service';
 import AppLoggerService from 'src/log/log.service';
 import GameDataDTO from 'src/dto/gameData.dto';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
-	imports: [AppLoggerModule, forwardRef(() => ExceptionModule)],
+	imports: [AppLoggerModule, forwardRef(() => ExceptionModule), forwardRef(() => UsersModule)],
 	providers: [
 		RoomManagerGateway,
 		RoomManagerService,

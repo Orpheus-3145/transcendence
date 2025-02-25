@@ -1,6 +1,7 @@
 import { Power } from '@mui/icons-material';
 import React from 'react';
 import { io } from 'socket.io-client';
+import { PowerUpSelected } from '../../Pages/Game/GameComponent/Types/Enum';
 
 export const socket = io(`${import.meta.env.URL_WEBSOCKET}${import.meta.env.WS_NS_NOTIFICATION}`, {
     withCredentials: true,

@@ -390,7 +390,7 @@ export default class SimulationService {
 	}
 
 	// if the game ends gracefully
-	endGame(winner: PlayingPlayer): void {
+	async endGame(winner: PlayingPlayer): Promise<void> {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
@@ -407,9 +407,9 @@ export default class SimulationService {
 		this.stopEngine();
 		
 		if (this.powerUpSelected.length > 0)
-			this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Power ups");
+			await this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Power ups");
 		else
-			this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Normal");
+			await this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Normal");
 		
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;

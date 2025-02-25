@@ -38,7 +38,7 @@ const ProfilePageOther: React.FC = () => {
 	const [showInputMessage, setShowInputMessage] = useState<Boolean>(false);
 	const [inputMessage, setInputMessage] = useState<string>('');
 	const [showInput, setShowInput] = useState<Boolean>(false);
-	const [userProfile, setUserProfile] = useState<User>(null);
+	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<Number>(0);
 	const [isFriend, setIsFriend] = useState<Boolean>(false);
 	const [friendsList, setFriendsList] = useState<string[]>([]);
@@ -273,38 +273,47 @@ const ProfilePageOther: React.FC = () => {
 
 	let gameLine = (data: matchData) => 
 	{
-		// const friend = friendDetails.get(intraid);
-
-		// if (!friend) {
-		// 	fetchFriendDetails(intraid);
-		// 	return <Stack>Loading...</Stack>;
-		// }
-
-		var color;
-		if (data.whoWon === userProfile.intraId.toString())
-			color = '#1da517'
-		else
-			color = '#b01515';
-
-		var nameOther;
-		var scoreUser;
-		var scoreOther;
-		var namep1 = data.player1;
-		var namep2 = data.player2;
-		if (namep1 === userProfile.nameNick)
+		var friend: User | undefined;
+		var intra: string;
+		var nameOther: string;
+		var scoreUser: string;
+		var scoreOther: string;
+		var color: string;
+		var idOther: number;
+		if (data.player1 === userProfile.intraId.toString())
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
-			nameOther = namep2;
+			intra = data.player2;
+			friend = friendDetails.get(intra);
+			if (friend)
+			{
+				nameOther = friend.nameNick;
+				idOther = friend.id;
+			}
 		}
 		else
 		{
 			scoreUser = data.player2Score;
 			scoreOther = data.player1Score;
-			nameOther = namep1;
+			intra = data.player1;
+			friend = friendDetails.get(intra);
+			if (friend)
+			{
+				nameOther = friend.nameNick;
+				idOther = friend.id;
+			}
 		}
-		var idOther = 2;
-		// var friend = fetchFriend(); need to call this since namep1/p2 won't be nameNick but intraId
+
+		if (!friend) {
+			fetchFriendDetails(intra);
+			return <Stack></Stack>;
+		}
+
+		if (data.whoWon === userProfile.intraId.toString())
+			color = '#1da517'
+		else
+			color = '#b01515';
 
 		return (
 			<Stack
@@ -859,7 +868,6 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageBL(false);
 
 		var powerup = calculatePowerups();
-		console.log("value: " + powerup);
 		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
 	}
 
@@ -1135,25 +1143,23 @@ const ProfilePageOther: React.FC = () => {
 		const tmp = await getUserFromDatabase(lastSegment, navigate);
 		setProfileIntraId(tmp.intraId);
 		setUserProfile(tmp);
-		var friend = await getUserFromDatabase(user.id, navigate);
-		setIsFriend(tmp.friends.find((str:string) => str === friend.intraId.toString()));
+		setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
 		setMatchHistory(tmp.matchHistory);
-		var allRatio = await fetchRatios(tmp);
-		setRatioArr(allRatio);
+		setRatioArr(await fetchRatios(tmp));
 	}
-		
-	let PageWrapper = () =>
+	
+	useEffect(() => 
 	{
-		useEffect(() => 
+		getUserProfile().then((number) => 
 		{
-			getUserProfile().then((number) => 
-			{
-				setUserProfileNumber(number);
-			});
+			setUserProfileNumber(number);
 		});
-		
+	}, [lastSegment]);
+
+	let PageWrapper = () =>
+	{		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;
 		if (!userProfile)
