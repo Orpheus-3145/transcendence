@@ -17,11 +17,13 @@ import { GameMode,
 				PaddleDirection,
 				fromArrayToMask,
 				fromMaskToArray} from 'src/game/types/game.enum';
+import { UsersService } from 'src/users/users.service';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
 export default class SimulationService {
 	// generic game data
+	private readonly userService: UsersService;
 	private readonly maxScore: number = parseInt(this.config.get('GAME_MAX_SCORE'), 10);
 	private readonly botName: string = this.config.get<string>('GAME_BOT_NAME', 'DTR');
 	private readonly frameRateUpdate: number = 1000 / parseInt(this.config.get('GAME_FRAME_UPDATE'), 10);
@@ -403,7 +405,12 @@ export default class SimulationService {
 			this.sendMsgToPlayer(this.player2.clientSocket, 'endGame', winner.nameNick);
 
 		this.stopEngine();
-
+		
+		if (this.powerUpSelected.length > 0)
+			this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Power ups");
+		else
+			this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Normal");
+		
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;
 	}

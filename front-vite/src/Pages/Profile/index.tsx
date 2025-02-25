@@ -51,11 +51,11 @@ const ProfilePage: React.FC = () => {
 	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
 	
 	let RemoveFriend = (id:string) => {
-		removeFriend(userProfile.id, id);
+		removeFriend(userProfile.id.toString(), id);
 	}
 
 	let BlockFriend = (id:string) => {
-		blockFriend(userProfile.id, id);
+		blockFriend(userProfile.id.toString(), id);
 	}
 
 	let friendLineButtons = (intraid:string) => 
@@ -753,6 +753,7 @@ const ProfilePage: React.FC = () => {
 		if (user.id == tmp.id)
 		{
 			showOwnPage(true);
+			console.log("tmp");
 			setProfileImage(tmp.image);
 			setFriendsList(tmp.friends);
 			setWhichStatus(tmp.status);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Box, Stack, Typography, useTheme, Divider, IconButton, Container } from '@mui/material';
+import { Avatar, Box, Stack, Typography, useTheme, Divider, IconButton, Container, Modal, ButtonGroup, Button } from '@mui/material';
 import {Input} from '@mui/material'
 import { useMediaQuery, Tooltip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -10,6 +10,7 @@ import {
 	Block as BlockIcon,
 	VideogameAsset as GameIcon,
 	Message as MessageIcon,
+	Calculate,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -19,8 +20,11 @@ import { useUser,
 	fetchFriend, 
 	blockFriend,
 	User,
-	UserStatus} from '../../Providers/UserContext/User';
-import { addFriend, inviteToGame, sendMessage } from '../../Providers/NotificationContext/Notification';
+	UserStatus,
+	fetchRatios,
+	matchData,
+	matchRatio} from '../../Providers/UserContext/User';
+import { addFriend, inviteToGame, PowerUpSelected, sendMessage } from '../../Providers/NotificationContext/Notification';
 
 
 const ProfilePageOther: React.FC = () => {
@@ -51,6 +55,13 @@ const ProfilePageOther: React.FC = () => {
 	const messageBlockedSend: string = "User has been blocked!";
 	const messageUserBlocked: string = "This user has been blocked! Unblock him before doing the action!";
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
+	const [speedball, setSpeedball] = useState<boolean>(false);
+	const [speedpaddle, setSpeedpaddle] = useState<boolean>(false);
+	const [slowpaddle, setSlowpaddle] = useState<boolean>(false);
+	const [shrinkpaddle, setShrinkpaddle] = useState<boolean>(false);
+	const [stretchpaddle, setStretchpaddle] = useState<boolean>(false);
+	const [matchHistory, setMatchHistory] = useState<matchData[]>([]);
+	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
 
 	let redirectFriend = (id:number) =>
 	{
@@ -190,17 +201,50 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
-	const stats = [
-		{ title: 'Games Played', value: 8, rate: '75%' },
-	];
-
-	const vanillaStats = [
-		{ title: 'Vanilla Games', value: 25, rate: '75%' },
-	];
-
-	const customStats = [
-		{ title: 'Custom Games', value: 100, rate: '75%' },
-	];
+	let gameStatsBox = (data: matchRatio) =>
+	{
+		return (
+			<Stack
+			direction="column"
+			flex={{ xs: '1 1 100%', sm: '1 1 33%' }}
+			justifyContent="center"
+			alignItems="center"
+			padding="0.3em"
+			>
+				<Stack
+					gap={1}
+					direction="row"
+				>
+					<Stack
+						direction="column"
+						textAlign="center"
+						alignItems="center"
+						justifyContent="center"
+						sx={{
+							position: 'relative',
+							left: '-10px',
+						}}
+					>
+						<Typography>{data.title}</Typography>
+						<Typography>{data.value}</Typography>
+					</Stack>
+					<Stack
+						direction="column"
+						alignItems="center"
+						sx={{
+							position: 'relative',
+							left: '10px',
+						}}
+					>
+						<Tooltip title="Win Ratio" arrow>
+						<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
+						</Tooltip>
+						<Typography>{data.rate}%</Typography>
+					</Stack>
+				</Stack>
+			</Stack>
+		);
+	}
 
 	let gameStats = () => 
 	{
@@ -221,63 +265,46 @@ const ProfilePageOther: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{[stats, vanillaStats, customStats].map((group, index) => (
-						<Stack
-							key={index}
-							direction="column"
-							flex={{ xs: '1 1 100%', sm: '1 1 33%' }}
-							justifyContent="center"
-							alignItems="center"
-							padding="0.3em"
-						>
-							{group.map((stat, idx) => (
-								<Stack
-									key={idx}
-									gap={1}
-									direction="row"
-									textAlign="center"
-									alignItems="center"
-									justifyContent="center"
-								>
-									<Stack
-										direction="column"
-										textAlign="center"
-										alignItems="center"
-										justifyContent="center"
-									>
-										<Typography>{stat.title}</Typography>
-										<Typography>{stat.value}</Typography>
-									</Stack>
-									<Stack
-										direction="column"
-										textAlign="center"
-										alignItems="center"
-										justifyContent="center"
-									>
-										<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
-										<Typography>{stat.rate}</Typography>
-									</Stack>
-								</Stack>
-							))}
-						</Stack>
-					))}
+					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
 	};
 
-	var scoreOwn = 5;
-	var scoreother = 2;
-	var won: Boolean = true;
-	var idOther = "Brother";
-	var typeGame = "Casual";
-
-	let gameLine = () => 
+	let gameLine = (data: matchData) => 
 	{
-		var color = '#1da517';
-		if (won === false)
+		// const friend = friendDetails.get(intraid);
+
+		// if (!friend) {
+		// 	fetchFriendDetails(intraid);
+		// 	return <Stack>Loading...</Stack>;
+		// }
+
+		var color;
+		if (data.whoWon === userProfile.intraId.toString())
+			color = '#1da517'
+		else
 			color = '#b01515';
-		// var friend = fetchFriend();
+
+		var nameOther;
+		var scoreUser;
+		var scoreOther;
+		var namep1 = data.player1;
+		var namep2 = data.player2;
+		if (namep1 === userProfile.nameNick)
+		{
+			scoreUser = data.player1Score;
+			scoreOther = data.player2Score;
+			nameOther = namep2;
+		}
+		else
+		{
+			scoreUser = data.player2Score;
+			scoreOther = data.player1Score;
+			nameOther = namep1;
+		}
+		var idOther = 2;
+		// var friend = fetchFriend(); need to call this since namep1/p2 won't be nameNick but intraId
 
 		return (
 			<Stack
@@ -294,7 +321,7 @@ const ProfilePageOther: React.FC = () => {
 						textAlign: 'center' 
 					}}
 				>
-					Game Type: {typeGame}
+					Game Type: {data.type}
 				</Typography>
 				<Typography 
 					style={{ 
@@ -302,7 +329,7 @@ const ProfilePageOther: React.FC = () => {
 						textAlign: 'center' 
 					}}
 				>
-					Score: {scoreOwn} | {scoreother}
+					Score: {scoreUser} | {scoreOther}
 				</Typography>
 				<Typography 
 					sx={{
@@ -321,7 +348,7 @@ const ProfilePageOther: React.FC = () => {
 						textAlign: 'center' 
 					}}
 				>
-					<a href="" onClick={() => redirectFriend()}>{idOther}</a>
+					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
 				</Typography>
 				<Avatar />
 			</Stack>
@@ -331,6 +358,30 @@ const ProfilePageOther: React.FC = () => {
 
 	let gameContainer = () => 
 	{
+		if (matchHistory.length == 0)
+		{
+			return (
+				<Stack
+				sx={{
+					alignItems: 'center',
+					position: 'relative',
+					top: '10px',
+				}}
+			>
+				<Typography variant={'h4'}
+					sx={{
+						fontFamily: 'Georgia, serif',
+						fontWeight: 'bold',
+						fontStyle: 'italic',
+						lineHeight: '5rem',
+					}}    
+				>
+					No matches played yet!
+				</Typography>
+			</Stack>
+			);
+		}
+
 		return (
 			<Box
 				sx={{
@@ -343,7 +394,7 @@ const ProfilePageOther: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{gameLine()}
+					{matchHistory.map((item: matchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -353,9 +404,9 @@ const ProfilePageOther: React.FC = () => {
 	{
 		return (
 			<Stack
-			width={'100%'}
-			padding={'0.3em'}
-			maxHeight={isSmallScreen ? '80vh' : '80vh'}
+				width={'100%'}
+				padding={'0.3em'}
+				maxHeight={isSmallScreen ? '80vh' : '80vh'}
 			>
 				{gameStats()}
 				{gameContainer()}
@@ -446,7 +497,7 @@ const ProfilePageOther: React.FC = () => {
 			size = '3rem';
 		if (userProfile.nameNick.length > 20)
 			size = '2rem';
-		if (userProfile.nameNick.lenght > 25)
+		if (userProfile.nameNick.length > 25)
 			size = '1rem';
 		
 		return (
@@ -591,7 +642,57 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageFR(true);
 		setShowMessageGR(false);
 		setShowMessageBL(false);
-		addFriend(user.id, userProfile.id);
+		addFriend(user.id.toString(), userProfile.id.toString());
+	}
+
+    const [modalOpen, setModalOpen] = React.useState(false);
+
+    const handleModalClose = () => {
+        setModalOpen(false);
+    };
+
+    const handleModalOpen = () => {
+        setModalOpen(true);
+    };
+
+	const handleSpeedball = () =>
+	{
+		if (!speedball)
+			setSpeedball(true);
+		else
+			setSpeedball(false);
+	}
+
+	const handleSpeedpaddle = () =>
+	{
+		if (!speedpaddle)
+			setSpeedpaddle(true);
+		else
+			setSpeedpaddle(false);
+	}
+		
+	const handleSlowpaddle = () =>
+	{
+		if (!slowpaddle)
+			setSlowpaddle(true);
+		else
+			setSlowpaddle(false);
+	}
+		
+	const handleShrinkpaddle = () =>
+	{
+		if (!shrinkpaddle)
+			setShrinkpaddle(true);
+		else
+			setShrinkpaddle(false);
+	}
+
+	const handleStretchpaddle = () =>
+	{
+		if (!stretchpaddle)
+			setStretchpaddle(true);
+		else
+			setStretchpaddle(false);
 	}
 
 	let InviteToGameIcon = () => 
@@ -614,7 +715,7 @@ const ProfilePageOther: React.FC = () => {
 			<Tooltip title="Invite to Game!" arrow>
 				<IconButton
 					variant="contained"
-					onClick={() => InviteToGame()}
+					onClick={handleModalOpen}
 					sx={{
 						fontSize: '30px',
 						top: top,
@@ -628,6 +729,91 @@ const ProfilePageOther: React.FC = () => {
 					<GameIcon fontSize="inherit"/>
 				</IconButton>
 			</Tooltip>
+            <Modal open={modalOpen} onClose={handleModalClose}>
+				<Stack
+					bgcolor={theme.palette.primary.dark} 
+					width="700px"
+					height="450px"
+					borderRadius={2} 
+					margin="auto" 
+					mt="10%"
+					display="flex"
+					justifyContent="center"
+					alignItems="center"
+				>
+					<Typography 
+						variant={'h4'}
+						sx={{
+							position: 'relative',
+							top : '-80px',
+						}}
+					>
+						Game Invitiation
+					</Typography>
+					<Typography 
+						variant={'h5'}
+						sx={{
+							position: 'relative',
+							top : '-40px',
+						}}
+					>
+						Select Power ups or leave empty for a Normal game
+					</Typography>
+					<Typography variant={'h6'}>
+						Power ups:
+					</Typography>
+					<Box
+						display="flex"
+						justifyContent="center"
+						alignItems="center"
+						sx={{
+							position:'relative',
+							top: '10px',
+						}}
+					>
+						<Button
+							variant={speedball ? 'contained' : 'outlined'}
+							onClick={() => handleSpeedball()}
+						>
+							SpeedBall
+						</Button>
+						<Button
+							variant={speedpaddle ? 'contained' : 'outlined'}
+							onClick={() => handleSpeedpaddle()}
+						>
+							SpeedPaddle
+						</Button>
+						<Button
+							variant={slowpaddle ? 'contained' : 'outlined'}
+							onClick={() => handleSlowpaddle()}
+						>
+							SlowPaddle
+						</Button>
+						<Button
+							variant={shrinkpaddle ? 'contained' : 'outlined'}
+							onClick={() => handleShrinkpaddle()}
+						>
+							ShrinkPaddle
+						</Button>
+						<Button
+							variant={stretchpaddle ? 'contained' : 'outlined'}
+							onClick={() => handleStretchpaddle()}
+						>
+							StretchPaddle
+						</Button>
+					</Box>
+					<Button
+						variant={'contained'}
+						onClick={() => InviteToGame()}
+						sx={{
+							position: 'relative',
+							top: '60px',
+						}}
+					>
+						Send Invite
+					</Button>
+				</Stack>
+            </Modal>
 			{showMessageGR && (	
 				<Stack
 				sx={{
@@ -645,14 +831,36 @@ const ProfilePageOther: React.FC = () => {
 		);
 	}
 
+	let calculatePowerups = () =>
+	{
+		var value = PowerUpSelected.noPowerUp; 
+		
+		if (speedball)
+			value |= PowerUpSelected.speedBall;
+		if (speedpaddle)
+			value |= PowerUpSelected.speedPaddle;
+		if (slowpaddle)
+			value |= PowerUpSelected.slowPaddle;
+		if (shrinkpaddle)
+			value |= PowerUpSelected.shrinkPaddle;
+		if (stretchpaddle)
+			value |= PowerUpSelected.stretchPaddle;
+
+		return (value);
+	}
+
 	let InviteToGame = () => {
+		handleModalClose();
 		if (checkIfBlocked() == true)
 			return ;
 		setShowMessageMS(false);
 		setShowMessageFR(false);
 		setShowMessageGR(true);
 		setShowMessageBL(false);
-		inviteToGame(user.id, userProfile.id);
+
+		var powerup = calculatePowerups();
+		console.log("value: " + powerup);
+		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
 	}
 
 	
@@ -680,7 +888,7 @@ const ProfilePageOther: React.FC = () => {
 				setShowMessageFR(false);
 				setShowMessageGR(false);
 				setShowMessageBL(false);
-				sendMessage(user.id, userProfile.id, inputMessage);
+				sendMessage(user.id.toString(), userProfile.id.toString(), inputMessage);
 			}
 	 	}
   	}
@@ -782,7 +990,7 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageFR(false);
 		setShowMessageGR(false);
 		setShowMessageBL(true);
-		blockFriend(user.id, profileIntraId.toString());
+		blockFriend(user.id.toString(), profileIntraId.toString());
 		user.blocked.push(profileIntraId.toString());
 	}
 
@@ -931,6 +1139,9 @@ const ProfilePageOther: React.FC = () => {
 		setIsFriend(tmp.friends.find((str:string) => str === friend.intraId.toString()));
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
+		setMatchHistory(tmp.matchHistory);
+		var allRatio = await fetchRatios(tmp);
+		setRatioArr(allRatio);
 	}
 		
 	let PageWrapper = () =>

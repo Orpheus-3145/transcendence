@@ -36,6 +36,20 @@ export class UsersService {
 		user.friends = [];
 		user.blocked = [];
 		user.matchHistory = [];
+		const a = new User();
+		a.accessToken = access.access_token;
+		a.intraId = 432423;
+		a.nameNick = "a";
+		a.nameIntra = "a";
+		a.nameFirst = "b";
+		a.nameLast = "bv";
+		a.email = "av@gmail.com";
+		a.image = userMe.image.link;
+		a.greeting = 'Hello, I have just landed!';
+		a.status = UserStatus.Online;
+		a.friends = [];
+		a.blocked = [];
+		a.matchHistory = [];
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
@@ -44,7 +58,9 @@ export class UsersService {
 				return (new UserDTO(tmp));
 			}
 			await user.validate();
+			await a.validate();
 			await this.usersRepository.save(user);
+			await this.usersRepository.save(a);
 			return new UserDTO(user);
 		} 
 		catch (error) {
@@ -297,5 +313,23 @@ export class UsersService {
 		result.push(normalArr, powerArr, allArr);
 
 		return (result);
+	}
+
+	async storeMatchData(p1name: number, p2name: number, p1score: number, p2score: number, type: string): Promise<void>
+	{
+		var p1: User | null = await this.findOneIntra(p1name); 
+		var p2: User | null = await this.findOneIntra(p2name); 
+
+		var winner: string = "";
+		if (p1score > p2score)
+			winner = p1name.toString();
+		else
+			winner = p2name.toString();
+	
+		var match: matchData = {player1: p1name.toString(), player2: p2name.toString(), player1Score: p1score.toString(), player2Score: p2score.toString(), whoWon: winner, type: type};
+		p1.matchHistory.push(match);
+		p2.matchHistory.push(match);
+		this.usersRepository.save(p1);
+		this.usersRepository.save(p2);
 	}
 }
