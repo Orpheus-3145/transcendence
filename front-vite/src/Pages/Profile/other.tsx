@@ -273,6 +273,13 @@ const ProfilePageOther: React.FC = () => {
 
 	let gameLine = (data: matchData) => 
 	{
+		// const friend = friendDetails.get(intraid);
+
+		// if (!friend) {
+		// 	fetchFriendDetails(intraid);
+		// 	return <Stack>Loading...</Stack>;
+		// }
+
 		var color;
 		if (data.whoWon === userProfile.intraId.toString())
 			color = '#1da517'
