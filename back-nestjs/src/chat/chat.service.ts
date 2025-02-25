@@ -103,6 +103,7 @@ export class ChatService {
 	  const membership = await this.channelMemberRepository.findOne({
 		where: { user_id, channel_id },
 	  });
+	  console.log('Membership:', membership);
 	
 	  if (!membership) {
 		throw new Error('User is not a member of the channel');
@@ -110,6 +111,7 @@ export class ChatService {
 	
 	  // Check if the user is the owner of the channel
 	  if (membership.member_role === 'owner') {
+		console.log('Owner!');
 		// Transfer ownership to another admin or member
 		const otherMembers = await this.channelMemberRepository.find({
 		  where: { channel_id },
@@ -126,6 +128,7 @@ export class ChatService {
 			await this.channelMemberRepository.save(newOwner);
 		  }
 		} else {
+			console.log('Channel empty!');
 		  // If the channel is empty, delete the channel
 		  await this.channelMemberRepository.delete({ channel_id });
 		  await this.channelRepository.delete({ channel_id });

@@ -111,13 +111,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const {channel_id, name, user_id,} = data;
 		// console.log(`User ${client.id} joined channel ${channel}`);
 		try {
-			// Add the user to the database
 			await this.chatService.addUserToChannel(user_id, name, channel_id, );
-			// Join the channel
 			client.join(channel_id.toString());
-			// Notify the user that they successfully joined
 			client.emit('joinedChannel', { channel_id });
-			// Notify all channel members
 			this.server.to(channel_id.toString()).emit('userJoinedChannel', { user_id, channel_id });
 			console.log(`User ${user_id} successfully joined channel ${channel_id}`);
 
@@ -130,12 +126,21 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	// Leave a specific room/channel
 	@SubscribeMessage('leaveChannel')
 	async handleLeaveChannel(
-		@MessageBody('channel') channel: string,
+		// @MessageBody('channel') channel: string,
+		@MessageBody() data: {user_id: number, channel_id: number, role: string},
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		client.leave(channel);
-		console.log(`Client ${client.id} left channel ${channel}`);
-		client.emit('leftChannel', { channel });
+		try {
+			const {user_id, channel_id, role} = data;
+			await this.chatService.removeUserFromChannel(user_id, channel_id, role);
+			client.leave(channel_id.toString());
+			this.server.to(channel_id.toString()).emit('userLeftChannel', { user_id, channel_id });
+			console.log(`Client ${client.id} left channel ${ channel_id }`);
+			client.emit('leftChannel', { channel_id });
+		} catch (error) {
+			console.error(`Error leaving channel: ${error.message}`);
+			client.emit('error', { message: 'Could not leave channel' });
+		}
 	}
 
 	@SubscribeMessage('sendMessage')

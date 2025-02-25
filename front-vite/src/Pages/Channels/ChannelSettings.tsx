@@ -188,17 +188,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	
 
 	const handleLeaveChannel = () => {
-		//--> CALL TO BACKEND <-- //
-		
 		setIsSettingsView(false);
 		setChatProps((prevState) => ({
 			...prevState,
 			chatRooms:  prevState.chatRooms.filter((channel) => channel.name !== selectedChannel.name),
 		}));
-		if (selectedChannel.settings.users.length === 1 && userInChannel(user.nameIntra, selectedChannel)) {
-			setSelectedChannel(null);
-			return ;
-		}
+
+		// if (selectedChannel.settings.users.length === 1 && userInChannel(user.nameIntra, selectedChannel)) {
+		// 	setSelectedChannel(null);
+		// 	return ;
+		// }
+
 		const filteredUsers = selectedChannel.settings.users.filter((user) => user.name !== user.nameIntra);
 		const updatedChannel: ChatRoom = {
 			...selectedChannel,
@@ -213,9 +213,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			updatedChannel,
 		]))
 
+		const data = {
+			user_id: user.id, 
+			channel_id: selectedChannel.id,
+			role: selectedChannel.settings.users.find(user_ => user.id === user_.id).role,
+		};
+		// console.log('DATA: ', data);
+		socket.emit('leaveChannel', data);
 
 		setSelectedChannel(null);
 	};
+
+
 	// console.log(selectedChannel.settings.owner, user.nameIntra);
 	return (
 		<Modal open={open} onClose={onClose}>

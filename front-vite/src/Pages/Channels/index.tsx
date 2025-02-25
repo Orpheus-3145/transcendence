@@ -55,8 +55,7 @@ let joinedRooms: number[] = [];
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
 	// console.log(user.id);
-	// const allUsers = getAll();
-
+	
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const [channelName, setChannelName] = useState('');
@@ -266,7 +265,6 @@ const ChannelsPage: React.FC = () => {
 		setChannelName('');
 	};
 
-	//Needs implementation to Join only if user is member!!!
 	const joinRooms = () => {
 		chatProps.chatRooms.forEach((room) => {
 			if (!joinedRooms.includes(room.id) && userInChannel(user.nameIntra, room)) {
