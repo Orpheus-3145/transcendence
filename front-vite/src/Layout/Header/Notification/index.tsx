@@ -34,7 +34,7 @@ export const Notification: React.FC = () => {
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
-	// const navToGame = (gameInfo: GameData) => {navigate('/game', { state: { info: gameInfo } })};
+	const navToGame = (gameInfo: GameData) => {navigate('/game', { state: { info: gameInfo } })};
 
 	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
 	{
@@ -616,10 +616,7 @@ export const Notification: React.FC = () => {
 
 		}, [friendRequestArray, messageArray, gameInviteArray]);
 
-		socket.on('goToGame', (gameInfo: GameData) => {
-			console.log(`data: ${JSON.stringify(gameInfo)}`);
-				navigate('/game', { state: { info: gameInfo } });
-			});
+		socket.on('goToGame', navToGame);
 
 		return (notificationBar());
 	}

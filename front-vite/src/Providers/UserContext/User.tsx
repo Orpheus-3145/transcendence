@@ -119,7 +119,7 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 	}
 	catch (error)
 	{
-		console.error("ERROR: User not found!");
+		console.error("ERROR: User not found!", error);
 		navigate('/404');
 	}
 }

@@ -90,7 +90,7 @@ const GameComponent: React.FC = () => {
 			gameInstance = new Phaser.Game({ ...config });
 		}
 
-		if ( location.state.info )
+		if ( location && location.state && location.state.info )
 			gameInstance.scene.start('Game', location.state.info);
 
 		// add hook the container of the game is resized
