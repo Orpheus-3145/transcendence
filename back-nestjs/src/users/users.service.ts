@@ -11,7 +11,7 @@ import User from '../entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  	constructor(
+	constructor(
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 		private readonly logger: AppLoggerService,
@@ -19,7 +19,6 @@ export class UsersService {
  	) { 
 		this.logger.setContext(UsersService.name);	
 	}
-
 	
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
 		const user = new User();
@@ -77,9 +76,9 @@ export class UsersService {
 		return this.usersRepository.find();
 	}
 
-	async findOne(intraId: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { intraId } });
-	}
+	// async findOne(intraId: number): Promise<User | null> {
+	// 	return this.usersRepository.findOne({ where: { intraId } });
+	// }
 
 	async findOneIntra(intraId: number): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { intraId } });
@@ -125,40 +124,40 @@ export class UsersService {
 	}
 
 
-  	async friendRequestAccepted(iduser:string, idother:string)
-  	{
-		var user = await this.getUserId(iduser);
-		var otheruser = await this.getUserId(idother);
-		if ((user == null) || (otheruser == null))
-		{
-			console.log("ERROR accepting friendreq");
-			throw new HttpException('Not Found', 404);
-		}
-		(user).friends.push((otheruser).intraId.toString());
-		this.usersRepository.save((user));
-		(otheruser).friends.push((user).intraId.toString());
-		this.usersRepository.save((otheruser));
-  	}
+	async friendRequestAccepted(iduser:string, idother:string)
+	{
+	var user = await this.getUserId(iduser);
+	var otheruser = await this.getUserId(idother);
+	if ((user == null) || (otheruser == null))
+	{
+		console.log("ERROR accepting friendreq");
+		throw new HttpException('Not Found', 404);
+	}
+	(user).friends.push((otheruser).intraId.toString());
+	this.usersRepository.save((user));
+	(otheruser).friends.push((user).intraId.toString());
+	this.usersRepository.save((otheruser));
+	}
 
-  	async removeFriend(user: User, other: User)
-  	{
-		var newlist = user.friends.filter(friend => friend !== other.intraId.toString());
-		user.friends = newlist;
-		this.usersRepository.save(user);
-		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
-		other.friends = newlist;
-		this.usersRepository.save(other);
-  	}
+	async removeFriend(user: User, other: User)
+	{
+	var newlist = user.friends.filter(friend => friend !== other.intraId.toString());
+	user.friends = newlist;
+	this.usersRepository.save(user);
+	newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
+	other.friends = newlist;
+	this.usersRepository.save(other);
+	}
 
-  	async blockUser(user: User, other: User)
-  	{
-		var str: string = other.intraId.toString();
-		if (user.blocked.find((blockedId) => blockedId === str))
-			return ;
-		this.removeFriend(user, other);
-		user.blocked.push(other.intraId.toString());
-		this.usersRepository.save(user);
-  	}
+	async blockUser(user: User, other: User)
+	{
+	var str: string = other.intraId.toString();
+	if (user.blocked.find((blockedId) => blockedId === str))
+		return ;
+	this.removeFriend(user, other);
+	user.blocked.push(other.intraId.toString());
+	this.usersRepository.save(user);
+	}
   
 	async unBlockUser(user: User, other: User)
 	{
@@ -239,7 +238,6 @@ export class UsersService {
 		return (resultArr);		
 	}
 
-
 	async fillArray(allData: leaderboardData[], type: string): Promise<leaderboardData[]>
 	{
 		var ratioIndex: number = 0;
@@ -317,9 +315,9 @@ export class UsersService {
 
 	async storeMatchData(p1name: number, p2name: number, p1score: number, p2score: number, type: string): Promise<void>
 	{
-		var p1: User | null = await this.findOneIntra(p1name); 
-		var p2: User | null = await this.findOneIntra(p2name); 
-
+		var p1: User | null = await this.findOneId(p1name); 
+		var p2: User | null = await this.findOneId(p2name); 
+		console.log(`p1 ${p1name}: ${JSON.stringify(p1)}\np2 ${p2name}: ${JSON.stringify(p2)}`);
 		var winner: string = "";
 		if (p1score > p2score)
 			winner = p1name.toString();

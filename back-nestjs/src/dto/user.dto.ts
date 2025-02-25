@@ -25,8 +25,8 @@ export class matchData {
 
 export class UserDTO {
   constructor(user: User) {
-	this.id = user.id;
-	this.intraId = user.intraId;
+		this.id = user.id;
+		this.intraId = user.intraId;
     this.nameNick = user.nameNick;
     this.nameIntra = user.nameNick;
     this.nameFirst = user.nameFirst;

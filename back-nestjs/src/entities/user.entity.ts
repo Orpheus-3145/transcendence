@@ -50,7 +50,6 @@ export default class User {
 
 	@Column({ nullable: false })
 	email: string;
-	
 
 	@Column({ nullable: true, default: 'default_profile_photo.png' })
 	image: string | null;

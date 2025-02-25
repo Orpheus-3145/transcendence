@@ -16,7 +16,6 @@ export default class ResultsScene extends BaseScene {
 	private _socketIO!: Socket;
 
 	constructor() {
-
 		super({ key: 'Results' });
 	}
 

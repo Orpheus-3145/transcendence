@@ -23,7 +23,6 @@ import { UsersService } from 'src/users/users.service';
 @Injectable({ scope: Scope.TRANSIENT })
 export default class SimulationService {
 	// generic game data
-	private readonly userService: UsersService;
 	private readonly maxScore: number = parseInt(this.config.get('GAME_MAX_SCORE'), 10);
 	private readonly botName: string = this.config.get<string>('GAME_BOT_NAME', 'DTR');
 	private readonly frameRateUpdate: number = 1000 / parseInt(this.config.get('GAME_FRAME_UPDATE'), 10);
@@ -76,6 +75,7 @@ export default class SimulationService {
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
 		private readonly config: ConfigService,
+		private readonly user: UsersService,
 	) {
 		this.logger.setContext(SimulationService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
@@ -390,7 +390,7 @@ export default class SimulationService {
 	}
 
 	// if the game ends gracefully
-	async endGame(winner: PlayingPlayer): Promise<void> {
+	endGame(winner: PlayingPlayer): void {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
@@ -407,9 +407,9 @@ export default class SimulationService {
 		this.stopEngine();
 		
 		if (this.powerUpSelected.length > 0)
-			await this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Power ups");
+			this.user.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Power ups");
 		else
-			await this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Normal");
+			this.user.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Normal");
 		
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;
