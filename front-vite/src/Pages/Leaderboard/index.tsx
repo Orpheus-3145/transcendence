@@ -171,9 +171,10 @@ export const Leaderboard: React.FC = () => {
 				spacing={'0.6em'}
 				marginX={'0.8em'}
 				sx={{
-					width: '250px',
+					width: '300px',
 					position: 'relative',
-					left: '10px',
+					left: '20px',
+					top: '20px',
 					'& > *': {
 						alignItems: 'center',
 						height: '4em',
@@ -252,13 +253,11 @@ export const Leaderboard: React.FC = () => {
 		);
 	};
 	
-
 	let fetchUsers = async () =>
 	{
 		var arr: leaderboardData[][] = await fetchLeaderboard();
 		setLeaderboard(arr);
 	}
-
 
 	useEffect(() => 
 	{

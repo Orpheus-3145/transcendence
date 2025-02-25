@@ -82,7 +82,13 @@ export class UsersController {
 	@Get('/profile/:username/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
-		return (this.UserService.getFriend(id));
+		return (this.UserService.getUserIntraId(id));
+	}
+
+	@Get('/profile/:username/opponent/:id')
+	async fetchOpponent(@Param('id') id: string) 
+	{
+		return (this.UserService.getUserId(id));
 	}
 
 	@Get('profile/:username/friend/remove/:id')

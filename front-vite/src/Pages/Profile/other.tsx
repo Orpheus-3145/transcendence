@@ -10,7 +10,6 @@ import {
 	Block as BlockIcon,
 	VideogameAsset as GameIcon,
 	Message as MessageIcon,
-	Calculate,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -23,8 +22,9 @@ import { useUser,
 	UserStatus,
 	fetchRatios,
 	matchData,
-	matchRatio} from '../../Providers/UserContext/User';
-import { addFriend, inviteToGame, PowerUpSelected, sendMessage } from '../../Providers/NotificationContext/Notification';
+	matchRatio,
+	fetchOpponent} from '../../Providers/UserContext/User';
+import { addFriend, inviteToGame, PowerUpSelected, sendMessage, socket } from '../../Providers/NotificationContext/Notification';
 
 
 const ProfilePageOther: React.FC = () => {
@@ -43,6 +43,7 @@ const ProfilePageOther: React.FC = () => {
 	const [isFriend, setIsFriend] = useState<Boolean>(false);
 	const [friendsList, setFriendsList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
+	const [opponentDetails, setOpponentDetails] = useState<Map<string, User>>(new Map());
 	const [profileIntraId, setProfileIntraId] = useState<Number>(0);
 	const [showMessageFR, setShowMessageFR] = useState<Boolean>(false);
 	const [showMessageGR, setShowMessageGR] = useState<Boolean>(false);
@@ -271,6 +272,11 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
+const fetchOpponentDetails = async (opponentId: string) => {
+		const opponent = await fetchOpponent(opponentId);
+		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
+	};
+
 	let gameLine = (data: matchData) => 
 	{
 		var friend: User | undefined;
@@ -280,12 +286,12 @@ const ProfilePageOther: React.FC = () => {
 		var scoreOther: string;
 		var color: string;
 		var idOther: number;
-		if (data.player1 === userProfile.intraId.toString())
+		if (data.player1 === userProfile.id.toString())
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
 			intra = data.player2;
-			friend = friendDetails.get(intra);
+			friend = opponentDetails.get(intra);
 			if (friend)
 			{
 				nameOther = friend.nameNick;
@@ -297,7 +303,7 @@ const ProfilePageOther: React.FC = () => {
 			scoreUser = data.player2Score;
 			scoreOther = data.player1Score;
 			intra = data.player1;
-			friend = friendDetails.get(intra);
+			friend = opponentDetails.get(intra);
 			if (friend)
 			{
 				nameOther = friend.nameNick;
@@ -306,15 +312,14 @@ const ProfilePageOther: React.FC = () => {
 		}
 
 		if (!friend) {
-			fetchFriendDetails(intra);
-			return <Stack></Stack>;
+			fetchOpponentDetails(intra);
+			return <Stack>Loading...</Stack>;
 		}
 
-		if (data.whoWon === userProfile.intraId.toString())
+		if (data.whoWon === userProfile.id.toString())
 			color = '#1da517'
 		else
 			color = '#b01515';
-
 		return (
 			<Stack
 				direction="row"
@@ -359,10 +364,18 @@ const ProfilePageOther: React.FC = () => {
 				>
 					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
 				</Typography>
-				<Avatar />
+				<Avatar
+					sx={{
+						width: '40px',
+						height: '40px',
+						left: '-5px',
+						bgcolor: theme.palette.primary.light,
+					}}
+					src={friend.image}
+				>
+				</Avatar>
 			</Stack>
 		);
-
 	};
 
 	let gameContainer = () => 
@@ -403,7 +416,7 @@ const ProfilePageOther: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.map((item: matchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);

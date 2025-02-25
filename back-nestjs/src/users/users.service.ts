@@ -98,7 +98,7 @@ export class UsersService {
 
 	async setUserStatus(id: number, which: UserStatus)
 	{
-		var user = await this.findOneIntra(id);
+		var user = await this.findOneId(id);
 		user.status = which;
 		this.usersRepository.save(user);
 	}
@@ -107,12 +107,6 @@ export class UsersService {
 	{
 		user.nameNick = nameNick;
 		this.usersRepository.save(user);
-	}
-  
-	async getFriend(code: string): Promise<User | null> 
-	{
-		const numb = Number(code);
-		return (this.findOneIntra(numb));
 	}
 
   	async friendRequestAccepted(iduser:string, idother:string)
@@ -192,20 +186,20 @@ export class UsersService {
 			if (item.type === "Normal")
 			{
 				normalAll += 1;
-				if (item.whoWon === userProfile.intraId.toString())
+				if (item.whoWon === userProfile.id.toString())
 					normalWin += 1;
 			}
 			else
 			{
 				powerAll += 1;
-				if (item.whoWon === userProfile.intraId.toString())
+				if (item.whoWon === userProfile.id.toString())
 					powerWin += 1;
 			}
 			allAll += 1;
-			if (item.whoWon === userProfile.intraId.toString())
+			if (item.whoWon === userProfile.id.toString())
 				allWin += 1;
 		});
-			
+
 		var ratioNormal = Math.round((normalWin / normalAll) * 100);
 		var ratioPower = Math.round((powerWin / powerAll) * 100);
 		var ratioAll = Math.round((allWin / allAll) * 100);

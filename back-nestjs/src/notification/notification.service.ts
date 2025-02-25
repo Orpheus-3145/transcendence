@@ -83,7 +83,6 @@ export class NotificationService {
 			noti.message = null;
 			noti.powerUpsSelected = powerUps;
 			this.notificationRepository.save(noti);
-			console.log(noti);
 			return (noti);
 		}
 	}

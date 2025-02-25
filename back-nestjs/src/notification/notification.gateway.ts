@@ -14,6 +14,7 @@ import { Notification, NotificationType } from 'src/entities/notification.entity
 import { UserStatus } from 'src/dto/user.dto';
 import { HttpException } from '@nestjs/common';
 import {  PowerUpSelected } from 'src/game/types/game.enum';
+import User from 'src/entities/user.entity';
 
 
 interface Websock {
@@ -128,8 +129,15 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	@SubscribeMessage('acceptNotiFr')
 	async acceptNotiFr(@MessageBody() data: { sender: string, receiver: string})
 	{
-		this.userService.friendRequestAccepted(data.sender, data.receiver);
-		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+		await this.userService.friendRequestAccepted(data.sender, data.receiver);
+		await this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+		
+		var se: User = await this.userService.findOneId(Number(data.sender));
+		var re: User = await this.userService.findOneId(Number(data.receiver));
+		var senderSock: Websock =  this.sockets.find((socket) => socket.userId === data.sender);
+		var receiverSock: Websock =  this.sockets.find((socket) => socket.userId === data.receiver);
+		senderSock.client.emit('friendAdded',re.intraId.toString());
+		receiverSock.client.emit('friendAdded', se.intraId.toString());
 	}
 
 	@SubscribeMessage('declineNotiFr')

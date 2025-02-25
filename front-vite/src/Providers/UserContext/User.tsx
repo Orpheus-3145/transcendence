@@ -151,6 +151,19 @@ export async function fetchFriend(friend:string): Promise<User> {
 	const response = await fetch(request)
 		.then((raw) => raw.json())
 		.then((json) => json as User)
+
+	return response;
+}
+
+export async function fetchOpponent(friend:string): Promise<User> {
+	const request = new Request(BACKEND_URL + '/users/profile/username/opponent/' + friend, {
+		method: "GET",
+	});
+
+	const response = await fetch(request)
+		.then((raw) => raw.json())
+		.then((json) => json as User)
+
 	return response;
 }
 
