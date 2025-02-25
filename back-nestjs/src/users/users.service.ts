@@ -36,20 +36,6 @@ export class UsersService {
 		user.friends = [];
 		user.blocked = [];
 		user.matchHistory = [];
-		const a = new User();
-		a.accessToken = access.access_token;
-		a.intraId = 432423;
-		a.nameNick = "a";
-		a.nameIntra = "a";
-		a.nameFirst = "b";
-		a.nameLast = "bv";
-		a.email = "av@gmail.com";
-		a.image = userMe.image.link;
-		a.greeting = 'Hello, I have just landed!';
-		a.status = UserStatus.Online;
-		a.friends = [];
-		a.blocked = [];
-		a.matchHistory = [];
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
@@ -58,9 +44,7 @@ export class UsersService {
 				return (new UserDTO(tmp));
 			}
 			await user.validate();
-			await a.validate();
 			await this.usersRepository.save(user);
-			await this.usersRepository.save(a);
 			return new UserDTO(user);
 		} 
 		catch (error) {
@@ -112,6 +96,13 @@ export class UsersService {
 		this.usersRepository.save(user);
 	}
 
+	async setUserStatus(id: number, which: UserStatus)
+	{
+		var user = await this.findOneIntra(id);
+		user.status = which;
+		this.usersRepository.save(user);
+	}
+
 	async setNameNick(user: User, nameNick: string)
 	{
 		user.nameNick = nameNick;
@@ -123,7 +114,6 @@ export class UsersService {
 		const numb = Number(code);
 		return (this.findOneIntra(numb));
 	}
-
 
   	async friendRequestAccepted(iduser:string, idother:string)
   	{
@@ -317,8 +307,8 @@ export class UsersService {
 
 	async storeMatchData(p1name: number, p2name: number, p1score: number, p2score: number, type: string): Promise<void>
 	{
-		var p1: User | null = await this.findOneIntra(p1name); 
-		var p2: User | null = await this.findOneIntra(p2name); 
+		var p1: User | null = await this.findOneId(p1name); 
+		var p2: User | null = await this.findOneId(p2name); 
 
 		var winner: string = "";
 		if (p1score > p2score)

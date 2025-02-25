@@ -34,12 +34,12 @@ export interface matchData {
 export interface User {
 	id: number;
 	intraId: number;
-	nameNick: string | null;
+	nameNick: string;
 	nameIntra: string;
 	nameFirst: string;
 	nameLast: string;
 	email: string;
-	image: string | null;
+	image: string;
 	greeting: string;
 	status: UserStatus;
 	friends: string[];

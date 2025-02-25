@@ -315,32 +315,47 @@ const ProfilePage: React.FC = () => {
 
 	let gameLine = (data: matchData) => 
 	{
-		var color;
-		if (data.whoWon === userProfile.intraId.toString())
-			color = '#1da517'
-		else
-			color = '#b01515';
-
-		var nameOther;
-		var scoreUser;
-		var scoreOther;
-		var namep1 = data.player1;
-		var namep2 = data.player2;
-		if (namep1 === userProfile.nameNick)
+		var friend: User | undefined;
+		var intra: string;
+		var nameOther: string;
+		var scoreUser: string;
+		var scoreOther: string;
+		var color: string;
+		var idOther: number;
+		if (data.player1 === userProfile.intraId.toString())
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
-			nameOther = namep2;
+			intra = data.player2;
+			friend = friendDetails.get(intra);
+			if (friend)
+			{
+				nameOther = friend.nameNick;
+				idOther = friend.id;
+			}
 		}
 		else
 		{
 			scoreUser = data.player2Score;
 			scoreOther = data.player1Score;
-			nameOther = namep1;
+			intra = data.player1;
+			friend = friendDetails.get(intra);
+			if (friend)
+			{
+				nameOther = friend.nameNick;
+				idOther = friend.id;
+			}
 		}
-		var idOther = 2;
-		// var friend = fetchFriend(); need to call this since namep1/p2 won't be nameNick but intraId
 
+		if (!friend) {
+			fetchFriendDetails(intra);
+			return <Stack>Loading...</Stack>;
+		}
+
+		if (data.whoWon === userProfile.intraId.toString())
+			color = '#1da517'
+		else
+			color = '#b01515';
 		return (
 			<Stack
 				direction="row"
@@ -567,7 +582,7 @@ const ProfilePage: React.FC = () => {
 			size = '3rem';
 		if (userProfile.nameNick.length > 18)
 			size = '2rem';
-		if (userProfile.nameNick.lenght > 25)
+		if (userProfile.nameNick.length > 25)
 			size = '1rem';
 		
 		return (
@@ -616,7 +631,7 @@ const ProfilePage: React.FC = () => {
 		const key = event.key;
 		if (key === 'Enter') 
 		{
-			const result = await setNewNickname(userProfile.id, inputValue);
+			const result = await setNewNickname(userProfile.id.toString(), inputValue);
 	  
 			if (result === "") 
 			{
@@ -753,14 +768,12 @@ const ProfilePage: React.FC = () => {
 		if (user.id == tmp.id)
 		{
 			showOwnPage(true);
-			console.log("tmp");
 			setProfileImage(tmp.image);
 			setFriendsList(tmp.friends);
 			setWhichStatus(tmp.status);
 			setMatchHistory(tmp.matchHistory);
 			setUserProfile(tmp);
-			var allRatio = await fetchRatios(tmp);
-			setRatioArr(allRatio);
+			setRatioArr(await fetchRatios(tmp));
 		}
 		else 
 			showOwnPage(false);
@@ -772,7 +785,7 @@ const ProfilePage: React.FC = () => {
 		{
 			setUserProfileNumber(number);
 		});
-	}, []);
+	}, [lastSegment]);
 
 	let whichPage = () =>
 	{
