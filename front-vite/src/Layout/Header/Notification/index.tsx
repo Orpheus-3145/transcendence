@@ -512,8 +512,6 @@ export const Notification: React.FC = () => {
 					<IconButton
 						onClick={() => openBool()}
 						sx={{
-							position: 'absolute',
-							left: '30px',
 							color: color,
 							'&:hover': {
 								color: 'orange',
