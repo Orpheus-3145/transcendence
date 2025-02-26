@@ -61,8 +61,8 @@ export class AuthController {
 	}
 
 	@Post('verify-2fa')
-	async validate2FA(@Query('intraId') intraId: string, @Query('token') token: string, @Res() res: Response) {
-		console.log(`2FA code being verified: ${intraId}, token: ${token}`);
-		return await this.authService.validate2FA(intraId, token, res);
+	async validate2FA(@Body() body: { TOTPcode: string }, @Req() req, @Res() res: Response) {
+		console.log(`2FA code being verified: token: ${body.TOTPcode}`);
+		return await this.authService.validate2FA(body.TOTPcode, req, res);
 	}
 }

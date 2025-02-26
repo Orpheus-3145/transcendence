@@ -115,34 +115,37 @@
 // export default TwoFactorAuth;
 
 import React, { useState } from "react";
-import { UserClient, useUser } from "../../Providers/UserContext/User";
+import { User, useUser } from "../../Providers/UserContext/User";
 import { TextField, Button, Typography, Box, Stack, useTheme } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
-import { BACKEND_URL } from "../../Providers/UserContext/User";
 
 export const TwoFactorAuth: React.FC = () => {
   const theme = useTheme();
-  const { user, setUser } = useUser();
+  const { user, setUser } = useUser().user;
   const [ TOTPcode, setCode ] = useState("");
   const [ hasError, setHasError ] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
-		const intraId = user.id;
-		console.log("Redirection to 2FA validation backend");
+		console.log("User from use user ", JSON.stringify(user));
+		// const url = import.meta.env.URL_BACKEND_VERIFY_2FA
+		const url = 'https://localhost:4000/auth/verify-2fa'
+		console.log("Redirection to 2FA validation backend, url: ", url);
 		const response = await axios.post(
-		import.meta.env.URL_BACKEND_VERIFY_2FA,
-			{ intraId, TOTPcode },
+		url,
+			{ TOTPcode },
 			{ withCredentials: true }
 		);
+		console.log(response.data.valid)
 		if (response.data.userClient) {
-        const newUser: UserClient = response.data.userClient;
-        setUser(newUser);
+			const newUser: User = response.data.user;
+			setUser(newUser);
       }
       navigate('/');
     } catch (error) {
+		console.log(error)
       setHasError(true);
     }
     setCode("");

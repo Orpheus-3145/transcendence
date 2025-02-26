@@ -37,7 +37,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 				const response = await axios.get(import.meta.env.URL_BACKEND_VALIDATE, 
 					{withCredentials: true}
 				);
-				console.log("comes here", response.data);
 				if (response.data) {
 
 					setUser(response.data.user);
