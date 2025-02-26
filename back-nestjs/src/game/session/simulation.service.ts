@@ -1,4 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,8 +18,9 @@ import { GameMode,
 				PlayerIdentity,
 				PaddleDirection,
 				fromArrayToMask,
-				fromMaskToArray} from 'src/game/types/game.enum';
-import { UsersService } from 'src/users/users.service';
+				fromMaskToArray } from 'src/game/types/game.enum';
+import Game from 'src/entities/game.entity';
+import User from 'src/entities/user.entity';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -75,7 +78,8 @@ export default class SimulationService {
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
 		private readonly config: ConfigService,
-		private readonly user: UsersService,
+		@InjectRepository(Game) private gameRepository: Repository<Game>,
+		@InjectRepository(User) private userRepository: Repository<User>,
 	) {
 		this.logger.setContext(SimulationService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
@@ -390,7 +394,7 @@ export default class SimulationService {
 	}
 
 	// if the game ends gracefully
-	endGame(winner: PlayingPlayer): void {
+	async endGame(winner: PlayingPlayer): Promise<void> {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
@@ -406,11 +410,17 @@ export default class SimulationService {
 
 		this.stopEngine();
 		
-		if (this.powerUpSelected.length > 0)
-			this.user.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Power ups");
-		else
-			this.user.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Normal");
-		
+		// Create new channel
+		const gamePlayed = this.gameRepository.create({
+			player1Id : await this.userRepository.findOneBy({intraId : this.player1.intraId}),
+			player2Id : await this.userRepository.findOneBy({intraId : this.player2.intraId}),
+			player1Score : this.player1.score,
+			player2Score : this.player2.score,
+			powerups : fromArrayToMask(this.powerUpSelected),
+		});
+
+		this.gameRepository.save(gamePlayed);
+
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;
 	}

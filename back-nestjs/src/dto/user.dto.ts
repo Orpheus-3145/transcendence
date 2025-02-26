@@ -1,6 +1,6 @@
 import { IsEmail, IsEnum, IsNumber, IsString, Length, IsArray, ValidateNested } from 'class-validator';
 import User  from '../entities/user.entity'
-import { Type } from 'class-transformer';
+// import { Type } from 'class-transformer';
 
 export enum UserStatus {
 	Online = 'online',
@@ -9,36 +9,41 @@ export enum UserStatus {
 }
 
 export class matchData {
-  @IsString()
-  player1: string;
-  @IsString()
-  player2: string;
-  @IsString()
-  player1Score: string;
-  @IsString()
-  player2Score: string;
-  @IsString()
-  whoWon: string;
-  @IsString()
-  type: string;
+	@IsString()
+	player1: string;
+
+	@IsString()
+	player2: string;
+
+	@IsString()
+	player1Score: string;
+
+	@IsString()
+	player2Score: string;
+
+	@IsString()
+	whoWon: string;
+
+	@IsString()
+	type: string;
 }
 
 export class UserDTO {
-  constructor(user: User) {
+	constructor(user: User) {
 		this.id = user.id;
 		this.intraId = user.intraId;
-    this.nameNick = user.nameNick;
-    this.nameIntra = user.nameNick;
-    this.nameFirst = user.nameFirst;
-    this.nameLast = user.nameLast;
-    this.email = user.email;
-    this.image = user.image;
-    this.greeting = user.greeting;
-    this.status = user.status;
-    this.friends = user.friends;
-    this.blocked = user.blocked;
-    this.matchHistory = user.matchHistory
-  }
+		this.nameNick = user.nameNick;
+		this.nameIntra = user.nameNick;
+		this.nameFirst = user.nameFirst;
+		this.nameLast = user.nameLast;
+		this.email = user.email;
+		this.image = user.image;
+		this.greeting = user.greeting;
+		this.status = user.status;
+		this.friends = user.friends;
+		this.blocked = user.blocked;
+		// this.matchHistory = user.matchHistory
+	}
 
 	@IsNumber()
 	id: number;
@@ -81,11 +86,6 @@ export class UserDTO {
 
 	@IsString()
 	role: string;
-
-	@IsArray()
-	@ValidateNested({ each: true })
-	@Type(() => matchData)
-	matchHistory: matchData[];
 }
 
 

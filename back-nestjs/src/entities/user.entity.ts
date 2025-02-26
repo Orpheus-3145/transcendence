@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 import { IsAscii, Length, validateOrReject } from 'class-validator';
 
 import { UserStatus } from 'src/dto/user.dto';
+import Game from './game.entity';
 
 export interface matchData {
 	player1: string;
@@ -60,9 +61,6 @@ export default class User {
 	@Column("text", { array: true, default: '{}' })
 	blocked: string[];
 
-	@Column({ type: 'jsonb', default: () => "'[]'" })
-	matchHistory: matchData[];
-
 	@Column({ nullable: true, default: 'Hello, I have just landed!', length: 100 })
 	@IsAscii()
 	@Length(0, 100)
@@ -80,6 +78,12 @@ export default class User {
 
 	@CreateDateColumn()
 	createdAt: Date;
+
+	@OneToMany(() => Game, (game) => game.player1Id)
+	player1Game: Game[];
+
+	@OneToMany(() => Game, (game) => game.player2Id)
+	player2Game: Game[];
 
 	async validate() {
 		await validateOrReject(this);

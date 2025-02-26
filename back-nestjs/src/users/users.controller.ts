@@ -144,10 +144,10 @@ export class UsersController {
 	}
 
 	@Get('/profile/fetchRatio/:username')
-	async fetchRatio(@Param('username') username:string) 
+	async fetchRatio(@Param('username') intraId:string) 
 	{
-		var user = await this.UserService.getUserIntraId(username);
-		var arr: matchRatio[] = await this.UserService.calculateRatio(user.matchHistory, user);
+		const user: User = await this.UserService.getUserIntraId(intraId);
+		var arr: matchRatio[] = await this.UserService.calculateRatio(user);
 		return (arr);
 	}
 

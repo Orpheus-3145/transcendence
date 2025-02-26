@@ -1,25 +1,26 @@
 import { Injectable, Inject, forwardRef, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, TopologyClosedEvent } from 'typeorm';
+import { Repository } from 'typeorm';
 import { leaderboardData, matchRatio } from '../entities/user.entity';
 import { UserStatus, UserDTO, matchData } from '../dto/user.dto'
 import AccessTokenDTO  from '../dto/auth.dto';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import User from '../entities/user.entity';
+import Game from 'src/entities/game.entity';
 
 
 @Injectable()
 export class UsersService {
 	constructor(
-		@InjectRepository(User)
-		private usersRepository: Repository<User>,
+		@InjectRepository(User) private usersRepository: Repository<User>,
+		@InjectRepository(Game) private gamesRepository: Repository<Game>,
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
  	) { 
 		this.logger.setContext(UsersService.name);	
 	}
-	
+
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
 		const user = new User();
 		user.accessToken = access.access_token;
@@ -34,7 +35,7 @@ export class UsersService {
 		user.status = UserStatus.Online;
 		user.friends = [];
 		user.blocked = [];
-		user.matchHistory = [];
+		// user.matchHistory = [];
 		const a = new User();
 		a.accessToken = access.access_token;
 		a.intraId = 432423;
@@ -48,7 +49,7 @@ export class UsersService {
 		a.status = UserStatus.Online;
 		a.friends = [];
 		a.blocked = [];
-		a.matchHistory = [];
+		// a.matchHistory = [];
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
@@ -76,9 +77,9 @@ export class UsersService {
 		return this.usersRepository.find();
 	}
 
-	// async findOne(intraId: number): Promise<User | null> {
-	// 	return this.usersRepository.findOne({ where: { intraId } });
-	// }
+	async findOne(intraId: number): Promise<User | null> {
+		return this.usersRepository.findOne({ where: { intraId } });
+	}
 
 	async findOneIntra(intraId: number): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { intraId } });
@@ -123,40 +124,39 @@ export class UsersService {
 		return (this.findOneIntra(numb));
 	}
 
-
 	async friendRequestAccepted(iduser:string, idother:string)
 	{
-	var user = await this.getUserId(iduser);
-	var otheruser = await this.getUserId(idother);
-	if ((user == null) || (otheruser == null))
-	{
-		console.log("ERROR accepting friendreq");
-		throw new HttpException('Not Found', 404);
-	}
-	(user).friends.push((otheruser).intraId.toString());
-	this.usersRepository.save((user));
-	(otheruser).friends.push((user).intraId.toString());
-	this.usersRepository.save((otheruser));
+		var user = await this.getUserId(iduser);
+		var otheruser = await this.getUserId(idother);
+		if ((user == null) || (otheruser == null))
+		{
+			console.log("ERROR accepting friendreq");
+			throw new HttpException('Not Found', 404);
+		}
+		(user).friends.push((otheruser).intraId.toString());
+		this.usersRepository.save((user));
+		(otheruser).friends.push((user).intraId.toString());
+		this.usersRepository.save((otheruser));
 	}
 
 	async removeFriend(user: User, other: User)
 	{
-	var newlist = user.friends.filter(friend => friend !== other.intraId.toString());
-	user.friends = newlist;
-	this.usersRepository.save(user);
-	newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
-	other.friends = newlist;
-	this.usersRepository.save(other);
+		var newlist = user.friends.filter(friend => friend !== other.intraId.toString());
+		user.friends = newlist;
+		this.usersRepository.save(user);
+		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
+		other.friends = newlist;
+		this.usersRepository.save(other);
 	}
 
 	async blockUser(user: User, other: User)
 	{
-	var str: string = other.intraId.toString();
-	if (user.blocked.find((blockedId) => blockedId === str))
-		return ;
-	this.removeFriend(user, other);
-	user.blocked.push(other.intraId.toString());
-	this.usersRepository.save(user);
+		var str: string = other.intraId.toString();
+		if (user.blocked.find((blockedId) => blockedId === str))
+			return ;
+		this.removeFriend(user, other);
+		user.blocked.push(other.intraId.toString());
+		this.usersRepository.save(user);
 	}
   
 	async unBlockUser(user: User, other: User)
@@ -167,15 +167,22 @@ export class UsersService {
 	}
 
 	async changeProfilePic(user: User, image:string)
-  	{
+	{
 		user.image = image;
 		this.usersRepository.save(user);
 		return (image);
-  	}
+	}
 
-	async calculateRatio(arr: matchData[], userProfile: User)
+	async calculateRatio(user: User)
 	{
-		if (arr.length === 0)
+		const gamesPlayedbyId: Game[] = await this.gamesRepository.find(
+			{ where : [
+				{ player1Id : user },
+				{ player2Id : user },
+			]
+		});
+
+		if (gamesPlayedbyId.length === 0)
 		{
 			var tmp: matchRatio[] = [
 			{
@@ -196,22 +203,24 @@ export class UsersService {
 		var powerAll = 0;
 		var allWin = 0;
 		var allAll = 0;
-		arr.forEach((item: matchData) =>
+
+		gamesPlayedbyId.forEach((item: Game) =>
 		{
-			if (item.type === "Normal")
+			if (item.powerups === 0)
 			{
 				normalAll += 1;
-				if (item.whoWon === userProfile.intraId.toString())
+				if ((item.player1Score > item.player2Score && item.player1Id === user) ||
+						(item.player2Score > item.player1Score && item.player2Id === user))
 					normalWin += 1;
-			}
-			else
-			{
+			} else {
 				powerAll += 1;
-				if (item.whoWon === userProfile.intraId.toString())
+				if ((item.player1Score > item.player2Score && item.player1Id === user) ||
+						(item.player2Score > item.player1Score && item.player2Id === user))
 					powerWin += 1;
 			}
 			allAll += 1;
-			if (item.whoWon === userProfile.intraId.toString())
+			if ((item.player1Score > item.player2Score && item.player1Id === user) ||
+					(item.player2Score > item.player1Score && item.player2Id === user))
 				allWin += 1;
 		});
 			
@@ -235,7 +244,7 @@ export class UsersService {
 			title: "All", value: allAll, rate: ratioAll
 		}];
 
-		return (resultArr);		
+		return (resultArr);
 	}
 
 	async fillArray(allData: leaderboardData[], type: string): Promise<leaderboardData[]>
@@ -288,7 +297,7 @@ export class UsersService {
 
 		allUser.forEach(async (item: User) => 
 		{
-			tmpratio = await this.calculateRatio(item.matchHistory, item);
+			tmpratio = await this.calculateRatio(item);
 			var tmp: leaderboardData = { user: item, ratio: tmpratio };
 			allData.push(tmp);
 		});	
@@ -296,6 +305,7 @@ export class UsersService {
 		return (allData);
 	}
 
+	// global leaderboard
 	async leaderboardCalculator(): Promise<leaderboardData[][]>
 	{
 		var allUser = await this.findAll();
@@ -313,21 +323,25 @@ export class UsersService {
 		return (result);
 	}
 
-	async storeMatchData(p1name: number, p2name: number, p1score: number, p2score: number, type: string): Promise<void>
-	{
-		var p1: User | null = await this.findOneId(p1name); 
-		var p2: User | null = await this.findOneId(p2name); 
-		console.log(`p1 ${p1name}: ${JSON.stringify(p1)}\np2 ${p2name}: ${JSON.stringify(p2)}`);
-		var winner: string = "";
-		if (p1score > p2score)
-			winner = p1name.toString();
-		else
-			winner = p2name.toString();
+	// async getGamesPlayedById(intraId: number): Promise<Game[]> {
+
+		
+	// }
+	// async storeMatchData(p1name: number, p2name: number, p1score: number, p2score: number, type: string): Promise<void>
+	// {
+	// 	var p1: User | null = await this.findOneId(p1name); 
+	// 	var p2: User | null = await this.findOneId(p2name); 
+	// 	console.log(`p1 ${p1name}: ${JSON.stringify(p1)}\np2 ${p2name}: ${JSON.stringify(p2)}`);
+	// 	var winner: string = "";
+	// 	if (p1score > p2score)
+	// 		winner = p1name.toString();
+	// 	else
+	// 		winner = p2name.toString();
 	
-		var match: matchData = {player1: p1name.toString(), player2: p2name.toString(), player1Score: p1score.toString(), player2Score: p2score.toString(), whoWon: winner, type: type};
-		p1.matchHistory.push(match);
-		p2.matchHistory.push(match);
-		this.usersRepository.save(p1);
-		this.usersRepository.save(p2);
-	}
+	// 	var match: matchData = {player1: p1name.toString(), player2: p2name.toString(), player1Score: p1score.toString(), player2Score: p2score.toString(), whoWon: winner, type: type};
+	// 	p1.matchHistory.push(match);
+	// 	p2.matchHistory.push(match);
+	// 	this.usersRepository.save(p1);
+	// 	this.usersRepository.save(p2);
+	// }
 }
