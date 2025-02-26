@@ -104,7 +104,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 								icon: <Avatar />
 								
 							})) ,
-                            owner: channel?.ch_owner,
+                            owner: channel.ch_owner,
                         },
                     })),
                 }));

@@ -7,6 +7,7 @@ import { Add as AddIcon } from '@mui/icons-material';
 import { myself, userInChannel, userIsAdmin } from '../Channels/index';
 import { useUser } from '../../Providers/UserContext/User';
 import { socket } from '../../Layout/Chat/ChatContext';
+import { prev } from 'cheerio/dist/commonjs/api/traversing';
 
 // User test data
 // const testUser = {
@@ -23,6 +24,8 @@ interface SettingsModalProps {
 	setChatProps: (chatProps: ChatProps) => void;
 	selectedChannel: ChatRoom;
 	setSelectedChannel: (selectedChannel: ChatRoom) => void;
+	joinedChannels: ChatRoom[]
+	setJoinedChannels: (joinedChannels: ChatRoom[]) => void;
 	availableChannels: ChatRoom[]
 	setAvailableChannels: (availableChannels: ChatRoom[]) => void;
 	setIsSettingsView: boolean
@@ -39,6 +42,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	setChatProps,
 	selectedChannel,
 	setSelectedChannel,
+	joinedChannels,
+	setJoinedChannels,
 	availableChannels,
 	setAvailableChannels,
 	setIsSettingsView
@@ -170,7 +175,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		socket.emit('deleteChannel', channel_id);
 	
 		// Listen for success or error response from the server
-		socket.on('channelDeleted', (deletedChannel) => {
+		socket.once('channelDeleted', (deletedChannel) => {
 			if (deletedChannel) {
 				const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== channel_id);
 				setChatProps({ ...chatProps, chatRooms: updatedChannels });
@@ -181,41 +186,70 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			}
 		});
 	
-		socket.on('error', (error) => {
+		socket.once('error', (error) => {
 			console.error(error.message);
 		});
 	};
 	
 
 	const handleLeaveChannel = () => {
-		//--> CALL TO BACKEND <-- //
-		
 		setIsSettingsView(false);
-		setChatProps((prevState) => ({
-			...prevState,
-			chatRooms:  prevState.chatRooms.filter((channel) => channel.name !== selectedChannel.name),
-		}));
-		if (selectedChannel.settings.users.length === 1 && userInChannel(user.nameIntra, selectedChannel)) {
-			setSelectedChannel(null);
-			return ;
-		}
-		const filteredUsers = selectedChannel.settings.users.filter((user) => user.name !== user.nameIntra);
-		const updatedChannel: ChatRoom = {
-			...selectedChannel,
-			settings: {
-				...selectedChannel.settings,
-				users: filteredUsers,
-				owner: selectedChannel.settings.owner === user.nameIntra ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
-			},
+
+		const data = {
+			user_id: user.id, 
+			channel_id: selectedChannel.id,
+			role: selectedChannel.settings.users.find(user_ => user.id === user_.id).role,
 		};
-		setAvailableChannels((prevState) => ([
-			...prevState,
-			updatedChannel,
-		]))
+
+		socket.emit('leaveChannel', data);
+		
+		socket.once('leftChannel', (response) => {
+			if (response.channel_id === selectedChannel.id) {
+				setJoinedChannels((prevState) => prevState.filter(ch => ch.id !== selectedChannel.id));
+
+			}
+			
+			const filteredUsers = selectedChannel.settings.users.filter((usr) => usr.name !== user.nameIntra);
+			const updatedChannel: ChatRoom = {
+				...selectedChannel,
+				settings: {
+					...selectedChannel.settings,
+					users: filteredUsers,
+					owner: selectedChannel.settings.owner === user.nameIntra ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
+				},
+			};
+			
+			// console.log('Filtered users', filteredUsers);
+			// if (filteredUsers.length )
+			// setAvailableChannels((prevState) => {
+			// 	const newChannels = [...prevState, updatedChannel];
+			// 	// console.log("Updated availableChannels:", n`ewChannels);
+			// 	return newChannels;
+			// });
+
+			setAvailableChannels((prevState) => [...prevState, updatedChannel]);
+
+			setSelectedChannel(null);
+		});
+		
+		socket.once('leavingChannelError', (error) => {
+			console.error(error.message);
+			alert(`Error joining channel: ${error.message}`);
+		});
 
 
-		setSelectedChannel(null);
+		// if (selectedChannel.settings.users.length === 1 && userInChannel(user.nameIntra, selectedChannel)) {
+		// 	setSelectedChannel(null);
+		// 	return ;
+		// }
+
+		// setAvailableChannels((prevState) => [...prevState, updatedChannel]);
+
+		
+
 	};
+
+
 	// console.log(selectedChannel.settings.owner, user.nameIntra);
 	return (
 		<Modal open={open} onClose={onClose}>
