@@ -16,6 +16,7 @@ import { HttpException } from '@nestjs/common';
 import {  PowerUpSelected } from 'src/game/types/game.enum';
 import User from 'src/entities/user.entity';
 
+import { Inject, forwardRef } from '@nestjs/common';
 
 interface Websock {
 	client: Socket;
@@ -38,7 +39,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	server: Server;
 	private sockets: Websock[] = [];
 
-	constructor(private notificationService: NotificationService, private userService: UsersService) {};
+	constructor(
+		@Inject(forwardRef(() => NotificationService))
+		private notificationService: NotificationService, 
+		@Inject(forwardRef(() => UsersService))
+		private userService: UsersService
+	) {};
 
 	handleConnection(client: Socket) {
 		console.log(`Noti Client connected: ${client.id}`);

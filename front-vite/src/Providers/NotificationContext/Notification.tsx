@@ -18,6 +18,7 @@ export enum NotificationType {
 	Message = 'Message',
 	friendRequest = 'Friend Request',
 	gameInvite = 'Game Invite',
+	groupChat = 'Group Chat',
 }
 
 export enum NotificationStatus {

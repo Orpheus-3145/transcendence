@@ -11,7 +11,7 @@ import GameModule from 'src/game/game.module';
 	imports: [TypeOrmModule.forFeature([Notification]), forwardRef(() => UsersModule), forwardRef(() => ChatModule), GameModule],
 	controllers: [],
 	providers: [NotificationService, NotificationGateway],
-	exports: [NotificationService, TypeOrmModule],
+	exports: [NotificationService, NotificationGateway, TypeOrmModule],
 })
 export class NotificationModule {}
 

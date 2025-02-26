@@ -124,6 +124,22 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 	}
 }
 
+export async function fetchUser(username: string): Promise<User | null>
+{
+	const request = new Request(BACKEND_URL + '/users/profile/fetchUser/' + username, {
+		method: "GET",
+	});
+	const response = await fetch(request);
+
+	const text = await response.text();
+	if (!text) {
+		return null;
+	}
+
+	return JSON.parse(text) as User;
+
+}
+
 export async function setNewNickname(username:string, nickname:string): Promise<string> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick', {
 		method: "POST",

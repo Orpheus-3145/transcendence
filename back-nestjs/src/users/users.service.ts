@@ -36,6 +36,20 @@ export class UsersService {
 		user.friends = [];
 		user.blocked = [];
 		user.matchHistory = [];
+		// const a = new User();
+		// a.accessToken = access.access_token;
+		// a.intraId = 321214;
+		// a.nameNick = "aa";
+		// a.nameIntra = "aa";
+		// a.nameFirst = "a";
+		// a.nameLast = "b";
+		// a.email = "a";
+		// a.image = userMe.image.link;
+		// a.greeting = 'Hello, I have just landed!';
+		// a.status = UserStatus.Online;
+		// a.friends = [];
+		// a.blocked = [];
+		// a.matchHistory = [];
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
@@ -44,7 +58,9 @@ export class UsersService {
 				return (new UserDTO(tmp));
 			}
 			await user.validate();
+			// await a.validate();
 			await this.usersRepository.save(user);
+			// await this.usersRepository.save(a);
 			return new UserDTO(user);
 		} 
 		catch (error) {
