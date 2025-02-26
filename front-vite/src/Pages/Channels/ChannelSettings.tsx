@@ -227,7 +227,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			// 	return newChannels;
 			// });
 
-			setAvailableChannels((prevState) => [...prevState, updatedChannel]);
+			if (filteredUsers.length > 0) {
+				setAvailableChannels((prevState) => [...prevState, updatedChannel]);
+			}
 
 			setSelectedChannel(null);
 		});
