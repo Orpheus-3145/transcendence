@@ -44,7 +44,7 @@ export interface User {
 	status: UserStatus;
 	friends: string[];
 	blocked: string[];
-	matchHistory: matchData[];
+	// matchHistory: matchData[];
 }
 
 interface UserContextType {

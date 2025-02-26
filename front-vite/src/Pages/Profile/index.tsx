@@ -753,7 +753,6 @@ const ProfilePage: React.FC = () => {
 		if (user.id == tmp.id)
 		{
 			showOwnPage(true);
-			console.log("tmp");
 			setProfileImage(tmp.image);
 			setFriendsList(tmp.friends);
 			setWhichStatus(tmp.status);
