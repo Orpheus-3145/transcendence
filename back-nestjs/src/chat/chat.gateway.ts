@@ -116,10 +116,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			client.emit('joinedChannel', { channel_id });
 			this.server.to(channel_id.toString()).emit('userJoinedChannel', { user_id, channel_id });
 			console.log(`User ${user_id} successfully joined channel ${channel_id}`);
-
 		} catch (error) {
 			console.error(`Error joining channel: ${error.message}`);
-			client.emit('error', { message: 'Could not join channel' });
+			client.emit('joinChannelError', { message: 'Could not join channel' });
 		}
 	}
 
@@ -139,7 +138,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			client.emit('leftChannel', { channel_id });
 		} catch (error) {
 			console.error(`Error leaving channel: ${error.message}`);
-			client.emit('error', { message: 'Could not leave channel' });
+			client.emit('leavingChannelError', { message: 'Could not leave channel' });
 		}
 	}
 

@@ -103,7 +103,7 @@ export class ChatService {
 	  const membership = await this.channelMemberRepository.findOne({
 		where: { user_id, channel_id },
 	  });
-	  console.log('Membership:', membership);
+	  console.log('Membership:', membership.member_role);
 	
 	  if (!membership) {
 		throw new Error('User is not a member of the channel');
@@ -111,34 +111,37 @@ export class ChatService {
 	
 	  // Check if the user is the owner of the channel
 	  if (membership.member_role === 'owner') {
-		console.log('Owner!');
-		// Transfer ownership to another admin or member
-		const otherMembers = await this.channelMemberRepository.find({
-		  where: { channel_id },
-		  order: { member_role: 'ASC' }, // Admins will appear before members
-		});
-	
-		if (otherMembers.length > 1) {
-		  // Assign the first non-owner member as the new owner
-		  const newOwner = otherMembers.find(
-			(member: ChannelMember) => member.user_id !== user_id
-		  );
-		  if (newOwner) {
-			newOwner.member_role = 'owner';
-			await this.channelMemberRepository.save(newOwner);
-		  }
-		} else {
-			console.log('Channel empty!');
-		  // If the channel is empty, delete the channel
-		  await this.channelMemberRepository.delete({ channel_id });
-		  await this.channelRepository.delete({ channel_id });
-		  return;
-		}
+			// Transfer ownership to another admin or member
+			const otherMembers = await this.channelMemberRepository.find({
+				where: { channel_id },
+				order: { member_role: 'ASC' }, // Admins will appear before members
+			});
+		
+			if (otherMembers.length > 1) {
+				// Assign the first non-owner member as the new owner
+				const newOwner = otherMembers.find(
+					(member: ChannelMember) => member.user_id !== user_id
+				);
+				console.log(newOwner);
+				if (newOwner) {
+					newOwner.member_role = 'owner';
+					await this.channelMemberRepository.save(newOwner);
+				}
+
+				this.changeOwner(channel_id, newOwner.name);
+
+			} else {
+				console.log('Channel empty!');
+				// If the channel is empty, delete the channel
+				await this.channelMemberRepository.delete({ channel_id });
+				await this.channelRepository.delete({ channel_id });
+				return;
+			}
 	  }
 	
 	  // Remove the user from the channel
 	  await this.channelMemberRepository.delete({ user_id, channel_id });
-}
+	}
 
 	// Send a message
 	// async sendMessage( sender_id: number, receiver_id: number, content: string ,
@@ -157,6 +160,9 @@ export class ChatService {
 	// 	return this.messageRepository.save(message);
 	// }
 
+
+
+	
 	async saveMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {
 		const channel = await this.channelRepository.findOne({
 		  where: { channel_id: receiver_id },
@@ -256,6 +262,14 @@ export class ChatService {
 		}
 	}
 
+	async changeOwner(channel_id: number, new_owner: string) : Promise<void> {
+		const channel = await this.getChannelById(channel_id);
+		if (!channel) {
+			throw new Error(`Channel with ID ${channel_id} not found`);
+		}
+		channel.ch_owner = new_owner;
+		await this.channelRepository.save(channel);
+	}
 }
 
 
