@@ -40,7 +40,7 @@ const UserSettings = () => {
 	const intraId = user.intraId;
 
 	// State
-	const [is2FAEnabled, setIs2FAEnabled] = useState(user?.twoFactorEnabled || false);
+	const [is2FAEnabled, setIs2FAEnabled] = useState(user?.twoFactorSecret || false);
 	const [qrCode, setQrCode] = useState<string | null>('');
 	const [secret, setSecret] = useState('');
 	// const [otp, setOtp] = useState('');

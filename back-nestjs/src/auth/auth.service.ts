@@ -35,7 +35,7 @@ export class AuthService {
 		return {access: access, intraId: intraId, userMe: userMe};
 	}
 
-	async getUserDTO(intraId: number, access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO>{
+	async getUserDTO(intraId: number, access: AccessTokenDTO, userMe: Record<string, any>): Promise<{userDTO: UserDTO, is2FAEnabled: boolean}>{
 		// Check if user exists in DB or create it
 		const user = await this.userService.findOne(intraId);
 		let userDTO = null;
@@ -54,7 +54,8 @@ export class AuthService {
 		if (userDTO === null) {
 			userDTO = new UserDTO(user);
 		}
-		return userDTO;
+		const is2FAEnabled = user.twoFactorSecret != null;
+		return {userDTO: userDTO, is2FAEnabled: is2FAEnabled};
 	}
 
 	// authType is either auth_token or 2fa_token
@@ -80,11 +81,11 @@ export class AuthService {
 				HttpStatus.UNAUTHORIZED,
 			)
 		}
-		const userDTO = await this.getUserDTO(intraId, access, userMe);
+		const {userDTO, is2FAEnabled} = await this.getUserDTO(intraId, access, userMe);
 
 	
 		// If 2FA is enabled, send a response prompting for 2FA verification
-		if (userDTO.twoFactorEnabled) {
+		if (is2FAEnabled) {
 			this.logger.debug(`2FA required for user ${userMe.login}`);
 			this.addCookie('2fa_token', intraId, res);
 			const frontend2FARedirect = `${this.config.get<string>('URL_FRONTEND_2FA')}`;
@@ -299,7 +300,6 @@ export class AuthService {
 				);
 			}
 			user.twoFactorSecret = secret;
-			user.twoFactorEnabled = true; // Remove variable
 			this.userService.update(user);
 
 		}
@@ -349,7 +349,6 @@ export class AuthService {
 		// Disable 2FA
 		try {
 			user.twoFactorSecret = null;
-			user.twoFactorEnabled = false;
 			await this.userService.update(user);
 			res.clearCookie('2fa_token');
 
@@ -375,8 +374,8 @@ export class AuthService {
 				HttpStatus.NOT_FOUND
 			);
 		}
-		res.status(200).json(user.twoFactorEnabled);
-		// return { is2FAEnabled: user.twoFactorEnabled };
+		const twoFactorEnabled = user.twoFactorSecret != null
+		res.status(200).json({is2FAEnabled: twoFactorEnabled});
 	}
 
 }

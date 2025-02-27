@@ -65,6 +65,11 @@ export const TwoFactorAuth: React.FC = () => {
 					value={tempCode}
 					color={hasError ? 'error' : 'secondary'}
 					onChange={(e) => setCode(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') {
+							handleSubmit();
+						}
+					}}
 					inputProps={{ maxLength: 6 }}
 					InputLabelProps={{
 						color: 'secondary',

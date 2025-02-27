@@ -44,9 +44,6 @@ export default class User {
 	})
 	status: UserStatus;
 
-	@Column({ nullable: false, default: false})
-	twoFactorEnabled: boolean;
-
 	@Column({ nullable: true, default: null})
 	twoFactorSecret: string;
 

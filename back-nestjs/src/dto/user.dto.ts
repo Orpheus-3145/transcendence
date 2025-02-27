@@ -18,8 +18,6 @@ export class UserDTO {
 		this.image = user.image;
 		this.greeting = user.greeting;
 		this.status = user.status;
-		// this.twoFactorSecret = user.twoFactorSecret;
-		this.twoFactorEnabled = user.twoFactorEnabled;
 	}
 
 	@IsNumber()
@@ -53,6 +51,4 @@ export class UserDTO {
 	@IsString()
 	twoFactorSecret: string | null;
 
-	@IsBoolean()
-	twoFactorEnabled: boolean
 }
