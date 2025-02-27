@@ -12,57 +12,60 @@ export class AuthController {
 
 	@Get('login')
 	async login(@Query('code') code: string, @Res() res: Response) {
-		console.log("LOGIN!");
-		return this.authService.login(code, res);
+		console.log("Login Endpoint");
+		await this.authService.login(code, res);
 	}
 
 	@Get('validate')
 	async validate(@Req() req: Request, @Res() res: Response) {
-		console.log("VALIDATE!");
-		this.authService.validate(req, res);
+		console.log("Validate Endpoint");
+		await this.authService.validate(req, res);
 	}
 
 	@Get('logout')
 	async logout(@Res() res: Response) {
-		this.authService.logout(res);
+		await this.authService.logout(res);
 	}
 
 	// Generate 2FA QRCode and send it to the FE
 	@Get('generate-qr')
-	async getQRCode(@Query('intraId') intraId: string) {
-		console.log('Received request to enable 2FA for intraId:', intraId); // Debug log
+	async getQRCode(@Query('intraId') intraId: string,@Res() res: Response) {
+		console.log('Generate QR Endpoint by IntraId: ', intraId); // Debug log
 		try {
-			const result = await this.authService.generateQRCode();
-			return result;
+			await this.authService.generateQRCode(res);
 		} catch (error) {
 			console.error('Error in enable-2FA:', error); // Log errors
 		}
 	}
 
+	// If QR is verified, save the 2fa secret to the database
 	@Post('verify-qr')
 	async verifyQRCode(
 	@Body() body: { intraId: string; secret: string; token: string },
 	@Res() res: Response
 	) {
-	console.log(`Secret: ${body.secret}, Token: ${body.token}`);
+		console.log(`Verify QR Endpoint with Secret: ${body.secret}, Token: ${body.token}`);
 		const isVerified = await this.authService.verifyQRCode(body.intraId, body.secret, body.token);
+		console.log("QR code verified status is ", isVerified);
 		return res.json({ success: isVerified });
 
 	}
 
 	@Post('delete-2fa')
 	async deleteQRCode(@Query('intraId') intraId: string, @Res() res: Response) {
-		return await this.authService.delete2FA(intraId, res);
+		console.log("Delete 2fa Endpoint IntraId: ", intraId);
+		await this.authService.delete2FA(intraId, res);
 	}
 
 	@Get('status-2fa')
-	async get2FAStatus(@Query('intraId') intraId: string) {
-		return await this.authService.get2FAStatus(intraId);
+	async get2FAStatus(@Query('intraId') intraId: string, @Res() res: Response) {
+		console.log("Get 2fa Status Endpoint IntraId: ", intraId);
+		return await this.authService.get2FAStatus(intraId, res);
 	}
 
 	@Post('verify-2fa')
 	async validate2FA(@Body() body: { TOTPcode: string }, @Req() req, @Res() res: Response) {
-		console.log(`2FA code being verified: token: ${body.TOTPcode}`);
-		return await this.authService.validate2FA(body.TOTPcode, req, res);
+		console.log("Validate 2fa Endpoint TOTPcode: ", body.TOTPcode);
+		await this.authService.validate2FA(body.TOTPcode, req, res);
 	}
 }
