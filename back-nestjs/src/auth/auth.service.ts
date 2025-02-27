@@ -97,6 +97,7 @@ export class AuthService {
 		res.redirect(this.config.get<string>('URL_FRONTEND'));
 	}
 
+	// Maybe think about adding some of this inside a middleware guard
 	async validate(req: Request, res: Response) {
 		const responseData = {user: {} as UserDTO | {}};
 		const twoFAToken = req.cookies['2fa_token'];

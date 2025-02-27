@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Post, Query, Req, Res, UseFilters } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from 'src/auth/auth.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 
-// Maybe add a guard
+// Maybe add a guard like:
+// @UseGuards(AuthGuard)
 @Controller('auth')
 @UseFilters(SessionExceptionFilter)
 export class AuthController {
@@ -16,6 +17,7 @@ export class AuthController {
 		await this.authService.login(code, res);
 	}
 
+	// Token validation happens here. Part of this might make more sense as a guard middleware
 	@Get('validate')
 	async validate(@Req() req: Request, @Res() res: Response) {
 		console.log("Validate Endpoint");
@@ -27,7 +29,7 @@ export class AuthController {
 		await this.authService.logout(res);
 	}
 
-	// Generate 2FA QRCode and send it to the FE
+	// Generate 2FA QRCode and send it to the front-end
 	@Get('generate-qr')
 	async getQRCode(@Query('intraId') intraId: string,@Res() res: Response) {
 		console.log('Generate QR Endpoint by IntraId: ', intraId); // Debug log
