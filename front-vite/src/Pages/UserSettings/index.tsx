@@ -77,7 +77,7 @@ const UserSettings = () => {
 		if (enable2FA) {
 			// User wants to enable 2FA → Generate QR Code
 			try {
-				const response = await axios.get(import.meta.env.URL_BACKEND_QR_GENERATE + `?intraId=${intraId}`);
+				const response = await axios.get(import.meta.env.URL_BACKEND_QR_GENERATE);
 				setQrCode(response.data.qrCode);
 				setSecret(response.data.secret)
 				setOpenQRDialog(true);

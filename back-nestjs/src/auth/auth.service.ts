@@ -35,28 +35,25 @@ export class AuthService {
 		return {access: access, intraId: intraId, userMe: userMe};
 	}
 
-	async getUserDTO(intraId: number, access: AccessTokenDTO, userMe: Record<string, any>): Promise<{userDTO: UserDTO, is2FAEnabled: boolean}>{
-		// Check if user exists in DB or create it
-		const user = await this.userService.findOne(intraId);
-		let userDTO = null;
-		if (user === null) {
+	async handleUserData(intraId: number, access: AccessTokenDTO, userMe: Record<string, any>): Promise<boolean> {
+		let user = await this.userService.findOne(intraId);
+
+		if (!user) {
 			try {
-				userDTO = await this.userService.createUser(access, userMe);
-			} 
-			catch (error) {
+				const userDTO = await this.userService.createUser(access, userMe);
+				return false;
+			} catch (error) {
 				this.thrower.throwSessionExcp(
-					`Creating user failed`,
+					'Creating user failed',
 					`${AuthService.name}.${this.constructor.prototype.login.name}()`,
-					HttpStatus.UNAUTHORIZED,
+					HttpStatus.UNAUTHORIZED
 				);
-			} 
+			}
 		}
-		if (userDTO === null) {
-			userDTO = new UserDTO(user);
-		}
-		const is2FAEnabled = user.twoFactorSecret != null;
-		return {userDTO: userDTO, is2FAEnabled: is2FAEnabled};
+		// If twoFactorSecret string is not null, 2FA is enabled
+		return user?.twoFactorSecret != null;
 	}
+
 
 	// authType is either auth_token or 2fa_token
 	addCookie(authType: string, intraId: number, res: Response) {
@@ -81,7 +78,7 @@ export class AuthService {
 				HttpStatus.UNAUTHORIZED,
 			)
 		}
-		const {userDTO, is2FAEnabled} = await this.getUserDTO(intraId, access, userMe);
+		const is2FAEnabled = await this.handleUserData(intraId, access, userMe);
 
 	
 		// If 2FA is enabled, send a response prompting for 2FA verification
@@ -99,20 +96,15 @@ export class AuthService {
 
 	// Maybe think about adding some of this inside a middleware guard
 	async validate(req: Request, res: Response) {
-		const responseData = {user: {} as UserDTO | {}};
 		const twoFAToken = req.cookies['2fa_token'];
 		if (twoFAToken) {
-			const user = { id: 0, auth2F: true };
-			responseData.user = user;
-			res.status(200).json(responseData);
-			return ;
+			return res.status(200).json({ user: { id: 0, auth2F: true } });
 		}
 
 		// Extract token
 		const token = req.cookies['auth_token'];
 		if (!token) {
-			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
-			return ;
+			return res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 		}
 
 		this.logger.log(`Validating token [${token}]`);
@@ -146,8 +138,8 @@ export class AuthService {
 			);
 
 		// Success
-		responseData.user = new UserDTO(user);
-		res.status(200).json(responseData);
+		this.logger.log(`Token [${token}] validated`);
+		res.status(200).json({ user: new UserDTO(user) });
 	}
 
 	async logout(res: Response, redir?: string, mess?: string) {
