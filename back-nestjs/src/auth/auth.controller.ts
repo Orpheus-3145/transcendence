@@ -64,8 +64,8 @@ export class AuthController {
 	}
 
 	@Post('verify-2fa')
-	async validate2FA(@Body() body: { TOTPcode: string }, @Req() req, @Res() res: Response) {
-		console.log("Validate 2fa Endpoint TOTPcode: ", body.TOTPcode);
-		await this.authService.validate2FA(body.TOTPcode, req, res);
+	async validate2FA(@Body() body: { tempCode: string }, @Req() req, @Res() res: Response) {
+		console.log("Validate 2fa Endpoint tempCode: ", body.tempCode);
+		await this.authService.validate2FA(body.tempCode, req, res);
 	}
 }

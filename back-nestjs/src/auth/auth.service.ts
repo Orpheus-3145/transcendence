@@ -41,9 +41,9 @@ export class AuthService {
 		let userDTO = null;
 		if (user === null) {
 			try {
-				console.log('User not found, creating new user...');
 				userDTO = await this.userService.createUser(access, userMe);
-			} catch (error) {
+			} 
+			catch (error) {
 				this.thrower.throwSessionExcp(
 					`Creating user failed`,
 					`${AuthService.name}.${this.constructor.prototype.login.name}()`,
@@ -51,7 +51,6 @@ export class AuthService {
 				);
 			} 
 		}
-
 		if (userDTO === null) {
 			userDTO = new UserDTO(user);
 		}
@@ -99,7 +98,6 @@ export class AuthService {
 
 	async validate(req: Request, res: Response) {
 		const responseData = {user: {} as UserDTO | {}};
-		// console.log(`Cookies: ${req.cookies}`);
 		const twoFAToken = req.cookies['2fa_token'];
 		if (twoFAToken) {
 			const user = { id: 0, auth2F: true };
@@ -186,7 +184,6 @@ export class AuthService {
 				redirect_uri: this.config.get<string>('URL_BACKEND_LOGIN'),
 			}),
 		});
-		console.log(`Response: ${JSON.stringify(response)}`);
 		if (!response.ok)
 			this.thrower.throwSessionExcp(
 				`Problem with Intra42 temp key fetching, response: ${response.body}`,
@@ -214,7 +211,6 @@ export class AuthService {
 				'Content-Type': 'application/json',
 			},
 		});
-		console.log(`Response: ${JSON.stringify(response)}`)
 		if (!response.ok)
 			this.thrower.throwSessionExcp(
 				`Problem with Intra42 temp user fetching, response: ${response.body}`,
@@ -252,9 +248,8 @@ export class AuthService {
 				HttpStatus.UNAUTHORIZED
 			);
 		}
-		console.log("Decoded token intraId: ", decoded.intraId);
-		const user = await this.userService.findOne(Number(decoded.intraId));
 
+		const user = await this.userService.findOne(Number(decoded.intraId));
 		if (user === null) {
 			this.thrower.throwSessionExcp(
 				'User not found',
@@ -269,6 +264,7 @@ export class AuthService {
 				HttpStatus.UNAUTHORIZED
 			);
 		}
+
 		const isValid = this.verify2FACode(user.twoFactorSecret, token)
 		if (!isValid) {
 			this.logger.debug("2FA code could not be verified.");
@@ -286,11 +282,12 @@ export class AuthService {
 
 	// Verify QRcode to enabled 2fa
 	async verifyQRCode(intraId: string, secret: string, token: string): Promise<boolean> {
-		console.log("Verifying QR code");
+		this.logger.log("Verifying QR Code");
+
 		const isValid = this.verify2FACode(secret, token);
 		if (!isValid) {
 			this.logger.debug("Invalid 2FA code");
-			return (isValid);
+			return (false);
 		}
 		try {
 			let user = await this.userService.findOne(Number(intraId));
@@ -302,17 +299,20 @@ export class AuthService {
 				);
 			}
 			user.twoFactorSecret = secret;
-			user.twoFactorEnabled = true;
+			user.twoFactorEnabled = true; // Remove variable
 			this.userService.update(user);
 
 		}
 		catch (error) {
-			this.logger.log(`Token verification was ${isValid}, but error updating database.`)
-			return (isValid);
+			this.logger.log(`Token verification was valid, but error updating database.`)
+			this.thrower.throwSessionExcp(
+				'QR verification was valid, but error updating database.',
+				'AuthService.verifyTwoFactorAuth',
+				HttpStatus.NOT_FOUND
+			);
 		}
-		
-		this.logger.debug("2FA successfully enabled.")
-		return (isValid);
+		this.logger.debug("QR Code verified, 2FA successfully enabled.")
+		return (true);
 	}
 
 	generate2FASecret(): speakeasy.GeneratedSecret {
@@ -366,7 +366,7 @@ export class AuthService {
 		// return { message: '2FA has been disabled successfully.' };
 	}
 
-	async get2FAStatus(intraId: string, res: Response): Promise<{ is2FAEnabled: boolean }> {
+	async get2FAStatus(intraId: string, res: Response) {
 		const user = await this.userService.findOne(Number(intraId));
 		if (!user) {
 			this.thrower.throwSessionExcp(
@@ -375,9 +375,8 @@ export class AuthService {
 				HttpStatus.NOT_FOUND
 			);
 		}
-		console.log("Checking the status of 2fa: ", user.twoFactorEnabled);
-		// res.status(200).json(user.twoFactorEnabled);
-		return { is2FAEnabled: user.twoFactorEnabled };
+		res.status(200).json(user.twoFactorEnabled);
+		// return { is2FAEnabled: user.twoFactorEnabled };
 	}
 
 }

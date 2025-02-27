@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 export const TwoFactorAuth: React.FC = () => {
 	const theme = useTheme();
 	const { user, setUser } = useUser();
-	const [ TOTPcode, setCode ] = useState("");
+	const [ tempCode, setCode ] = useState("");
 	const [ hasError, setHasError ] = useState<boolean>(false);
 	const navigate = useNavigate();
 
@@ -17,7 +17,7 @@ export const TwoFactorAuth: React.FC = () => {
 			const url = import.meta.env.URL_BACKEND_2FA_VERIFY
 			console.log("Redirection to 2FA validation backend, url: ", url);
 			const response = await axios.post(import.meta.env.URL_BACKEND_2FA_VERIFY,
-				{ TOTPcode },
+				{ tempCode },
 				{ withCredentials: true }
 			);
 			console.log(response.data.valid)
@@ -62,7 +62,7 @@ export const TwoFactorAuth: React.FC = () => {
 				<TextField
 					autoFocus
 					label="2FA Code"
-					value={TOTPcode}
+					value={tempCode}
 					color={hasError ? 'error' : 'secondary'}
 					onChange={(e) => setCode(e.target.value)}
 					inputProps={{ maxLength: 6 }}
