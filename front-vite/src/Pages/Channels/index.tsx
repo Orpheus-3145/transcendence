@@ -188,17 +188,20 @@ const ChannelsPage: React.FC = () => {
 	
 //////////////////////////////////////////////////////////////////////
 
-	const handleSendDirectMessageClick = (event: React.MouseEvent) => {
+	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
 
 		event.stopPropagation();
 		console.log("'Send Direct Message' clicked!");
 
 		const channelDTO = {
-			title: 'Direct Message',
+			title: otherUser.nameIntra,
 			ch_type: 'private',
 			ch_owner: user.nameIntra,
 			users: [
-				{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
+				{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
+				// Replace id with the real id of the other user!!!
+				{ id: 2, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
+
 			],
 			password: null,
 			isDirectMessage: true,
@@ -681,7 +684,7 @@ const ChannelsPage: React.FC = () => {
 		  gap={2}
 		  paddingX={'0.5em'}
 		  bgcolor={theme.palette.primary.main}
-		  height={channel.isDirectMessage ? '2em' : '2.5em'}
+		  height={'2em'}
 		  justifyContent={'space-between'}
 		  alignItems={'center'}
 		  textAlign={'center'}
@@ -756,7 +759,7 @@ const ChannelsPage: React.FC = () => {
 	};
 //////////////////////////////////////////////////////////////////////
 
-	const UserLine: React.FC<{user: User}> = ({user}) => {
+	const UserLine: React.FC<{eveuser: User}> = ({user}) => {
 		return (
 			<Stack
 				onClick={() => {(navigate(`/profile/1`))}} // TO BE REPLACED!
@@ -793,7 +796,7 @@ const ChannelsPage: React.FC = () => {
 				</IconButton>
 				<Tooltip title='Send a direct messsage' arrow>
 					<IconButton
-						onClick={handleSendDirectMessageClick}
+						onClick={(event: React.MouseEvent) => handleSendDirectMessageClick(event, user)}
 						sx={{  }}
 						>
 						<MessageIcon sx={{ }}/>
