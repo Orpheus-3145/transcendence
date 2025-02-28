@@ -297,7 +297,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   			  >
   			    Add Friend
   			  </Button>
-
 			  {(selectedChannel.settings.owner === user.nameIntra) &&
 				<Button
 					variant="contained"

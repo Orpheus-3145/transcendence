@@ -106,6 +106,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 							})) ,
                             owner: channel.ch_owner,
                         },
+						isDirectMessage: channel.isDirectMessage,
                     })),
                 }));
 				

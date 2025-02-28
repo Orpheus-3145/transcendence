@@ -6,9 +6,10 @@ import { SettingsModal } from './ChannelSettings';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon,  AccountCircle as AccountCircleIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Tooltip, Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SportsEsportsRoundedIcon from '@mui/icons-material/SportsEsportsRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import MessageIcon from '@mui/icons-material/Message';
 import { styled } from '@mui/system';
 import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as LogoutIcon, Login as LoginIcon, VideogameAsset as GameIcon} from '@mui/icons-material';
 import { timeStamp } from 'console';
@@ -107,21 +108,37 @@ const ChannelsPage: React.FC = () => {
 		fetchUsers();
 	}, []);
 
+
+	const handleCreateDirectMessage = () => {
+		if (channelName.trim()) {
+			const channelDTO = {
+				title: channelName,
+				ch_type: 'public',
+				ch_owner: user.nameIntra,
+				users: [
+					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
+				],
+				password: null,
+				isDirectMessage: true,
+			};
+			socket.emit('createChannel', channelDTO);
+		}
+	};	
+		
 //////////////////////////////////////////////////////////////////////
 	
 	const handleCreateChannel = () => {
 		if (channelName.trim()) {
 			const channelDTO = {
 				title: channelName,
-				ch_type: 'public',  // or another type based on UI
+				ch_type: 'public',
 				ch_owner: user.nameIntra,
 				users: [
 					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
 				],
-				password: null,  // set password if needed
+				password: null,
+				isDirectMessage: false,
 			};
-	
-			// Emit the event to create the channel on the server
 			socket.emit('createChannel', channelDTO);
 		}
 	};	
@@ -149,21 +166,28 @@ const ChannelsPage: React.FC = () => {
 							})),
 							owner: newChannel.ch_owner,
 						},
+						isDirectMessage: newChannel.isDirectMessage,
 					},
 				],
 			}));
-			// Clear the input field and close the channel creation modal
 			setChannelName('');
 			setIsAddingChannel(false);
 		};
-		// Listen for the server's response with the created channel data
 		socket.on('channelCreated', handleChannelCreated);
-		// You might also want to add a cleanup to remove the event listener when the component unmounts:
 		return () => {
-			socket.off('channelCreated', handleChannelCreated); // Ensure cleanup to prevent multiple listeners
+			socket.off('channelCreated', handleChannelCreated);
 		};
 	}, []);
- 
+
+	
+//////////////////////////////////////////////////////////////////////
+
+	const handleSendDirectMessage = (event: React.MouseEvent) => {
+
+		event.stopPropagation();
+		console.log("'Send Direct Message' clicked!");
+	};
+
 //////////////////////////////////////////////////////////////////////
 
 	const handleCancelNewChannel = () => {
@@ -365,6 +389,9 @@ const ChannelsPage: React.FC = () => {
 		event.stopPropagation();
 		console.log("'Send Game Invite' clicked!");
 	};
+
+
+
 //////////////////////////////////////////////////////////////////////
 
 	const handleSetMessage = (event: React.KeyboardEvent) => {
@@ -745,6 +772,14 @@ const ChannelsPage: React.FC = () => {
 				>
 					<GameIcon sx={{ }}/>
 				</IconButton>
+				<Tooltip title='Send a direct messsage' arrow>
+					<IconButton
+						onClick={handleSendDirectMessage}
+						sx={{  }}
+						>
+						<MessageIcon sx={{ }}/>
+					</IconButton>
+				</Tooltip>
 			</Stack>
 		);
 	};

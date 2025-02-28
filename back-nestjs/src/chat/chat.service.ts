@@ -30,9 +30,9 @@ export class ChatService {
 	// }
 
 	async createChannel(chatDTO: ChatDTO): Promise<Channel> {
-		const { title, ch_type, ch_owner, users, password } = chatDTO;
+		const { title, ch_type, ch_owner, users, password, isDirectMessage } = chatDTO;
 	
-		// console.log('chatDTO:', chatDTO);  // Log to check if ch_owner exists
+		// console.log('chatDTO:', chatDTO);
 	  
 		// Create new channel
 		const newChannel = this.channelRepository.create({
@@ -42,10 +42,11 @@ export class ChatService {
 		  password,
 		//   channel_photo: chatDTO.channel_photo || 'default_channel_photo.png',
 		  created: new Date(),
+		  isDirectMessage,
 		});
 	  
 		const savedChannel = await this.channelRepository.save(newChannel);
-		// console.log('new channel:', newChannel);
+		console.log('new channel:', newChannel);
 
 		// Add the initial users
 		const userEntities = users.map(user => {
@@ -217,7 +218,7 @@ export class ChatService {
 
 	async getAllChannels(): Promise<Channel[]> {
 		const channels = await this.channelRepository.find({
-			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password'],
+			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password', 'isDirectMessage'],
 			relations: ['members', 'messages'], // Ensure messages are included
 		});
 	
