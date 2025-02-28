@@ -46,7 +46,7 @@ export class ChatService {
 		});
 	  
 		const savedChannel = await this.channelRepository.save(newChannel);
-		console.log('new channel:', newChannel);
+		// console.log('new channel:', newChannel);
 
 		// Add the initial users
 		const userEntities = users.map(user => {

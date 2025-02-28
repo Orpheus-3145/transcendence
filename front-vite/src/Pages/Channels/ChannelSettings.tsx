@@ -256,11 +256,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	return (
 		<Modal open={open} onClose={onClose}>
 		  <Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
-			<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
-			<Divider sx={{ my: 2 }} />
+			{!selectedChannel.isDirectMessage && (
+				<>
+				<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
+				<Divider sx={{ my: 2 }} />
+				</>
+			)}
 			{/* {console.log(user)} */}
 			{/* {console.log(selectedChannel.settings.owner, user.nameIntra)} */}
-			{(selectedChannel.settings.owner === user.nameIntra) && (
+			{	
+				// !selectedChannel.isDirectMessage && 
+				selectedChannel.settings.owner === user.nameIntra && (
 			<>
 			{/* Privacy Options */}
 			<Stack direction="row" spacing={2}>
@@ -309,7 +315,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		  	</Box>
 			</>
 			)}
-			{(selectedChannel.settings.owner === user.nameIntra) ? (
+			{!selectedChannel.isDirectMessage && (
+			(selectedChannel.settings.owner === user.nameIntra) ? (
 				<Box sx={{display: 'flex'}}>
 					<Button
 						variant="contained"
@@ -328,7 +335,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						Leave Channel
 					</Button>
 				</Box>
-			)}
+			))}
 			{/* Friend List */}
 			<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
 				<Stack spacing={1} mt={2}>

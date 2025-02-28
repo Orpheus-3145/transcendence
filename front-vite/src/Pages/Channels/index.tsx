@@ -69,6 +69,7 @@ const ChannelsPage: React.FC = () => {
 	const [newMessage, setNewMessage] = useState('');
 	const {chatProps, setChatProps} = useChatContext();
 	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([]);
+	const [directMessages, setDirectMessages] = useState<ChatRoom[]>([]);
 	const [joinedChannels, setJoinedChannels] = useState<ChatRoom[]>([]);
 	const [selectedChannel, setSelectedChannel] = useState<ChatRoom | null>(null);
 	const [selectedAvailableChannel, setSelectedAvailableChannel] = useState<ChatRoom | null>(null);
@@ -76,18 +77,23 @@ const ChannelsPage: React.FC = () => {
 	useEffect(() => {
 		// if (chatProps.chatRooms) {
 		const joined = chatProps.chatRooms.filter((channel) =>
+				!channel.isDirectMessage &&
 				userInChannel(user.nameIntra, channel)
-			  );
-		const available = chatProps.chatRooms.filter(
-			(channel) => 
-				!userInChannel(user.nameIntra, channel)
-				&& channel.settings.type !== 'private'
+			);
+		const available = chatProps.chatRooms.filter((channel) => 
+				!channel.isDirectMessage &&	
+				!userInChannel(user.nameIntra, channel) &&
+				channel.settings.type !== 'private'
+			);
+		const dms = chatProps.chatRooms.filter((channel) =>
+				channel.isDirectMessage
 			);
 		// console.log("Available (useEffect):", available);
 		// console.log("Joined (useEffect):", joined);
 		
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
+		setDirectMessages(dms);
 
 		// }
 	}, [chatProps.chatRooms])
@@ -113,7 +119,7 @@ const ChannelsPage: React.FC = () => {
 		if (channelName.trim()) {
 			const channelDTO = {
 				title: channelName,
-				ch_type: 'public',
+				ch_type: 'private',
 				ch_owner: user.nameIntra,
 				users: [
 					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
@@ -182,10 +188,22 @@ const ChannelsPage: React.FC = () => {
 	
 //////////////////////////////////////////////////////////////////////
 
-	const handleSendDirectMessage = (event: React.MouseEvent) => {
+	const handleSendDirectMessageClick = (event: React.MouseEvent) => {
 
 		event.stopPropagation();
 		console.log("'Send Direct Message' clicked!");
+
+		const channelDTO = {
+			title: 'Direct Message',
+			ch_type: 'private',
+			ch_owner: user.nameIntra,
+			users: [
+				{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
+			],
+			password: null,
+			isDirectMessage: true,
+		};
+		socket.emit('createChannel', channelDTO);
 	};
 
 //////////////////////////////////////////////////////////////////////
@@ -289,7 +307,7 @@ const ChannelsPage: React.FC = () => {
 							...channel.settings.users,
 							{
 								id: user.id,
-								name: user.nameIntra ,
+								name: user.nameIntra,
 								role: 'member',
 								icon: <Avatar />,
 							},
@@ -663,6 +681,7 @@ const ChannelsPage: React.FC = () => {
 		  gap={2}
 		  paddingX={'0.5em'}
 		  bgcolor={theme.palette.primary.main}
+		  height={channel.isDirectMessage ? '2em' : '2.5em'}
 		  justifyContent={'space-between'}
 		  alignItems={'center'}
 		  textAlign={'center'}
@@ -774,7 +793,7 @@ const ChannelsPage: React.FC = () => {
 				</IconButton>
 				<Tooltip title='Send a direct messsage' arrow>
 					<IconButton
-						onClick={handleSendDirectMessage}
+						onClick={handleSendDirectMessageClick}
 						sx={{  }}
 						>
 						<MessageIcon sx={{ }}/>
@@ -834,6 +853,26 @@ const ChannelsPage: React.FC = () => {
 		);
 	};
 
+	const renderDirectMessages = (channels: ChatRoom[]) => {
+		// const filteredChannels = channels.filter(
+		// 	channel => 
+		// 		!userInChannel(user.nameIntra, channel) 
+		// 		// && channel.settings.type !== 'private'
+		// );
+
+		// if (filteredChannels.length === 0) {
+		// 	return null;
+		// }
+
+		return (
+			<Stack gap={1}>
+			{directMessages.map((channel) => ( 
+				<ChannelLine key={channel?.id} channel={channel} />
+			))}
+	 		</Stack>
+		);
+	};
+
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
 		<Stack
@@ -863,21 +902,32 @@ const ChannelsPage: React.FC = () => {
 				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
 					Joined Channels
 				</Typography>
-				{/* --> CALL TO BACKEND <-- */}
 				{/* {renderJoinedChannels(chatProps.chatRooms)} */}
 				{renderJoinedChannels(joinedChannels)}
 			</Box>
 			<Divider/>
+			{/* Available Channels Section */}
 			<Box sx={{ marginBottom: 1}}>
 				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
 					Available Channels
 				</Typography>
-				{/* --> CALL TO BACKEND <-- */}
 				{/* {renderAvailableChannels(availableChannels)}  */}
 				{/* {renderAvailableChannels(chatProps.chatRooms)}  */}
 				{renderAvailableChannels(availableChannels)} 
 			</Box>
 			<Divider/>
+			{/* Direct Messages Section */}
+			<Box sx={{ marginBottom: 1}}>
+				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
+					Direct Messages
+				</Typography>
+				{/* {renderAvailableChannels(availableChannels)}  */}
+				{/* {renderAvailableChannels(chatProps.chatRooms)}  */}
+				{renderDirectMessages(availableChannels)} 
+			</Box>
+			<Divider/>
+
+			{/* Users Section */}
 			<Box sx={{ marginBottom: 1}}>
 				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
 					Users
