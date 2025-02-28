@@ -1,4 +1,4 @@
-import { IsArray, IsInt , IsEnum, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { IsArray, IsInt , IsEnum, IsOptional, IsString, MaxLength, ValidateNested, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UserDTO } from './user.dto';
 import { MessageDTO } from './message.dto';
@@ -14,7 +14,11 @@ export class ChatDTO {
   @IsString()
   @MaxLength(50)
   title: string;
-  
+ 
+//   @IsOptional()
+  @IsBoolean()
+  isDirectMessage: boolean = false;
+
   @IsString()
   ch_owner: string;
 
