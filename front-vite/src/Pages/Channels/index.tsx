@@ -189,24 +189,23 @@ const ChannelsPage: React.FC = () => {
 //////////////////////////////////////////////////////////////////////
 
 	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
-
 		event.stopPropagation();
 		console.log("'Send Direct Message' clicked!");
-
-		const channelDTO = {
-			title: otherUser.nameIntra,
-			ch_type: 'private',
-			ch_owner: user.nameIntra,
-			users: [
-				{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
-				// Replace id with the real id of the other user!!!
-				{ id: 2, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
-
-			],
-			password: null,
-			isDirectMessage: true,
-		};
-		socket.emit('createChannel', channelDTO);
+		if (otherUser.id !== user.id) {
+			const channelDTO = {
+				title: otherUser.nameIntra,
+				ch_type: 'private',
+				ch_owner: user.nameIntra,
+				users: [
+					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
+					{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
+	
+				],
+				password: null,
+				isDirectMessage: true,
+			};
+			socket.emit('createChannel', channelDTO);
+		}
 	};
 
 //////////////////////////////////////////////////////////////////////
