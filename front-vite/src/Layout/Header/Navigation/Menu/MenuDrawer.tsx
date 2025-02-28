@@ -22,6 +22,8 @@ import {
 	Settings as SettingsIcon,
 	Logout as LogoutIcon,
 	Tag as TagIcon,
+	Person as PersonIcon,
+	Leaderboard as LeaderboardIcon,
 } from '@mui/icons-material';
 import { useUser } from '../../../../Providers/UserContext/User';
 
@@ -92,6 +94,8 @@ export const MenuDrawer: React.FC = () => {
 		Home: { path: '/', icon: <HomeIcon /> },
 		Game: { path: '/game', icon: <GameIcon /> },
 		Channels: { path: '/channels', icon: <TagIcon /> },
+		Users: { path: '/viewusers', icon: <PersonIcon /> },
+		Leaderboard: { path: '/leaderboard', icon: <LeaderboardIcon /> },
 	};
 
 	const onlinePaths: Record<string, PathItem> = {
