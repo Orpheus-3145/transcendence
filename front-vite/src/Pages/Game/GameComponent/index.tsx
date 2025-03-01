@@ -4,14 +4,14 @@ import { Box } from '@mui/material';
 import { styled } from '@mui/system';
 import Phaser from 'phaser';
 
-import { useUser } from '../../../Providers/UserContext/User';
-import GameScene from './PhaserGame/Scenes/Game';
-import BaseScene from './PhaserGame/Scenes/Base';
-import MainMenuScene from './PhaserGame/Scenes/MainMenu';
-import MatchmakingScene from './PhaserGame/Scenes/Matchmaking';
-import ResultsScene from './PhaserGame/Scenes/Results';
-import SettingsScene from './PhaserGame/Scenes/Settings';
-import ErrorScene from './PhaserGame/Scenes/Error';
+import { useUser } from '/app/src/Providers/UserContext/User';
+import GameScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Game';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import MainMenuScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/MainMenu';
+import MatchmakingScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Matchmaking';
+import ResultsScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Results';
+import SettingsScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Settings';
+import ErrorScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Error';
 
 
 const GameBox = styled(Box)(({ theme }) => ({

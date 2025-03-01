@@ -19,7 +19,7 @@ import {NotificationStruct,
 		declineGameInvite,
 		NotificationType,
 		socket} from '../../../Providers/NotificationContext/Notification'
-import { GameData } from '../../../Pages/Game/GameComponent/Types/Interfaces'
+import { GameData } from '../../../Types/Game/Interfaces'
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();

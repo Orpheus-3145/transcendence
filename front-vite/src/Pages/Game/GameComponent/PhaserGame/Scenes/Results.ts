@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io-client';
 
-import BaseScene from './Base';
-import { GameData } from '../../Types/Interfaces';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import { GameData } from '/app/src/Types/Game/Interfaces';
 
 
 export default class ResultsScene extends BaseScene {

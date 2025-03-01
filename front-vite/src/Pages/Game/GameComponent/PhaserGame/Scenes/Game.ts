@@ -1,12 +1,12 @@
 import { io, Socket } from 'socket.io-client';
 
-import BaseScene from './Base';
-import { GameDifficulty, GameMode, PaddleDirection, PowerUpSelected, PowerUpType } from '../../Types/Enum';
-import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '../../Types/Interfaces';
-import Ball from '../GameObjects/Ball';
-import PowerUpBall from '../GameObjects/PowerUpBall';
-import Paddle from '../GameObjects/Paddle';
-import Field from '../GameObjects/Field';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import { GameDifficulty, GameMode, PaddleDirection, PowerUpSelected, PowerUpType } from '/app/src/Types/Game/Enum';
+import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '/app/src/Types/Game/Interfaces';
+import Ball from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Ball';
+import PowerUpBall from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/PowerUpBall';
+import Paddle from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Paddle';
+import Field from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Field';
 
 
 export default class GameScene extends BaseScene {

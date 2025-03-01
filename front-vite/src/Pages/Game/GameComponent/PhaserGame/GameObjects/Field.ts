@@ -1,4 +1,4 @@
-import GameScene from '../Scenes/Game';
+import GameScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Game';
 
 
 class Field {
