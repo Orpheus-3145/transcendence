@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { useLocation } from "react-router-dom";
 import { Box } from '@mui/material';
 import { styled } from '@mui/system';
-import Phaser from 'phaser';
+import Phaser, { Scene } from 'phaser';
 
 import { useUser } from '/app/src/Providers/UserContext/User';
+import { GameDataContext } from '/app/src/Providers/GameContext/Game';
 import GameScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Game';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import MainMenuScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/MainMenu';
@@ -27,6 +28,7 @@ const GameComponent: React.FC = () => {
 
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const playerData = useUser().user;
+	const { gameData, setGameData } = useContext(GameDataContext)!;
 	const location = useLocation();
 
 	let gameInstance: Phaser.Game | null = null;
@@ -90,16 +92,18 @@ const GameComponent: React.FC = () => {
 			gameInstance = new Phaser.Game({ ...config });
 		}
 
-		if ( location && location.state && location.state.info ) {
-			gameInstance.scene.stop('MainMenu');
-			gameInstance.scene.start('Game', location.state.info);
+		// passing to game info about user
+		gameInstance.registry.set('user42data', playerData);
+		// passign data in case a game invitation was accepted
+		if ( gameData ) {
+			gameInstance.registry.set('gameInvitationData', gameData);
+			setGameData(null);
 		}
+		// else
+		// 	gameInstance.registry.set('gameInvitationData', null);
 
 		// add hook the container of the game is resized
 		window.addEventListener('resize', handleResize);
-
-		// passing to game info about user
-		gameInstance.registry.set('user42data', playerData);
 
 		return () => {
 			window.removeEventListener('resize', handleResize);

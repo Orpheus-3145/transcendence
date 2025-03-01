@@ -444,14 +444,14 @@ export default class SimulationService {
 			}
 
 		} else if (this.waitingForRematch === true) {
-			this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${leavingPlayer.nameNick} left the queue`);
+			this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${leavingPlayer.nameNick} left the game`);
 			this.waitingForRematch = false;
 
 			if (this.mode === GameMode.multi) {
 				if (this.player1.clientSocket.id === leavingPlayer.clientSocket.id)
-					this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${leavingPlayer.nameNick} left the queue`);
+					this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${leavingPlayer.nameNick} left the game`);
 				else if (this.player2.clientSocket.id === leavingPlayer.clientSocket.id)
-					this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${leavingPlayer.nameNick} left the queue`);
+					this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${leavingPlayer.nameNick} left the game`);
 			}
 		}
 
@@ -564,7 +564,7 @@ export default class SimulationService {
 			return ;
 
 		this.waitingForRematch = false;
-		this.logger.debug(`session [${this.sessionToken}] - player ${player.nameNick} rejected rematch`);
+		this.logger.debug(`session [${this.sessionToken}] - ${player.nameNick} rejected rematch`);
 		
 		if (this.player1.clientSocket.id === player.clientSocket.id)
 			this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${player.nameNick} rejected rematch`);

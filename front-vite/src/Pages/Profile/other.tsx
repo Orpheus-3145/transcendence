@@ -20,8 +20,8 @@ import { useUser,
 	blockFriend,
 	fetchRatios,
 	fetchMatchData} from '../../Providers/UserContext/User';
-import { addFriend, inviteToGame, PowerUpSelected, sendMessage } from '../../Providers/NotificationContext/Notification';
-
+import { addFriend, inviteToGame, sendMessage } from '../../Providers/NotificationContext/Notification';
+import { PowerUpSelected } from '../../Types/Game/Enum';
 import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
 import { UserStatus } from '../../Types/User/Enum';
 
@@ -857,7 +857,7 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageBL(false);
 
 		var powerup = calculatePowerups();
-		console.log("value: " + powerup);
+		
 		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
 	}
 

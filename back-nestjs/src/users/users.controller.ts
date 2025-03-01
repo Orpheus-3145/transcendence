@@ -149,7 +149,6 @@ export class UsersController {
 
 		const user: User = await this.UserService.getUserIntraId(intraId);
 		const games: MatchDataDTO[] = await this.UserService.fetchMatches(user);
-		console.log(games);
 		return games;
 	}
 

@@ -80,10 +80,7 @@ export default class ResultsScene extends BaseScene {
 		.setInteractive()
 		.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) 	// Change color on hover
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 	// Change color back when not hovered
-		.on('pointerup', () => {
-			// this.sendMsgToServer('abortRematch');
-			this.switchScene('MainMenu');
-		}); 				// Start the main game
+		.on('pointerup', () => this.switchScene('MainMenu')); 				// Start the main game
 
 		this._waitingPopup = this.createWaitingPopup();
 		this._waitingPopup.setVisible(false);

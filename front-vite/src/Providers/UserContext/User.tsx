@@ -5,12 +5,11 @@ import { User, UserContextType, MatchData, MatchRatio, LeaderboardData } from '.
 
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
-const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [user, setUser] = useState<User>({ id: 0 });
 	const navigate = useNavigate();
-
+	
 	useEffect(() => {
 		const validate = async () => {
 			try {
@@ -26,9 +25,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		};
 		validate();
 	}, [user.id]);
-
+	
 	return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
 };
+
+const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export const useUser = () => {
 	const context = useContext(UserContext);
