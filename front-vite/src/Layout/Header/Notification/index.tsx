@@ -617,17 +617,17 @@ export const Notification: React.FC = () => {
 				if (noti != null)
 					addNotification(noti);
 			});
+			socket.on('goToGame', navToGame);
 
 		}, [friendRequestArray, messageArray, gameInviteArray]);
 
-		socket.on('goToGame', navToGame);
 
 		return (notificationBar());
 	}
 
 	return (
 		notificationWrapper()
-  	);
+	);
 };
 
 export default Notification;

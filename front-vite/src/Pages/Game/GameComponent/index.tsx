@@ -28,8 +28,7 @@ const GameComponent: React.FC = () => {
 
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const playerData = useUser().user;
-	const { gameData, setGameData } = useContext(GameDataContext)!;
-	const location = useLocation();
+	const { gameData } = useContext(GameDataContext)!;
 
 	let gameInstance: Phaser.Game | null = null;
 
@@ -95,12 +94,8 @@ const GameComponent: React.FC = () => {
 		// passing to game info about user
 		gameInstance.registry.set('user42data', playerData);
 		// passign data in case a game invitation was accepted
-		if ( gameData ) {
+		if ( gameData )
 			gameInstance.registry.set('gameInvitationData', gameData);
-			setGameData(null);
-		}
-		// else
-		// 	gameInstance.registry.set('gameInvitationData', null);
 
 		// add hook the container of the game is resized
 		window.addEventListener('resize', handleResize);
@@ -121,7 +116,7 @@ const GameComponent: React.FC = () => {
 				gameInstance = null;
 			}
 		};
-	}, []);
+	}, [gameData]);
 
 	return (
 		<GameBox ref={containerRef}/>
