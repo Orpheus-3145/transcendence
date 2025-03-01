@@ -410,16 +410,21 @@ export default class SimulationService {
 
 		this.stopEngine();
 		
-		// Create new channel
-		const gamePlayed = this.gameRepository.create({
-			player1Id : await this.userRepository.findOneBy({intraId : this.player1.intraId}),
-			player2Id : await this.userRepository.findOneBy({intraId : this.player2.intraId}),
-			player1Score : this.player1.score,
-			player2Score : this.player2.score,
-			powerups : fromArrayToMask(this.powerUpSelected),
-		});
-
-		this.gameRepository.save(gamePlayed);
+		if ( this.mode === GameMode.multi ) {
+			const [p1, p2] = await Promise.all([
+				this.userRepository.findOne({ where: {intraId : this.player1.intraId}}),
+				this.userRepository.findOne({ where: {intraId : this.player2.intraId}})
+			]);
+			const gamePlayed = this.gameRepository.create({
+				player1 : p1,
+				player2 : p2,
+				player1Score : this.player1.score,
+				player2Score : this.player2.score,
+				powerups : fromArrayToMask(this.powerUpSelected),
+				
+			});
+			this.gameRepository.save(gamePlayed);
+		}
 
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;

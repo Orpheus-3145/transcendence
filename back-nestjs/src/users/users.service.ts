@@ -1,13 +1,16 @@
 import { Injectable, Inject, forwardRef, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { leaderboardData, matchRatio } from '../entities/user.entity';
-import { UserStatus, UserDTO, matchData } from '../dto/user.dto'
-import AccessTokenDTO  from '../dto/auth.dto';
+
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import User from '../entities/user.entity';
 import Game from 'src/entities/game.entity';
+import AccessTokenDTO  from '../dto/auth.dto';
+import UserDTO, { UserStatus } from '../dto/user.dto'
+import MatchDataDTO from 'src/dto/matchData.dto';
+import LeaderboardDTO from 'src/dto/leaderboard.dto';
+import MatchRatioDTO from 'src/dto/matchRatio.dto';
 
 
 @Injectable()
@@ -35,21 +38,6 @@ export class UsersService {
 		user.status = UserStatus.Online;
 		user.friends = [];
 		user.blocked = [];
-		// user.matchHistory = [];
-		// const a = new User();
-		// a.accessToken = access.access_token;
-		// a.intraId = 432423;
-		// a.nameNick = "a";
-		// a.nameIntra = "a";
-		// a.nameFirst = "b";
-		// a.nameLast = "bv";
-		// a.email = "av@gmail.com";
-		// a.image = userMe.image.link;
-		// a.greeting = 'Hello, I have just landed!';
-		// a.status = UserStatus.Online;
-		// a.friends = [];
-		// a.blocked = [];
-		// a.matchHistory = [];
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
@@ -58,9 +46,7 @@ export class UsersService {
 				return (new UserDTO(tmp));
 			}
 			await user.validate();
-			// await a.validate();
 			await this.usersRepository.save(user);
-			// await this.usersRepository.save(a);
 			return new UserDTO(user);
 		} 
 		catch (error) {
@@ -91,6 +77,18 @@ export class UsersService {
 
 	async findOneNick(nameNick: string): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { nameNick } });
+	}
+
+	async findGamesByUser(user: User) : Promise<Game[] | undefined> {
+
+		const gamesPlayedbyId: Game[] = await this.gamesRepository.find(
+			{ where : [
+				{ player1 : {id: user.id} },
+				{ player2 : {id: user.id} },
+				]
+			}
+		);
+		return gamesPlayedbyId;
 	}
 
 	async getUserId(code: string): Promise<User | null> 
@@ -173,18 +171,40 @@ export class UsersService {
 		return (image);
 	}
 
-	async calculateRatio(user: User)
-	{
-		const gamesPlayedbyId: Game[] = await this.gamesRepository.find(
-			{ where : [
-				{ player1Id : user },
-				{ player2Id : user },
-			]
-		});
+	async fetchMatches(user: User) : Promise<MatchDataDTO[] | undefined> {
 
-		if (gamesPlayedbyId.length === 0)
+		const gamesDB : Game[] = await this.gamesRepository.find({
+			where : [
+				{ player1 : {id: user.id} },
+				{ player2 : {id: user.id} },
+			],
+			relations: ['player1', 'player2'],
+		});
+		let matchData: MatchDataDTO[] = [];
+		for (const game of gamesDB) {
+
+			const winner: string = (game.player1Score > game.player2Score) ? game.player1.nameIntra : game.player2.nameIntra;
+			const type: string = (game.powerups === 0) ? 'No powerups' : 'With powerups';
+			matchData.push({
+				player1: game.player1.nameIntra,
+				player2: game.player2.nameIntra,
+				player1Score: game.player1Score,
+				player2Score: game.player2Score,
+				whoWon: winner,
+				type: type,
+			});
+		}
+
+		return matchData;
+	}
+
+	async calculateRatio(user: User): Promise<MatchRatioDTO[]>
+	{
+		const games: Game[] = await this.findGamesByUser(user);
+
+		if (games.length === 0)
 		{
-			var tmp: matchRatio[] = [
+			var tmp: MatchRatioDTO[] = [
 			{
 				title: "Normal", value: 0, rate: 0
 			},
@@ -204,23 +224,23 @@ export class UsersService {
 		var allWin = 0;
 		var allAll = 0;
 
-		gamesPlayedbyId.forEach((item: Game) =>
+		games.forEach((item: Game) =>
 		{
 			if (item.powerups === 0)
 			{
 				normalAll += 1;
-				if ((item.player1Score > item.player2Score && item.player1Id === user) ||
-						(item.player2Score > item.player1Score && item.player2Id === user))
+				if ((item.player1Score > item.player2Score && item.player1 === user) ||
+						(item.player2Score > item.player1Score && item.player2 === user))
 					normalWin += 1;
 			} else {
 				powerAll += 1;
-				if ((item.player1Score > item.player2Score && item.player1Id === user) ||
-						(item.player2Score > item.player1Score && item.player2Id === user))
+				if ((item.player1Score > item.player2Score && item.player1 === user) ||
+						(item.player2Score > item.player1Score && item.player2 === user))
 					powerWin += 1;
 			}
 			allAll += 1;
-			if ((item.player1Score > item.player2Score && item.player1Id === user) ||
-					(item.player2Score > item.player1Score && item.player2Id === user))
+			if ((item.player1Score > item.player2Score && item.player1 === user) ||
+					(item.player2Score > item.player1Score && item.player2 === user))
 				allWin += 1;
 		});
 			
@@ -228,26 +248,27 @@ export class UsersService {
 		var ratioPower = Math.round((powerWin / powerAll) * 100);
 		var ratioAll = Math.round((allWin / allAll) * 100);
 
-		if (normalAll === 0)
+		if (normalAll === 0)		// NB is it necessary?
 			ratioNormal = 0;
 		if (powerAll === 0)
 			ratioPower = 0;
 
-		var resultArr: matchRatio[] = [
-		{
-			title: "Normal", value: normalAll, rate: ratioNormal
-		},
-		{
-			title: "Power ups", value: powerAll, rate: ratioPower
-		},
-		{
-			title: "All", value: allAll, rate: ratioAll
-		}];
+		var resultArr: MatchRatioDTO[] = [
+			{
+				title: "Normal", value: normalAll, rate: ratioNormal
+			},
+			{
+				title: "Power ups", value: powerAll, rate: ratioPower
+			},
+			{
+				title: "All", value: allAll, rate: ratioAll
+			}
+		];
 
 		return (resultArr);
 	}
 
-	async fillArray(allData: leaderboardData[], type: string): Promise<leaderboardData[]>
+	async fillArray(allData: LeaderboardDTO[], type: string): Promise<LeaderboardDTO[]>
 	{
 		var ratioIndex: number = 0;
 		if (type == "Power ups")
@@ -255,10 +276,10 @@ export class UsersService {
 		if (type == "All")
 			ratioIndex = 2;
 
-		var arr: leaderboardData[] = [];
-		allData.forEach((item: leaderboardData) =>
+		var arr: LeaderboardDTO[] = [];
+		allData.forEach((item: LeaderboardDTO) =>
 		{
-			item.ratio.forEach((values: matchRatio) =>
+			item.ratio.forEach((values: MatchRatioDTO) =>
 			{
 				var tmpType = values.title;
 				var tmpRate = values.rate;
@@ -290,34 +311,34 @@ export class UsersService {
 		return (arr);
 	}
 
-	async initLeaderboardArr(allUser: User[]): Promise<leaderboardData[]>
+	async initLeaderboardArr(allUser: User[]): Promise<LeaderboardDTO[]>
 	{
-		var tmpratio: matchRatio[] = [];
-		var allData: leaderboardData[] = [];
+		var tmpratio: MatchRatioDTO[] = [];
+		var allData: LeaderboardDTO[] = [];
 
 		allUser.forEach(async (item: User) => 
 		{
 			tmpratio = await this.calculateRatio(item);
-			var tmp: leaderboardData = { user: item, ratio: tmpratio };
+			var tmp: LeaderboardDTO = { user: new UserDTO(item), ratio: tmpratio };
 			allData.push(tmp);
-		});	
+		});
 
 		return (allData);
 	}
 
 	// global leaderboard
-	async leaderboardCalculator(): Promise<leaderboardData[][]>
+	async leaderboardCalculator(): Promise<LeaderboardDTO[][]>
 	{
 		var allUser = await this.findAll();
-		var allData: leaderboardData[] = [];
+		var allData: LeaderboardDTO[] = [];
 
 		allData = await this.initLeaderboardArr(allUser);
-	
-		var normalArr: leaderboardData[] = await this.fillArray(allData, "Normal");
-		var powerArr: leaderboardData[] = await this.fillArray(allData, "Power ups");
-		var allArr: leaderboardData[] = await this.fillArray(allData, "All");
 
-		var result: leaderboardData[][] = [];
+		var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
+		var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
+		var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
+
+		var result: LeaderboardDTO[][] = [];
 		result.push(normalArr, powerArr, allArr);
 
 		return (result);

@@ -1,16 +1,17 @@
 import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {leaderboardData, matchRatio, } from '../entities/user.entity'
+
 import User from '../entities/user.entity';
+import MatchRatioDTO from 'src/dto/matchRatio.dto';
+import MatchDataDTO from 'src/dto/matchData.dto';
 
 @Controller('users')
 export class UsersController {
 
 	constructor(
 		private readonly UserService: UsersService,
-	  ) { }
-
+	  ) {}
 
 	@Get('/profile/getAll')
 	async getAllUsers() {
@@ -143,17 +144,25 @@ export class UsersController {
 		return (this.UserService.changeProfilePic(user, image));
 	}
 
-	@Get('/profile/fetchRatio/:username')
-	async fetchRatio(@Param('username') intraId:string) 
+	@Get('profile/:intraId/matches')
+	async fetchMatchData(@Param('intraId') intraId:string) {
+
+		const user: User = await this.UserService.getUserIntraId(intraId);
+		const games: MatchDataDTO[] = await this.UserService.fetchMatches(user);
+		console.log(games);
+		return games;
+	}
+
+	@Get('/profile/fetchRatio/:intraId')
+	async fetchRatio(@Param('intraId') intraId:string) 
 	{
 		const user: User = await this.UserService.getUserIntraId(intraId);
-		var arr: matchRatio[] = await this.UserService.calculateRatio(user);
+		var arr: MatchRatioDTO[] = await this.UserService.calculateRatio(user);
 		return (arr);
 	}
 
 	@Get('/fetchLeaderboard')
-	async fetchLeaderboard() 
-	{
+	async fetchLeaderboard() {
 		return (this.UserService.leaderboardCalculator());
 	}
 }

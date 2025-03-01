@@ -55,14 +55,14 @@ export default class GameScene extends BaseScene {
 	init(data: GameData): void {
 		super.init();
 
-		this._id = this.registry.get('user42data').id;
+		this._id = this.registry.get('user42data').intraId;
 		this._nameNick = this.registry.get('user42data').nameNick;
 
 		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
 		this._difficulty = data.difficulty;
 		this._powerUpSelection = data.extras;
-		
+
 		this._gameState = {
 			ball: { x: 0, y: 0 },
 			p1: { y: 0 },

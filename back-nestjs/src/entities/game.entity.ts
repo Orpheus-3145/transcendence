@@ -1,17 +1,21 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn } from 'typeorm';
 import User from './user.entity';
 
 
-@Entity()
+@Entity('Games')
 export default class Game {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@ManyToOne(() => User, (user) => user.player1Game, { nullable: false })
-	player1Id: User;
+	@ManyToOne(() => User, (user) => user.player1Game, { 
+		nullable: false,
+		eager: true })
+	player1: User;
 
-	@ManyToOne(() => User, (user) => user.player2Game, { nullable: false })
-	player2Id: User;
+	@ManyToOne(() => User, (user) => user.player2Game, { 
+		nullable: false,
+		eager: true })
+	player2: User;
 
 	@Column({ type: 'int', default: 0 })
 	player1Score: number;

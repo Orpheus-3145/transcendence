@@ -10,7 +10,6 @@ import {
 	Block as BlockIcon,
 	VideogameAsset as GameIcon,
 	Message as MessageIcon,
-	Calculate,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -19,12 +18,12 @@ import { useUser,
 	getUserFromDatabase, 
 	fetchFriend, 
 	blockFriend,
-	User,
-	UserStatus,
 	fetchRatios,
-	matchData,
-	matchRatio} from '../../Providers/UserContext/User';
+	fetchMatchData} from '../../Providers/UserContext/User';
 import { addFriend, inviteToGame, PowerUpSelected, sendMessage } from '../../Providers/NotificationContext/Notification';
+
+import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
+import { UserStatus } from '../../Types/User/Enum';
 
 
 const ProfilePageOther: React.FC = () => {
@@ -38,7 +37,7 @@ const ProfilePageOther: React.FC = () => {
 	const [showInputMessage, setShowInputMessage] = useState<Boolean>(false);
 	const [inputMessage, setInputMessage] = useState<string>('');
 	const [showInput, setShowInput] = useState<Boolean>(false);
-	const [userProfile, setUserProfile] = useState<User>(null);
+	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<Number>(0);
 	const [isFriend, setIsFriend] = useState<Boolean>(false);
 	const [friendsList, setFriendsList] = useState<string[]>([]);
@@ -60,8 +59,9 @@ const ProfilePageOther: React.FC = () => {
 	const [slowpaddle, setSlowpaddle] = useState<boolean>(false);
 	const [shrinkpaddle, setShrinkpaddle] = useState<boolean>(false);
 	const [stretchpaddle, setStretchpaddle] = useState<boolean>(false);
-	const [matchHistory, setMatchHistory] = useState<matchData[]>([]);
-	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
+	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
+	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
+	const [modalOpen, setModalOpen] = React.useState(false);
 
 	let redirectFriend = (id:number) =>
 	{
@@ -201,7 +201,7 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
-	let gameStatsBox = (data: matchRatio) =>
+	let gameStatsBox = (data: MatchRatio) =>
 	{
 		return (
 			<Stack
@@ -265,13 +265,13 @@ const ProfilePageOther: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
 	};
 
-	let gameLine = (data: matchData) => 
+	let gameLine = (data: MatchData) => 
 	{
 		// const friend = friendDetails.get(intraid);
 
@@ -394,7 +394,7 @@ const ProfilePageOther: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.map((item: matchData) => gameLine(item))}
+					{matchHistory.map((item: MatchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -645,15 +645,13 @@ const ProfilePageOther: React.FC = () => {
 		addFriend(user.id.toString(), userProfile.id.toString());
 	}
 
-    const [modalOpen, setModalOpen] = React.useState(false);
+	const handleModalClose = () => {
+			setModalOpen(false);
+	};
 
-    const handleModalClose = () => {
-        setModalOpen(false);
-    };
-
-    const handleModalOpen = () => {
-        setModalOpen(true);
-    };
+	const handleModalOpen = () => {
+			setModalOpen(true);
+	};
 
 	const handleSpeedball = () =>
 	{
@@ -863,7 +861,6 @@ const ProfilePageOther: React.FC = () => {
 		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
 	}
 
-	
 	const CheckChangeMessage = () => 
 	{
 		if (showInput)
@@ -1128,18 +1125,18 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
-	
-
 	let getUserProfile = async () : Promise<void> =>
 	{
 		const tmp = await getUserFromDatabase(lastSegment, navigate);
+		const matches: MatchData[] = await fetchMatchData(tmp);
+
 		setProfileIntraId(tmp.intraId);
 		setUserProfile(tmp);
 		var friend = await getUserFromDatabase(user.id, navigate);
 		setIsFriend(tmp.friends.find((str:string) => str === friend.intraId.toString()));
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
-		setMatchHistory(tmp.matchHistory);
+		setMatchHistory(matches);
 		var allRatio = await fetchRatios(tmp);
 		setRatioArr(allRatio);
 	}

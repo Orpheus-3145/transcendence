@@ -1,8 +1,9 @@
 import React from 'react';
 import { Stack, Typography, Avatar } from '@mui/material';
-import {  fetchLeaderboard, fetchRatios, leaderboardData, matchData, matchRatio } from '../../Providers/UserContext/User';
+import {  fetchLeaderboard } from '../../Providers/UserContext/User';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
+import { LeaderboardData } from '../../Types/User/Interfaces';
 
 import { useState, useEffect } from 'react';
 import { alpha } from '@mui/material/styles';
@@ -11,7 +12,7 @@ import { alpha } from '@mui/material/styles';
 export const Leaderboard: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
-	const [leaderboard, setLeaderboard] = useState<leaderboardData[][]>([]);
+	const [leaderboard, setLeaderboard] = useState<LeaderboardData[][]>([]);
 	const [loading, setLoading] = useState<number | null>(null);
 
 	let redirectUser = (id:number) =>
@@ -83,7 +84,7 @@ export const Leaderboard: React.FC = () => {
 		);
 	}
 
-	let initLine = (item: leaderboardData, type: string, index: number) =>
+	let initLine = (item: LeaderboardData, type: string, index: number) =>
 	{
 		var ratio: number = 0;
 		if (item.ratio != undefined)
@@ -157,7 +158,7 @@ export const Leaderboard: React.FC = () => {
 		);			
 	}
 
-	let initTable = (arr: leaderboardData[], type: string) =>
+	let initTable = (arr: LeaderboardData[], type: string) =>
 	{
 		if (arr.length === 0)
 		{
@@ -197,7 +198,7 @@ export const Leaderboard: React.FC = () => {
 					},
 				}}
 			>
-				{arr.map((item: leaderboardData, index: number) => {
+				{arr.map((item: LeaderboardData, index: number) => {
 					
 					let color =  "#4b4b4b";
 					if (index === 0) color = "#FFD700";
@@ -221,7 +222,7 @@ export const Leaderboard: React.FC = () => {
 		
 	}
 
-	let pageBody = (arr: leaderboardData[], type: string[], left: string[], index: number) =>
+	let pageBody = (arr: LeaderboardData[], type: string[], left: string[], index: number) =>
 	{
 		return (
 				<Stack
@@ -266,7 +267,7 @@ export const Leaderboard: React.FC = () => {
 					alignItems="center"
 					height='450px'
 				>
-					{leaderboard.map((arr: leaderboardData[], index: number) => pageBody(arr, typearr, leftarr, index))}
+					{leaderboard.map((arr: LeaderboardData[], index: number) => pageBody(arr, typearr, leftarr, index))}
 				</Stack>
 			</Stack>
 		);
@@ -274,10 +275,9 @@ export const Leaderboard: React.FC = () => {
 
 	let fetchUsers = async () =>
 	{
-		var arr: leaderboardData[][] = await fetchLeaderboard();
+		var arr: LeaderboardData[][] = await fetchLeaderboard();
 		setLeaderboard(arr);
 	}
-
 
 	useEffect(() => 
 	{

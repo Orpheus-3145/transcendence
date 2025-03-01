@@ -28,16 +28,16 @@ const GameComponent: React.FC = () => {
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const playerData = useUser().user;
 	const location = useLocation();
-	
+
 	let gameInstance: Phaser.Game | null = null;
 
 	const handleResize = () => {
 		if (gameInstance && containerRef.current) {
-			
+
 			// resize game window keeping same ratio (16/9)
 			const { width, height } = containerRef.current.getBoundingClientRect();
 			gameInstance.scale.resize(width, width * 9 / 16);
-			
+
 			gameInstance.scene.getScenes(true).forEach( (scene: Phaser.Scene) => {
 				// resize all the objects inside of every scene
 				if (scene instanceof BaseScene) {

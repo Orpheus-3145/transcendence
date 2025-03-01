@@ -1,5 +1,3 @@
--include ./env/.env
-
 COMPOSE := docker compose --env-file ./env/.env
 LOCAL_LOG_DIR := back-nestjs/logs
 
@@ -29,7 +27,9 @@ re: down all
 
 re_debug: clean build_debug start
 
+run: start
+
 $(LOCAL_LOG_DIR):
 	@mkdir -p $@
 
-.PHONY: all build build_debug start down clean restart re re_debug
+.PHONY: all build build_debug start down clean restart re re_debug run

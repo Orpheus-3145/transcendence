@@ -1,56 +1,8 @@
 import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { socket } from '../NotificationContext/Notification'
+import { User, UserContextType, MatchData, MatchRatio, LeaderboardData } from '../../Types/User/Interfaces';
 
-export enum UserStatus {
-	Online = 'online',
-	Offline = 'offline',
-	InGame = 'ingame',
-	Idle = 'idle',
-}
-
-
-export interface matchRatio {
-	title: string;
-	value: number;
-	rate: number;
-}
-
-export interface leaderboardData {
-	user: User;
-	ratio: matchRatio[];
-}
-
-export interface matchData {
-	player1: string;
-	player2: string;
-	player1Score: string;
-	player2Score: string;
-	whoWon: string;
-	type: string;
-}
-
-export interface User {
-	id: number;
-	intraId: number;
-	nameNick: string | null;
-	nameIntra: string;
-	nameFirst: string;
-	nameLast: string;
-	email: string;
-	image: string | null;
-	greeting: string;
-	status: UserStatus;
-	friends: string[];
-	blocked: string[];
-	// matchHistory: matchData[];
-}
-
-interface UserContextType {
-	user: User;
-	setUser: React.Dispatch<React.SetStateAction<User>>;
-}
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 const BACKEND_URL: string = import.meta.env.URL_BACKEND;
@@ -202,40 +154,44 @@ export async function changePFP(username:string, image:FormData): Promise<string
 	}
 }
 
-export async function fetchRatios(userProfile: User): Promise<matchRatio[]>
+export async function fetchRatios(userProfile: User): Promise<MatchRatio[]>
 {
-	const request = new Request(BACKEND_URL + '/users/profile/fetchRatio/' + userProfile.intraId.toString(), {
-		method: "GET",
-	});
-
-	try
-	{
-		const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as matchRatio[]);
-		return response;
-	}
-	catch (error)
-	{
-		console.error("ERROR: matchRatio[] not found!" + error);
+	try {
+		const response = await axios.get<MatchRatio[]>(`${BACKEND_URL}/users/profile/fetchRatio/${userProfile.intraId.toString()}`, {
+			withCredentials: true,
+		});
+		const matches: MatchRatio[] = response.data;
+		return matches;
+	} catch (error)
+		{
+			console.error("ERROR: fetchRatios failed!");
+		// NB no matches found, this shouldn't happen!
 	}
 }
 
-export async function fetchLeaderboard(): Promise<leaderboardData[][]>
+export async function fetchLeaderboard(): Promise<LeaderboardData[][]>
 {
-	const request = new Request(BACKEND_URL + '/users/fetchLeaderboard/', {
-		method: "GET",
-	});
-
-	try
-	{
-		const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as leaderboardData[][]);
-		return response;
-	}
-	catch (error)
-	{
+	try {
+		const response = await axios.get<LeaderboardData[][]>(`${BACKEND_URL}/users/fetchLeaderboard`, {
+			withCredentials: true,
+		});
+		const leaderBoard: LeaderboardData[][] = response.data;
+		console.log(response.data);
+		return leaderBoard;
+	} catch (error) {
 		console.error("ERROR: Leaderboard[] not found!" + error);
 	}	
+}
+
+export async function fetchMatchData(user: User): Promise<MatchData[]> {
+
+	try {
+		const response = await axios.get<MatchData[]>(`${BACKEND_URL}/users/profile/${user.intraId.toString()}/matches`, {
+			withCredentials: true,
+		});
+		const matches: MatchData[] = response.data;
+		return matches;
+	} catch (error) {
+		console.error("ERROR: fetchMatchData failed!");
+	}
 }
