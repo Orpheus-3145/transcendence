@@ -17,6 +17,7 @@ import { GameMode,
 				PaddleDirection,
 				fromArrayToMask,
 				fromMaskToArray} from 'src/game/types/game.enum';
+import { UsersService } from 'src/users/users.service';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -74,6 +75,7 @@ export default class SimulationService {
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
 		private readonly config: ConfigService,
+		private readonly userService: UsersService
 	) {
 		this.logger.setContext(SimulationService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
@@ -388,7 +390,7 @@ export default class SimulationService {
 	}
 
 	// if the game ends gracefully
-	endGame(winner: PlayingPlayer): void {
+	async endGame(winner: PlayingPlayer): Promise<void> {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
@@ -403,7 +405,12 @@ export default class SimulationService {
 			this.sendMsgToPlayer(this.player2.clientSocket, 'endGame', winner.nameNick);
 
 		this.stopEngine();
-
+		
+		if (this.powerUpSelected.length > 0)
+			await this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Power ups");
+		else
+			await this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Normal");
+		
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;
 	}

@@ -339,7 +339,7 @@ const AllUsersPage: React.FC = () => {
 		};
 
 		fetchUsers();
-	}, [onlineUsers, offlineUsers, searchUsers, users, showOnline, showOffline]);
+	}, [searchUsers]);
 
 	let pageWrapper = () =>
 	{

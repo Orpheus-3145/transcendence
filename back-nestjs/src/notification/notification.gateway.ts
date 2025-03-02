@@ -7,12 +7,16 @@ import { WebSocketGateway,
 	OnGatewayConnection,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+
 import { NotificationService } from './notification.service';
 import { UsersService } from 'src/users/users.service';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
 import { UserStatus } from 'src/dto/user.dto';
 import { HttpException } from '@nestjs/common';
-import { PowerUpSelected } from 'src/game/types/game.enum';
+import {  PowerUpSelected } from 'src/game/types/game.enum';
+import User from 'src/entities/user.entity';
+
+import { Inject, forwardRef } from '@nestjs/common';
 
 interface Websock {
 	client: Socket;
@@ -35,7 +39,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	server: Server;
 	private sockets: Websock[] = [];
 
-	constructor(private notificationService: NotificationService, private userService: UsersService) {};
+	constructor(
+		@Inject(forwardRef(() => NotificationService))
+		private notificationService: NotificationService, 
+		@Inject(forwardRef(() => UsersService))
+		private userService: UsersService
+	) {};
 
 	handleConnection(client: Socket) {
 		console.log(`Noti Client connected: ${client.id}`);
@@ -110,7 +119,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('sendGameInvite')
-	async sendGameInvite(@ConnectedSocket() client: Socket, @MessageBody() data: { username: string, friend: string, powerUps: PowerUpSelected }): Promise<void> 
+	async sendGameInvite(@MessageBody() data: { username: string, friend: string, powerUps: PowerUpSelected }): Promise<void> 
 	{
 		var user = await this.userService.getUserId(data.username);
 		var other = await this.userService.getUserId(data.friend);
@@ -126,8 +135,15 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	@SubscribeMessage('acceptNotiFr')
 	async acceptNotiFr(@MessageBody() data: { sender: string, receiver: string})
 	{
-		this.userService.friendRequestAccepted(data.sender, data.receiver);
-		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+		await this.userService.friendRequestAccepted(data.sender, data.receiver);
+		await this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+		
+		var se: User = await this.userService.findOneId(Number(data.sender));
+		var re: User = await this.userService.findOneId(Number(data.receiver));
+		var senderSock: Websock =  this.sockets.find((socket) => socket.userId === data.sender);
+		var receiverSock: Websock =  this.sockets.find((socket) => socket.userId === data.receiver);
+		senderSock.client.emit('friendAdded',re.intraId.toString());
+		receiverSock.client.emit('friendAdded', se.intraId.toString());
 	}
 
 	@SubscribeMessage('declineNotiFr')
@@ -139,13 +155,11 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	@SubscribeMessage('acceptNotiGI')
 	async acceptNotiGI(@MessageBody() data: { sender: string, receiver: string})
 	{
-		//init game session
-
 		var senderSock: Websock = this.sockets.find((socket) => socket.userId === data.sender);
 		var receiverSock: Websock = this.sockets.find((socket) => socket.userId === data.receiver);
-		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
-		senderSock.client.emit('goToGame');
-		receiverSock.client.emit('goToGame');
+		
+		await this.notificationService.startGameFromInvitation(senderSock.client, receiverSock.client, data.sender, data.receiver);
+		await this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
 	}
 
 	@SubscribeMessage('declineNotiGI')

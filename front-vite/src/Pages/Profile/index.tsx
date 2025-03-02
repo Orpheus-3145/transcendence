@@ -25,7 +25,9 @@ import { useUser,
 		UserStatus,
 		matchData,
 		fetchRatios,
-		matchRatio} from '../../Providers/UserContext/User';
+		matchRatio,
+		fetchOpponent} from '../../Providers/UserContext/User';
+import { socket } from '../../Providers/NotificationContext/Notification';
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -46,16 +48,21 @@ const ProfilePage: React.FC = () => {
 	const [profileImage, setProfileImage] = useState();
 	const [friendsList, setFriendsList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
+	const [opponentDetails, setOpponentDetails] = useState<Map<string, User>>(new Map());
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
 	const [matchHistory, setMatchHistory] = useState<matchData[]>([]);
 	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
 	
 	let RemoveFriend = (id:string) => {
-		removeFriend(userProfile.id, id);
+		var newlist = friendsList.filter(friend => friend !== id);
+		setFriendsList(newlist);
+		removeFriend(userProfile.id.toString(), id);
 	}
 
 	let BlockFriend = (id:string) => {
-		blockFriend(userProfile.id, id);
+		var newlist = friendsList.filter(friend => friend !== id);
+		setFriendsList(newlist);
+		blockFriend(userProfile.id.toString(), id);
 	}
 
 	let friendLineButtons = (intraid:string) => 
@@ -313,34 +320,54 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
+	const fetchOpponentDetails = async (opponentId: string) => {
+		const opponent = await fetchOpponent(opponentId);
+		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
+	};
+
 	let gameLine = (data: matchData) => 
 	{
-		var color;
-		if (data.whoWon === userProfile.intraId.toString())
-			color = '#1da517'
-		else
-			color = '#b01515';
-
-		var nameOther;
-		var scoreUser;
-		var scoreOther;
-		var namep1 = data.player1;
-		var namep2 = data.player2;
-		if (namep1 === userProfile.nameNick)
+		var friend: User | undefined;
+		var intra: string;
+		var nameOther: string;
+		var scoreUser: string;
+		var scoreOther: string;
+		var color: string;
+		var idOther: number;
+		if (data.player1 === userProfile.id.toString())
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
-			nameOther = namep2;
+			intra = data.player2;
+			friend = opponentDetails.get(intra);
+			if (friend)
+			{
+				nameOther = friend.nameNick;
+				idOther = friend.id;
+			}
 		}
 		else
 		{
 			scoreUser = data.player2Score;
 			scoreOther = data.player1Score;
-			nameOther = namep1;
+			intra = data.player1;
+			friend = opponentDetails.get(intra);
+			if (friend)
+			{
+				nameOther = friend.nameNick;
+				idOther = friend.id;
+			}
 		}
-		var idOther = 2;
-		// var friend = fetchFriend(); need to call this since namep1/p2 won't be nameNick but intraId
 
+		if (!friend) {
+			fetchOpponentDetails(intra);
+			return <Stack>Loading...</Stack>;
+		}
+
+		if (data.whoWon === userProfile.id.toString())
+			color = '#1da517'
+		else
+			color = '#b01515';
 		return (
 			<Stack
 				direction="row"
@@ -385,10 +412,18 @@ const ProfilePage: React.FC = () => {
 				>
 					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
 				</Typography>
-				<Avatar />
+				<Avatar
+					sx={{
+						width: '40px',
+						height: '40px',
+						left: '-5px',
+						bgcolor: theme.palette.primary.light,
+					}}
+					src={friend.image}
+				>
+				</Avatar>
 			</Stack>
 		);
-
 	};
 
 	let gameContainer = () => 
@@ -429,7 +464,7 @@ const ProfilePage: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.map((item: matchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -567,7 +602,7 @@ const ProfilePage: React.FC = () => {
 			size = '3rem';
 		if (userProfile.nameNick.length > 18)
 			size = '2rem';
-		if (userProfile.nameNick.lenght > 25)
+		if (userProfile.nameNick.length > 25)
 			size = '1rem';
 		
 		return (
@@ -616,7 +651,7 @@ const ProfilePage: React.FC = () => {
 		const key = event.key;
 		if (key === 'Enter') 
 		{
-			const result = await setNewNickname(userProfile.id, inputValue);
+			const result = await setNewNickname(userProfile.id.toString(), inputValue);
 	  
 			if (result === "") 
 			{
@@ -758,8 +793,7 @@ const ProfilePage: React.FC = () => {
 			setWhichStatus(tmp.status);
 			setMatchHistory(tmp.matchHistory);
 			setUserProfile(tmp);
-			var allRatio = await fetchRatios(tmp);
-			setRatioArr(allRatio);
+			setRatioArr(await fetchRatios(tmp));
 		}
 		else 
 			showOwnPage(false);
@@ -771,7 +805,17 @@ const ProfilePage: React.FC = () => {
 		{
 			setUserProfileNumber(number);
 		});
-	}, []);
+
+		socket.on('friendAdded', (newFriend: string) => {
+			var newlist = friendsList;
+			if (!friendsList.includes(newFriend, 0))
+			{
+				newlist.push(newFriend);
+				setFriendsList(newlist);
+			}
+		});
+
+	}, [lastSegment]);
 
 	let whichPage = () =>
 	{

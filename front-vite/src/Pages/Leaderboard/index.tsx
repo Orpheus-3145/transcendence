@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack, Typography, Avatar } from '@mui/material';
+import { Stack, Typography, Avatar, Grid } from '@mui/material';
 import {  fetchLeaderboard, fetchRatios, leaderboardData, matchData, matchRatio } from '../../Providers/UserContext/User';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -21,15 +21,15 @@ export const Leaderboard: React.FC = () => {
 
 	let pageHeader = () =>
 	{
+		const typearr: string[] = ["Normal", "Power ups", "All"];
+
 		return (
 			<Stack>
 				<Stack
 					direction="row"
 					alignItems="center"
 					justifyContent="center"
-					spacing={2}
 					sx={{
-						position: 'relative',
 						padding: '20px',
 					}}
 				>
@@ -42,43 +42,27 @@ export const Leaderboard: React.FC = () => {
 						LEADERBOARD
 					</Typography>
 				</Stack>
-				<Stack 
-					direction="row" 				
-					alignItems="center"
-					justifyContent="center" 
-					spacing={10}
-				>
-					<Typography 
-						variant={'h2'}
-						sx={{
-							fontFamily: 'Georgia, serif',
-							position: 'relative',
-							left: '-200px',
-						}}
+				<Grid
+					container
+					justifyContent="space-between"
+					sx={{
+						maxWidth: '1200px',
+						margin: '0 auto',
+					}}
 					>
-						Normal
-					</Typography>
-					<Typography 
-						variant={'h2'}
-						sx={{
-							fontFamily: 'Georgia, serif',
-							position: 'relative',
-							left: '-60px',
-						}}
-					>
-						Power ups
-					</Typography>
-					<Typography 
-						variant={'h2'}
-						sx={{
-							fontFamily: 'Georgia, serif',
-							position: 'relative',
-							left: '120px',
-						}}
-					>
-						All
-					</Typography>
-				</Stack>
+					{typearr.map((type, index) => (
+						<Grid item xs={4} textAlign="center" key={index}>
+							<Typography
+								variant="h2"
+								sx={{
+									fontFamily: 'Georgia, serif',
+								}}
+							>
+								{type}
+							</Typography>
+						</Grid>
+					))}
+				</Grid>
 			</Stack>
 		);
 	}
@@ -162,13 +146,17 @@ export const Leaderboard: React.FC = () => {
 		if (arr.length === 0)
 		{
 			return (
-				<Stack>
+				<Stack
+					sx={{
+						height: '100%',
+					}}
+					justifyContent={"center"}
+					alignItems={"center"}
+				>
 					<Typography
 						variant={'h5'}
 						sx={{
 							fontFamily: 'Georgia, serif',
-							position: 'relative',
-							left: '45px',
 						}}
 					>
 						No stats available
@@ -183,9 +171,10 @@ export const Leaderboard: React.FC = () => {
 				spacing={'0.6em'}
 				marginX={'0.8em'}
 				sx={{
-					width: '250px',
+					width: '300px',
 					position: 'relative',
-					left: '10px',
+					left: '20px',
+					top: '20px',
 					'& > *': {
 						alignItems: 'center',
 						height: '4em',
@@ -221,63 +210,54 @@ export const Leaderboard: React.FC = () => {
 		
 	}
 
-	let pageBody = (arr: leaderboardData[], type: string[], left: string[], index: number) =>
-	{
-		return (
-				<Stack
-					direction="row" 
-					alignItems="center"
-					height='450px'
-				>
-					<Stack
-						direction="row" 
-						alignItems="center"
-						height='400px'
-						width='300px'
-						bgcolor={theme.palette.primary.dark}
-						sx={{
-							position: 'relative',
-							left: left[index],
-							borderRadius: "10px",
-							overflow: "hidden",
-						}}
-					>
-						{initTable(arr, type[index])}
-					</Stack>
-				</Stack>
-		);
-	}
-
-	let leaderBoard = () =>
+	let pageBody = () =>
 	{
 		const typearr: string[] = ["Normal", "Power ups", "All"];
-		const leftarr: string[] = ['80px', '240px', '380px'];
+
 		return (
-			<Stack>
-				<Stack
-				bgcolor={theme.palette.primary.dark}
-				height='200px'
-				>
-					{pageHeader()}
-				</Stack>
-				<br />
-				<Stack
-					direction="row" 
-					alignItems="center"
-					height='450px'
-				>
-					{leaderboard.map((arr: leaderboardData[], index: number) => pageBody(arr, typearr, leftarr, index))}
-				</Stack>
-			</Stack>
+			<Grid
+				container
+				justifyContent="space-between"
+				spacing={4}
+				sx={{
+					maxWidth: '1200px',
+					margin: '10px auto 0',
+				}}
+			>
+				{leaderboard.map((arr: leaderboardData[], index: number) => (
+					<Grid item xs={4} key={index} textAlign="center">
+						<Stack
+							bgcolor={theme.palette.primary.dark}
+							sx={{
+								borderRadius: "10px",
+								height: '500px',
+								overflow: "hidden",
+							}}
+						>
+							{initTable(arr, typearr[index])}
+						</Stack>
+					</Grid>
+				))}
+			</Grid>
 		);
 	}
 
+	let leaderBoard = () => {
+		return (
+			<Stack>
+				<Stack bgcolor={theme.palette.primary.dark} height="200px">
+					{pageHeader()}
+				</Stack>
+				{pageBody()}
+			</Stack>
+		);
+	};
+	
 	let fetchUsers = async () =>
 	{
 		var arr: leaderboardData[][] = await fetchLeaderboard();
 		setLeaderboard(arr);
 	}
-
 
 	useEffect(() => 
 	{

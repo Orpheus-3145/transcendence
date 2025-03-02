@@ -25,6 +25,12 @@ export class UsersController {
 		return (user);
 	}
 
+	@Get('/profile/fetchUser/:username')
+	async fetchUser(@Param('username') username: string) {
+		var user: User | null = await this.UserService.findOneNick(username);
+		return (user);
+	}
+
 	@Post('/profile/:username/newnick')
 	async setNewNickname(@Param('username') username: string, @Body('newname') newname:string) : Promise<string>
 	{
@@ -82,7 +88,13 @@ export class UsersController {
 	@Get('/profile/:username/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
-		return (this.UserService.getFriend(id));
+		return (this.UserService.getUserIntraId(id));
+	}
+
+	@Get('/profile/:username/opponent/:id')
+	async fetchOpponent(@Param('id') id: string) 
+	{
+		return (this.UserService.getUserId(id));
 	}
 
 	@Get('profile/:username/friend/remove/:id')
