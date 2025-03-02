@@ -1,9 +1,11 @@
-import { Controller, Get, Query, Req, Res, UseFilters } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from 'src/auth/auth.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 
+// Maybe add a guard like:
+// @UseGuards(AuthGuard)
 @Controller('auth')
 @UseFilters(SessionExceptionFilter)
 export class AuthController {
@@ -11,16 +13,49 @@ export class AuthController {
 
 	@Get('login')
 	async login(@Query('code') code: string, @Res() res: Response) {
-		return this.authService.login(code, res);
+		await this.authService.login(code, res);
 	}
 
+	// Token validation happens here. Part of this might make more sense as a guard middleware
 	@Get('validate')
 	async validate(@Req() req: Request, @Res() res: Response) {
-		return this.authService.validate(req, res);
+		await this.authService.validate(req, res);
 	}
 
 	@Get('logout')
 	async logout(@Res() res: Response) {
-		this.authService.logout(res);
+		await this.authService.logout(res);
+	}
+
+	// Generate 2FA QRCode and send it to the front-end
+	@Get('generate-qr')
+	async getQRCode(@Res() res: Response) {
+		await this.authService.generateQRCode(res);
+	}
+
+	// If QR is verified, save the 2fa secret to the database
+	@Post('verify-qr')
+	async verifyQRCode(
+	@Body() body: { intraId: string; secret: string; token: string },
+	@Res() res: Response
+	) {
+		const isVerified = await this.authService.verifyQRCode(body.intraId, body.secret, body.token);
+		res.json({ success: isVerified });
+
+	}
+
+	@Post('delete-2fa')
+	async deleteQRCode(@Query('intraId') intraId: string, @Res() res: Response) {
+		await this.authService.delete2FA(intraId, res);
+	}
+
+	@Get('status-2fa')
+	async get2FAStatus(@Query('intraId') intraId: string, @Res() res: Response) {
+		await this.authService.get2FAStatus(intraId, res);
+	}
+
+	@Post('verify-2fa')
+	async validate2FA(@Body() body: { tempCode: string }, @Req() req, @Res() res: Response) {
+		await this.authService.validate2FA(body.tempCode, req, res);
 	}
 }

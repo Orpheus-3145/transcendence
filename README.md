@@ -43,3 +43,9 @@
 - Server-side validation of all forms and user inputs.
 - Secure storage of credentials, API keys, and environment variables in a `.env` file, excluded from version control.
 
+## To login to the database:
+- Enter continer:
+ docker exec -it transcendence-database-1 sh
+- Enter db:
+ psql -U username -d db (replace username and db with actual values)
+- Run sql command
