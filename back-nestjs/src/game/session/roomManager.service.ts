@@ -12,6 +12,7 @@ import { PlayingPlayer } from 'src/game/types/game.interfaces';
 import { UsersService } from 'src/users/users.service';
 import { UserStatus } from 'src/dto/user.dto';
 
+
 @Injectable()
 export default class RoomManagerService {
 	private rooms: Map<string, SimulationService> = new Map();
@@ -21,8 +22,7 @@ export default class RoomManagerService {
 		private readonly logger: AppLoggerService,
 		private readonly userService: UsersService,
 		@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
-		@Inject('GAME_SPAWN')
-		private readonly gameRoomFactory: (data: GameDataDTO) => SimulationService,
+		@Inject('GAME_SPAWN') private readonly gameRoomFactory: (data: GameDataDTO) => SimulationService,
 	) {
 		this.logger.setContext(RoomManagerService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)

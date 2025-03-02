@@ -20,10 +20,10 @@ import { useUser,
 	blockFriend,
 	fetchRatios,
 	fetchMatchData} from '../../Providers/UserContext/User';
-import { addFriend, inviteToGame, sendMessage } from '../../Providers/NotificationContext/Notification';
 import { PowerUpSelected } from '../../Types/Game/Enum';
 import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
 import { UserStatus } from '../../Types/User/Enum';
+import { addFriend, inviteToGame, sendMessage, socket } from '../../Providers/NotificationContext/Notification';
 
 
 const ProfilePageOther: React.FC = () => {
@@ -270,6 +270,11 @@ const ProfilePageOther: React.FC = () => {
 				</Stack>
 			</Box>
 		);
+	};
+
+const fetchOpponentDetails = async (opponentId: string) => {
+		const opponent = await fetchOpponent(opponentId);
+		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
 	};
 
 	let gameLine = (data: MatchData) => 
@@ -874,7 +879,6 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageBL(false);
 
 		var powerup = calculatePowerups();
-		
 		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
 	}
 
@@ -1153,8 +1157,7 @@ const ProfilePageOther: React.FC = () => {
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
 		setMatchHistory(matches);
-		var allRatio = await fetchRatios(tmp);
-		setRatioArr(allRatio);
+		setRatioArr(await fetchRatios(tmp));
 	}
 	
 	useEffect(() => 

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Stack, Typography, Avatar } from '@mui/material';
-import {  fetchLeaderboard } from '../../Providers/UserContext/User';
+import { fetchLeaderboard } from '../../Providers/UserContext/User';
+import { Stack, Typography, Avatar, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { LeaderboardData } from '../../Types/User/Interfaces';
@@ -211,54 +211,35 @@ export const Leaderboard: React.FC = () => {
 		
 	}
 
-	let pageBody = (arr: LeaderboardData[], type: string[], left: string[], index: number) =>
-	{
-		return (
-				<Stack
-					direction="row" 
-					alignItems="center"
-					height='450px'
-				>
-					<Stack
-						direction="row" 
-						alignItems="center"
-						height='400px'
-						width='300px'
-						bgcolor={theme.palette.primary.dark}
-						sx={{
-							position: 'relative',
-							left: left[index],
-							borderRadius: "10px",
-							overflow: "hidden",
-						}}
-					>
-						{initTable(arr, type[index])}
-					</Stack>
-				</Stack>
-		);
-	}
-
-	let leaderBoard = () =>
+	let pageBody = () =>
 	{
 		const typearr: string[] = ["Normal", "Power ups", "All"];
 
 		return (
-			<Stack>
-				<Stack
-				bgcolor={theme.palette.primary.dark}
-				height='200px'
-				>
-					{pageHeader()}
-				</Stack>
-				<br />
-				<Stack
-					direction="row" 
-					alignItems="center"
-					height='450px'
-				>
-					{leaderboard.map((arr: LeaderboardData[], index: number) => pageBody(arr, typearr, leftarr, index))}
-				</Stack>
-			</Stack>
+			<Grid
+				container
+				justifyContent="space-between"
+				spacing={4}
+				sx={{
+					maxWidth: '1200px',
+					margin: '10px auto 0',
+				}}
+			>
+				{leaderboard.map((arr: LeaderboardData[], index: number) => (
+					<Grid item xs={4} key={index} textAlign="center">
+						<Stack
+							bgcolor={theme.palette.primary.dark}
+							sx={{
+								borderRadius: "10px",
+								height: '500px',
+								overflow: "hidden",
+							}}
+						>
+							{initTable(arr, typearr[index])}
+						</Stack>
+					</Grid>
+				))}
+			</Grid>
 		);
 	}
 

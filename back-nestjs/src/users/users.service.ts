@@ -68,11 +68,11 @@ export class UsersService {
 	}
 
 	async findOneIntra(intraId: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { intraId } });
+		return this.usersRepository.findOne({ where: { intraId: intraId } });
 	}
 
 	async findOneId(id: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { id } });
+		return this.usersRepository.findOne({ where: { id: id } });
 	}
 
 	async findOneNick(nameNick: string): Promise<User | null> {
@@ -112,7 +112,7 @@ export class UsersService {
 
 	async setUserStatus(id: number, which: UserStatus)
 	{
-		var user = await this.findOneId(id);
+		var user = await this.findOneIntra(id);
 		user.status = which;
 		this.usersRepository.save(user);
 	}

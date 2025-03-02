@@ -22,10 +22,13 @@ import { useUser,
 		blockFriend, 
 		changePFP, 
 		fetchRatios,
+		fetchOpponent,
 		fetchMatchData} from '../../Providers/UserContext/User';
 
 import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
 import { UserStatus } from '../../Types/User/Enum';
+
+import { socket } from '../../Providers/NotificationContext/Notification';
 
 
 const ProfilePage: React.FC = () => {
@@ -352,7 +355,7 @@ const ProfilePage: React.FC = () => {
 		}
 
 		if (!friend) {
-			fetchOpponentDetails(intra);
+			fetchOpponent(intra);
 			return <Stack>Loading...</Stack>;
 		}
 

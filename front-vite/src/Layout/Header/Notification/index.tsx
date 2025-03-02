@@ -636,6 +636,8 @@ export const Notification: React.FC = () => {
 
 	useEffect(() => 
 		{
+			socket.on('goToGame', navToGame);
+
 			socket.on('sendNoti', (noti: NotificationStruct) =>
 			{
 				if (noti != null)
@@ -658,17 +660,6 @@ export const Notification: React.FC = () => {
 				return (notificationBar());
 			});
 		}
-
-		useEffect(() => {
-			socket.on('sendNoti', (noti: NotificationStruct) =>
-			{
-				if (noti != null)
-					addNotification(noti);
-			});
-			socket.on('goToGame', navToGame);
-
-		}, [friendRequestArray, messageArray, gameInviteArray]);
-
 
 		return (notificationBar());
 	}

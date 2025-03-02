@@ -72,7 +72,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.setStatus(data.id, UserStatus.Online);
 		} 
 		var Noti = await this.notificationService.findNotificationReceiver(data.id);
-	  	client.emit('getAllNotifications', Noti);
+		client.emit('getAllNotifications', Noti);
 	}
 
 	async sendNotiToFrontend(Noti: Notification | null): Promise<void>
