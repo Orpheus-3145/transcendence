@@ -46,3 +46,8 @@ export interface PowerUpStatus {
 	player: number;
 	type: PowerUpType;
 }
+
+export interface GameContextType {
+  gameData: GameData;
+  setGameData: (value: GameData) => void;
+}

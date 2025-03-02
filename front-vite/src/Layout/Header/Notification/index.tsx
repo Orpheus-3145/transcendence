@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { useUser } from '../../../Providers/UserContext/User';
 import { useNavigate } from 'react-router-dom';
@@ -18,8 +18,9 @@ import {NotificationStruct,
 		acceptGameInvite, 
 		declineGameInvite,
 		NotificationType,
-		socket} from '../../../Providers/NotificationContext/Notification'
-import { GameData } from '../../../Pages/Game/GameComponent/Types/Interfaces'
+		socket} from '/app/src/Providers/NotificationContext/Notification'
+import { GameDataContext } from '/app/src/Providers/GameContext/Game';
+import { GameData } from '/app/src/Types/Game/Interfaces';
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
@@ -31,11 +32,14 @@ export const Notification: React.FC = () => {
 	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[]>([]);
 	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[]>([]);
 	const [isFirst, setIsFirst] = useState<Boolean>(true);
+  const { setGameData } = useContext(GameDataContext)!;
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
-	const navToChat = () => {navigate('/channels')};
-	const navToGame = (gameInfo: GameData) => {navigate('/game', { state: { info: gameInfo } })};
+	const navToGame = (gameInfo: GameData) => {
+		setGameData(gameInfo);
+		navigate('/game');
+	}
 
 	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
 	{
@@ -655,14 +659,23 @@ export const Notification: React.FC = () => {
 			});
 		}
 
-		socket.on('goToGame', navToGame);
+		useEffect(() => {
+			socket.on('sendNoti', (noti: NotificationStruct) =>
+			{
+				if (noti != null)
+					addNotification(noti);
+			});
+			socket.on('goToGame', navToGame);
+
+		}, [friendRequestArray, messageArray, gameInviteArray]);
+
 
 		return (notificationBar());
 	}
 
 	return (
 		notificationWrapper()
-  	);
+	);
 };
 
 export default Notification;

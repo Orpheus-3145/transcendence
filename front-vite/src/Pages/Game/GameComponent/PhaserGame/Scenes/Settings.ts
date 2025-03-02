@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import BaseScene from './Base';
-import { GameMode, GameDifficulty, PowerUpType, PowerUpSelected } from '../../Types/Enum';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import { GameMode, GameDifficulty, PowerUpType, PowerUpSelected } from '/app/src/Types/Game/Enum';
 
 
 export default class SettingsScene extends BaseScene {

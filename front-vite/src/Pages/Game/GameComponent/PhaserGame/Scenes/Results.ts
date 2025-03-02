@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io-client';
 
-import BaseScene from './Base';
-import { GameData } from '../../Types/Interfaces';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import { GameData } from '/app/src/Types/Game/Interfaces';
 
 
 export default class ResultsScene extends BaseScene {
@@ -16,7 +16,6 @@ export default class ResultsScene extends BaseScene {
 	private _socketIO!: Socket;
 
 	constructor() {
-
 		super({ key: 'Results' });
 	}
 
@@ -81,10 +80,7 @@ export default class ResultsScene extends BaseScene {
 		.setInteractive()
 		.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) 	// Change color on hover
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 	// Change color back when not hovered
-		.on('pointerup', () => {
-			// this.sendMsgToServer('abortRematch');
-			this.switchScene('MainMenu');
-		}); 				// Start the main game
+		.on('pointerup', () => this.switchScene('MainMenu')); 				// Start the main game
 
 		this._waitingPopup = this.createWaitingPopup();
 		this._waitingPopup.setVisible(false);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Box, Stack, Typography, useTheme, Divider, Grid, IconButton, Container } from '@mui/material';
-import {Input} from '@mui/material'
+import { Input } from '@mui/material'
 import { useMediaQuery, Tooltip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
@@ -21,13 +21,12 @@ import { useUser,
 		removeFriend, 
 		blockFriend, 
 		changePFP, 
-		User,
-		UserStatus,
-		matchData,
 		fetchRatios,
-		matchRatio,
-		fetchOpponent} from '../../Providers/UserContext/User';
-import { socket } from '../../Providers/NotificationContext/Notification';
+		fetchMatchData} from '../../Providers/UserContext/User';
+
+import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
+import { UserStatus } from '../../Types/User/Enum';
+
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -50,19 +49,17 @@ const ProfilePage: React.FC = () => {
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
 	const [opponentDetails, setOpponentDetails] = useState<Map<string, User>>(new Map());
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
-	const [matchHistory, setMatchHistory] = useState<matchData[]>([]);
-	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
+	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
+	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
 	
 	let RemoveFriend = (id:string) => {
-		var newlist = friendsList.filter(friend => friend !== id);
-		setFriendsList(newlist);
-		removeFriend(userProfile.id.toString(), id);
+		if (userProfile)
+			removeFriend(userProfile.id.toString(), id);
 	}
 
 	let BlockFriend = (id:string) => {
-		var newlist = friendsList.filter(friend => friend !== id);
-		setFriendsList(newlist);
-		blockFriend(userProfile.id.toString(), id);
+		if (userProfile)
+			blockFriend(userProfile.id.toString(), id);
 	}
 
 	let friendLineButtons = (intraid:string) => 
@@ -250,7 +247,7 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let gameStatsBox = (data: matchRatio) =>
+	let gameStatsBox = (data: MatchRatio) =>
 	{
 		return (
 			<Stack
@@ -295,7 +292,7 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let gameStats = () => 
+	let gameStats = () =>
 	{
 		return (
 			<Box
@@ -314,18 +311,13 @@ const ProfilePage: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
 	};
 
-	const fetchOpponentDetails = async (opponentId: string) => {
-		const opponent = await fetchOpponent(opponentId);
-		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
-	};
-
-	let gameLine = (data: matchData) => 
+	let gameLine = (data: MatchData) => 
 	{
 		var friend: User | undefined;
 		var intra: string;
@@ -464,7 +456,7 @@ const ProfilePage: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
+					{matchHistory.map((item: MatchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -784,14 +776,14 @@ const ProfilePage: React.FC = () => {
 	let getUserProfile = async () : Promise<void> =>
 	{
 		const tmp: User = await getUserFromDatabase(lastSegment, navigate);
-
+		const matches: MatchData[] = await fetchMatchData(tmp);
 		if (user.id == tmp.id)
 		{
 			showOwnPage(true);
 			setProfileImage(tmp.image);
 			setFriendsList(tmp.friends);
 			setWhichStatus(tmp.status);
-			setMatchHistory(tmp.matchHistory);
+			setMatchHistory(matches);
 			setUserProfile(tmp);
 			setRatioArr(await fetchRatios(tmp));
 		}

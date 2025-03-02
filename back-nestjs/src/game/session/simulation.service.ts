@@ -1,4 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,8 +18,9 @@ import { GameMode,
 				PlayerIdentity,
 				PaddleDirection,
 				fromArrayToMask,
-				fromMaskToArray} from 'src/game/types/game.enum';
-import { UsersService } from 'src/users/users.service';
+				fromMaskToArray } from 'src/game/types/game.enum';
+import Game from 'src/entities/game.entity';
+import User from 'src/entities/user.entity';
 
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -75,7 +78,8 @@ export default class SimulationService {
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
 		private readonly config: ConfigService,
-		private readonly userService: UsersService
+		@InjectRepository(Game) private gameRepository: Repository<Game>,
+		@InjectRepository(User) private userRepository: Repository<User>,
 	) {
 		this.logger.setContext(SimulationService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
@@ -406,11 +410,22 @@ export default class SimulationService {
 
 		this.stopEngine();
 		
-		if (this.powerUpSelected.length > 0)
-			await this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Power ups");
-		else
-			await this.userService.storeMatchData(this.player1.intraId, this.player2.intraId, this.player1.score, this.player2.score, "Normal");
-		
+		if ( this.mode === GameMode.multi ) {
+			const [p1, p2] = await Promise.all([
+				this.userRepository.findOne({ where: {intraId : this.player1.intraId}}),
+				this.userRepository.findOne({ where: {intraId : this.player2.intraId}})
+			]);
+			const gamePlayed = this.gameRepository.create({
+				player1 : p1,
+				player2 : p2,
+				player1Score : this.player1.score,
+				player2Score : this.player2.score,
+				powerups : fromArrayToMask(this.powerUpSelected),
+				
+			});
+			this.gameRepository.save(gamePlayed);
+		}
+
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;
 	}
@@ -429,14 +444,14 @@ export default class SimulationService {
 			}
 
 		} else if (this.waitingForRematch === true) {
-			this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${leavingPlayer.nameNick} left the queue`);
+			this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${leavingPlayer.nameNick} left the game`);
 			this.waitingForRematch = false;
 
 			if (this.mode === GameMode.multi) {
 				if (this.player1.clientSocket.id === leavingPlayer.clientSocket.id)
-					this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${leavingPlayer.nameNick} left the queue`);
+					this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${leavingPlayer.nameNick} left the game`);
 				else if (this.player2.clientSocket.id === leavingPlayer.clientSocket.id)
-					this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${leavingPlayer.nameNick} left the queue`);
+					this.sendMsgToPlayer(this.player1.clientSocket, 'abortRematch', `${leavingPlayer.nameNick} left the game`);
 			}
 		}
 
@@ -549,7 +564,7 @@ export default class SimulationService {
 			return ;
 
 		this.waitingForRematch = false;
-		this.logger.debug(`session [${this.sessionToken}] - player ${player.nameNick} rejected rematch`);
+		this.logger.debug(`session [${this.sessionToken}] - ${player.nameNick} rejected rematch`);
 		
 		if (this.player1.clientSocket.id === player.clientSocket.id)
 			this.sendMsgToPlayer(this.player2.clientSocket, 'abortRematch', `${player.nameNick} rejected rematch`);

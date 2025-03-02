@@ -3,9 +3,12 @@ import { Stack, Link, Typography, IconButton, Tooltip, Input, useTheme, Divider,
 import { useNavigate } from 'react-router-dom';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
-import { getAll, User, UserStatus} from '../../Providers/UserContext/User';
+
+import { getAll } from '../../Providers/UserContext/User';
+import { User } from '../../Types/User/Interfaces';
+import { UserStatus } from '../../Types/User/Enum';
 import SearchIcon from '@mui/icons-material/Search';
-import { off } from 'process';
+
 
 const AllUsersPage: React.FC = () => {
 	const theme = useTheme();

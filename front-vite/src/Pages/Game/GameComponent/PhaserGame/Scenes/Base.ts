@@ -9,9 +9,9 @@ export default class BaseScene extends Phaser.Scene {
 	// if the windows is resized, the font size is derivated from new_size_wdth * ratio
 	protected readonly _textFontRatio: number = Number(import.meta.env.GAME_FONT_SIZE_RATIO);
 
-	// constructor(arg?: any) {
-	// 	super(arg);
-	// }
+	constructor(arg?: any) {
+		super(arg);
+	}
 
 	// method called when scene.start(nameScene, args) is run
 	init(arg?: any): void {

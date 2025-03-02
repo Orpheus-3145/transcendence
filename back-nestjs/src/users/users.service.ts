@@ -1,26 +1,29 @@
 import { Injectable, Inject, forwardRef, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, TopologyClosedEvent } from 'typeorm';
-import { leaderboardData, matchRatio } from '../entities/user.entity';
-import { UserStatus, UserDTO, matchData } from '../dto/user.dto'
-import AccessTokenDTO  from '../dto/auth.dto';
+import { Repository } from 'typeorm';
+
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import User from '../entities/user.entity';
+import Game from 'src/entities/game.entity';
+import AccessTokenDTO  from '../dto/auth.dto';
+import UserDTO, { UserStatus } from '../dto/user.dto'
+import MatchDataDTO from 'src/dto/matchData.dto';
+import LeaderboardDTO from 'src/dto/leaderboard.dto';
+import MatchRatioDTO from 'src/dto/matchRatio.dto';
 
 
 @Injectable()
 export class UsersService {
-  	constructor(
-		@InjectRepository(User)
-		private usersRepository: Repository<User>,
+	constructor(
+		@InjectRepository(User) private usersRepository: Repository<User>,
+		@InjectRepository(Game) private gamesRepository: Repository<Game>,
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
  	) { 
 		this.logger.setContext(UsersService.name);	
 	}
 
-	
 	async createUser(access: AccessTokenDTO, userMe: Record<string, any>): Promise<UserDTO> {
 		const user = new User();
 		user.accessToken = access.access_token;
@@ -35,21 +38,6 @@ export class UsersService {
 		user.status = UserStatus.Online;
 		user.friends = [];
 		user.blocked = [];
-		user.matchHistory = [];
-		// const a = new User();
-		// a.accessToken = access.access_token;
-		// a.intraId = 321214;
-		// a.nameNick = "aa";
-		// a.nameIntra = "aa";
-		// a.nameFirst = "a";
-		// a.nameLast = "b";
-		// a.email = "a";
-		// a.image = userMe.image.link;
-		// a.greeting = 'Hello, I have just landed!';
-		// a.status = UserStatus.Online;
-		// a.friends = [];
-		// a.blocked = [];
-		// a.matchHistory = [];
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
@@ -58,9 +46,7 @@ export class UsersService {
 				return (new UserDTO(tmp));
 			}
 			await user.validate();
-			// await a.validate();
 			await this.usersRepository.save(user);
-			// await this.usersRepository.save(a);
 			return new UserDTO(user);
 		} 
 		catch (error) {
@@ -91,6 +77,18 @@ export class UsersService {
 
 	async findOneNick(nameNick: string): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { nameNick } });
+	}
+
+	async findGamesByUser(user: User) : Promise<Game[] | undefined> {
+
+		const gamesPlayedbyId: Game[] = await this.gamesRepository.find(
+			{ where : [
+				{ player1 : {id: user.id} },
+				{ player2 : {id: user.id} },
+				]
+			}
+		);
+		return gamesPlayedbyId;
 	}
 
 	async getUserId(code: string): Promise<User | null> 
@@ -124,9 +122,15 @@ export class UsersService {
 		user.nameNick = nameNick;
 		this.usersRepository.save(user);
 	}
+  
+	async getFriend(code: string): Promise<User | null> 
+	{
+		const numb = Number(code);
+		return (this.findOneIntra(numb));
+	}
 
-  	async friendRequestAccepted(iduser:string, idother:string)
-  	{
+	async friendRequestAccepted(iduser:string, idother:string)
+	{
 		var user = await this.getUserId(iduser);
 		var otheruser = await this.getUserId(idother);
 		if ((user == null) || (otheruser == null))
@@ -138,27 +142,27 @@ export class UsersService {
 		this.usersRepository.save((user));
 		(otheruser).friends.push((user).intraId.toString());
 		this.usersRepository.save((otheruser));
-  	}
+	}
 
-  	async removeFriend(user: User, other: User)
-  	{
+	async removeFriend(user: User, other: User)
+	{
 		var newlist = user.friends.filter(friend => friend !== other.intraId.toString());
 		user.friends = newlist;
 		this.usersRepository.save(user);
 		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
 		other.friends = newlist;
 		this.usersRepository.save(other);
-  	}
+	}
 
-  	async blockUser(user: User, other: User)
-  	{
+	async blockUser(user: User, other: User)
+	{
 		var str: string = other.intraId.toString();
 		if (user.blocked.find((blockedId) => blockedId === str))
 			return ;
 		this.removeFriend(user, other);
 		user.blocked.push(other.intraId.toString());
 		this.usersRepository.save(user);
-  	}
+	}
   
 	async unBlockUser(user: User, other: User)
 	{
@@ -168,17 +172,46 @@ export class UsersService {
 	}
 
 	async changeProfilePic(user: User, image:string)
-  	{
+	{
 		user.image = image;
 		this.usersRepository.save(user);
 		return (image);
-  	}
+	}
 
-	async calculateRatio(arr: matchData[], userProfile: User)
+	async fetchMatches(user: User) : Promise<MatchDataDTO[] | undefined> {
+
+		const gamesDB : Game[] = await this.gamesRepository.find({
+			where : [
+				{ player1 : {id: user.id} },
+				{ player2 : {id: user.id} },
+			],
+			relations: ['player1', 'player2'],
+		});
+		let matchData: MatchDataDTO[] = [];
+		for (const game of gamesDB) {
+
+			const winner: string = (game.player1Score > game.player2Score) ? game.player1.nameIntra : game.player2.nameIntra;
+			const type: string = (game.powerups === 0) ? 'No powerups' : 'With powerups';
+			matchData.push({
+				player1: game.player1.nameIntra,
+				player2: game.player2.nameIntra,
+				player1Score: game.player1Score,
+				player2Score: game.player2Score,
+				whoWon: winner,
+				type: type,
+			});
+		}
+
+		return matchData;
+	}
+
+	async calculateRatio(user: User): Promise<MatchRatioDTO[]>
 	{
-		if (arr.length === 0)
+		const games: Game[] = await this.findGamesByUser(user);
+
+		if (games.length === 0)
 		{
-			var tmp: matchRatio[] = [
+			var tmp: MatchRatioDTO[] = [
 			{
 				title: "Normal", value: 0, rate: 0
 			},
@@ -197,22 +230,24 @@ export class UsersService {
 		var powerAll = 0;
 		var allWin = 0;
 		var allAll = 0;
-		arr.forEach((item: matchData) =>
+
+		games.forEach((item: Game) =>
 		{
-			if (item.type === "Normal")
+			if (item.powerups === 0)
 			{
 				normalAll += 1;
-				if (item.whoWon === userProfile.id.toString())
+				if ((item.player1Score > item.player2Score && item.player1 === user) ||
+						(item.player2Score > item.player1Score && item.player2 === user))
 					normalWin += 1;
-			}
-			else
-			{
+			} else {
 				powerAll += 1;
-				if (item.whoWon === userProfile.id.toString())
+				if ((item.player1Score > item.player2Score && item.player1 === user) ||
+						(item.player2Score > item.player1Score && item.player2 === user))
 					powerWin += 1;
 			}
 			allAll += 1;
-			if (item.whoWon === userProfile.id.toString())
+			if ((item.player1Score > item.player2Score && item.player1 === user) ||
+					(item.player2Score > item.player1Score && item.player2 === user))
 				allWin += 1;
 		});
 
@@ -220,27 +255,27 @@ export class UsersService {
 		var ratioPower = Math.round((powerWin / powerAll) * 100);
 		var ratioAll = Math.round((allWin / allAll) * 100);
 
-		if (normalAll === 0)
+		if (normalAll === 0)		// NB is it necessary?
 			ratioNormal = 0;
 		if (powerAll === 0)
 			ratioPower = 0;
 
-		var resultArr: matchRatio[] = [
-		{
-			title: "Normal", value: normalAll, rate: ratioNormal
-		},
-		{
-			title: "Power ups", value: powerAll, rate: ratioPower
-		},
-		{
-			title: "All", value: allAll, rate: ratioAll
-		}];
+		var resultArr: MatchRatioDTO[] = [
+			{
+				title: "Normal", value: normalAll, rate: ratioNormal
+			},
+			{
+				title: "Power ups", value: powerAll, rate: ratioPower
+			},
+			{
+				title: "All", value: allAll, rate: ratioAll
+			}
+		];
 
-		return (resultArr);		
+		return (resultArr);
 	}
 
-
-	async fillArray(allData: leaderboardData[], type: string): Promise<leaderboardData[]>
+	async fillArray(allData: LeaderboardDTO[], type: string): Promise<LeaderboardDTO[]>
 	{
 		var ratioIndex: number = 0;
 		if (type == "Power ups")
@@ -248,10 +283,10 @@ export class UsersService {
 		if (type == "All")
 			ratioIndex = 2;
 
-		var arr: leaderboardData[] = [];
-		allData.forEach((item: leaderboardData) =>
+		var arr: LeaderboardDTO[] = [];
+		allData.forEach((item: LeaderboardDTO) =>
 		{
-			item.ratio.forEach((values: matchRatio) =>
+			item.ratio.forEach((values: MatchRatioDTO) =>
 			{
 				var tmpType = values.title;
 				var tmpRate = values.rate;
@@ -283,53 +318,36 @@ export class UsersService {
 		return (arr);
 	}
 
-	async initLeaderboardArr(allUser: User[]): Promise<leaderboardData[]>
+	async initLeaderboardArr(allUser: User[]): Promise<LeaderboardDTO[]>
 	{
-		var tmpratio: matchRatio[] = [];
-		var allData: leaderboardData[] = [];
+		var tmpratio: MatchRatioDTO[] = [];
+		var allData: LeaderboardDTO[] = [];
 
 		allUser.forEach(async (item: User) => 
 		{
-			tmpratio = await this.calculateRatio(item.matchHistory, item);
-			var tmp: leaderboardData = { user: item, ratio: tmpratio };
+			tmpratio = await this.calculateRatio(item);
+			var tmp: LeaderboardDTO = { user: new UserDTO(item), ratio: tmpratio };
 			allData.push(tmp);
-		});	
+		});
 
 		return (allData);
 	}
 
-	async leaderboardCalculator(): Promise<leaderboardData[][]>
+	// global leaderboard
+	async leaderboardCalculator(): Promise<LeaderboardDTO[][]>
 	{
 		var allUser = await this.findAll();
-		var allData: leaderboardData[] = [];
+		var allData: LeaderboardDTO[] = [];
 
 		allData = await this.initLeaderboardArr(allUser);
-	
-		var normalArr: leaderboardData[] = await this.fillArray(allData, "Normal");
-		var powerArr: leaderboardData[] = await this.fillArray(allData, "Power ups");
-		var allArr: leaderboardData[] = await this.fillArray(allData, "All");
 
-		var result: leaderboardData[][] = [];
+		var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
+		var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
+		var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
+
+		var result: LeaderboardDTO[][] = [];
 		result.push(normalArr, powerArr, allArr);
 
 		return (result);
-	}
-
-	async storeMatchData(p1name: number, p2name: number, p1score: number, p2score: number, type: string): Promise<void>
-	{
-		var p1: User | null = await this.findOneId(p1name); 
-		var p2: User | null = await this.findOneId(p2name); 
-
-		var winner: string = "";
-		if (p1score > p2score)
-			winner = p1name.toString();
-		else
-			winner = p2name.toString();
-	
-		var match: matchData = {player1: p1name.toString(), player2: p2name.toString(), player1Score: p1score.toString(), player2Score: p2score.toString(), whoWon: winner, type: type};
-		p1.matchHistory.push(match);
-		p2.matchHistory.push(match);
-		this.usersRepository.save(p1);
-		this.usersRepository.save(p2);
 	}
 }

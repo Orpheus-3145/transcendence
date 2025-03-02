@@ -18,13 +18,12 @@ import { useUser,
 	getUserFromDatabase, 
 	fetchFriend, 
 	blockFriend,
-	User,
-	UserStatus,
 	fetchRatios,
-	matchData,
-	matchRatio,
-	fetchOpponent} from '../../Providers/UserContext/User';
-import { addFriend, inviteToGame, PowerUpSelected, sendMessage, socket } from '../../Providers/NotificationContext/Notification';
+	fetchMatchData} from '../../Providers/UserContext/User';
+import { addFriend, inviteToGame, sendMessage } from '../../Providers/NotificationContext/Notification';
+import { PowerUpSelected } from '../../Types/Game/Enum';
+import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
+import { UserStatus } from '../../Types/User/Enum';
 
 
 const ProfilePageOther: React.FC = () => {
@@ -61,8 +60,9 @@ const ProfilePageOther: React.FC = () => {
 	const [slowpaddle, setSlowpaddle] = useState<boolean>(false);
 	const [shrinkpaddle, setShrinkpaddle] = useState<boolean>(false);
 	const [stretchpaddle, setStretchpaddle] = useState<boolean>(false);
-	const [matchHistory, setMatchHistory] = useState<matchData[]>([]);
-	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
+	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
+	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
+	const [modalOpen, setModalOpen] = React.useState(false);
 
 	let redirectFriend = (id:number) =>
 	{
@@ -202,7 +202,7 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
-	let gameStatsBox = (data: matchRatio) =>
+	let gameStatsBox = (data: MatchRatio) =>
 	{
 		return (
 			<Stack
@@ -266,18 +266,13 @@ const ProfilePageOther: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
 	};
 
-const fetchOpponentDetails = async (opponentId: string) => {
-		const opponent = await fetchOpponent(opponentId);
-		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
-	};
-
-	let gameLine = (data: matchData) => 
+	let gameLine = (data: MatchData) => 
 	{
 		var friend: User | undefined;
 		var intra: string;
@@ -416,7 +411,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
+					{matchHistory.map((item: MatchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -667,15 +662,13 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		addFriend(user.id.toString(), userProfile.id.toString());
 	}
 
-    const [modalOpen, setModalOpen] = React.useState(false);
+	const handleModalClose = () => {
+			setModalOpen(false);
+	};
 
-    const handleModalClose = () => {
-        setModalOpen(false);
-    };
-
-    const handleModalOpen = () => {
-        setModalOpen(true);
-    };
+	const handleModalOpen = () => {
+			setModalOpen(true);
+	};
 
 	const handleSpeedball = () =>
 	{
@@ -881,10 +874,10 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		setShowMessageBL(false);
 
 		var powerup = calculatePowerups();
+		
 		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
 	}
 
-	
 	const CheckChangeMessage = () => 
 	{
 		if (showInput)
@@ -1149,18 +1142,19 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		);
 	};
 
-	
-
 	let getUserProfile = async () : Promise<void> =>
 	{
 		const tmp = await getUserFromDatabase(lastSegment, navigate);
+		const matches: MatchData[] = await fetchMatchData(tmp);
+
 		setProfileIntraId(tmp.intraId);
 		setUserProfile(tmp);
 		setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
-		setMatchHistory(tmp.matchHistory);
-		setRatioArr(await fetchRatios(tmp));
+		setMatchHistory(matches);
+		var allRatio = await fetchRatios(tmp);
+		setRatioArr(allRatio);
 	}
 	
 	useEffect(() => 

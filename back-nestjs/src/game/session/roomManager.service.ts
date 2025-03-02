@@ -116,6 +116,6 @@ export default class RoomManagerService {
 	deleteRoom(sessionToken: string): void {
 
 		if (this.rooms.delete(sessionToken) === true)
-			this.logger.log(`session [${sessionToken}] - room removed`);
+			this.logger.log(`session [${sessionToken}] - room deleted`);
 	}
 }
