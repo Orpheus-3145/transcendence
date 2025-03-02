@@ -2,31 +2,35 @@ import React from 'react';
 import Typography from '@mui/material';
 
 export enum ChatStatus {
-	Bubble = 'bubble',
-	Drawer = 'drawer',
-	Chatbox = 'chatbox',
-	Settings = 'settings',
-}
-
-export interface ChatMessage {
-	message: React.ReactElement<typeof Typography>;
-	user: string;
-	userPP: React.ReactElement;
-	timestamp: React.ReactElement;
+  Bubble = 'bubble',
+  Drawer = 'drawer',
+  Chatbox = 'chatbox',
+  Settings = 'settings',
+  ChannelsPage = 'channelsPage',
 }
 
 export enum UserRoles {
-	Administrator = 'Administrator',
-	Guest = 'Guest',
-	Owner = 'Owner',
+  Admin = 'admin',
+  Member = 'member',
+  Owner = 'owner',
 }
 
+export interface ChatMessage {
+  id: number,
+  message: React.ReactElement<typeof Typography>;
+  user: string;
+  userPP: React.ReactElement;
+  timestamp: React.ReactElement;
+}
+
+
 export interface UserProps {
-	name: string;
-	role: string;
-	email: string;
-	password: string;
-	icon: React.ReactElement;
+  id: number,
+  name: string;
+  role: string;
+  email: string;
+  password: string;
+  icon: React.ReactElement;
 }
 
 export interface ChatSettings {
@@ -38,10 +42,12 @@ export interface ChatSettings {
 }
 
 export interface ChatRoom {
-	name: string;
-	icon: React.ReactElement;
-	messages: ChatMessage[];
-	settings: ChatSettings;
+  id: number,
+  name: string;
+  icon: React.ReactElement;
+  messages: ChatMessage[];
+  settings: ChatSettings;
+  isDirectMessage: boolean;
 }
 
 export interface ChatProps {

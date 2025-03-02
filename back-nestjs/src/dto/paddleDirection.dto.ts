@@ -1,5 +1,5 @@
 import { IsString, IsEnum } from 'class-validator';
-import { GameMode, PaddleDirection } from '../game/game.types';
+import { PaddleDirection } from 'src/game/types/game.enum';
 
 export default class PaddleDirectionDTO {
 	@IsEnum(PaddleDirection)

@@ -3,10 +3,12 @@ import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 
 import SimulationService from './simulation.service';
-import { PaddleDirection } from '../game.types';
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import GameDataDTO from 'src/dto/gameData.dto';
+import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
+import PlayerDataDTO from 'src/dto/playerData.dto';
+import { PlayingPlayer } from 'src/game/types/game.interfaces';
 
 @Injectable()
 export default class RoomManagerService {
@@ -17,72 +19,99 @@ export default class RoomManagerService {
 		private readonly logger: AppLoggerService,
 		@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
 		@Inject('GAME_SPAWN')
-		private readonly gameRoomFactory: (data: GameInitDTO) => SimulationService,
+		private readonly gameRoomFactory: (data: GameDataDTO) => SimulationService,
 	) {
 		this.logger.setContext(RoomManagerService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	createRoom(data: GameInitDTO): void {
-		this.logger.log(`session [${data.sessionToken}] - creating new room, mode: ${data.mode}`);
+	createRoom(data: GameDataDTO): void {
 
 		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));
 	}
 
-	dropRoom(sessionToken: string, trace: string): void {
-		this.logger.log(`session [${sessionToken}] - removing room, trace: ${trace}`);
-
-		this._getRoom(sessionToken).interruptGame(trace);
-		this._deleteRoom(sessionToken);
-	}
-
-	addPlayer(sessionToken: string, client: Socket, playerId: number, nameNick: string): void {
-		this.logger.log(
-			`session [${sessionToken}] - player ${nameNick} [id client ${client.handshake.address}] joined the room`,
-		);
-
-		this._getRoom(sessionToken).addPlayer(client, playerId, nameNick);
-	}
-
 	handleDisconnect(client: Socket): void {
 		for (const [sessionToken, simulationService] of this.rooms.entries()) {
-			if (simulationService.checkClientId(client.id)) {
-				simulationService.handleDisconnect(client);
-				this._deleteRoom(sessionToken); // Cleanup room
-
+			try {
+				const player: PlayingPlayer = simulationService.getPlayerFromClient(client);
+				simulationService.handleDisconnect(player);
+				this.deleteRoom(sessionToken);
 				break;
+			}
+			catch (GameException) {	// client doesn't belong to the room, check the others
+				continue ;
 			}
 		}
 	}
 
-	movePaddle(sessionToken: string, clientId: string, data: PaddleDirection) {
-		const room = this._getRoom(sessionToken);
-		const playerId = this._getPlayerId(room, clientId);
-		room.movePaddle(clientId, data, playerId);
+	addPlayer(data: PlayerDataDTO, client: Socket): void {
+
+		const gameRoom = this.getRoom(data.sessionToken);
+		gameRoom.addPlayer(data, client);
+	}
+
+	movePaddle(data: PaddleDirectionDTO, client: Socket) {
+		
+		const gameRoom = this.getRoom(data.sessionToken);
+		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
+
+		gameRoom.movePaddle(player, data.direction);
 
 		this.logger.debug(
-			`session [${sessionToken}] - update from client ${clientId} , move '${data}'`,
+			`session [${data.sessionToken}] - update from ${player.nameNick}, move '${data.direction}'`,
 		);
 	}
 
-	_getRoom(sessionToken: string): SimulationService {
+	askForRematch(sessionToken: string, client: Socket): void {
+
+		const gameRoom: SimulationService = this.getRoom(sessionToken);
+		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
+
+		gameRoom.askForRematch(player);
+	}
+
+	acceptRematch(sessionToken: string, client: Socket): void {
+
+		const gameRoom: SimulationService = this.getRoom(sessionToken);
+		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
+
+		const gameData = gameRoom.acceptRematch(player);
+		// SimulationService.acceptRematch() returns the gameData (if the rematch is multiplayer)
+		// to RoomManagerService can create the new room directly
+		if (gameData)
+			this.createRoom(gameData);
+	}
+
+	abortRematch(sessionToken: string, client: Socket): void {
+
+		const gameRoom: SimulationService = this.getRoom(sessionToken);
+		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
+
+		gameRoom.abortRematch(player);
+	}
+
+	dropRoomCauseError(sessionToken: string, trace: string): void {
+
+		this.getRoom(sessionToken).interruptGame(trace);
+		this.deleteRoom(sessionToken);
+	}
+
+	getRoom(sessionToken: string): SimulationService {
 		const room = this.rooms.get(sessionToken);
 		if (!room)
 			this.thrower.throwGameExcp(
-				'room not found',
+				`room [session: ${sessionToken}] not found`,
 				sessionToken,
-				`${RoomManagerService.name}.${this.constructor.prototype._getRoom.name}()`,
+				`${RoomManagerService.name}.${this.constructor.prototype.getRoom.name}()`,
 			);
 
 		return room;
 	}
 
-	_getPlayerId(room: SimulationService, clientId: string): number {
-		return room.getPlayerId(clientId);
-	}
+	deleteRoom(sessionToken: string): void {
 
-	_deleteRoom(sessionToken: string): void {
-		this.rooms.delete(sessionToken);
+		if (this.rooms.delete(sessionToken) === true)
+			this.logger.log(`session [${sessionToken}] - room removed`);
 	}
 }

@@ -10,8 +10,8 @@ import { UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 import MatchmakingService from './matchmaking.service';
-import { GameExceptionFilter } from '../../errors/exceptionFilters';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import { GameExceptionFilter } from 'src/errors/exceptionFilters';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_MATCHMAKING,
@@ -34,7 +34,7 @@ export default class MatchmakingGateway implements OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('waiting')
-	clientWaitingAdd(@MessageBody() data: GameInitDTO, @ConnectedSocket() client: Socket): void {
+	clientWaitingAdd(@MessageBody() data: GameDataDTO, @ConnectedSocket() client: Socket): void {
 		this.matchmakingService.addPlayerToQueue(client, data);
 	}
 }

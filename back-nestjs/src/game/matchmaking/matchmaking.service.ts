@@ -3,16 +3,16 @@ import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import AppLoggerService from 'src/log/log.service';
-import { GameDifficulty, GameMode } from '../game.types';
-import RoomManagerService from '../session/roomManager.service';
+import { GameDifficulty, GameMode } from 'src/game/types/game.enum';
+import RoomManagerService from 'src/game/session/roomManager.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import { WaitingPlayer } from '../game.types';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import { WaitingPlayer } from 'src/game/types/game.interfaces';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @Injectable()
 export default class MatchmakingService {
 	private _waitingPlayersIP: Array<WaitingPlayer> = new Array();
-	private _checker = null;
+	private _checker: NodeJS.Timeout = null;
 
 	constructor(
 		private logger: AppLoggerService,
@@ -22,7 +22,7 @@ export default class MatchmakingService {
 		this.logger.setContext(MatchmakingService.name);
 	}
 
-	addPlayerToQueue(client: Socket, info: GameInitDTO): void {
+	addPlayerToQueue(client: Socket, info: GameDataDTO): void {
 		const waitingPlayer: WaitingPlayer = {
 			clientSocket: client,
 			extras: info.extras,
@@ -31,7 +31,7 @@ export default class MatchmakingService {
 
 		if (this._checker === null) this._checker = setInterval(() => this.checkNewGame(), 100);
 
-		this.logger.debug(`client ${client.handshake.address} joined the queue`);
+		this.logger.debug(`client ${client.id} joined the queue for matchmaking, power ups: [${info.extras.join(', ')}]`);
 	}
 
 	removePlayerFromQueue(leaver: Socket) {
@@ -41,7 +41,7 @@ export default class MatchmakingService {
 			const currentPlayer: WaitingPlayer = this._waitingPlayersIP.pop();
 
 			if (leaver.id == currentPlayer.clientSocket.id)
-				this.logger.debug(`client ${currentPlayer.clientSocket.id} left the queue`);
+				this.logger.debug(`client ${currentPlayer.clientSocket.id} left the queue for matchmaking`);
 			else tmpWaitingPlayers.push(currentPlayer);
 		}
 		this._waitingPlayersIP = tmpWaitingPlayers;
@@ -62,18 +62,16 @@ export default class MatchmakingService {
 				const player2: WaitingPlayer = this._waitingPlayersIP[j];
 
 				if (this.doTheyMatch(player1, player2)) {
-					const initData: GameInitDTO = {
+					const initData: GameDataDTO = {
 						sessionToken: uuidv4(),
 						mode: GameMode.multi,
 						difficulty: GameDifficulty.unset,
 						extras: player1.extras,
 					};
-					player1.clientSocket.emit('ready', initData.sessionToken); // message player1
-					player2.clientSocket.emit('ready', initData.sessionToken); // message player2
+					player1.clientSocket.emit('ready', initData.sessionToken);
+					player2.clientSocket.emit('ready', initData.sessionToken);
 
-					this.logger.log(
-						`found players ${player1.clientSocket.id}, ${player2.clientSocket.id} - sessionToken: ${initData.sessionToken}`,
-					);
+					this.logger.log(`found two players, token for game session: ${initData.sessionToken}`);
 					this.roomManager.createRoom(initData);
 					return;
 				}
@@ -82,7 +80,7 @@ export default class MatchmakingService {
 	}
 
 	doTheyMatch(player1: WaitingPlayer, player2: WaitingPlayer) {
-		return JSON.stringify(player1.extras) === JSON.stringify(player2.extras);
+		return player1.extras.sort().toString() === player2.extras.sort().toString();
 	}
 
 	isPlayerWaiting(client: WaitingPlayer) {

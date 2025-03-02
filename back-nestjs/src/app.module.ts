@@ -1,13 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
 import User from 'src/entities/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
-import UsersModule from 'src/users/users.module';
+import { UsersModule } from 'src/users/users.module';
 import GameModule from 'src/game/game.module';
 import ExceptionModule from 'src/errors/exception.module';
 import AppLoggerModule from 'src/log/log.module';
+import { Notification } from './entities/notification.entity';
+import { Message, Channel, ChannelMember } from './entities/chat.entity';
+import { ChatModule } from './chat/chat.module';
+import { NotificationModule } from './notification/notification.module';
+
 
 @Module({
 	imports: [
@@ -24,7 +28,7 @@ import AppLoggerModule from 'src/log/log.module';
 				username: configService.get<string>('POSTGRES_USER'),
 				password: configService.get<string>('POSTGRES_PASSWORD'),
 				database: configService.get<string>('POSTGRES_DB'),
-				entities: [User], // List your entities here
+				entities: [User, Channel, ChannelMember, Message, Notification], // List your entities here
 				synchronize: true,
 				// logging: true,
 			}),
@@ -34,6 +38,8 @@ import AppLoggerModule from 'src/log/log.module';
 		UsersModule,
 		AppLoggerModule,
 		ExceptionModule,
+		ChatModule,
+    	NotificationModule,
 	],
 })
 export default class AppModule {}

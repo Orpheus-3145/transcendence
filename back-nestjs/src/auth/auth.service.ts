@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Request, response, Response } from 'express';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 
-import {UsersService} from 'src/users/users.service';
+import { UsersService } from 'src/users/users.service';
 import AccessTokenDTO from 'src/dto/auth.dto';
 import { UserDTO } from 'src/dto/user.dto';
 import AppLoggerService from 'src/log/log.service';
@@ -180,7 +180,7 @@ export class AuthService {
 		});
 		if (!response.ok)
 			this.thrower.throwSessionExcp(
-				`Problem with Intra42 temp key fetching, response: ${response.body}`,
+				`Problem with Intra42 temp key fetching, response: ${JSON.stringify(response)}`,
 				`${AuthService.name}.${this.constructor.prototype.getUserAccessToken.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
@@ -207,7 +207,7 @@ export class AuthService {
 		});
 		if (!response.ok)
 			this.thrower.throwSessionExcp(
-				`Problem with Intra42 temp user fetching, response: ${response.body}`,
+				`Problem with Intra42 temp user fetching, response: ${JSON.stringify(response)}`,
 				`${AuthService.name}.${this.constructor.prototype.getUserMe.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);

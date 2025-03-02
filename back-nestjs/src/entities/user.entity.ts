@@ -3,22 +3,45 @@ import { IsAscii, Length, validateOrReject } from 'class-validator';
 
 import { UserStatus } from 'src/dto/user.dto';
 
+export interface matchData {
+	player1: string;
+	player2: string;
+	player1Score: string;
+	player2Score: string;
+	whoWon: string;
+	type: string;
+}
+
+export interface matchRatio {
+	title: string;
+	value: number;
+	rate: number;
+}
+
+export interface leaderboardData {
+	user: User;
+	ratio: matchRatio[];
+}
+
 @Entity()
 @Unique(['nameNick'])
 export default class User {
 	@PrimaryGeneratedColumn()
-	user_id: number;
-
-	@Column({ nullable: false })
-	accessToken: string;
+	id: number;
 
 	@Column({ nullable: false })
 	intraId: number;
 
+	@Column({ nullable: false })
+	accessToken: string;
+
+	@Column({ nullable: true})
+	@IsAscii()
+	nameNick: string | null;
+
 	@Column({ nullable: true, length: 20 })
 	@IsAscii()
-	@Length(0, 20)
-	nameNick: string | null;
+	nameIntra: string | null;
 
 	@Column({ nullable: false })
 	nameFirst: string;
@@ -28,9 +51,19 @@ export default class User {
 
 	@Column({ nullable: false })
 	email: string;
+	
 
 	@Column({ nullable: true, default: 'default_profile_photo.png' })
 	image: string | null;
+
+	@Column("text", { array: true, default: '{}' })
+	friends: string[];
+
+	@Column("text", { array: true, default: '{}' })
+	blocked: string[];
+
+	@Column({ type: 'jsonb', default: () => "'[]'" })
+	matchHistory: matchData[];
 
 	@Column({ nullable: true, default: 'Hello, I have just landed!', length: 100 })
 	@IsAscii()

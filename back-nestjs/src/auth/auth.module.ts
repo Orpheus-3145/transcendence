@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AuthController } from 'src/auth/auth.controller';
 import { AuthService } from 'src/auth/auth.service';
-import UsersModule from 'src/users/users.module';
+import {UsersModule} from 'src/users/users.module';
 import AppLoggerModule from 'src/log/log.module';
 import ExceptionModule from 'src/errors/exception.module';
 

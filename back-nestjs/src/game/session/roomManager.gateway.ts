@@ -13,8 +13,8 @@ import { UseFilters } from '@nestjs/common';
 import PlayerDataDTO from 'src/dto/playerData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import RoomManagerService from './roomManager.service';
-import { GameExceptionFilter } from '../../errors/exceptionFilters';
-import GameInitDTO from 'src/dto/gameInit.dto';
+import { GameExceptionFilter } from 'src/errors/exceptionFilters';
+import GameDataDTO from 'src/dto/gameData.dto';
 
 @WebSocketGateway({
 	namespace: process.env.WS_NS_SIMULATION,
@@ -39,7 +39,7 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	}
 
 	@SubscribeMessage('createRoomSinglePlayer')
-	setInitData(@MessageBody() data: GameInitDTO): void {
+	setInitData(@MessageBody() data: GameDataDTO): void {
 		this.roomManager.createRoom(data);
 	}
 
@@ -50,11 +50,26 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage('playerData')
 	addPlayer(@MessageBody() data: PlayerDataDTO, @ConnectedSocket() client: Socket): void {
-		this.roomManager.addPlayer(data.sessionToken, client, data.playerId, data.nameNick);
+		this.roomManager.addPlayer(data, client);
 	}
 
 	@SubscribeMessage('playerMovedPaddle')
 	movePaddle(@MessageBody() data: PaddleDirectionDTO, @ConnectedSocket() client: Socket): void {
-		this.roomManager.movePaddle(data.sessionToken, client.id, data.direction);
+		this.roomManager.movePaddle(data, client);
+	}
+
+	@SubscribeMessage('askForRematch')
+	askForRematch(@MessageBody() data: {sessionToken: string}, @ConnectedSocket() client: Socket): void {
+		this.roomManager.askForRematch(data.sessionToken, client);
+	}
+
+	@SubscribeMessage('acceptRematch')
+	acceptRematch(@MessageBody() data: {sessionToken: string}, @ConnectedSocket() client: Socket): void {
+		this.roomManager.acceptRematch(data.sessionToken, client);
+	}
+
+	@SubscribeMessage('abortRematch')
+	abortRematch(@MessageBody() data: {sessionToken: string}, @ConnectedSocket() client: Socket): void {
+		this.roomManager.abortRematch(data.sessionToken, client);
 	}
 }
