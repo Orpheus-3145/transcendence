@@ -15,6 +15,38 @@ import Game from 'src/entities/game.entity';
 import User from 'src/entities/user.entity';
 
 
+// @Module({
+// 	imports: [AppLoggerModule, forwardRef(() => ExceptionModule), TypeOrmModule.forFeature([Game, User])],
+// 	providers: [
+// 		RoomManagerGateway,
+// 		RoomManagerService,
+// 		SimulationService, // <-- Aggiunto qui per il DI di NestJS
+// 		{
+// 			// SimulationService factory
+// 			provide: 'GAME_SPAWN',
+// 			useFactory: (
+// 				logger: AppLoggerService,
+// 				thrower: ExceptionFactory,
+// 				config: ConfigService,
+// 				gameRepo: Repository<Game>,
+// 				userRepo: Repository<User>,
+// 				simulationService: SimulationService
+// 			) => {
+// 				return (data: GameDataDTO) => {
+// 					const newInstance = Object.assign(Object.create(Object.getPrototypeOf(simulationService)), simulationService);
+// 					newInstance.setGameData(data);
+// 					return newInstance;
+// 				};
+// 			},
+// 			inject: [AppLoggerService, ExceptionFactory, ConfigService, getRepositoryToken(Game), getRepositoryToken(User), SimulationService],
+// 		},
+// 	],
+// 	exports: [RoomManagerService],
+// })
+// export default class RoomManagerModule {}
+
+
+
 @Module({
 	imports: [AppLoggerModule, forwardRef(() => ExceptionModule), TypeOrmModule.forFeature([Game, User])],
 	providers: [
@@ -44,10 +76,6 @@ import User from 'src/entities/user.entity';
 	exports: [RoomManagerService],
 })
 export default class RoomManagerModule {}
-
-
-
-
 
 
 
