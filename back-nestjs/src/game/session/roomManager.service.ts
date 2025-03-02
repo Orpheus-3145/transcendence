@@ -9,6 +9,9 @@ import GameDataDTO from 'src/dto/gameData.dto';
 import PaddleDirectionDTO from 'src/dto/paddleDirection.dto';
 import PlayerDataDTO from 'src/dto/playerData.dto';
 import { PlayingPlayer } from 'src/game/types/game.interfaces';
+import { UsersService } from 'src/users/users.service';
+import { UserStatus } from 'src/dto/user.dto';
+
 
 @Injectable()
 export default class RoomManagerService {
@@ -17,9 +20,9 @@ export default class RoomManagerService {
 	constructor(
 		private readonly config: ConfigService,
 		private readonly logger: AppLoggerService,
+		private readonly userService: UsersService,
 		@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
-		@Inject('GAME_SPAWN')
-		private readonly gameRoomFactory: (data: GameDataDTO) => SimulationService,
+		@Inject('GAME_SPAWN') private readonly gameRoomFactory: (data: GameDataDTO) => SimulationService,
 	) {
 		this.logger.setContext(RoomManagerService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)
@@ -48,6 +51,7 @@ export default class RoomManagerService {
 	addPlayer(data: PlayerDataDTO, client: Socket): void {
 
 		const gameRoom = this.getRoom(data.sessionToken);
+		this.userService.setUserStatus(data.playerId, UserStatus.InGame);
 		gameRoom.addPlayer(data, client);
 	}
 

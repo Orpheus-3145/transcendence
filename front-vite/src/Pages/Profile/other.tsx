@@ -19,11 +19,12 @@ import { useUser,
 	fetchFriend, 
 	blockFriend,
 	fetchRatios,
+	fetchOpponent,
 	fetchMatchData} from '../../Providers/UserContext/User';
-import { addFriend, inviteToGame, sendMessage } from '../../Providers/NotificationContext/Notification';
 import { PowerUpSelected } from '../../Types/Game/Enum';
 import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
 import { UserStatus } from '../../Types/User/Enum';
+import { addFriend, inviteToGame, sendMessage, socket } from '../../Providers/NotificationContext/Notification';
 
 
 const ProfilePageOther: React.FC = () => {
@@ -42,6 +43,7 @@ const ProfilePageOther: React.FC = () => {
 	const [isFriend, setIsFriend] = useState<Boolean>(false);
 	const [friendsList, setFriendsList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
+	const [opponentDetails, setOpponentDetails] = useState<Map<string, User>>(new Map());
 	const [profileIntraId, setProfileIntraId] = useState<Number>(0);
 	const [showMessageFR, setShowMessageFR] = useState<Boolean>(false);
 	const [showMessageGR, setShowMessageGR] = useState<Boolean>(false);
@@ -271,41 +273,54 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
+const fetchOpponentDetails = async (opponentId: string) => {
+		const opponent = await fetchOpponent(opponentId);
+		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
+	};
+
 	let gameLine = (data: MatchData) => 
 	{
-		// const friend = friendDetails.get(intraid);
-
-		// if (!friend) {
-		// 	fetchFriendDetails(intraid);
-		// 	return <Stack>Loading...</Stack>;
-		// }
-
-		var color;
-		if (data.whoWon === userProfile.intraId.toString())
-			color = '#1da517'
-		else
-			color = '#b01515';
-
-		var nameOther;
-		var scoreUser;
-		var scoreOther;
-		var namep1 = data.player1;
-		var namep2 = data.player2;
-		if (namep1 === userProfile.nameNick)
+		var friend: User | undefined;
+		var intra: string;
+		var nameOther: string;
+		var scoreUser: string;
+		var scoreOther: string;
+		var color: string;
+		var idOther: number;
+		if (data.player1 === userProfile.id.toString())
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
-			nameOther = namep2;
+			intra = data.player2;
+			friend = opponentDetails.get(intra);
+			if (friend)
+			{
+				nameOther = friend.nameNick;
+				idOther = friend.id;
+			}
 		}
 		else
 		{
 			scoreUser = data.player2Score;
 			scoreOther = data.player1Score;
-			nameOther = namep1;
+			intra = data.player1;
+			friend = opponentDetails.get(intra);
+			if (friend)
+			{
+				nameOther = friend.nameNick;
+				idOther = friend.id;
+			}
 		}
-		var idOther = 2;
-		// var friend = fetchFriend(); need to call this since namep1/p2 won't be nameNick but intraId
 
+		if (!friend) {
+			fetchOpponentDetails(intra);
+			return <Stack>Loading...</Stack>;
+		}
+
+		if (data.whoWon === userProfile.id.toString())
+			color = '#1da517'
+		else
+			color = '#b01515';
 		return (
 			<Stack
 				direction="row"
@@ -350,10 +365,18 @@ const ProfilePageOther: React.FC = () => {
 				>
 					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
 				</Typography>
-				<Avatar />
+				<Avatar
+					sx={{
+						width: '40px',
+						height: '40px',
+						left: '-5px',
+						bgcolor: theme.palette.primary.light,
+					}}
+					src={friend.image}
+				>
+				</Avatar>
 			</Stack>
 		);
-
 	};
 
 	let gameContainer = () => 
@@ -394,7 +417,7 @@ const ProfilePageOther: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.map((item: MatchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: MatchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -857,7 +880,6 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageBL(false);
 
 		var powerup = calculatePowerups();
-		
 		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
 	}
 
@@ -1132,25 +1154,23 @@ const ProfilePageOther: React.FC = () => {
 
 		setProfileIntraId(tmp.intraId);
 		setUserProfile(tmp);
-		var friend = await getUserFromDatabase(user.id, navigate);
-		setIsFriend(tmp.friends.find((str:string) => str === friend.intraId.toString()));
+		setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
 		setMatchHistory(matches);
-		var allRatio = await fetchRatios(tmp);
-		setRatioArr(allRatio);
+		setRatioArr(await fetchRatios(tmp));
 	}
-		
-	let PageWrapper = () =>
+	
+	useEffect(() => 
 	{
-		useEffect(() => 
+		getUserProfile().then((number) => 
 		{
-			getUserProfile().then((number) => 
-			{
-				setUserProfileNumber(number);
-			});
+			setUserProfileNumber(number);
 		});
-		
+	}, [lastSegment]);
+
+	let PageWrapper = () =>
+	{		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;
 		if (!userProfile)

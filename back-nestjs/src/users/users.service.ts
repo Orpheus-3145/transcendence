@@ -68,11 +68,11 @@ export class UsersService {
 	}
 
 	async findOneIntra(intraId: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { intraId } });
+		return this.usersRepository.findOne({ where: { intraId: intraId } });
 	}
 
 	async findOneId(id: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { id } });
+		return this.usersRepository.findOne({ where: { id: id } });
 	}
 
 	async findOneNick(nameNick: string): Promise<User | null> {
@@ -107,6 +107,13 @@ export class UsersService {
 	{
 		var user = await this.getUserId(Id);
 		user.status = status;
+		this.usersRepository.save(user);
+	}
+
+	async setUserStatus(id: number, which: UserStatus)
+	{
+		var user = await this.findOneIntra(id);
+		user.status = which;
 		this.usersRepository.save(user);
 	}
 
@@ -243,7 +250,7 @@ export class UsersService {
 					(item.player2Score > item.player1Score && item.player2 === user))
 				allWin += 1;
 		});
-			
+
 		var ratioNormal = Math.round((normalWin / normalAll) * 100);
 		var ratioPower = Math.round((powerWin / powerAll) * 100);
 		var ratioAll = Math.round((allWin / allAll) * 100);

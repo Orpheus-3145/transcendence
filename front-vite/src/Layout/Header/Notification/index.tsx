@@ -45,7 +45,7 @@ export const Notification: React.FC = () => {
 	{
 		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);
 		
-		if (type == NotificationType.Message)
+		if (type == NotificationType.Message || type == NotificationType.groupChat)
 		{
 			setMessageArray(tmparr);
 		}
@@ -61,11 +61,11 @@ export const Notification: React.FC = () => {
 
 	let removeNotification = (noti: NotificationStruct) =>
 	{
-		removeNotiFromArray(noti, messageArray, NotificationType.Message);
+		removeNotiFromArray(noti, messageArray, noti.type);
 		removeNotificationDb(noti.id.toString());
 	}
 
-	let initMessage = (noti: NotificationStruct) =>
+	let whichMessage = (noti: NotificationStruct) =>
 	{
 		if (noti.message == null)
 			return ;
@@ -74,6 +74,39 @@ export const Notification: React.FC = () => {
 		{
 			notiMessage = noti.message?.slice(0, 23) + "...";
 		}
+
+		if (noti.type === NotificationType.groupChat)
+		{
+			return (
+				<Typography variant={'h1'}
+					sx={{
+						position: 'relative',
+						left: '0px',
+						fontSize: '0.9rem',
+					}}    
+				>
+					The message: "{notiMessage}" has been sent in <a href="" onClick={() => navToChat()} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
+				</Typography>
+			);
+		}
+		return (
+			<Typography variant={'h1'}
+				sx={{
+					position: 'relative',
+					left: '0px',
+					fontSize: '0.9rem',
+				}}    
+			>
+				<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
+				sent a message:
+				<br />
+				{notiMessage}
+			</Typography>
+		);
+	}
+
+	let initMessage = (noti: NotificationStruct) =>
+	{
 		return (
 			<Stack
 				sx={{
@@ -119,18 +152,7 @@ export const Notification: React.FC = () => {
 							<ClearIcon fontSize="inherit" />
 						</IconButton>
 					</Tooltip>
-					<Typography variant={'h1'}
-						sx={{
-							position: 'relative',
-							left: '0px',
-							fontSize: '0.9rem',
-						}}    
-					>
-						<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-						sent a message:
-						<br />
-						{notiMessage}
-					</Typography>
+					{whichMessage(noti)}
 				</Box>
 			</Stack>
 		);
@@ -171,7 +193,7 @@ export const Notification: React.FC = () => {
 		return (
 			<Stack>
 				<br />
-				{messageArray.map((item: NotificationStruct) => initMessage(item))}
+				{messageArray.slice().reverse().map((item: NotificationStruct) => initMessage(item))}
 			</Stack>
 		);
 	}
@@ -317,7 +339,7 @@ export const Notification: React.FC = () => {
 		return (
 			<Stack>
 				<br />
-				{friendRequestArray.map((item: NotificationStruct) => initRequest(item))}
+				{friendRequestArray.slice().reverse().map((item: NotificationStruct) => initRequest(item))}
 			</Stack>
 		);
 	}
@@ -357,7 +379,7 @@ export const Notification: React.FC = () => {
 		return (
 			<Stack>
 				<br />
-				{gameInviteArray.map((item: NotificationStruct) => initRequest(item))}
+				{gameInviteArray.slice().reverse().map((item: NotificationStruct) => initRequest(item))}
 			</Stack>
 		);		
 	}
@@ -546,9 +568,9 @@ export const Notification: React.FC = () => {
 		if (arr?.length === 0)
 		{
 			setShowNotificationDot(false);
-			setFriendRequestArray(null);
-			setMessageArray(null);
-			setGameInviteArray(null);
+			setFriendRequestArray([]);
+			setMessageArray([]);
+			setGameInviteArray([]);
 			setShowNotificationDot(false);
 		}
 		else
@@ -561,6 +583,10 @@ export const Notification: React.FC = () => {
 				if (item.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
 				{
 					tmpmessageArr.push(item);
+				}
+				else if (item.type == NotificationType.gameInvite && !messageArray.find((n: NotificationStruct) => n.id === item.id))
+				{
+					messageArray.push(item);
 				}
 				else if (item.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === item.id))
 				{
@@ -580,11 +606,7 @@ export const Notification: React.FC = () => {
 
 	let addNotification = (noti: NotificationStruct) =>
 	{
-		if (noti.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === noti.id))
-		{
-			messageArray.push(noti);
-		}
-		else if (noti.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === noti.id))
+		if (noti.type == NotificationType.friendRequest && !friendRequestArray.find((n: NotificationStruct) => n.id === noti.id))
 		{
 			friendRequestArray.push(noti);
 		}
@@ -592,11 +614,39 @@ export const Notification: React.FC = () => {
 		{
 			gameInviteArray.push(noti);
 		}
+		else if (noti.type == NotificationType.Message || noti.type == NotificationType.groupChat)
+		{
+			var tmp = messageArray.find((n: NotificationStruct) => n.senderName === noti.senderName);
+			if (tmp != undefined)
+			{
+				var tmparr = messageArray.filter((item: NotificationStruct) => item !== tmp);
+				tmparr.push(noti);
+				setMessageArray(tmparr);
+				setShowNotificationDot(true);
+				return ;
+			}
+			else
+				messageArray.push(noti);
+		}
 		setFriendRequestArray(friendRequestArray);
 		setMessageArray(messageArray);
 		setGameInviteArray(gameInviteArray);
 		setShowNotificationDot(true);
 	}
+
+	useEffect(() => 
+		{
+			socket.on('goToGame', navToGame);
+
+			socket.on('sendNoti', (noti: NotificationStruct) =>
+			{
+				if (noti != null)
+				{
+					addNotification(noti);
+				}
+			});
+
+		}, [friendRequestArray, messageArray, gameInviteArray]);
 
 	let notificationWrapper = () =>
 	{
@@ -610,17 +660,6 @@ export const Notification: React.FC = () => {
 				return (notificationBar());
 			});
 		}
-
-		useEffect(() => {
-			socket.on('sendNoti', (noti: NotificationStruct) =>
-			{
-				if (noti != null)
-					addNotification(noti);
-			});
-			socket.on('goToGame', navToGame);
-
-		}, [friendRequestArray, messageArray, gameInviteArray]);
-
 
 		return (notificationBar());
 	}

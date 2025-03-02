@@ -10,6 +10,12 @@ import { ChatService } from 'src/chat/chat.service';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import { GameDifficulty, GameMode, PowerUpSelected } from 'src/game/types/game.enum';
 import GameDataDTO from 'src/dto/gameData.dto';
+import { Channel } from 'src/entities/chat.entity';
+
+interface Websock {
+	client: Socket;
+	userId: string;
+}
 
 @Injectable()
 export class NotificationService {
@@ -39,9 +45,9 @@ export class NotificationService {
 		return (this.notificationRepository.findOne({where: {id: id}}));
 	}
 
-	async doesNotificationExist(sender:User, receiver:User, type:NotificationType): Promise<Notification | null>
+	async doesNotificationExist(sender: number, receiver: number, type:NotificationType): Promise<Notification | null>
 	{
-		var noti: Notification = await this.notificationRepository.findOne({where: {senderId: sender.id, receiverId: receiver.id, type: type}});
+		var noti: Notification = await this.notificationRepository.findOne({where: {senderId: sender, receiverId: receiver, type: type}});
 		return (noti);
 	}
 
@@ -61,10 +67,10 @@ export class NotificationService {
 	{
 		if (await this.isSenderBlocked(sender, receiver) == true)
 			return (null);
-		var tmp = await this.doesNotificationExist(sender, receiver, type);
+		var tmp = await this.doesNotificationExist(sender.id, receiver.id, type);
 		if (tmp != null)
 			return (tmp);
-		tmp = await this.doesNotificationExist(receiver, sender, type);
+		tmp = await this.doesNotificationExist(receiver.id, sender.id, type);
 		if ((tmp != null) && (tmp.type == NotificationType.friendRequest))
 		{
 			this.removeReq(receiver.id.toString(), sender.id.toString(), type);
@@ -83,7 +89,6 @@ export class NotificationService {
 			noti.message = null;
 			noti.powerUpsSelected = powerUps;
 			this.notificationRepository.save(noti);
-			console.log(noti);
 			return (noti);
 		}
 	}
@@ -92,7 +97,7 @@ export class NotificationService {
 	{
 		if (await this.isSenderBlocked(sender, receiver) == true)
 			return null;
-		var tmp = await this.doesNotificationExist(sender, receiver, NotificationType.Message);
+		var tmp = await this.doesNotificationExist(sender.id, receiver.id, NotificationType.Message);
 		if (tmp != null)
 		{
 			tmp.message = message;
@@ -115,6 +120,33 @@ export class NotificationService {
 			// this.chatService.saveMessage(sender.intraId, receiver.intraId, message);
 			return (noti);
 		}
+	}
+
+	async initGroupMessage(channel: Channel, receiver: User, message: string)
+	{
+		var tmp = await this.doesNotificationExist(channel.channel_id, receiver.id, NotificationType.groupChat);
+		if (tmp != null)
+		{
+			console.log("noti group found");
+			console.log(tmp);
+			tmp.message = message;
+			this.notificationRepository.save(tmp);
+			return (tmp);
+		}
+		else
+		{
+			var noti = new Notification();
+			noti.senderId = channel.channel_id;
+			noti.senderName = channel.title;
+			noti.receiverId = receiver.id;
+			noti.receiverName = receiver.nameNick;
+			noti.type = NotificationType.groupChat;
+			noti.status = NotificationStatus.None;
+			noti.message = message;
+			noti.powerUpsSelected = null;
+			this.notificationRepository.save(noti);
+			return (noti);
+		}		
 	}
 
 	async removeNotification(noti: Notification): Promise<void>

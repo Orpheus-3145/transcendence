@@ -138,6 +138,12 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		client.emit('leftChannel', { channel });
 	}
 
+	@SubscribeMessage('kickUserFromChannel')
+	async kickUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	{
+		this.chatService.removeUserFromChannel(data.userid, data.channelid, "");
+	}
+
 	@SubscribeMessage('sendMessage')
 	async handleSendMessage(
 	  @MessageBody() messageData: { sender_id: number, receiver_id: number, content: string },

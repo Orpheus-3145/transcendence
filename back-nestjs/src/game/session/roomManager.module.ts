@@ -13,14 +13,15 @@ import AppLoggerService from 'src/log/log.service';
 import GameDataDTO from 'src/dto/gameData.dto';
 import Game from 'src/entities/game.entity';
 import User from 'src/entities/user.entity';
+import { UsersModule } from 'src/users/users.module';
 
 
 @Module({
-	imports: [AppLoggerModule, forwardRef(() => ExceptionModule), TypeOrmModule.forFeature([Game, User])],
+	imports: [AppLoggerModule, forwardRef(() => UsersModule), forwardRef(() => ExceptionModule), TypeOrmModule.forFeature([Game, User])],
 	providers: [
 		RoomManagerGateway,
 		RoomManagerService,
-		SimulationService, // <-- Aggiunto qui per il DI di NestJS
+		SimulationService,
 		{
 			// SimulationService factory
 			provide: 'GAME_SPAWN',
@@ -44,3 +45,11 @@ import User from 'src/entities/user.entity';
 	exports: [RoomManagerService],
 })
 export default class RoomManagerModule {}
+
+
+
+
+
+
+
+

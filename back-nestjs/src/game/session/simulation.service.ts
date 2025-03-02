@@ -80,6 +80,7 @@ export default class SimulationService {
 		private readonly config: ConfigService,
 		@InjectRepository(Game) private gameRepository: Repository<Game>,
 		@InjectRepository(User) private userRepository: Repository<User>,
+		// private readonly userService: UsersService
 	) {
 		this.logger.setContext(SimulationService.name);
 		if (this.config.get<boolean>('DEBUG_MODE_GAME', false) == false)

@@ -14,7 +14,9 @@ import { Notification, NotificationType } from 'src/entities/notification.entity
 import { UserStatus } from 'src/dto/user.dto';
 import { HttpException } from '@nestjs/common';
 import {  PowerUpSelected } from 'src/game/types/game.enum';
+import User from 'src/entities/user.entity';
 
+import { Inject, forwardRef } from '@nestjs/common';
 
 interface Websock {
 	client: Socket;
@@ -37,7 +39,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	server: Server;
 	private sockets: Websock[] = [];
 
-	constructor(private notificationService: NotificationService, private userService: UsersService) {};
+	constructor(
+		@Inject(forwardRef(() => NotificationService))
+		private notificationService: NotificationService, 
+		@Inject(forwardRef(() => UsersService))
+		private userService: UsersService
+	) {};
 
 	handleConnection(client: Socket) {
 		console.log(`Noti Client connected: ${client.id}`);
@@ -65,7 +72,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.setStatus(data.id, UserStatus.Online);
 		} 
 		var Noti = await this.notificationService.findNotificationReceiver(data.id);
-	  	client.emit('getAllNotifications', Noti);
+		client.emit('getAllNotifications', Noti);
 	}
 
 	async sendNotiToFrontend(Noti: Notification | null): Promise<void>
@@ -128,8 +135,15 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	@SubscribeMessage('acceptNotiFr')
 	async acceptNotiFr(@MessageBody() data: { sender: string, receiver: string})
 	{
-		this.userService.friendRequestAccepted(data.sender, data.receiver);
-		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+		await this.userService.friendRequestAccepted(data.sender, data.receiver);
+		await this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+		
+		var se: User = await this.userService.findOneId(Number(data.sender));
+		var re: User = await this.userService.findOneId(Number(data.receiver));
+		var senderSock: Websock =  this.sockets.find((socket) => socket.userId === data.sender);
+		var receiverSock: Websock =  this.sockets.find((socket) => socket.userId === data.receiver);
+		senderSock.client.emit('friendAdded',re.intraId.toString());
+		receiverSock.client.emit('friendAdded', se.intraId.toString());
 	}
 
 	@SubscribeMessage('declineNotiFr')

@@ -77,6 +77,22 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 	}
 }
 
+export async function fetchUser(username: string): Promise<User | null>
+{
+	const request = new Request(BACKEND_URL + '/users/profile/fetchUser/' + username, {
+		method: "GET",
+	});
+	const response = await fetch(request);
+
+	const text = await response.text();
+	if (!text) {
+		return null;
+	}
+
+	return JSON.parse(text) as User;
+
+}
+
 export async function setNewNickname(username:string, nickname:string): Promise<string> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick', {
 		method: "POST",
@@ -104,6 +120,19 @@ export async function fetchFriend(friend:string): Promise<User> {
 	const response = await fetch(request)
 		.then((raw) => raw.json())
 		.then((json) => json as User)
+
+	return response;
+}
+
+export async function fetchOpponent(friend:string): Promise<User> {
+	const request = new Request(BACKEND_URL + '/users/profile/username/opponent/' + friend, {
+		method: "GET",
+	});
+
+	const response = await fetch(request)
+		.then((raw) => raw.json())
+		.then((json) => json as User)
+
 	return response;
 }
 

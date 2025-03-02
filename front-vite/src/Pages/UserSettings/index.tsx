@@ -201,24 +201,26 @@ const UserSettings: React.FC = () => {
 	}
 	
 	let getUserProfile = async () : Promise<void> =>
-		{
-			const tmp = await getUserFromDatabase(user.id.toString(), navigate);
-	
-			if (user.id == tmp.id)
-			{
-				setBlockedList(tmp.blocked);
-			}
-		}
+	{
+		const tmp = await getUserFromDatabase(user.id.toString(), navigate);
 		
+		if (user.id == tmp.id)
+		{
+			setBlockedList(tmp.blocked);
+		}
+	}
+		
+	useEffect(() => 
+	{
+		getUserProfile().then((number) => 
+		{
+			setUserProfileNumber(number);
+		});
+	}, []);
+		
+
 	let whichPage = () =>
 	{
-		useEffect(() => 
-		{
-			getUserProfile().then((number) => 
-			{
-				setUserProfileNumber(number);
-			});
-		}, [blockedList]);
 		
 		if (userProfileNumber === null) 
 			return <Stack>Loading...</Stack>;
