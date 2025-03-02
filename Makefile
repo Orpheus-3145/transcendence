@@ -30,6 +30,6 @@ down:
 	@$(COMPOSE) down
 
 clean:
-	@$(COMPOSE) down --remove-orphans --volumes --rmi all
+	@$(COMPOSE) down --remove-orphans --volumes --rmi local
 
 .PHONY: all build build_debug run restart re re_debug down clean
