@@ -35,6 +35,9 @@ export class ChatDTO {
   @Type(() => UserDTO)
   users?: UserDTO[];
 
+	@IsArray()
+	@IsString({ each: true })
+	banned: string[];
 
   @IsOptional()
   @IsString()

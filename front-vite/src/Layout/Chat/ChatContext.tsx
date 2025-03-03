@@ -105,6 +105,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 								
 							})) ,
                             owner: channel.ch_owner,
+							banned: channel.banned,
                         },
 						isDirectMessage: channel.isDirectMessage,
                     })),
