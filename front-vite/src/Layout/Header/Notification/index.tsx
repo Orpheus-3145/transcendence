@@ -203,11 +203,13 @@ export const Notification: React.FC = () => {
 	{
 		if (noti.type == NotificationType.friendRequest)
 		{
+			setOpenDrawer(false);
 			removeNotiFromArray(noti, friendRequestArray, NotificationType.friendRequest);
 			acceptFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
 		}
 		else if (noti.type == NotificationType.gameInvite)
 		{
+			setOpenDrawer(false);
 			removeNotiFromArray(noti, gameInviteArray, NotificationType.gameInvite);
 			acceptGameInvite(noti.senderId.toString(), noti.receiverId.toString());
 		}
