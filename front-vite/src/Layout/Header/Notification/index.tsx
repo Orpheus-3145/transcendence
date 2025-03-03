@@ -585,7 +585,7 @@ export const Notification: React.FC = () => {
 				{
 					tmpmessageArr.push(item);
 				}
-				else if (item.type == NotificationType.gameInvite && !messageArray.find((n: NotificationStruct) => n.id === item.id))
+				else if (item.type == NotificationType.groupChat && !messageArray.find((n: NotificationStruct) => n.id === item.id))
 				{
 					messageArray.push(item);
 				}
