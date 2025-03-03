@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import {  Tooltip } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
@@ -19,7 +19,9 @@ import {NotificationStruct,
 		declineGameInvite,
 		NotificationType,
 		socket} from '../../../Providers/NotificationContext/Notification';
-import { GameData } from '../../../Types/Game/Interfaces';
+import { GameData } from '/app/src/Types/Game/Interfaces';
+import { GameDataContext } from '/app/src/Providers/GameContext/Game';
+
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
@@ -31,12 +33,15 @@ export const Notification: React.FC = () => {
 	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[]>([]);
 	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[]>([]);
 	const [isFirst, setIsFirst] = useState<Boolean>(true);
+  const { setGameData } = useContext(GameDataContext)!;
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
 	const navToChat = () => {navigate('/channels')};
-	const navToGame = (gameInfo: GameData) => {navigate('/game', { state: { info: gameInfo } })};
-
+	const navToGame = (gameInfo: GameData) => {
+		setGameData(gameInfo);
+		navigate('/game');
+	}
 	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
 	{
 		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);

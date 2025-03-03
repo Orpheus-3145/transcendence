@@ -9,7 +9,7 @@ all: build
 
 # re-build only image with an update in the build context (i.e. a file changed)
 build: $(LOCAL_LOG_DIR)
-	@$(COMPOSE) up --build
+	@$(COMPOSE) build
 
 # re-build images from scratch
 build_debug: $(LOCAL_LOG_DIR)

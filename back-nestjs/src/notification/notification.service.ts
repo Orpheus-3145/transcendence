@@ -127,8 +127,6 @@ export class NotificationService {
 		var tmp = await this.doesNotificationExist(channel.channel_id, receiver.id, NotificationType.groupChat);
 		if (tmp != null)
 		{
-			console.log("noti group found");
-			console.log(tmp);
 			tmp.message = message;
 			this.notificationRepository.save(tmp);
 			return (tmp);
@@ -175,7 +173,6 @@ export class NotificationService {
 		const senderIdNumber = Number(senderId);
 		const receiverIdNumber = Number(receiverId);
 		const gameNotification: Notification = await this.notificationRepository.findOne({ where: { receiverId: receiverIdNumber, senderId: senderIdNumber, type: NotificationType.gameInvite } });
-		console.log(this.findAll(), JSON.stringify(gameNotification));
 		const initData: GameDataDTO = {
 			sessionToken: uuidv4(),
 			mode: GameMode.multi,

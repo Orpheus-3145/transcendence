@@ -13,21 +13,17 @@ export const TwoFactorAuth: React.FC = () => {
 
 	const handleSubmit = async () => {
 		try {
-			// console.log("User from use user ", JSON.stringify(user));
 			const url = import.meta.env.URL_BACKEND_2FA_VERIFY
-			console.log("Redirection to 2FA validation backend, url: ", url);
 			const response = await axios.post(import.meta.env.URL_BACKEND_2FA_VERIFY,
 				{ tempCode },
 				{ withCredentials: true }
 			);
-			console.log(response.data.valid)
 			if (response.data.user) {
 				const newUser: User = response.data.user;
 				setUser(newUser);
 			}
 			navigate('/');
 		} catch (error) {
-			console.log(error)
 			setHasError(true);
 		}
 		setCode("");

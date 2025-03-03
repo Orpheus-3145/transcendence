@@ -34,7 +34,7 @@ export default class ResultsScene extends BaseScene {
 		super.buildGraphicObjects();
 
 		this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.25, `Player ${this._winner} won!`, {
+		.text(this.scale.width * 0.5, this.scale.height * 0.3, `${this._winner} won!`, {
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 30}px`,
 			align: 'center',
 			color: '#0f0',
