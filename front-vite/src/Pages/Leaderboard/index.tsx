@@ -4,10 +4,8 @@ import { Stack, Typography, Avatar, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { LeaderboardData } from '../../Types/User/Interfaces';
-
 import { useState, useEffect } from 'react';
 import { alpha } from '@mui/material/styles';
-
 
 export const Leaderboard: React.FC = () => {
 	const theme = useTheme();

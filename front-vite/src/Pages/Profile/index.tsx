@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Box, Stack, Typography, useTheme, Divider, Grid, IconButton, Container } from '@mui/material';
-import { Input } from '@mui/material'
+import {Input} from '@mui/material'
 import { useMediaQuery, Tooltip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
@@ -24,12 +24,9 @@ import { useUser,
 		fetchRatios,
 		fetchOpponent,
 		fetchMatchData} from '../../Providers/UserContext/User';
-
-import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
-import { UserStatus } from '../../Types/User/Enum';
-
 import { socket } from '../../Providers/NotificationContext/Notification';
-
+import {User, MatchData, MatchRatio} from '../../Types/User/Interfaces';
+import {UserStatus} from '../../Types/User/Enum';
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -47,7 +44,7 @@ const ProfilePage: React.FC = () => {
 	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
 	const [showMessage, setShowMessage] = useState<Boolean>(false);
 	const [messageErrorNickname, setMessageErrorNickname] = useState<string>("");
-	const [profileImage, setProfileImage] = useState();
+	const [profileImage, setProfileImage] = useState<string>("");
 	const [friendsList, setFriendsList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
 	const [opponentDetails, setOpponentDetails] = useState<Map<string, User>>(new Map());
@@ -56,13 +53,15 @@ const ProfilePage: React.FC = () => {
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
 	
 	let RemoveFriend = (id:string) => {
-		if (userProfile)
-			removeFriend(userProfile.id.toString(), id);
+		var newlist = friendsList.filter(friend => friend !== id);
+		setFriendsList(newlist);
+		removeFriend(userProfile.id.toString(), id);
 	}
 
 	let BlockFriend = (id:string) => {
-		if (userProfile)
-			blockFriend(userProfile.id.toString(), id);
+		var newlist = friendsList.filter(friend => friend !== id);
+		setFriendsList(newlist);
+		blockFriend(userProfile.id.toString(), id);
 	}
 
 	let friendLineButtons = (intraid:string) => 
@@ -250,7 +249,7 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let gameStatsBox = (data: MatchRatio) =>
+	let gameStatsBox = (data: matchRatio) =>
 	{
 		return (
 			<Stack
@@ -295,7 +294,7 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 
-	let gameStats = () =>
+	let gameStats = () => 
 	{
 		return (
 			<Box
@@ -314,15 +313,20 @@ const ProfilePage: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
 	};
 
-	let gameLine = (data: MatchData) => 
+	const fetchOpponentDetails = async (opponentId: string) => {
+		const opponent = await fetchOpponent(opponentId);
+		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
+	};
+
+	let gameLine = (data: matchData) => 
 	{
-		var friend: User | undefined;
+		var opponent: User | undefined;
 		var intra: string;
 		var nameOther: string;
 		var scoreUser: string;
@@ -334,11 +338,11 @@ const ProfilePage: React.FC = () => {
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
 			intra = data.player2;
-			friend = opponentDetails.get(intra);
-			if (friend)
+			opponent = opponentDetails.get(intra);
+			if (opponent)
 			{
-				nameOther = friend.nameNick;
-				idOther = friend.id;
+				nameOther = opponent.nameNick;
+				idOther = opponent.id;
 			}
 		}
 		else
@@ -346,16 +350,16 @@ const ProfilePage: React.FC = () => {
 			scoreUser = data.player2Score;
 			scoreOther = data.player1Score;
 			intra = data.player1;
-			friend = opponentDetails.get(intra);
-			if (friend)
+			opponent = opponentDetails.get(intra);
+			if (opponent)
 			{
-				nameOther = friend.nameNick;
-				idOther = friend.id;
+				nameOther = opponent.nameNick;
+				idOther = opponent.id;
 			}
 		}
 
-		if (!friend) {
-			fetchOpponent(intra);
+		if (!opponent) {
+			fetchOpponentDetails(intra);
 			return <Stack>Loading...</Stack>;
 		}
 
@@ -363,6 +367,7 @@ const ProfilePage: React.FC = () => {
 			color = '#1da517'
 		else
 			color = '#b01515';
+
 		return (
 			<Stack
 				direction="row"
@@ -414,7 +419,7 @@ const ProfilePage: React.FC = () => {
 						left: '-5px',
 						bgcolor: theme.palette.primary.light,
 					}}
-					src={friend.image}
+					src={opponent.image}
 				>
 				</Avatar>
 			</Stack>
@@ -459,7 +464,7 @@ const ProfilePage: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.map((item: MatchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -779,16 +784,16 @@ const ProfilePage: React.FC = () => {
 	let getUserProfile = async () : Promise<void> =>
 	{
 		const tmp: User = await getUserFromDatabase(lastSegment, navigate);
-		const matches: MatchData[] = await fetchMatchData(tmp);
+
 		if (user.id == tmp.id)
 		{
 			showOwnPage(true);
 			setProfileImage(tmp.image);
 			setFriendsList(tmp.friends);
 			setWhichStatus(tmp.status);
-			setMatchHistory(matches);
-			setUserProfile(tmp);
+			setMatchHistory(await fetchMatchData(tmp));
 			setRatioArr(await fetchRatios(tmp));
+			setUserProfile(tmp);
 		}
 		else 
 			showOwnPage(false);

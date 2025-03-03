@@ -19,12 +19,14 @@ import { useUser,
 	fetchFriend, 
 	blockFriend,
 	fetchRatios,
+	fetchOpponent,
 	fetchMatchData} from '../../Providers/UserContext/User';
-import { PowerUpSelected } from '../../Types/Game/Enum';
-import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
-import { UserStatus } from '../../Types/User/Enum';
 import { addFriend, inviteToGame, sendMessage, socket } from '../../Providers/NotificationContext/Notification';
-
+import { PowerUpSelected } from '../../Types/Game/Enum';
+import {	User,
+			MatchData,
+			MatchRatio, } from '../../Types/User/Interfaces';
+import {UserStatus} from '../../Types/User/Enum';
 
 const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
@@ -62,7 +64,6 @@ const ProfilePageOther: React.FC = () => {
 	const [stretchpaddle, setStretchpaddle] = useState<boolean>(false);
 	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
-	const [modalOpen, setModalOpen] = React.useState(false);
 
 	let redirectFriend = (id:number) =>
 	{
@@ -202,7 +203,7 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
-	let gameStatsBox = (data: MatchRatio) =>
+	let gameStatsBox = (data: matchRatio) =>
 	{
 		return (
 			<Stack
@@ -266,7 +267,7 @@ const ProfilePageOther: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
@@ -277,9 +278,9 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
 	};
 
-	let gameLine = (data: MatchData) => 
+	let gameLine = (data: matchData) => 
 	{
-		var friend: User | undefined;
+		var opponent: User | undefined;
 		var intra: string;
 		var nameOther: string;
 		var scoreUser: string;
@@ -291,11 +292,11 @@ const fetchOpponentDetails = async (opponentId: string) => {
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
 			intra = data.player2;
-			friend = opponentDetails.get(intra);
-			if (friend)
+			opponent = opponentDetails.get(intra);
+			if (opponent)
 			{
-				nameOther = friend.nameNick;
-				idOther = friend.id;
+				nameOther = opponent.nameNick;
+				idOther = opponent.id;
 			}
 		}
 		else
@@ -303,15 +304,15 @@ const fetchOpponentDetails = async (opponentId: string) => {
 			scoreUser = data.player2Score;
 			scoreOther = data.player1Score;
 			intra = data.player1;
-			friend = opponentDetails.get(intra);
-			if (friend)
+			opponent = opponentDetails.get(intra);
+			if (opponent)
 			{
-				nameOther = friend.nameNick;
-				idOther = friend.id;
+				nameOther = opponent.nameNick;
+				idOther = opponent.id;
 			}
 		}
 
-		if (!friend) {
+		if (!opponent) {
 			fetchOpponentDetails(intra);
 			return <Stack>Loading...</Stack>;
 		}
@@ -371,7 +372,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 						left: '-5px',
 						bgcolor: theme.palette.primary.light,
 					}}
-					src={friend.image}
+					src={opponent.image}
 				>
 				</Avatar>
 			</Stack>
@@ -416,7 +417,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.map((item: MatchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -667,13 +668,15 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		addFriend(user.id.toString(), userProfile.id.toString());
 	}
 
-	const handleModalClose = () => {
-			setModalOpen(false);
-	};
+    const [modalOpen, setModalOpen] = React.useState(false);
 
-	const handleModalOpen = () => {
-			setModalOpen(true);
-	};
+    const handleModalClose = () => {
+        setModalOpen(false);
+    };
+
+    const handleModalOpen = () => {
+        setModalOpen(true);
+    };
 
 	const handleSpeedball = () =>
 	{
@@ -882,6 +885,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
 	}
 
+	
 	const CheckChangeMessage = () => 
 	{
 		if (showInput)
@@ -1146,17 +1150,17 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		);
 	};
 
+	
+
 	let getUserProfile = async () : Promise<void> =>
 	{
 		const tmp = await getUserFromDatabase(lastSegment, navigate);
-		const matches: MatchData[] = await fetchMatchData(tmp);
-
 		setProfileIntraId(tmp.intraId);
 		setUserProfile(tmp);
 		setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
-		setMatchHistory(matches);
+		setMatchHistory(await fetchMatchData(tmp));
 		setRatioArr(await fetchRatios(tmp));
 	}
 	
