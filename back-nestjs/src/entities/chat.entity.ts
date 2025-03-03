@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
+import { IsBoolean } from 'class-validator';
 import User  from './user.entity';
 
 // Channel entity
@@ -12,6 +13,13 @@ export class Channel {
 		enum: ['public', 'protected', 'private', 'chat'],
 		default: 'public',
 	})
+
+	// @Column({ nullable: true })
+	// isDirectMessage: string;
+
+	@IsBoolean()
+	@Column({ type: 'boolean', default: false })
+	isDirectMessage: boolean;
 
 	@Column()
 	ch_type: string;

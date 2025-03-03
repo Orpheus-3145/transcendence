@@ -7,6 +7,7 @@ import { Add as AddIcon } from '@mui/icons-material';
 import { userInChannel, userIsAdmin } from '../Channels/index';
 import { fetchUser, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
 import { socket } from '../../Layout/Chat/ChatContext';
+import { prev } from 'cheerio/dist/commonjs/api/traversing';
 
 // User test data
 // const testUser = {
@@ -23,6 +24,8 @@ interface SettingsModalProps {
 	setChatProps: (chatProps: ChatProps) => void;
 	selectedChannel: ChatRoom;
 	setSelectedChannel: (selectedChannel: ChatRoom) => void;
+	joinedChannels: ChatRoom[]
+	setJoinedChannels: (joinedChannels: ChatRoom[]) => void;
 	availableChannels: ChatRoom[]
 	setAvailableChannels: (availableChannels: ChatRoom[]) => void;
 	setIsSettingsView: boolean
@@ -37,6 +40,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	setChatProps,
 	selectedChannel,
 	setSelectedChannel,
+	joinedChannels,
+	setJoinedChannels,
 	availableChannels,
 	setAvailableChannels,
 	setIsSettingsView
@@ -187,7 +192,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		socket.emit('deleteChannel', channel_id);
 	
 		// Listen for success or error response from the server
-		socket.on('channelDeleted', (deletedChannel) => {
+		socket.once('channelDeleted', (deletedChannel) => {
 			if (deletedChannel) {
 				const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== channel_id);
 				setChatProps({ ...chatProps, chatRooms: updatedChannels });
@@ -198,152 +203,216 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			}
 		});
 	
-		socket.on('error', (error) => {
+		socket.once('error', (error) => {
 			console.error(error.message);
 		});
 	};
 	
 
 	const handleLeaveChannel = () => {
-		//--> CALL TO BACKEND <-- //
-		
 		setIsSettingsView(false);
-		setChatProps((prevState) => ({
-			...prevState,
-			chatRooms:  prevState.chatRooms.filter((channel) => channel.name !== selectedChannel.name),
-		}));
-		if (selectedChannel.settings.users.length === 1 && userInChannel(user.nameIntra, selectedChannel)) {
-			setSelectedChannel(null);
-			return ;
-		}
-		const filteredUsers = selectedChannel.settings.users.filter((user) => user.name !== user.nameIntra);
-		const updatedChannel: ChatRoom = {
-			...selectedChannel,
-			settings: {
-				...selectedChannel.settings,
-				users: filteredUsers,
-				owner: selectedChannel.settings.owner === user.nameIntra ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
-			},
+
+		const data = {
+			user_id: user.id, 
+			channel_id: selectedChannel.id,
+			role: selectedChannel.settings.users.find(user_ => user.id === user_.id).role,
 		};
-		setAvailableChannels((prevState) => ([
-			...prevState,
-			updatedChannel,
-		]))
+
+		socket.emit('leaveChannel', data);
+		
+		socket.once('leftChannel', (response) => {
+			if (response.channel_id === selectedChannel.id) {
+				setJoinedChannels((prevState) => prevState.filter(ch => ch.id !== selectedChannel.id));
+
+			}
+			
+			const filteredUsers = selectedChannel.settings.users.filter((usr) => usr.name !== user.nameIntra);
+			const updatedChannel: ChatRoom = {
+				...selectedChannel,
+				settings: {
+					...selectedChannel.settings,
+					users: filteredUsers,
+					owner: selectedChannel.settings.owner === user.nameIntra ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
+				},
+			};
+			
+			// console.log('Filtered users', filteredUsers);
+			// if (filteredUsers.length )
+			// setAvailableChannels((prevState) => {
+			// 	const newChannels = [...prevState, updatedChannel];
+			// 	// console.log("Updated availableChannels:", n`ewChannels);
+			// 	return newChannels;
+			// });
+
+			if (filteredUsers.length > 0) {
+				setAvailableChannels((prevState) => [...prevState, updatedChannel]);
+			}
+
+			setSelectedChannel(null);
+		});
+		
+		socket.once('leavingChannelError', (error) => {
+			console.error(error.message);
+			alert(`Error joining channel: ${error.message}`);
+		});
 
 
-		setSelectedChannel(null);
+		// if (selectedChannel.settings.users.length === 1 && userInChannel(user.nameIntra, selectedChannel)) {
+		// 	setSelectedChannel(null);
+		// 	return ;
+		// }
+
+		// setAvailableChannels((prevState) => [...prevState, updatedChannel]);
+
+		
+
 	};
+
+
 	// console.log(selectedChannel.settings.owner, user.nameIntra);
 	return (
 		<Modal open={open} onClose={onClose}>
-		  <Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
-			<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
-			<Divider sx={{ my: 2 }} />
-			{/* {console.log(user)} */}
-			{/* {console.log(selectedChannel.settings.owner, user.nameIntra)} */}
-			{(selectedChannel.settings.owner === user.nameIntra) && (
-			<>
-			{/* Privacy Options */}
-			<Stack direction="row" spacing={2}>
-			  <Button variant={settings?.type === 'public' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('public', null)}>Public</Button>
-			  <Button variant={settings?.type === 'private' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('private', null)}>Private</Button>
-			  <Button variant={settings?.type === 'password' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('password', settings.password)}>Password Protected</Button>
-			</Stack>
-
-			{/* Password field for password protected */}
-			{settings?.type === 'password' && (
-			  <TextField
-				label="Password"
-				value={settings.password || ''}
-				onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangePrivacy('password', e.target.value)}
-				fullWidth
-				sx={{ mt: 2 }}
-			  />
-			)}
-	
-			{/* Add Friend */}
-  			<TextField
-  			  label={label}
-  			  value={friendName}
-  			  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFriendName(e.target.value)}
-  			  fullWidth
-  			  sx={{ mt: 2 }}
-  			/>
-  			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-
-  			  <Button
-  			    variant="contained"
-  			    onClick={handleAddFriend}
-  			    sx={{ mt: 1 }}
-  			  >
-  			    Add Friend
-  			  </Button>
-
-			  {(selectedChannel.settings.owner === user.nameIntra) &&
-				<Button
-					variant="contained"
-					onClick={() => handleDeleteChannel(selectedChannel.id)}
-					sx={{ mt: 1, minWidth: '155px', color: 'rgb(247, 77, 57)' }}
-					>
-					Delete Channel
-				</Button>
-			  }
-		  	</Box>
-			</>
-			)}
-			{(selectedChannel.settings.owner === user.nameIntra) ? (
-				<Box sx={{display: 'flex'}}>
-					<Button
-						variant="contained"
-						onClick={handleLeaveChannel}
-						sx={{ mt: 1, marginLeft: 'auto', minWidth: '155px' }}
-						>
-						Leave Channel
-					</Button> 
-				</Box>) : (
-				<Box sx={{display: 'flex'}}>
-					<Button
-						variant="contained"
-						onClick={handleLeaveChannel}
-						sx={{ mt: 1, minWidth: '200px', mx: 'auto' }}
-					>
-						Leave Channel
-					</Button>
-				</Box>
-			)}
-			{/* Friend List */}
-			<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
-				<Stack spacing={1} mt={2}>
-				  <Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
-				  <Divider />
-				  {settings.users.map(_user => (
-					<Stack direction="row" justifyContent="space-between" alignItems="center" key={_user.id}>
-					  <Typography sx={{whiteSpace: 'pre-line'}} >
-							{_user.name?.length > 10 ? _user.name.slice(0, 9) + '...' : _user.name}
-					  		{(userIsAdmin(_user.name, selectedChannel) || 
-					  			selectedChannel.settings.owner === _user.name) ? 
-									'\n' :
-									' '}
-							{`(${_user.role})`}
-					  </Typography>
-					  {/* {console.log(user.nameIntra)} */}
-					  {(selectedChannel.settings.owner === user.nameIntra ||
-					  	userIsAdmin(_user.name, selectedChannel)) &&
-						user.nameIntra !== _user.name && (
-					  <Stack direction="row" spacing={0.3}>
-						<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
-							{_user.role === 'admin' ? 'Make Member' : 'Make Admin' }
-						</Button>
-						<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(_user)}>Kick</Button>
-						<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
-						<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(user.name)}>Block</Button>
-					  </Stack>
-					)}
+			{!selectedChannel.isDirectMessage ? (
+			<Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
+				{!selectedChannel.isDirectMessage && (
+					<>
+					<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
+					<Divider sx={{ my: 2 }} />
+					</>
+				)}
+				{/* {console.log(user)} */}
+				{/* {console.log(selectedChannel.settings.owner, user.nameIntra)} */}
+				{selectedChannel.settings.owner === user.nameIntra && (
+				<>
+					{/* Privacy Options */}
+					<Stack direction="row" spacing={2}>
+					<Button variant={settings?.type === 'public' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('public', null)}>Public</Button>
+					<Button variant={settings?.type === 'private' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('private', null)}>Private</Button>
+					<Button variant={settings?.type === 'password' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('password', settings.password)}>Password Protected</Button>
 					</Stack>
-				  ))}
-				</Stack>
-			</Box>	
-		  </Box>
+
+					{/* Password field for password protected */}
+					{settings?.type === 'password' && (
+					<TextField
+						label="Password"
+						value={settings.password || ''}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangePrivacy('password', e.target.value)}
+						fullWidth
+						sx={{ mt: 2 }}
+					/>
+					)}
+					{/* Add Friend */}
+						<TextField
+						label="Add Friend"
+						value={friendName}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFriendName(e.target.value)}
+						fullWidth
+						sx={{ mt: 2 }}
+						/>
+					<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+					<Button
+						variant="contained"
+						onClick={handleAddFriend}
+						sx={{ mt: 1 }}
+					>
+						Add Friend
+					</Button>
+					<Button
+						variant="contained"
+						onClick={() => handleDeleteChannel(selectedChannel.id)}
+						sx={{ mt: 1, minWidth: '155px', color: 'rgb(247, 77, 57)' }}
+						>
+						Delete Channel
+					</Button>
+					</Box>
+					</>
+				)}
+				{(selectedChannel.settings.owner === user.nameIntra) ? (
+					<Box sx={{display: 'flex'}}>
+						<Button
+							variant="contained"
+							onClick={handleLeaveChannel}
+							sx={{ mt: 1, marginLeft: 'auto', minWidth: '155px' }}
+							>
+							Leave Channel
+						</Button> 
+					</Box>) : (
+					<Box sx={{display: 'flex'}}>
+						<Button
+							variant="contained"
+							onClick={handleLeaveChannel}
+							sx={{ mt: 1, minWidth: '200px', mx: 'auto' }}
+						>
+							Leave Channel
+                   </Button>
+					</Box>
+				)}
+				{/* Friend List */}
+				<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
+					<Stack spacing={1} mt={2}>
+					<Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
+					<Divider />
+					{settings.users.map(_user => (
+						<Stack direction="row" justifyContent="space-between" alignItems="center" key={_user.id}>
+						<Typography sx={{whiteSpace: 'pre-line'}} >
+								{_user.name?.length > 10 ? _user.name.slice(0, 9) + '...' : _user.name}
+								{/* {(userIsAdmin(_user.name, selectedChannel) || 
+									selectedChannel.settings.owner === _user.name) ? 
+										'\n' :
+										' '} */}
+								{`\n(${_user.role})`}
+						</Typography>
+						{/* {console.log(user.nameIntra)} */}
+						{(selectedChannel.settings.owner === user.nameIntra ||
+							userIsAdmin(_user.name, selectedChannel)) &&
+							user.nameIntra !== _user.name && (
+						<Stack direction="row" spacing={0.3}>
+							<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
+								{_user.role === 'admin' ? 'Make Member' : 'Make Admin' }
+							</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(user.name)}>Block</Button>
+						</Stack>
+						)}
+						</Stack>
+					))}
+					</Stack>
+				</Box>	
+			</Box>
+			) : (
+				<Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
+					<Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+						<Button
+							variant="contained"
+							onClick={() => handleDeleteChannel(selectedChannel.id)}
+							sx={{ mt: 1, minWidth: '155px', color: 'rgb(247, 77, 57)' }}
+							>
+							Delete Direct Message
+						</Button>
+					</Box>
+					{/* Friend List */}
+					<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
+						<Stack spacing={1} mt={2}>
+						<Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
+						<Divider />
+						{settings.users.map(_user => (
+							<Stack direction="row" justifyContent="space-between" alignItems="center" key={_user.id}>
+							<Typography sx={{whiteSpace: 'pre-line'}} >
+									{_user.name?.length > 10 ? _user.name.slice(0, 9) + '...' : _user.name}
+									{/* {(userIsAdmin(_user.name, selectedChannel) || 
+										selectedChannel.settings.owner === _user.name) ? 
+											'\n' :
+											' '} */}
+									{` (${_user.role})`}
+							</Typography>
+							</Stack>
+						))}
+						</Stack>
+					</Box>	
+				</Box>
+			)
+		}
 		</Modal>
 	  );
 };

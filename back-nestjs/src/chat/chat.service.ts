@@ -43,9 +43,9 @@ export class ChatService {
 	// }
 
 	async createChannel(chatDTO: ChatDTO): Promise<Channel> {
-		const { title, ch_type, ch_owner, users, password } = chatDTO;
+		const { title, ch_type, ch_owner, users, password, isDirectMessage } = chatDTO;
 	
-		// console.log('chatDTO:', chatDTO);  // Log to check if ch_owner exists
+		// console.log('chatDTO:', chatDTO);
 	  
 		// Create new channel
 		const newChannel = this.channelRepository.create({
@@ -55,6 +55,7 @@ export class ChatService {
 		  password,
 		//   channel_photo: chatDTO.channel_photo || 'default_channel_photo.png',
 		  created: new Date(),
+		  isDirectMessage,
 		});
 	  
 		const savedChannel = await this.channelRepository.save(newChannel);
@@ -116,6 +117,7 @@ export class ChatService {
 	  const membership = await this.channelMemberRepository.findOne({
 		where: { user_id, channel_id },
 	  });
+	  console.log('Membership:', membership.member_role);
 	
 	  if (!membership) {
 		throw new Error('User is not a member of the channel');
@@ -123,32 +125,37 @@ export class ChatService {
 	
 	  // Check if the user is the owner of the channel
 	  if (membership.member_role === 'owner') {
-		// Transfer ownership to another admin or member
-		const otherMembers = await this.channelMemberRepository.find({
-		  where: { channel_id },
-		  order: { member_role: 'ASC' }, // Admins will appear before members
-		});
-	
-		if (otherMembers.length > 1) {
-		  // Assign the first non-owner member as the new owner
-		  const newOwner = otherMembers.find(
-			(member: ChannelMember) => member.user_id !== user_id
-		  );
-		  if (newOwner) {
-			newOwner.member_role = 'owner';
-			await this.channelMemberRepository.save(newOwner);
-		  }
-		} else {
-		  // If the channel is empty, delete the channel
-		  await this.channelMemberRepository.delete({ channel_id });
-		  await this.channelRepository.delete({ channel_id });
-		  return;
-		}
+			// Transfer ownership to another admin or member
+			const otherMembers = await this.channelMemberRepository.find({
+				where: { channel_id },
+				order: { member_role: 'ASC' }, // Admins will appear before members
+			});
+		
+			if (otherMembers.length > 1) {
+				// Assign the first non-owner member as the new owner
+				const newOwner = otherMembers.find(
+					(member: ChannelMember) => member.user_id !== user_id
+				);
+				console.log(newOwner);
+				if (newOwner) {
+					newOwner.member_role = 'owner';
+					await this.channelMemberRepository.save(newOwner);
+				}
+
+				this.changeOwner(channel_id, newOwner.name);
+
+			} else {
+				console.log('Channel empty!');
+				// If the channel is empty, delete the channel
+				await this.channelMemberRepository.delete({ channel_id });
+				await this.channelRepository.delete({ channel_id });
+				return;
+			}
 	  }
 	
 	  // Remove the user from the channel
 	  await this.channelMemberRepository.delete({ user_id, channel_id });
-}
+	}
 
 	// Send a message
 	// async sendMessage( sender_id: number, receiver_id: number, content: string ,
@@ -235,7 +242,7 @@ export class ChatService {
 
 	async getAllChannels(): Promise<Channel[]> {
 		const channels = await this.channelRepository.find({
-			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password'],
+			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password', 'isDirectMessage'],
 			relations: ['members', 'messages'], // Ensure messages are included
 		});
 	
@@ -280,6 +287,14 @@ export class ChatService {
 		}
 	}
 
+	async changeOwner(channel_id: number, new_owner: string) : Promise<void> {
+		const channel = await this.getChannelById(channel_id);
+		if (!channel) {
+			throw new Error(`Channel with ID ${channel_id} not found`);
+		}
+		channel.ch_owner = new_owner;
+		await this.channelRepository.save(channel);
+	}
 }
 
 

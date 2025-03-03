@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Unique } from 'typeorm';
 import { IsAscii, Length, validateOrReject } from 'class-validator';
-
 import { UserStatus } from 'src/dto/user.dto';
 import Game from './game.entity';
+
 
 
 @Entity('Users')
@@ -47,15 +47,15 @@ export default class User {
 	@Length(0, 100)
 	greeting: string | null;
 
-	@Column({ nullable: true, default: null })
-	auth2F: string | null;
-
 	@Column({
 		type: 'enum',
 		enum: UserStatus,
 		default: UserStatus.Offline,
 	})
 	status: UserStatus;
+
+	@Column({ nullable: true, default: null})
+	twoFactorSecret: string;
 
 	@CreateDateColumn()
 	createdAt: Date;

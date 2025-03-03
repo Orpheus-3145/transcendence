@@ -13,11 +13,18 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	useEffect(() => {
 		const validate = async () => {
 			try {
-				const response = await axios.get(import.meta.env.URL_BACKEND_VALIDATE, {
-					withCredentials: true,
-				});
-				const userDTO = response.data.user;
-				setUser(userDTO);
+				const response = await axios.get(import.meta.env.URL_BACKEND_VALIDATE, 
+					{withCredentials: true}
+				);
+				if (response.data) {
+
+					setUser(response.data.user);
+				}
+				if (response.data.user?.id === 0 && response.data.user?.auth2F) {
+					navigate('/2fa');
+				}
+
+
 			} catch (error) {
 				navigate('/login');
 				setUser({ id: 0 });

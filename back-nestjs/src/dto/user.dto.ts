@@ -54,6 +54,9 @@ export default class UserDTO {
 	@IsEnum(UserStatus)
 	status: UserStatus;
 
+	@IsString()
+	twoFactorSecret: string | null;
+
 	@IsArray()
 	@IsString({ each: true })
 	friends: string[];

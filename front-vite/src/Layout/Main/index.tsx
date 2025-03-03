@@ -10,6 +10,7 @@ import ChannelsPage from '../../Pages/Channels/index';
 import LogoutPage from '../../Pages/Logout';
 import AllUsersPage from '../../Pages/AllUsers';
 import { useUser } from '../../Providers/UserContext/User';
+import TwoFactorAuth from '../../Pages/2FA';
 import Leaderboard from '../../Pages/Leaderboard';
 
 export const Main: React.FC = () => {
@@ -30,7 +31,12 @@ export const Main: React.FC = () => {
     </>
   );
 
-	const unauthenticatedRoutes = <Route path='/login' element={<LoginPage />} />;
+	const unauthenticatedRoutes = (
+		<>
+			<Route path='/login' element={<LoginPage />} />
+			<Route path='/2fa' element={<TwoFactorAuth />} />
+		</>
+	);
 
 	return (
 		<Routes>

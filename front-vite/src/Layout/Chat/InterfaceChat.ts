@@ -47,6 +47,7 @@ export interface ChatRoom {
   icon: React.ReactElement;
   messages: ChatMessage[];
   settings: ChatSettings;
+  isDirectMessage: boolean;
 }
 
 export interface ChatProps {

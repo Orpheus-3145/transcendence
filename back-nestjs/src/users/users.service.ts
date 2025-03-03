@@ -38,6 +38,8 @@ export class UsersService {
 		user.status = UserStatus.Online;
 		user.friends = [];
 		user.blocked = [];
+		user.twoFactorSecret = null;
+
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
 			var tmp: User | null = await this.findOne(user.intraId);
@@ -51,9 +53,18 @@ export class UsersService {
 		} 
 		catch (error) {
 			console.error('User validation error: ', error);
+			throw error;
+		}
+	}
+
+	async update(user: User): Promise<User> {
+		try {
+			await this.usersRepository.save(user);
+			return user;
+		} catch (error) {
 			this.thrower.throwSessionExcp(
-				`User validation error: ${error}`,
-				`${UsersService.name}.${this.constructor.prototype.createUser.name}()`,
+				`User update error: ${error}`,
+				`${UsersService.name}.${this.constructor.prototype.update.name}()`,
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			)
 		}

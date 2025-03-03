@@ -1,4 +1,8 @@
-COMPOSE := docker compose --env-file ./env/.env
+
+-include ./env/.env
+
+ENV_PATH := ./env/.env
+COMPOSE := $(shell command -v docker-compose 2>/dev/null || echo "docker compose") --env-file $(ENV_PATH)
 LOCAL_LOG_DIR := back-nestjs/logs
 
 all: build
@@ -19,7 +23,7 @@ down:
 	@$(COMPOSE) down
 
 clean:
-	@$(COMPOSE) down --remove-orphans --volumes --rmi all
+	@$(COMPOSE) down --remove-orphans --volumes --rmi local
 
 restart: down start
 
