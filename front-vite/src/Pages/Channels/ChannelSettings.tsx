@@ -1,11 +1,11 @@
 import React from 'react';
 import {useState, useEffect} from 'react';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
-import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl} from '@mui/material';
+import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl, Avatar} from '@mui/material';
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
-import { myself, userInChannel, userIsAdmin } from '../Channels/index';
-import { useUser } from '../../Providers/UserContext/User';
+import { userInChannel, userIsAdmin } from '../Channels/index';
+import { fetchUser, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
 import { socket } from '../../Layout/Chat/ChatContext';
 import { prev } from 'cheerio/dist/commonjs/api/traversing';
 
@@ -31,8 +31,6 @@ interface SettingsModalProps {
 	setIsSettingsView: boolean
 }
 
-let testUserId = 20;
-
 export const SettingsModal: React.FC<SettingsModalProps> = ({ 
 	open,
 	onClose,
@@ -49,43 +47,62 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	setIsSettingsView
 }) => {
 	const [friendName, setFriendName] = useState('');
+	const [label, setLabel] = useState<string>("Add Friend");
 	const theme = useTheme();
 	const { user } = useUser();
 
 	// console.log(user);
 
-	const handleAddFriend = () => {
+	const handleAddFriend = async () => 
+	{
 		console.log('"Add Friend" clicked!');
-		if (friendName) {
+		if (friendName.length > 0) {
+			var tmp: User | null = await fetchUser(friendName);
+			if (tmp === null)
+			{
+				setFriendName('');
+				setLabel("User doesn't exist with that nickname!");
+				return ;
+			}
 			const newUser: UserProps = {
-				name: friendName,
+				id: tmp.id,
+				name: tmp.nameNick,
 				role: 'member',
-				email: '',
+				email: tmp.email,
 				password: '',
-				icon: <PersonAddIcon />
+				icon: <Avatar src={tmp.image}/>
 			};
-			
+
+			if (settings.users.find((tmp: UserProps) => tmp.id === newUser.id))
+			{
+				setFriendName('');
+				setLabel("User already added!");
+				return ;
+			}
+
 			setSettings({ ...settings, users: [...settings.users, newUser] });
 			
 			const data = {
 				channel_id: selectedChannel.id,
-				user_id: testUserId++,
-				name: friendName,
+				user_id: tmp.id,
+				name: tmp.nameNick,
 			};
 
 			// Emit the user to the backend
 			socket.emit('joinChannel', data);
 			
 			setFriendName('');
+			setLabel("User added!");
 		}
 	}
 
-	const handleKickFriend = (name: string) => {
-		//--> CALL TO BACKEND <-- //
-
+	const handleKickFriend = (user: UserProps) => 
+	{
 		console.log('"Kick Friend" clicked!');
-		// const updatedUsers = settings.users.filter(user => user.name !== name);
-		// setSettings({ ...settings, users: updatedUsers });
+		const updatedUsers = settings.users.filter(item => item.id !== user.id);
+		setSettings({ ...settings, users: updatedUsers });
+
+		socket.emit('kickUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
 	};
 
 	const handleBanFriend = (name: string) => {
@@ -293,7 +310,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						sx={{ mt: 2 }}
 						/>
 					<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-
 					<Button
 						variant="contained"
 						onClick={handleAddFriend}
@@ -328,7 +344,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							sx={{ mt: 1, minWidth: '200px', mx: 'auto' }}
 						>
 							Leave Channel
-						</Button>
+                   </Button>
 					</Box>
 				)}
 				{/* Friend List */}
@@ -399,6 +415,4 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		}
 		</Modal>
 	  );
-
-
 };

@@ -317,14 +317,14 @@ const UserSettings: React.FC = () => {
 	}
 	
 	let getUserProfile = async () : Promise<void> =>
+	{
+		const tmp = await getUserFromDatabase(user.id.toString(), navigate);
+		
+		if (user.id == tmp.id)
 		{
-			const tmp = await getUserFromDatabase(user.id.toString(), navigate);
-	
-			if (user.id == tmp.id)
-			{
-				setBlockedList(tmp.blocked);
-			}
+			setBlockedList(tmp.blocked);
 		}
+	}
 		
 	useEffect(() => 
 	{

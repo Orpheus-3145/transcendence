@@ -23,3 +23,12 @@ export enum PowerUpType {
 	shrinkPaddle = 'shrinkPaddle',
 	stretchPaddle = 'stretchPaddle'
 }
+
+export enum PowerUpSelected {
+  noPowerUp = 0,        	// (00000)
+  speedBall = 1 << 0, 		// (00001)
+  speedPaddle = 1 << 1, 	// (00010)
+  slowPaddle = 1 << 2, 		// (00100)
+  shrinkPaddle = 1 << 3, 	// (01000)
+  stretchPaddle = 1 << 4  // (10000)
+}

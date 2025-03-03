@@ -21,11 +21,12 @@ import { useUser,
 		removeFriend, 
 		blockFriend, 
 		changePFP, 
-		User,
-		UserStatus,
-		matchData,
 		fetchRatios,
-		matchRatio} from '../../Providers/UserContext/User';
+		fetchOpponent,
+		fetchMatchData} from '../../Providers/UserContext/User';
+import { socket } from '../../Providers/NotificationContext/Notification';
+import {User, MatchData, MatchRatio} from '../../Types/User/Interfaces';
+import {UserStatus} from '../../Types/User/Enum';
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -43,19 +44,24 @@ const ProfilePage: React.FC = () => {
 	const [userProfileNumber, setUserProfileNumber] = useState<number | null>(null);
 	const [showMessage, setShowMessage] = useState<Boolean>(false);
 	const [messageErrorNickname, setMessageErrorNickname] = useState<string>("");
-	const [profileImage, setProfileImage] = useState();
+	const [profileImage, setProfileImage] = useState<string>("");
 	const [friendsList, setFriendsList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
+	const [opponentDetails, setOpponentDetails] = useState<Map<string, User>>(new Map());
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
-	const [matchHistory, setMatchHistory] = useState<matchData[]>([]);
-	const [ratioArr, setRatioArr] = useState<matchRatio[]>([]);
+	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
+	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
 	
 	let RemoveFriend = (id:string) => {
-		removeFriend(userProfile.id, id);
+		var newlist = friendsList.filter(friend => friend !== id);
+		setFriendsList(newlist);
+		removeFriend(userProfile.id.toString(), id);
 	}
 
 	let BlockFriend = (id:string) => {
-		blockFriend(userProfile.id, id);
+		var newlist = friendsList.filter(friend => friend !== id);
+		setFriendsList(newlist);
+		blockFriend(userProfile.id.toString(), id);
 	}
 
 	let friendLineButtons = (intraid:string) => 
@@ -313,33 +319,54 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
+	const fetchOpponentDetails = async (opponentId: string) => {
+		const opponent = await fetchOpponent(opponentId);
+		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
+	};
+
 	let gameLine = (data: matchData) => 
 	{
-		var color;
-		if (data.whoWon === userProfile.intraId.toString())
-			color = '#1da517'
-		else
-			color = '#b01515';
-
-		var nameOther;
-		var scoreUser;
-		var scoreOther;
-		var namep1 = data.player1;
-		var namep2 = data.player2;
-		if (namep1 === userProfile.nameNick)
+		var opponent: User | undefined;
+		var intra: string;
+		var nameOther: string;
+		var scoreUser: string;
+		var scoreOther: string;
+		var color: string;
+		var idOther: number;
+		if (data.player1 === userProfile.id.toString())
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
-			nameOther = namep2;
+			intra = data.player2;
+			opponent = opponentDetails.get(intra);
+			if (opponent)
+			{
+				nameOther = opponent.nameNick;
+				idOther = opponent.id;
+			}
 		}
 		else
 		{
 			scoreUser = data.player2Score;
 			scoreOther = data.player1Score;
-			nameOther = namep1;
+			intra = data.player1;
+			opponent = opponentDetails.get(intra);
+			if (opponent)
+			{
+				nameOther = opponent.nameNick;
+				idOther = opponent.id;
+			}
 		}
-		var idOther = 2;
-		// var friend = fetchFriend(); need to call this since namep1/p2 won't be nameNick but intraId
+
+		if (!opponent) {
+			fetchOpponentDetails(intra);
+			return <Stack>Loading...</Stack>;
+		}
+
+		if (data.whoWon === userProfile.id.toString())
+			color = '#1da517'
+		else
+			color = '#b01515';
 
 		return (
 			<Stack
@@ -385,10 +412,18 @@ const ProfilePage: React.FC = () => {
 				>
 					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
 				</Typography>
-				<Avatar />
+				<Avatar
+					sx={{
+						width: '40px',
+						height: '40px',
+						left: '-5px',
+						bgcolor: theme.palette.primary.light,
+					}}
+					src={opponent.image}
+				>
+				</Avatar>
 			</Stack>
 		);
-
 	};
 
 	let gameContainer = () => 
@@ -429,7 +464,7 @@ const ProfilePage: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.map((item: matchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -494,7 +529,7 @@ const ProfilePage: React.FC = () => {
 		);
 	}
 	
-	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => 
+	const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => 
 	{
 		const image = event.target.files[0];
 		let formdata = new FormData();
@@ -502,8 +537,8 @@ const ProfilePage: React.FC = () => {
 		formdata.append("file", image);
 		if (image.type.startsWith("image/") && image.size > 0) 
 		{
-			changePFP(userProfile.id, formdata);
-			setProfileImage(image);
+			var newimage = await changePFP(userProfile.id, formdata);
+			setProfileImage(newimage);
 		}
 	}
 	
@@ -567,7 +602,7 @@ const ProfilePage: React.FC = () => {
 			size = '3rem';
 		if (userProfile.nameNick.length > 18)
 			size = '2rem';
-		if (userProfile.nameNick.lenght > 25)
+		if (userProfile.nameNick.length > 25)
 			size = '1rem';
 		
 		return (
@@ -616,7 +651,7 @@ const ProfilePage: React.FC = () => {
 		const key = event.key;
 		if (key === 'Enter') 
 		{
-			const result = await setNewNickname(userProfile.id, inputValue);
+			const result = await setNewNickname(userProfile.id.toString(), inputValue);
 	  
 			if (result === "") 
 			{
@@ -756,10 +791,9 @@ const ProfilePage: React.FC = () => {
 			setProfileImage(tmp.image);
 			setFriendsList(tmp.friends);
 			setWhichStatus(tmp.status);
-			setMatchHistory(tmp.matchHistory);
+			setMatchHistory(await fetchMatchData(tmp));
+			setRatioArr(await fetchRatios(tmp));
 			setUserProfile(tmp);
-			var allRatio = await fetchRatios(tmp);
-			setRatioArr(allRatio);
 		}
 		else 
 			showOwnPage(false);
@@ -771,7 +805,17 @@ const ProfilePage: React.FC = () => {
 		{
 			setUserProfileNumber(number);
 		});
-	}, [friendsList,whichStatus,profileImage]);
+
+		socket.on('friendAdded', (newFriend: string) => {
+			var newlist = friendsList;
+			if (!friendsList.includes(newFriend, 0))
+			{
+				newlist.push(newFriend);
+				setFriendsList(newlist);
+			}
+		});
+
+	}, [lastSegment]);
 
 	let whichPage = () =>
 	{

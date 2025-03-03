@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 import { IsAscii, Length } from 'class-validator';
+import { PowerUpSelected } from 'src/game/types/game.enum';
 
 
 export enum NotificationStatus {
@@ -13,6 +14,7 @@ export enum NotificationType {
 	Message = 'Message',
 	friendRequest = 'Friend Request',
   gameInvite = 'Game Invite',
+  groupChat = 'Group Chat',
 }
 
 @Entity()
@@ -49,6 +51,14 @@ export class Notification {
   @IsAscii()
   @Length(0, 100)
   message: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: PowerUpSelected,
+    default: PowerUpSelected.noPowerUp,
+    nullable: true,
+  })
+  powerUpsSelected: PowerUpSelected;
 
   @CreateDateColumn()
   createdAt: Date;

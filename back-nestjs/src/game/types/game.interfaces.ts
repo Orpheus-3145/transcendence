@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { GameDifficulty, GameMode, PowerUpType } from "./game.enum";
+import { GameDifficulty, GameMode, PowerUpSelected, PowerUpType } from "./game.enum";
 
 
 export interface PlayerData {
@@ -12,7 +12,7 @@ export interface GameData {
 	sessionToken: string;
 	mode: GameMode;
 	difficulty: GameDifficulty;
-	extras: Array<PowerUpType>;
+	extras: PowerUpSelected;
 }
 
 export interface GameState {
@@ -34,7 +34,7 @@ export interface GameState {
 
 export interface WaitingPlayer {
 	clientSocket: Socket;
-	extras: Array<PowerUpType>;
+	extras: PowerUpSelected;
 }
 
 export interface PlayingPlayer {

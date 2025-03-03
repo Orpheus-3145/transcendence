@@ -1,16 +1,17 @@
 import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {leaderboardData, matchRatio, } from '../entities/user.entity'
+
 import User from '../entities/user.entity';
+import MatchRatioDTO from 'src/dto/matchRatio.dto';
+import MatchDataDTO from 'src/dto/matchData.dto';
 
 @Controller('users')
 export class UsersController {
 
 	constructor(
 		private readonly UserService: UsersService,
-	  ) { }
-
+	  ) {}
 
 	@Get('/profile/getAll')
 	async getAllUsers() {
@@ -22,6 +23,12 @@ export class UsersController {
 		var user = await this.UserService.getUserId(username);
 		if (!user)
 			throw new HttpException('Not Found', 404);
+		return (user);
+	}
+
+	@Get('/profile/fetchUser/:username')
+	async fetchUser(@Param('username') username: string) {
+		var user: User | null = await this.UserService.findOneNick(username);
 		return (user);
 	}
 
@@ -63,7 +70,7 @@ export class UsersController {
 		{	
 			return ("name needs atleast 1 letter or number!");
 		}
-		var user = this.UserService.getUserId(username);
+		var user = await this.UserService.getUserId(username);
 		if (user == null)
 		{
 			console.log("error");
@@ -75,53 +82,59 @@ export class UsersController {
 		{
 			return ("name already exists!");
 		}
-		this.UserService.setNameNick(await user, newname);
+		this.UserService.setNameNick(user, newname);
 		return ("");
 	}
 
 	@Get('/profile/:username/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
-		return (this.UserService.getFriend(id));
+		return (this.UserService.getUserIntraId(id));
+	}
+
+	@Get('/profile/:username/opponent/:id')
+	async fetchOpponent(@Param('id') id: string) 
+	{
+		return (this.UserService.getUserId(id));
 	}
 
 	@Get('profile/:username/friend/remove/:id')
 	async removeFriend(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserIntraId(id);
+		var user = await this.UserService.getUserId(username);
+		var other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
 		{
 			console.log("ERROR: failed to get user in removeFriend!");
 			throw new HttpException('Not Found', 404);
 		}
-		return (this.UserService.removeFriend(await user, await other));
+		return (this.UserService.removeFriend(user, other));
 	}
 
 	@Get('profile/:username/friend/block/:id')
 	async blockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserIntraId(id);
+		var user = await this.UserService.getUserId(username);
+		var other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
 		{
 			console.log("ERROR: failed to get user in blockUser!");
 			throw new HttpException('Not Found', 404);
 		}
-		return (this.UserService.blockUser(await user, await other));
+		return (this.UserService.blockUser(user, other));
 	}
 
 	@Get('profile/:username/friend/unBlock/:id')
 	async unBlockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = this.UserService.getUserId(username);
-		var other = this.UserService.getUserIntraId(id);
+		var user = await this.UserService.getUserId(username);
+		var other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
 		{
 			console.log("ERROR: failed to get user in blockUser!");
 			throw new HttpException('Not Found', 404);
 		}
-		return (this.UserService.unBlockUser(await user, await other));
+		return (this.UserService.unBlockUser(user, other));
 	}
 
 	@Post('profile/:username/changepfp')
@@ -143,17 +156,24 @@ export class UsersController {
 		return (this.UserService.changeProfilePic(user, image));
 	}
 
-	@Get('/profile/fetchRatio/:username')
-	async fetchRatio(@Param('username') username:string) 
+	@Get('profile/:intraId/matches')
+	async fetchMatchData(@Param('intraId') intraId:string) {
+
+		const user: User = await this.UserService.getUserIntraId(intraId);
+		const games: MatchDataDTO[] = await this.UserService.fetchMatches(user);
+		return games;
+	}
+
+	@Get('/profile/fetchRatio/:intraId')
+	async fetchRatio(@Param('intraId') intraId:string) 
 	{
-		var user = await this.UserService.getUserIntraId(username);
-		var arr: matchRatio[] = await this.UserService.calculateRatio(user.matchHistory, user);
+		const user: User = await this.UserService.getUserIntraId(intraId);
+		var arr: MatchRatioDTO[] = await this.UserService.calculateRatio(user);
 		return (arr);
 	}
 
 	@Get('/fetchLeaderboard')
-	async fetchLeaderboard() 
-	{
+	async fetchLeaderboard() {
 		return (this.UserService.leaderboardCalculator());
 	}
 }

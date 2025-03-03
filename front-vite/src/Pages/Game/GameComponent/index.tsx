@@ -1,16 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
+import { useLocation } from "react-router-dom";
 import { Box } from '@mui/material';
 import { styled } from '@mui/system';
-import Phaser from 'phaser';
+import Phaser, { Scene } from 'phaser';
 
-import { useUser } from '../../../Providers/UserContext/User';
-import GameScene from './PhaserGame/Scenes/Game';
-import BaseScene from './PhaserGame/Scenes/Base';
-import MainMenuScene from './PhaserGame/Scenes/MainMenu';
-import MatchmakingScene from './PhaserGame/Scenes/Matchmaking';
-import ResultsScene from './PhaserGame/Scenes/Results';
-import SettingsScene from './PhaserGame/Scenes/Settings';
-import ErrorScene from './PhaserGame/Scenes/Error';
+import { useUser } from '/app/src/Providers/UserContext/User';
+import { GameDataContext } from '/app/src/Providers/GameContext/Game';
+import GameScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Game';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import MainMenuScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/MainMenu';
+import MatchmakingScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Matchmaking';
+import ResultsScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Results';
+import SettingsScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Settings';
+import ErrorScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Error';
 
 
 const GameBox = styled(Box)(({ theme }) => ({
@@ -26,16 +28,17 @@ const GameComponent: React.FC = () => {
 
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const playerData = useUser().user;
-	
+	const { gameData } = useContext(GameDataContext)!;
+
 	let gameInstance: Phaser.Game | null = null;
 
 	const handleResize = () => {
 		if (gameInstance && containerRef.current) {
-			
+
 			// resize game window keeping same ratio (16/9)
 			const { width, height } = containerRef.current.getBoundingClientRect();
 			gameInstance.scale.resize(width, width * 9 / 16);
-			
+
 			gameInstance.scene.getScenes(true).forEach( (scene: Phaser.Scene) => {
 				// resize all the objects inside of every scene
 				if (scene instanceof BaseScene) {
@@ -52,10 +55,10 @@ const GameComponent: React.FC = () => {
 	useEffect(() => {
 
 		if (gameInstance === null) {
-			
+
 			const cnt = containerRef.current!;
 			const { width, height } = cnt.getBoundingClientRect();
-			
+
 			const config: Phaser.Types.Core.GameConfig = {
 					type: Phaser.AUTO,
 					width: width,
@@ -84,15 +87,18 @@ const GameComponent: React.FC = () => {
 						gamepad: true
 					}
 				};
-			
+
 			gameInstance = new Phaser.Game({ ...config });
 		}
-		
-		// add hook the container of the game is resized
-		window.addEventListener('resize', handleResize);
 
 		// passing to game info about user
 		gameInstance.registry.set('user42data', playerData);
+		// passign data in case a game invitation was accepted
+		if ( gameData )
+			gameInstance.registry.set('gameInvitationData', gameData);
+
+		// add hook the container of the game is resized
+		window.addEventListener('resize', handleResize);
 
 		return () => {
 			window.removeEventListener('resize', handleResize);
@@ -110,7 +116,7 @@ const GameComponent: React.FC = () => {
 				gameInstance = null;
 			}
 		};
-	}, []);
+	}, [gameData]);
 
 	return (
 		<GameBox ref={containerRef}/>

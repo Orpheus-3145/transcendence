@@ -1,11 +1,20 @@
-import BaseScene from './Base';
-import { GameMode } from '../../Types/Enum';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import { GameMode } from '/app/src/Types/Game/Enum';
 
 
 export default class MainMenuScene extends BaseScene {
 
 	constructor() {
 		super({ key: 'MainMenu' });
+	}
+
+	create(): void {
+		super.create()
+
+		if (this.registry.get('gameInvitationData')) {
+			this.switchScene('Game', this.registry.get('gameInvitationData'));
+			this.registry.remove('gameInvitationData');
+		}
 	}
 
   buildGraphicObjects(): void {
