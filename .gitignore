@@ -25,4 +25,5 @@ node_modules/*
 *.sw?
 
 # Sensitive data
+**/.env
 **/ssl/*
