@@ -1,64 +1,15 @@
 import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { socket } from '../NotificationContext/Notification'
+import { User, UserContextType, MatchData, MatchRatio, LeaderboardData } from '../../Types/User/Interfaces';
 
-export enum UserStatus {
-	Online = 'online',
-	Offline = 'offline',
-	InGame = 'ingame',
-	Idle = 'idle',
-}
-
-
-export interface matchRatio {
-	title: string;
-	value: number;
-	rate: number;
-}
-
-export interface leaderboardData {
-	user: User;
-	ratio: matchRatio[];
-}
-
-export interface matchData {
-	player1: string;
-	player2: string;
-	player1Score: string;
-	player2Score: string;
-	whoWon: string;
-	type: string;
-}
-
-export interface User {
-	id: number;
-	intraId: number;
-	nameNick: string | null;
-	nameIntra: string;
-	nameFirst: string;
-	nameLast: string;
-	email: string;
-	image: string | null;
-	greeting: string;
-	status: UserStatus;
-	friends: string[];
-	blocked: string[];
-	matchHistory: matchData[];
-}
-
-interface UserContextType {
-	user: User;
-	setUser: React.Dispatch<React.SetStateAction<User>>;
-}
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
-const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [user, setUser] = useState<User>({ id: 0 });
 	const navigate = useNavigate();
-
+	
 	useEffect(() => {
 		const validate = async () => {
 			try {
@@ -81,9 +32,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		};
 		validate();
 	}, [user.id]);
-
+	
 	return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
 };
+
+const BACKEND_URL: string = import.meta.env.URL_BACKEND;
 
 export const useUser = () => {
 	const context = useContext(UserContext);
@@ -126,9 +79,25 @@ export async function getUserFromDatabase(username: string, navigate: (path: str
 	}
 	catch (error)
 	{
-		console.error("ERROR: User not found!");
+		console.error("ERROR: User not found!", error);
 		navigate('/404');
 	}
+}
+
+export async function fetchUser(username: string): Promise<User | null>
+{
+	const request = new Request(BACKEND_URL + '/users/profile/fetchUser/' + username, {
+		method: "GET",
+	});
+	const response = await fetch(request);
+
+	const text = await response.text();
+	if (!text) {
+		return null;
+	}
+
+	return JSON.parse(text) as User;
+
 }
 
 export async function setNewNickname(username:string, nickname:string): Promise<string> {
@@ -158,6 +127,19 @@ export async function fetchFriend(friend:string): Promise<User> {
 	const response = await fetch(request)
 		.then((raw) => raw.json())
 		.then((json) => json as User)
+
+	return response;
+}
+
+export async function fetchOpponent(friend:string): Promise<User> {
+	const request = new Request(BACKEND_URL + '/users/profile/username/opponent/' + friend, {
+		method: "GET",
+	});
+
+	const response = await fetch(request)
+		.then((raw) => raw.json())
+		.then((json) => json as User)
+
 	return response;
 }
 
@@ -191,69 +173,62 @@ export async function unBlockFriend(username:string, friend:string): Promise<voi
 		console.log("ERROR: FAILED TO BLOCK USER!");
 }
 
-export async function changePFP(username:string, image:FormData): Promise<void> {
+export async function changePFP(username:string, image:FormData): Promise<string> {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/changepfp', {
 		method: "POST",
 		body: image,
 	});
 
-	const response = await fetch(request)
-	if (response.status == 400)
-		console.log("ERROR: INVALID IMAGE IN CHANGEPFP!");
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO FIND USER IN CHANGEPFP!");
-}
-
-
-export async function addFriend(username:string, friend:string): Promise<void> 
-{
-	socket.emit('sendFriendReq', {username: username, friend: friend});
-}
-
-export async function inviteToGame(username:string, friend:string): Promise<void> 
-{
-	socket.emit('sendGameInvite', {username: username, friend: friend});
-}
-
-export async function sendMessage(username:string, friend:string, message:string): Promise<void> 
-{
-	socket.emit('sendMessage', {username: username, friend: friend, message: message});
-}
-
-export async function fetchRatios(userProfile: User): Promise<matchRatio[]>
-{
-	const request = new Request(BACKEND_URL + '/users/profile/fetchRatio/' + userProfile.intraId.toString(), {
-		method: "GET",
-	});
-
 	try
 	{
 		const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as matchRatio[]);
-		return response;
+			.then((x) => x.text())
+		return (response);
 	}
 	catch (error)
 	{
-		console.error("ERROR: matchRatio[] not found!");
+		console.error("ERROR: matchRatio[] not found!" + error);
 	}
 }
 
-export async function fetchLeaderboard(): Promise<leaderboardData[][]>
+export async function fetchRatios(userProfile: User): Promise<MatchRatio[]>
 {
-	const request = new Request(BACKEND_URL + '/users/fetchLeaderboard/', {
-		method: "GET",
-	});
-
-	try
-	{
-		const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as leaderboardData[][]);
-		return response;
+	try {
+		const response = await axios.get<MatchRatio[]>(`${BACKEND_URL}/users/profile/fetchRatio/${userProfile.intraId.toString()}`, {
+			withCredentials: true,
+		});
+		const matches: MatchRatio[] = response.data;
+		return matches;
+	} catch (error)
+		{
+			console.error("ERROR: fetchRatios failed!");
+		// NB no matches found, this shouldn't happen!
 	}
-	catch (error)
-	{
-		console.error("ERROR: Leaderboard[] not found!");
+}
+
+export async function fetchLeaderboard(): Promise<LeaderboardData[][]>
+{
+	try {
+		const response = await axios.get<LeaderboardData[][]>(`${BACKEND_URL}/users/fetchLeaderboard`, {
+			withCredentials: true,
+		});
+		const leaderBoard: LeaderboardData[][] = response.data;
+		console.log(response.data);
+		return leaderBoard;
+	} catch (error) {
+		console.error("ERROR: Leaderboard[] not found!" + error);
 	}	
+}
+
+export async function fetchMatchData(user: User): Promise<MatchData[]> {
+
+	try {
+		const response = await axios.get<MatchData[]>(`${BACKEND_URL}/users/profile/${user.intraId.toString()}/matches`, {
+			withCredentials: true,
+		});
+		const matches: MatchData[] = response.data;
+		return matches;
+	} catch (error) {
+		console.error("ERROR: fetchMatchData failed!");
+	}
 }

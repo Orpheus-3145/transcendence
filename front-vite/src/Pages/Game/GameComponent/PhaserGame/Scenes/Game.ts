@@ -1,12 +1,12 @@
 import { io, Socket } from 'socket.io-client';
 
-import BaseScene from './Base';
-import { GameDifficulty, GameMode, PaddleDirection, PowerUpType } from '../../Types/Enum';
-import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '../../Types/Interfaces';
-import Ball from '../GameObjects/Ball';
-import PowerUpBall from '../GameObjects/PowerUpBall';
-import Paddle from '../GameObjects/Paddle';
-import Field from '../GameObjects/Field';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import { GameDifficulty, GameMode, PaddleDirection, PowerUpSelected, PowerUpType } from '/app/src/Types/Game/Enum';
+import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '/app/src/Types/Game/Interfaces';
+import Ball from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Ball';
+import PowerUpBall from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/PowerUpBall';
+import Paddle from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Paddle';
+import Field from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Field';
 
 
 export default class GameScene extends BaseScene {
@@ -25,7 +25,8 @@ export default class GameScene extends BaseScene {
 	private _widthRatio!: number;
 	private _heightRatio!: number;
 
-	private _powerUpSelection!: Array<PowerUpType>;
+	private _powerUpSelection!: PowerUpSelected;
+	// private _powerUpSelection!: Array<PowerUpType>;
 	private _powerUpType!: PowerUpType | null;
 	private _powerUpActive!: { [key: number]: boolean }; // Tracks if a player has the power-up
 
@@ -54,14 +55,14 @@ export default class GameScene extends BaseScene {
 	init(data: GameData): void {
 		super.init();
 
-		this._id = this.registry.get('user42data').id;
+		this._id = this.registry.get('user42data').intraId;
 		this._nameNick = this.registry.get('user42data').nameNick;
 
 		this._sessionToken = data.sessionToken;
 		this._mode = data.mode;
 		this._difficulty = data.difficulty;
 		this._powerUpSelection = data.extras;
-		
+
 		this._gameState = {
 			ball: { x: 0, y: 0 },
 			p1: { y: 0 },
@@ -71,11 +72,11 @@ export default class GameScene extends BaseScene {
 		this._powerUpState = null;
 		this._gameStarted = false;
 		this._keepConnectionOpen = false;
-		
+
 		this._gameSizeBackEnd = {width: 0, height: 0}
 		this._widthRatio = 0;
 		this._heightRatio = 0;
-		
+
 		this._powerUpActive = { 0: false, 1: false };
 		this._powerUpType = null;
 

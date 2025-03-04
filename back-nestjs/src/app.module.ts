@@ -11,6 +11,7 @@ import { Notification } from './entities/notification.entity';
 import { Message, Channel, ChannelMember } from './entities/chat.entity';
 import { ChatModule } from './chat/chat.module';
 import { NotificationModule } from './notification/notification.module';
+import Game from './entities/game.entity';
 
 
 @Module({
@@ -28,7 +29,7 @@ import { NotificationModule } from './notification/notification.module';
 				username: configService.get<string>('POSTGRES_USER'),
 				password: configService.get<string>('POSTGRES_PASSWORD'),
 				database: configService.get<string>('POSTGRES_DB'),
-				entities: [User, Channel, ChannelMember, Message, Notification], // List your entities here
+				entities: [User, Notification, Message, Channel, ChannelMember, Game], // List your entities here
 				synchronize: true,
 				// logging: true,
 			}),

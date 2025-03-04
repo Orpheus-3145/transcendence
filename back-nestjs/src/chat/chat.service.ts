@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message, Channel, ChannelMember } from 'src/entities/chat.entity';
 import {ChatDTO } from '../dto/chat.dto'
+import { NotificationService } from 'src/notification/notification.service';
+import { UsersService } from 'src/users/users.service';
+import User from 'src/entities/user.entity';
+import {Notification} from 'src/entities/notification.entity'
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class ChatService {
@@ -15,6 +20,14 @@ export class ChatService {
 
 		@InjectRepository(Message)
 		private readonly messageRepository: Repository<Message>,
+
+		@Inject(forwardRef(() => UsersService))
+		private readonly userService: UsersService,
+
+		@Inject(forwardRef(() => NotificationService))
+		private readonly notificationService: NotificationService,
+
+		private readonly notificationGateway: NotificationGateway,
 	) {}
 
 	// // Create or find a channel
@@ -133,15 +146,46 @@ export class ChatService {
 	  await this.channelMemberRepository.delete({ user_id, channel_id });
 	}
 
-	async saveMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {
-		const channel = await this.channelRepository.findOne({
+	// Send a message
+	// async sendMessage( sender_id: number, receiver_id: number, content: string ,
+	// ): Promise<Message> {
+	// 	const message = this.messageRepository.create({
+	// 		sender_id,
+	// 		receiver_id,
+	// 		content,
+	// 	});
+
+	// 	// const updatedMessages = await this.messageRepository.find({
+	// 	// 	where: { receiver_id },
+	// 	// 	relations: ['sender'],
+	// 	// });
+
+	// 	return this.messageRepository.save(message);
+	// }
+
+	async saveMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {	
+		const channel: Channel = await this.channelRepository.findOne({
 		  where: { channel_id: receiver_id },
 		});
-	  
+
 		if (!channel) {
 		  throw new Error(`Channel with id ${receiver_id} not found`);
 		}
-	  
+
+		var members: ChannelMember[] = await this.channelMemberRepository.find({where: {channel_id: channel.channel_id}});		
+		members.map(async (member: ChannelMember) =>
+		{
+			if (member.user_id != sender_id)
+			{
+				var user: User = await this.userService.findOneId(member.user_id);
+				if (user != null)
+				{
+					var noti: Notification = await this.notificationService.initGroupMessage(channel, user, content);
+					await this.notificationGateway.sendNotiToFrontend(noti);
+				}
+			}
+		});
+
 		const message = this.messageRepository.create({
 		  sender_id,
 		  content,

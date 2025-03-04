@@ -1,4 +1,4 @@
-import { GameDifficulty, GameMode, PowerUpType } from "./Enum";
+import { GameDifficulty, GameMode, PowerUpSelected, PowerUpType } from "./Enum";
 
 
 export interface PlayerData {
@@ -11,7 +11,7 @@ export interface GameData {
 	sessionToken: string;
 	mode: GameMode;
 	difficulty: GameDifficulty;
-	extras: Array<PowerUpType>;
+	extras: PowerUpSelected;
 }
 
 export interface GameState {
@@ -45,4 +45,9 @@ export interface PowerUpStatus {
 	active: boolean;
 	player: number;
 	type: PowerUpType;
+}
+
+export interface GameContextType {
+  gameData: GameData;
+  setGameData: (value: GameData) => void;
 }

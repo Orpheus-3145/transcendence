@@ -28,3 +28,56 @@ export enum PowerUpType {
 	shrinkPaddle = 'shrinkPaddle',
 	stretchPaddle = 'stretchPaddle'
 }
+
+export enum PowerUpSelected {
+  noPowerUp = 0,        	// (00000)
+  speedBall = 1 << 0, 		// (00001)
+  speedPaddle = 1 << 1, 	// (00010)
+  slowPaddle = 1 << 2, 		// (00100)
+  shrinkPaddle = 1 << 3, 	// (01000)
+  stretchPaddle = 1 << 4  // (10000)
+}
+
+export function fromMaskToArray(values: PowerUpSelected): Array<PowerUpType> {
+		
+	let powerUps: Array<PowerUpType> = [];
+
+	if ( values & PowerUpSelected.speedBall)
+		powerUps.push(PowerUpType.speedBall);
+
+	if ( values & PowerUpSelected.speedPaddle)
+		powerUps.push(PowerUpType.speedPaddle);
+
+	if ( values & PowerUpSelected.slowPaddle)
+		powerUps.push(PowerUpType.slowPaddle);
+
+	if ( values & PowerUpSelected.shrinkPaddle)
+		powerUps.push(PowerUpType.shrinkPaddle);
+
+	if ( values & PowerUpSelected.stretchPaddle)
+		powerUps.push(PowerUpType.stretchPaddle);
+
+	return powerUps;
+}
+
+export function fromArrayToMask(values: Array<PowerUpType>): PowerUpSelected {
+
+	let powerUps: PowerUpSelected = PowerUpSelected.noPowerUp;
+
+	if ( values.includes(PowerUpType.speedBall) )
+		powerUps |= PowerUpSelected.speedBall;
+
+	if ( values.includes(PowerUpType.speedPaddle) )
+		powerUps |= PowerUpSelected.speedPaddle;
+
+	if ( values.includes(PowerUpType.slowPaddle) )
+		powerUps |= PowerUpSelected.slowPaddle;
+
+	if ( values.includes(PowerUpType.shrinkPaddle) )
+		powerUps |= PowerUpSelected.shrinkPaddle;
+
+	if ( values.includes(PowerUpType.stretchPaddle) )
+		powerUps |= PowerUpSelected.stretchPaddle;
+
+	return powerUps;
+}

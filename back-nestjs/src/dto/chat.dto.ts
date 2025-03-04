@@ -1,6 +1,6 @@
 import { IsArray, IsInt , IsEnum, IsOptional, IsString, MaxLength, ValidateNested, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
-import { UserDTO } from './user.dto';
+import UserDTO from './user.dto';
 import { MessageDTO } from './message.dto';
 import { ChannelMember } from 'src/entities/chat.entity';
 // import { each } from 'cheerio/dist/commonjs/api/traversing';

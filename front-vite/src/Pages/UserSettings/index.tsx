@@ -46,10 +46,7 @@ const UserSettings: React.FC = () => {
 	const check2FAStatus = async () => {
 		try {
 			const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`);
-			console.log("Check backend 2fa status: ", response.data.is2FAEnabled);
-		} catch (error) {
-			console.error('Error fetching 2FA status:', error);
-		}
+		} catch (error) {}
 	};
 	// Fetch 2FA status on mount
 	useEffect(() => {
@@ -57,9 +54,7 @@ const UserSettings: React.FC = () => {
 			try {
 				const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`);
 				setIs2FAEnabled(response.data.is2FAEnabled);
-			} catch (error) {
-				console.error('Error fetching 2FA status:', error);
-			}
+			} catch (error) {}
 		};
 		fetch2FAStatus();
 	}, [intraId]);
@@ -83,18 +78,14 @@ const UserSettings: React.FC = () => {
 			try {
 				const response = await axios.post(import.meta.env.URL_BACKEND_2FA_DELETE + `?intraId=${intraId}`);
 				setIs2FAEnabled(false);
-				console.log("comes here!");
 				check2FAStatus();
-			} catch (error) {
-				console.error('Error disabling 2FA:', error);
-			}
+			} catch (error) {}
 		}
 	};
 
 	// Verify Code After Scanning QR
 	const handleVerifyQR = async () => {
 		try {
-			console.log("Sending data:", { intraId, secret, verificationCode });
 			const response = await axios.post(import.meta.env.URL_BACKEND_QR_VERIFY, {
 				intraId,
 				secret,
@@ -317,14 +308,14 @@ const UserSettings: React.FC = () => {
 	}
 	
 	let getUserProfile = async () : Promise<void> =>
+	{
+		const tmp = await getUserFromDatabase(user.id.toString(), navigate);
+		
+		if (user.id == tmp.id)
 		{
-			const tmp = await getUserFromDatabase(user.id.toString(), navigate);
-	
-			if (user.id == tmp.id)
-			{
-				setBlockedList(tmp.blocked);
-			}
+			setBlockedList(tmp.blocked);
 		}
+	}
 		
 	useEffect(() => 
 	{

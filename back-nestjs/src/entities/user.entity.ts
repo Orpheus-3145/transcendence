@@ -1,30 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Unique } from 'typeorm';
 import { IsAscii, Length, validateOrReject } from 'class-validator';
-
 import { UserStatus } from 'src/dto/user.dto';
+import Game from './game.entity';
 
-export interface matchData {
-	player1: string;
-	player2: string;
-	player1Score: string;
-	player2Score: string;
-	whoWon: string;
-	type: string;
-}
 
-export interface matchRatio {
-	title: string;
-	value: number;
-	rate: number;
-}
 
-export interface leaderboardData {
-	user: User;
-	ratio: matchRatio[];
-}
-
-@Entity()
-@Unique(['nameNick'])
+@Entity('Users')
 export default class User {
 	@PrimaryGeneratedColumn()
 	id: number;
@@ -51,7 +32,6 @@ export default class User {
 
 	@Column({ nullable: false })
 	email: string;
-	
 
 	@Column({ nullable: true, default: 'default_profile_photo.png' })
 	image: string | null;
@@ -61,9 +41,6 @@ export default class User {
 
 	@Column("text", { array: true, default: '{}' })
 	blocked: string[];
-
-	@Column({ type: 'jsonb', default: () => "'[]'" })
-	matchHistory: matchData[];
 
 	@Column({ nullable: true, default: 'Hello, I have just landed!', length: 100 })
 	@IsAscii()
@@ -82,6 +59,12 @@ export default class User {
 
 	@CreateDateColumn()
 	createdAt: Date;
+
+	@OneToMany(() => Game, (game) => game.player1)
+	player1Game: Game[];
+
+	@OneToMany(() => Game, (game) => game.player2)
+	player2Game: Game[];
 
 	async validate() {
 		await validateOrReject(this);

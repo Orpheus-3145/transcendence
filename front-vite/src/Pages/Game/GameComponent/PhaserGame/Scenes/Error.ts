@@ -1,4 +1,4 @@
-import BaseScene from './Base';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 
 export default class ErrorScene extends BaseScene {
 	private _errorTrace: string = '';

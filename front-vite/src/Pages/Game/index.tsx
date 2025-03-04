@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Container, Stack, Box, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { styled } from '@mui/system';
-import GameComponent from './GameComponent';
+
+import GameComponent from '/app/src/Pages/Game/GameComponent';
 
 
 const HistoryBox = styled(Box)(({ theme }) => ({

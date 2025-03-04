@@ -9,7 +9,7 @@ import { WebSocketGateway,
 import { Server, Socket } from 'socket.io';
 
 import { ChatService } from './chat.service';
-import { UserDTO } from '../dto/user.dto';
+import UserDTO from '../dto/user.dto';
 import { ChatDTO } from '../dto/chat.dto';
 import { Channel } from '../entities/chat.entity';
 
@@ -141,6 +141,12 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			console.error(`Error leaving channel: ${error.message}`);
 			client.emit('leavingChannelError', { message: 'Could not leave channel' });
 		}
+	}
+
+	@SubscribeMessage('kickUserFromChannel')
+	async kickUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	{
+		this.chatService.removeUserFromChannel(data.userid, data.channelid, "");
 	}
 
 	@SubscribeMessage('sendMessage')
