@@ -27,6 +27,7 @@ import {	User,
 			MatchData,
 			MatchRatio, } from '../../Types/User/Interfaces';
 import {UserStatus} from '../../Types/User/Enum';
+import { GameInviteModal } from '../Game/inviteModal';
 
 const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
@@ -57,14 +58,11 @@ const ProfilePageOther: React.FC = () => {
 	const messageBlockedSend: string = "User has been blocked!";
 	const messageUserBlocked: string = "This user has been blocked! Unblock him before doing the action!";
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
-	const [speedball, setSpeedball] = useState<boolean>(false);
-	const [speedpaddle, setSpeedpaddle] = useState<boolean>(false);
-	const [slowpaddle, setSlowpaddle] = useState<boolean>(false);
-	const [shrinkpaddle, setShrinkpaddle] = useState<boolean>(false);
-	const [stretchpaddle, setStretchpaddle] = useState<boolean>(false);
 	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
-	const [modalOpen, setModalOpen] = React.useState(false);
+	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
+	const [modalOpen, setModalOpen] = useState<Boolean>(false);
+
 
 	let redirectFriend = (id:number) =>
 	{
@@ -677,46 +675,6 @@ const ProfilePageOther: React.FC = () => {
 			setModalOpen(true);
 	};
 
-	const handleSpeedball = () =>
-	{
-		if (!speedball)
-			setSpeedball(true);
-		else
-			setSpeedball(false);
-	}
-
-	const handleSpeedpaddle = () =>
-	{
-		if (!speedpaddle)
-			setSpeedpaddle(true);
-		else
-			setSpeedpaddle(false);
-	}
-		
-	const handleSlowpaddle = () =>
-	{
-		if (!slowpaddle)
-			setSlowpaddle(true);
-		else
-			setSlowpaddle(false);
-	}
-		
-	const handleShrinkpaddle = () =>
-	{
-		if (!shrinkpaddle)
-			setShrinkpaddle(true);
-		else
-			setShrinkpaddle(false);
-	}
-
-	const handleStretchpaddle = () =>
-	{
-		if (!stretchpaddle)
-			setStretchpaddle(true);
-		else
-			setStretchpaddle(false);
-	}
-
 	let InviteToGameIcon = () => 
 	{
 		var top = '-175px';
@@ -751,91 +709,13 @@ const ProfilePageOther: React.FC = () => {
 					<GameIcon fontSize="inherit"/>
 				</IconButton>
 			</Tooltip>
-						<Modal open={modalOpen} onClose={handleModalClose}>
-				<Stack
-					bgcolor={theme.palette.primary.dark} 
-					width="700px"
-					height="450px"
-					borderRadius={2} 
-					margin="auto" 
-					mt="10%"
-					display="flex"
-					justifyContent="center"
-					alignItems="center"
-				>
-					<Typography 
-						variant={'h4'}
-						sx={{
-							position: 'relative',
-							top : '-80px',
-						}}
-					>
-						Game Invitiation
-					</Typography>
-					<Typography 
-						variant={'h5'}
-						sx={{
-							position: 'relative',
-							top : '-40px',
-						}}
-					>
-						Select Power ups or leave empty for a Normal game
-					</Typography>
-					<Typography variant={'h6'}>
-						Power ups:
-					</Typography>
-					<Box
-						display="flex"
-						justifyContent="center"
-						alignItems="center"
-						sx={{
-							position:'relative',
-							top: '10px',
-						}}
-					>
-						<Button
-							variant={speedball ? 'contained' : 'outlined'}
-							onClick={() => handleSpeedball()}
-						>
-							SpeedBall
-						</Button>
-						<Button
-							variant={speedpaddle ? 'contained' : 'outlined'}
-							onClick={() => handleSpeedpaddle()}
-						>
-							SpeedPaddle
-						</Button>
-						<Button
-							variant={slowpaddle ? 'contained' : 'outlined'}
-							onClick={() => handleSlowpaddle()}
-						>
-							SlowPaddle
-						</Button>
-						<Button
-							variant={shrinkpaddle ? 'contained' : 'outlined'}
-							onClick={() => handleShrinkpaddle()}
-						>
-							ShrinkPaddle
-						</Button>
-						<Button
-							variant={stretchpaddle ? 'contained' : 'outlined'}
-							onClick={() => handleStretchpaddle()}
-						>
-							StretchPaddle
-						</Button>
-					</Box>
-					<Button
-						variant={'contained'}
-						onClick={() => InviteToGame()}
-						sx={{
-							position: 'relative',
-							top: '60px',
-						}}
-					>
-						Send Invite
-					</Button>
-				</Stack>
-						</Modal>
+			{modalOpen && 
+				<GameInviteModal 
+					open={modalOpen} 
+					onClose={() => InviteToGame()} 
+					setValue={(revalue: PowerUpSelected) => {setPowerupValue(revalue)}} 
+				/>
+			}
 			{showMessageGR && (	
 				<Stack
 				sx={{
@@ -853,24 +733,6 @@ const ProfilePageOther: React.FC = () => {
 		);
 	}
 
-	let calculatePowerups = () =>
-	{
-		var value = PowerUpSelected.noPowerUp; 
-		
-		if (speedball)
-			value |= PowerUpSelected.speedBall;
-		if (speedpaddle)
-			value |= PowerUpSelected.speedPaddle;
-		if (slowpaddle)
-			value |= PowerUpSelected.slowPaddle;
-		if (shrinkpaddle)
-			value |= PowerUpSelected.shrinkPaddle;
-		if (stretchpaddle)
-			value |= PowerUpSelected.stretchPaddle;
-
-		return (value);
-	}
-
 	let InviteToGame = () => {
 		handleModalClose();
 		if (checkIfBlocked() == true)
@@ -880,8 +742,7 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageGR(true);
 		setShowMessageBL(false);
 
-		var powerup = calculatePowerups();
-		inviteToGame(user.id.toString(), userProfile.id.toString(), powerup);
+		inviteToGame(user.id.toString(), userProfile.id.toString(), powerupValue);
 	}
 
 	const CheckChangeMessage = () => 

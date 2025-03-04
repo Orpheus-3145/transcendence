@@ -5,9 +5,10 @@ import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, Me
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
 import { userInChannel, userIsAdmin } from '../Channels/index';
-import { fetchUser, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
+import { fetchOpponent, fetchUser, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
 import { socket } from '../../Layout/Chat/ChatContext';
 import { prev } from 'cheerio/dist/commonjs/api/traversing';
+import { useNavigate } from 'react-router-dom';
 
 // User test data
 // const testUser = {
@@ -50,6 +51,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const [label, setLabel] = useState<string>("Add Friend");
 	const theme = useTheme();
 	const { user } = useUser();
+	const [banned, setbanned] = useState<Map<string, User>>(new Map());
 
 	// console.log(user);
 
@@ -73,7 +75,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				icon: <Avatar src={tmp.image}/>
 			};
 
-			if (settings.users.find((tmp: UserProps) => tmp.id === newUser.id))
+			if (settings.banned.find((item: string) => item === newUser.id.toString()))
+			{
+				setFriendName('');
+				setLabel("User has been banned!");
+				return ;
+			}
+
+			if (settings.users.find((item: UserProps) => item.id === newUser.id))
 			{
 				setFriendName('');
 				setLabel("User already added!");
@@ -98,22 +107,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleKickFriend = (user: UserProps) => 
 	{
-		console.log('"Kick Friend" clicked!');
-		const updatedUsers = settings.users.filter(item => item.id !== user.id);
+		const updatedUsers = settings.users.filter((item: UserProps) => item.id !== user.id);
 		setSettings({ ...settings, users: updatedUsers });
 
 		socket.emit('kickUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
 	};
 
-	const handleBanFriend = (name: string) => {
-		//--> CALL TO BACKEND <-- //
+	const handleBanFriend = (user: UserProps) => 
+	{
+		const updatedUsers = settings.users.filter((item: UserProps) => item.id !== user.id);
+		const tmp: string[] = settings.banned;
+		tmp.push(user.id.toString());
+		setSettings({...settings, users: updatedUsers, banned: tmp});
 
-		console.log('"Ban Friend" clicked!');
-		// const updatedUsers = settings.users.filter(user => user.name !== name);
-		// setSettings({ ...settings, users: updatedUsers });
+		socket.emit('banUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
 	};
 
-	const handleBlockFriend = (name: string) => {
+	const handleUnbanFriend = (user: User) => 
+	{
+		const updatedUsers = settings.banned.filter((item: string) => item !== user.id.toString());
+		setSettings({...settings, banned: updatedUsers});
+
+		socket.emit('unbanUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
+	};
+
+	const handleBlockFriend = (user: UserProps) => {
 		//--> CALL TO BACKEND <-- //
 
 		console.log('"Block Friend" clicked!');
@@ -249,6 +267,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		}
 	};
 
+	const fetchbanned = async (bannedId: string) => {
+		const banned = await fetchOpponent(bannedId);
+		setbanned((prev) => new Map(prev).set(bannedId, banned));
+	};
+
+	let showBanned =  (id: string) =>
+	{
+		var user = banned.get(id);
+
+		if (!user) {
+			fetchbanned(id);
+			return <Stack>Loading...</Stack>;
+		}
+
+		return (
+			<Stack direction="row" spacing={5.3}>
+				<Typography sx={{whiteSpace: 'pre-line'}} >
+					{user.nameNick?.length > 10 ? user.nameNick.slice(0, 9) + '...' : user.nameNick}
+				</Typography>
+				<Button variant="contained" size="small" onClick={() => handleUnbanFriend(user)}>Unban</Button>
+			</Stack>
+
+		);
+	}
 
 	// console.log(selectedChannel.settings.owner, user.nameIntra);
 	return (
@@ -284,7 +326,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					)}
 					{/* Add Friend */}
 						<TextField
-						label="Add Friend"
+						label={label}
 						value={friendName}
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFriendName(e.target.value)}
 						fullWidth
@@ -333,7 +375,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					<Stack spacing={1} mt={2}>
 					<Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
 					<Divider />
-					{settings.users.map(_user => (
+					{settings.users.map((_user: UserProps) => (
 						<Stack direction="row" justifyContent="space-between" alignItems="center" key={_user.id}>
 						<Typography sx={{whiteSpace: 'pre-line'}} >
 								{_user.name?.length > 10 ? _user.name.slice(0, 9) + '...' : _user.name}
@@ -351,15 +393,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							<Button sx={{width: '120px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(_user.id, _user.role)}>
 								{_user.role === 'admin' ? 'Make Member' : 'Make Admin' }
 							</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(_user.name)}>Kick</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(_user.name)}>Ban</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(_user.name)}>Block</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(_user)}>Kick</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(_user)}>Ban</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(_user)}>Block</Button>
 						</Stack>
 						)}
 						</Stack>
 					))}
 					</Stack>
-				</Box>	
+				</Box>
+				{(selectedChannel.settings.owner === user.nameIntra ||
+							userIsAdmin(user.nameNick, selectedChannel)) && (
+					<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
+						<Stack spacing={1} mt={2}>
+						<Typography variant="h6" sx={{textAlign: 'center'}}>Banned</Typography>
+						<Divider />
+						{settings.banned.map((item: string) => (showBanned(item)))}
+						</Stack>
+					</Box>
+				)}
 			</Box>
 			) : (
 				<Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
@@ -377,7 +429,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						<Stack spacing={1} mt={2}>
 						<Typography variant="h6" sx={{textAlign: 'center'}}>Users</Typography>
 						<Divider />
-						{settings.users.map(_user => (
+						{settings.users.map((_user: UserProps) => (
 							<Stack direction="row" justifyContent="space-between" alignItems="center" key={_user.id}>
 							<Typography sx={{whiteSpace: 'pre-line'}} >
 									{_user.name?.length > 10 ? _user.name.slice(0, 9) + '...' : _user.name}

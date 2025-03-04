@@ -139,6 +139,18 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		this.chatService.removeUserFromChannel(data.userid, data.channelid, "");
 	}
 
+	@SubscribeMessage('banUserFromChannel')
+	async banUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	{
+		this.chatService.banUserFromChannel(data.userid, data.channelid);
+	}
+
+	@SubscribeMessage('unbanUserFromChannel')
+	async unbanUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	{
+		this.chatService.unbanUserFromChannel(data.userid, data.channelid);
+	}
+
 	@SubscribeMessage('sendMessage')
 	async handleSendMessage(
 	  @MessageBody() messageData: { sender_id: number, receiver_id: number, content: string },
