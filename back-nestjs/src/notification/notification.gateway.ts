@@ -46,9 +46,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		private userService: UsersService
 	) {};
 
-	handleConnection(client: Socket) {
-		console.log(`Noti Client connected: ${client.id}`);
-	}
+	handleConnection(client: Socket) {}
 
 	handleDisconnect(client: Socket) {
 		var websock: Websock = this.sockets.find((socket) => socket.client.id === client.id);
