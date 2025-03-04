@@ -54,6 +54,12 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 	return found ? true : false;
 };
 
+export const userBanned = (userName: string, channel: ChatRoom): boolean =>
+{
+	const found = channel.settings.banned.find((user) => user === userName);
+	return found ? true : false;
+}
+
 //////////////////////////////////////////////////////////////////////
 
 let joinedRooms: number[] = [];
@@ -62,6 +68,7 @@ const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
 	// console.log(user.id);
 	
+	let passwordOk = false;
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const [channelName, setChannelName] = useState('');
@@ -103,13 +110,6 @@ const ChannelsPage: React.FC = () => {
 
 		// }
 	}, [chatProps.chatRooms])
-
-	// useEffect(() => {
-	// 	if (selectedAvailableChannel &&
-	// 		selectedAvailableChannel.settings.type === 'public') {
-	// 		handleJoinAvailableChannel();
-	// 	}
-	// }, [selectedAvailableChannel]);
 
 	useEffect(() => {
 		const fetchUsers = async () => {
@@ -177,6 +177,7 @@ const ChannelsPage: React.FC = () => {
 								icon: <Avatar />,
 							})),
 							owner: newChannel.ch_owner,
+							banned: newChannel.banned,
 						},
 						isDirectMessage: newChannel.isDirectMessage,
 					},
@@ -262,84 +263,98 @@ const ChannelsPage: React.FC = () => {
 		joinRoom(channel.id)
 	};
 //////////////////////////////////////////////////////////////////////
+	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
+		event.preventDefault();
+		console.log(enteredChannelPass, selectedChannel.settings.password);
+		if (enteredChannelPass !== selectedChannel.settings.password) {
+			alert("Incorrect password!");
+			setEnteredChannelPass('');
+		} 
+		else {
+			passwordOk = true;
+			setIsPasswordModal(false);
+			handleAvailableChannelClick(event, selectedChannel);
+		}
+	};
 
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
 		console.log('Available channel clicked!');
-	
-		setSelectedAvailableChannel(channel);
-		setIsSettingsView(false);
-		setIsAddingChannel(false);
-	
-		if (channel.settings.type === 'password') {
+		if (!passwordOk && channel.settings.type === 'password' ) {
+			setSelectedChannel(channel);
 			setIsPasswordModal(true);
-		}
-
-		setIsPasswordModal(false);
-
-		const data = {
-			channel_id: channel.id,
-			user_id: user.id,
-			name: user.nameIntra,
-		};
-
-		socket.emit('joinChannel', data);
-
-		socket.once('joinedChannel', (response) => {
-			console.log('joinedChannel response from gateway:', response);
-			if (response.channel_id === channel.id) {
-
-				// setChatProps((prevState) => ({
-				// 	...prevState,
-				// 	chatRooms: [...prevState.chatRooms, channel],
-				// }));
-
-				// setChatProps((prevState) => {
-				// 	const updatedChatRooms = [
-				// 		...prevState.chatRooms.filter((ch) => ch.id !== channel.id), 
-				// 		channel,
-				// 	];
+			// return ;
+		} 
+		else {
+			setIsSettingsView(false);
+			setIsAddingChannel(false);
+			setSelectedChannel(channel);
+			setIsPasswordModal(false);
+			const data = {
+				channel_id: channel.id,
+				user_id: user.id,
+				name: user.nameIntra,
+			};
 	
-				// 	return { ...prevState, chatRooms: updatedChatRooms };
-				// });
-
-				// console.log('Available ch before: ', availableChannels);
-				// console.log('chatProps.chatRooms before filter: ', chatProps.chatRooms);
-
-				// const updatedChannel = { ...selectedChannel }; 
-				const updatedChannel: ChatRoom = {
-					...channel,
-					settings: {
-						...channel.settings,
-						users: [
-							...channel.settings.users,
-							{
-								id: user.id,
-								name: user.nameIntra,
-								role: 'member',
-								icon: <Avatar />,
-							},
-						],
-					},
-				}; 
-				
-				setAvailableChannels((prevState) => prevState.filter((ch) => ch.id !== channel.id));
-
-				setJoinedChannels((prevState) => [...prevState, updatedChannel]);
-
-				// console.log('chatProps.chatRooms after filter: ', chatProps.chatRooms);
-
-				// console.log('Available ch after: ', availableChannels);
-
-				// setSelectedChannel(null);
-			} 
-
-		});
-
-		socket.once('joinChannelError', (error) => {
-			console.error(error.message);
-			alert(`Error joining channel: ${error.message}`);
-		});
+			socket.emit('joinChannel', data);
+	
+			socket.once('joinedChannel', (response) => {
+				console.log('joinedChannel response from gateway:', response);
+				if (response.channel_id === channel.id) {
+	
+					// setChatProps((prevState) => ({
+					// 	...prevState,
+					// 	chatRooms: [...prevState.chatRooms, channel],
+					// }));
+	
+					// setChatProps((prevState) => {
+					// 	const updatedChatRooms = [
+					// 		...prevState.chatRooms.filter((ch) => ch.id !== channel.id), 
+					// 		channel,
+					// 	];
+		
+					// 	return { ...prevState, chatRooms: updatedChatRooms };
+					// });
+	
+					// console.log('Available ch before: ', availableChannels);
+					// console.log('chatProps.chatRooms before filter: ', chatProps.chatRooms);
+	
+					// const updatedChannel = { ...selectedChannel }; 
+					const updatedChannel: ChatRoom = {
+						...channel,
+						settings: {
+							...channel.settings,
+							users: [
+								...channel.settings.users,
+								{
+									id: user.id,
+									name: user.nameIntra,
+									role: 'member',
+									icon: <Avatar />,
+								},
+							],
+						},
+					}; 
+					
+					setAvailableChannels((prevState) => prevState.filter((ch) => ch.id !== channel.id));
+	
+					setJoinedChannels((prevState) => [...prevState, updatedChannel]);
+	
+					// console.log('chatProps.chatRooms after filter: ', chatProps.chatRooms);
+	
+					// console.log('Available ch after: ', availableChannels);
+	
+					// setSelectedChannel(null);
+				} 
+	
+			});
+	
+			socket.once('joinChannelError', (error) => {
+				console.error(error.message);
+				alert(`Error joining channel: ${error.message}`);
+			});
+		}
+		
 
 	};
 
@@ -425,34 +440,6 @@ const ChannelsPage: React.FC = () => {
 	};
 //////////////////////////////////////////////////////////////////////
 	
-	// const handleSendMessage = () => {
-	// 	if (newMessage && selectedChannel) {
-	// 		const newChatMessage: ChatMessage = {
-	// 			message: newMessage,
-	// 			user: <Typography>{user.nameIntra}</Typography>,
-	// 			userPP: <Typography>img</Typography>,
-	// 			timestamp: new Date().toLocaleTimeString(),
-	// 		};
-
-	// 		setChatProps((prevProps) => ({
-	// 			...prevProps,
-	// 			chatRooms: prevProps.chatRooms.map(room => 
-	// 				room.id === selectedChannel.id
-	// 					? {...room, messages: [...room.messages, newChatMessage]}
-	// 					: room
-	// 			),
-	// 		}));
-	// 		setSelectedChannel((prevState) => ({
-	// 			...prevState,
-	// 			messages: [...prevState.messages, newChatMessage]
-	// 		}));
-
-	// 		socket.emit('sendMessage', {client_id: user.id, channel_id: selectedChannel.id, message: newMessage});
-
-	// 		setNewMessage('');
-	// 	}
-	// };
-
 	const handleSendMessage = () => {
 		// console.log(user.id);
 		if (newMessage && selectedChannel) {
@@ -507,88 +494,11 @@ const ChannelsPage: React.FC = () => {
 		  }
 
 		});
-
-
-	  
 		return () => {
-		  socket.off('newMessage'); // Cleanup listener
+		  socket.off('newMessage');
 		};
-	  }, [selectedChannel]);  // Only run once when the component mounts
+	}, [selectedChannel]);
 	  
-
-
-	//   useEffect(() => {
-	// 	socket.on('newMessage', (message) => {
-	// 	  console.log('Before update:', chatProps.chatRooms);
-	  
-	// 	  setChatProps((prevProps) => {
-	// 		const updatedRooms = prevProps.chatRooms.map((room) =>
-	// 		  room.id === message.receiver_id
-	// 			? { ...room, messages: [...room.messages, message] }
-	// 			: room
-	// 		);
-	  
-	// 		console.log('After update:', updatedRooms);
-	// 		return { ...prevProps, chatRooms: updatedRooms };
-	// 	  });
-	// 	});
-	  
-	// 	return () => socket.off('newMessage');
-	//   }, []);
-	  
-	//   useEffect(() => {
-	// 		console.log('updated channels:', chatProps.chatRooms);
-	// 	}, [chatProps.chatRooms]);
-	
-	// 	useEffect(() => {
-	// 		const handleNewMessage = (message) => {
-	// 		  console.log('Received new message:', message);
-	// 		  setChatProps((prevProps) => ({
-	// 			...prevProps,
-	// 			chatRooms: prevProps.chatRooms.map((room) =>
-	// 			  room.id === message.receiver_id
-	// 				? { ...room, messages: [...room.messages, message] }
-	// 				: room
-	// 			),
-	// 		  }));
-	// 		};
-		  
-	// 		socket.on('newMessage', handleNewMessage);
-		  
-	// 		return () => {
-	// 		  socket.off('newMessage', handleNewMessage); // ✅ Proper cleanup
-	// 		};
-	// 	  }, []); // ✅ Empty dependency array ensures it runs only once
-		  
-
-
-	// useEffect(() => {
-	// 	const handleNewMessage = (newMessage) => {
-	// 		// console.log('Updated messages for channel:', updatedMessages);
-	//         console.log('Received new message:', newMessage);
-
-	// 		setChatProps((prevState) => ({
-	// 			...prevState,
-	// 			chatRooms: prevState.chatRooms.map((room) =>
-	// 				room.id === newMessage.channel_id
-	// 					? { ...room, messages: [...room.messages, newMessage.message] } // Update with full messages list
-	// 					: room
-	// 			),
-	// 		}));
-
-	// 		setSelectedChannel((prevState) =>
-	// 			prevState.id === newMessage.channel_id
-	// 				? { ...prevState, messages: [...prevState.messages, newMessage.message] }
-	// 				: prevState
-	// 		);
-	// 	};
-	
-	// 	socket.on('newMessage', handleNewMessage);
-	
-	// 	return () => {
-	// 		socket.off('newMessage', handleNewMessage);
-	// 	};
-	// }, [])
 
 //////////////////////////////////////////////////////////////////////
 
@@ -600,82 +510,68 @@ const ChannelsPage: React.FC = () => {
 	};
 //////////////////////////////////////////////////////////////////////
 
-	const handleJoinAvailableChannel = () => {
+	// const handleJoinAvailableChannel = () => {
 		
-		if (!selectedAvailableChannel) {
-			return;
-		}
-		setIsPasswordModal(false);
+	// 	if (!selectedAvailableChannel) {
+	// 		return;
+	// 	}
+	// 	setIsPasswordModal(false);
 
-		const data = {
-			channel_id: selectedAvailableChannel.id,
-			user_id: user.id,
-			name: user.nameIntra,
-		};
+	// 	const data = {
+	// 		channel_id: selectedAvailableChannel.id,
+	// 		user_id: user.id,
+	// 		name: user.nameIntra,
+	// 	};
 
-		socket.emit('joinChannel', data);
+	// 	socket.emit('joinChannel', data);
 
-		socket.once('joinedChannel', (response) => {
-			console.log('Join Channel response:', response);
-			if (response.channel_id === selectedAvailableChannel.id) {
-				setChatProps((prevState) => ({
-					...prevState,
-					chatRooms: [...prevState.chatRooms, selectedAvailableChannel],
-				}));
-				setAvailableChannels((prevState) => 
-					prevState.filter((channel) => channel.id !== selectedAvailableChannel.id)
-				);
+	// 	socket.once('joinedChannel', (response) => {
+	// 		console.log('Join Channel response:', response);
+	// 		if (response.channel_id === selectedAvailableChannel.id) {
+	// 			setChatProps((prevState) => ({
+	// 				...prevState,
+	// 				chatRooms: [...prevState.chatRooms, selectedAvailableChannel],
+	// 			}));
+	// 			setAvailableChannels((prevState) => 
+	// 				prevState.filter((channel) => channel.id !== selectedAvailableChannel.id)
+	// 			);
 
-				setSelectedChannel(null);
-			} 
+	// 			setSelectedChannel(null);
+	// 		} 
 
-		});
+	// 	});
 
-		socket.once('joinChannelError', (error) => {
-			console.error(error.message);
-			alert(`Error joining channel: ${error.message}`);
-		});
+	// 	socket.once('joinChannelError', (error) => {
+	// 		console.error(error.message);
+	// 		alert(`Error joining channel: ${error.message}`);
+	// 	});
 		
-		// const updatedChannel = { ...selectedAvailableChannel }; 
-		// const updatedChannel: ChatRoom = {
-		// 	...selectedAvailableChannel,
-		// 	settings: {
-		// 		...selectedAvailableChannel.settings,
-		// 		users: [
-		// 			...selectedAvailableChannel.settings.users,
-		// 			{
-		// 				id: user.id,
-		// 				name: user.nameIntra ,
-		// 				role: 'member',
-		// 				icon: <Avatar />,
-		// 			},
-		// 		],
-		// 	},
-		// }; 
+	// 	// const updatedChannel = { ...selectedAvailableChannel }; 
+	// 	// const updatedChannel: ChatRoom = {
+	// 	// 	...selectedAvailableChannel,
+	// 	// 	settings: {
+	// 	// 		...selectedAvailableChannel.settings,
+	// 	// 		users: [
+	// 	// 			...selectedAvailableChannel.settings.users,
+	// 	// 			{
+	// 	// 				id: user.id,
+	// 	// 				name: user.nameIntra ,
+	// 	// 				role: 'member',
+	// 	// 				icon: <Avatar />,
+	// 	// 			},
+	// 	// 		],
+	// 	// 	},
+	// 	// }; 
 		
 		
 		
-	};
+	// };
 
 
-	
 	
 	
 //////////////////////////////////////////////////////////////////////
 
-	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
-		event.preventDefault();
-
-		//--> CALL TO BACKEND <-- //
-
-		if (enteredChannelPass !== selectedAvailableChannel?.settings.password) {
-			alert("Incorrect password!");
-		} else {
-			// Move the channel to the joined channels secion //
-			handleJoinAvailableChannel();
-		}
-		setEnteredChannelPass('');
-	};
 
 	const MessageInput: React.FC<{ channel: ChatRoom }> = ({ channel }) => {
 		console.log('d');
@@ -873,19 +769,24 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	const renderAvailableChannels = (channels: ChatRoom[]) => {
-		const filteredChannels = channels.filter(
+		let filteredChannels = channels.filter(
 			channel => 
 				!userInChannel(user.nameIntra, channel) 
 				// && channel.settings.type !== 'private'
 		);
-
+		
+		filteredChannels = channels.filter(
+			channel => 
+				!userBanned(user.id.toString(), channel) 
+				// && channel.settings.type !== 'private'
+		);
 		// if (filteredChannels.length === 0) {
 		// 	return null;
 		// }
 
 		return (
 			<Stack gap={1}>
-			{channels.map((channel) => ( 
+			{filteredChannels.map((channel) => ( 
 				<AvailableChannelLine key={channel?.id} channel={channel} />
 			))}
 	 		</Stack>
@@ -1036,6 +937,7 @@ const ChannelsPage: React.FC = () => {
 				  availableChannels={availableChannels}
 				  setAvailableChannels={setAvailableChannels}
 				  setIsSettingsView={setIsSettingsView}
+				  style={{ width: '5000px' }}
 				/>
 			  ) : (
 				//---Render Messages---//
