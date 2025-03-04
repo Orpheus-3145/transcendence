@@ -120,7 +120,7 @@ export async function setNewNickname(username:string, nickname:string): Promise<
 }
 
 export async function fetchFriend(friend:string): Promise<User> {
-	const request = new Request(BACKEND_URL + '/users/profile/username/friend/' + friend, {
+	const request = new Request(BACKEND_URL + '/users/profile/friend/' + friend, {
 		method: "GET",
 	});
 
@@ -132,7 +132,19 @@ export async function fetchFriend(friend:string): Promise<User> {
 }
 
 export async function fetchOpponent(intraName:string): Promise<User> {
-	const request = new Request(BACKEND_URL + '/users/profile/username/opponent/' + intraName, {
+	const request = new Request(BACKEND_URL + '/users/profile/opponent/' + intraName, {
+		method: "GET",
+	});
+
+	const response = await fetch(request)
+		.then((raw) => raw.json())
+		.then((json) => json as User)
+
+	return response;
+}
+
+export async function fetchUserMessage(id:string): Promise<User> {
+	const request = new Request(BACKEND_URL + '/users/profile/message/' + id, {
 		method: "GET",
 	});
 

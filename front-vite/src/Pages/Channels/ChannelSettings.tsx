@@ -5,7 +5,7 @@ import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, Me
 import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
 import { userInChannel, userIsAdmin } from '../Channels/index';
-import { fetchOpponent, fetchUser, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
+import { fetchOpponent, fetchUser, fetchUserMessage, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
 import { socket } from '../../Layout/Chat/ChatContext';
 import { prev } from 'cheerio/dist/commonjs/api/traversing';
 import { useNavigate } from 'react-router-dom';
@@ -279,7 +279,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	};
 
 	const fetchbanned = async (bannedId: string) => {
-		const banned = await fetchOpponent(bannedId);
+		const banned = await fetchUserMessage(bannedId);
 		setbanned((prev) => new Map(prev).set(bannedId, banned));
 	};
 
@@ -293,7 +293,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		}
 
 		return (
-			<Stack direction="row" spacing={5.3}>
+			<Stack direction="row" spacing={40}>
 				<Typography sx={{whiteSpace: 'pre-line'}} >
 					{user.nameNick?.length > 10 ? user.nameNick.slice(0, 9) + '...' : user.nameNick}
 				</Typography>

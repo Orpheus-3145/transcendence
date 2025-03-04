@@ -15,7 +15,7 @@ import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as Log
 import { timeStamp } from 'console';
 import { index } from 'cheerio/dist/commonjs/api/traversing';
 import { useChatContext, socket } from '../../Layout/Chat/ChatContext';
-import { fetchOpponent, fetchUser, getUserFromDatabase, useUser } from '../../Providers/UserContext/User';
+import { fetchFriend, fetchOpponent, fetchUser, fetchUserMessage, getUserFromDatabase, useUser } from '../../Providers/UserContext/User';
 import { User } from '../../Types/User/Interfaces';
 import { getAll } from '../../Providers/UserContext/User';
 import { getRandomValues } from 'crypto';
@@ -816,7 +816,7 @@ const ChannelsPage: React.FC = () => {
 	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
 
 	const fetchUser = async (userId: string) => {
-		const user = await fetchOpponent(userId);
+		const user = await fetchUserMessage(userId);
 		setUserMessage((prev) => new Map(prev).set(userId, user));
 	};
 
