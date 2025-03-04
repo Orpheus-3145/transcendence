@@ -86,16 +86,22 @@ export class UsersController {
 		return ("");
 	}
 
-	@Get('/profile/:username/friend/:id')
+	@Get('/profile/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
 		return (this.UserService.getUserIntraId(id));
 	}
 
-	@Get('/profile/:username/opponent/:intraName')
+	@Get('/profile/opponent/:intraName')
 	async fetchOpponent(@Param('intraName') intraName: string) 
 	{
 		return (this.UserService.findOneIntraName(intraName));
+	}
+
+	@Get('/profile/message/:id')
+	async fetchUserMessage(@Param('id') id: string) 
+	{
+		return (this.UserService.getUserId(id));
 	}
 
 	@Get('profile/:username/friend/remove/:id')
