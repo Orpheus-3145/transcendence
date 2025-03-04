@@ -39,6 +39,7 @@ export interface ChatSettings {
 	users: UserProps[];
 	owner: string;
   banned: string[];
+  muted: string[];
 }
 
 export interface ChatRoom {

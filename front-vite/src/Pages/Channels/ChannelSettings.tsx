@@ -131,12 +131,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		socket.emit('unbanUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
 	};
 
-	const handleBlockFriend = (user: UserProps) => {
-		//--> CALL TO BACKEND <-- //
+	const handleMuteFriend = (user: UserProps) => 
+	{
+		if (settings.muted.find((item: string) => item === user.id.toString()))
+			return ;
+		const tmp: string[] = settings.muted;
+		tmp.push(user.id.toString());
+		setSettings({ ...settings, muted: tmp });
 
-		console.log('"Block Friend" clicked!');
-		// const updatedUsers = settings.users.filter(user => user.name !== name);
-		// setSettings({ ...settings, users: updatedUsers });
+		socket.emit('muteUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
+	};
+
+	const handleUnmuteFriend = (user: UserProps) => 
+	{
+		const tmp: string[] = settings.muted.filter((item: string) => item !== user.id.toString());
+		setSettings({ ...settings, muted: tmp });
+
+		socket.emit('unmuteUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
 	};
 
 	const handleRoleChange = (userId: number, role: string) => {
@@ -292,6 +303,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		);
 	}
 
+	let isUserMuted = (user: UserProps) =>
+	{
+		if (settings.muted.find((item: string) => item === user.id.toString()))
+			return (true);
+		return (false);
+	}
+
 	// console.log(selectedChannel.settings.owner, user.nameIntra);
 	return (
 		<Modal open={open} onClose={onClose}>
@@ -388,29 +406,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						{/* {console.log(user.nameIntra)} */}
 						{(selectedChannel.settings.owner === user.nameIntra ||
 							userIsAdmin(user.nameIntra, selectedChannel)) &&
-							user.nameIntra !== _user.name && (
+							(user.nameIntra !== _user.name) && (!isUserMuted(_user)) && (
 						<Stack direction="row" spacing={0.3}>
 							<Button sx={{width: '120px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(_user.id, _user.role)}>
 								{_user.role === 'admin' ? 'Make Member' : 'Make Admin' }
 							</Button>
 							<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(_user)}>Kick</Button>
 							<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(_user)}>Ban</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(_user)}>Block</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleMuteFriend(_user)}>Mute</Button>
 						</Stack>
+						)}
+						{(selectedChannel.settings.owner === user.nameIntra ||
+							userIsAdmin(user.nameIntra, selectedChannel)) && isUserMuted(_user) && (
+							<Stack direction="row" spacing={0.3}>
+								<Button variant="contained" color="error" size="small" onClick={() => handleUnmuteFriend(_user)}>Unmute</Button>
+							</Stack>	
 						)}
 						</Stack>
 					))}
 					</Stack>
 				</Box>
 				{(selectedChannel.settings.owner === user.nameIntra ||
-							userIsAdmin(user.nameNick, selectedChannel)) && (
-					<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
-						<Stack spacing={1} mt={2}>
-						<Typography variant="h6" sx={{textAlign: 'center'}}>Banned</Typography>
-						<Divider />
-						{settings.banned.map((item: string) => (showBanned(item)))}
-						</Stack>
-					</Box>
+							userIsAdmin(user.nameNick, selectedChannel)) && (settings.banned.length > 0) && (
+					<Stack>
+						<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
+							<Stack spacing={1} mt={2}>
+								<Typography variant="h6" sx={{textAlign: 'center'}}>Banned</Typography>
+								<Divider />
+								{settings.banned.map((item: string) => (showBanned(item)))}
+							</Stack>
+						</Box>
+					</Stack>
 				)}
 			</Box>
 			) : (
