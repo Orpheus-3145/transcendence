@@ -15,7 +15,7 @@ import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as Log
 import { timeStamp } from 'console';
 import { index } from 'cheerio/dist/commonjs/api/traversing';
 import { useChatContext, socket } from '../../Layout/Chat/ChatContext';
-import { User, useUser } from '../../Providers/UserContext/User';
+import { fetchOpponent, fetchUser, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
 import { getAll } from '../../Providers/UserContext/User';
 import { getRandomValues } from 'crypto';
 import { copyFileSync } from 'fs';
@@ -172,6 +172,7 @@ const ChannelsPage: React.FC = () => {
 							})),
 							owner: newChannel.ch_owner,
 							banned: newChannel.banned,
+							muted: newChannel.muted,
 						},
 						isDirectMessage: newChannel.isDirectMessage,
 					},
@@ -442,7 +443,6 @@ const ChannelsPage: React.FC = () => {
 				receiver_id: selectedChannel.id,
 				content: newMessage,
 			};
-
 			socket.emit('sendMessage', messageData); 
 		
 			setNewMessage('');
@@ -458,7 +458,7 @@ const ChannelsPage: React.FC = () => {
 			const newMessage: ChatMessage = {
 				id: message.msg_id,
 				message: message.content,
-				user: user.nameIntra,
+				user: message.sender_id,
 				userPP: <Avatar />,
 				timestamp: message.send_time,
 			}
@@ -776,6 +776,54 @@ const ChannelsPage: React.FC = () => {
 		);
 	};
 
+	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
+
+	const fetchUser = async (userId: string) => {
+		const user = await fetchOpponent(userId);
+		setUserMessage((prev) => new Map(prev).set(userId, user));
+	};
+
+	const showMessages =  (muted: string[], msg: ChatMessage, index: number) =>
+	{
+		if (muted.find((item: string) => item == msg.user))
+		{
+			return (
+				<Stack></Stack>
+			);
+		}
+
+		var user = userMessage.get(msg.user);
+		
+		if (!user) {
+			fetchUser(msg.user);
+			return <Stack>Loading...</Stack>;
+		}
+
+		return (
+				<Box
+					key={index}
+					sx={{display: "flex", alignItems: "center", mb: 3}}
+				>
+					<Avatar
+						onClick={()=> (navigate(`/profile/${user.id.toString()}`))}
+						sx={{cursor: 'pointer', mr: 2}}
+						src={user.image}
+					>
+					</Avatar>
+					<Typography 
+						sx={{ whiteSpace: "normal",
+							overflowWrap: 'anywhere',
+							wordBreak: 'break-word',
+							maxWidth: "70%"}}
+						key={index}
+					>
+						{`(${user.nameNick}): `}
+						{msg.message}
+					</Typography>
+				</Box>
+		);
+	}
+
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
 		<Stack
@@ -920,31 +968,7 @@ const ChannelsPage: React.FC = () => {
 					}     
 				  >
 					{/* {console.log(selectedChannel.messages)}; */}
-					{selectedChannel.messages.map((msg, index) => (
-					  <Box
-						key={index}
-						sx={{display: "flex", alignItems: "center", mb: 3}}
-					  >
-					  	<Avatar
-							onClick={()=> (navigate(`/profile/${msg.user}`))}
-							sx={{cursor: 'pointer', mr: 2}}
-						>
-							{msg.userPP}
-						</Avatar>
-					  	<Typography 
-							sx={{ whiteSpace: "normal",
-								overflowWrap: 'anywhere',
-								wordBreak: 'break-word',
-								maxWidth: "70%"}}
-							key={index}
-						>
-							{/* {console.log(msg.user)} */}
-							{`(${msg.user})`}
-							{`(${socket.id}): `}
-							{msg.message}
-						</Typography>
-					  </Box>
-					))}
+					{selectedChannel.messages.map((msg: ChatMessage, index: number) => (showMessages(selectedChannel.settings.muted, msg, index)))}
 				  </Stack>
 				
 				  {/*---Render Input Box---*/}

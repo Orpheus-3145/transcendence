@@ -89,7 +89,7 @@ export const ChatProvider: React.FC = ({ children }) => {
           				.map((message) => ({
           				  	id: message.msg_id,
           				  	message: message.content,
-          				  	user: user.nameIntra,
+          				  	user: message.sender_id,
           				  	userPP: <Avatar />,
           				  	timestamp: message.send_time,
           				})),
@@ -106,6 +106,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 							})) ,
                             owner: channel.ch_owner,
 							banned: channel.banned,
+							muted: channel.muted,
 
                         },
 						isDirectMessage: channel.isDirectMessage,

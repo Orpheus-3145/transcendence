@@ -43,7 +43,7 @@ export class ChatService {
 	// }
 
 	async createChannel(chatDTO: ChatDTO): Promise<Channel> {
-		const { title, ch_type, ch_owner, users, banned, password, isDirectMessage } = chatDTO;
+		const { title, ch_type, ch_owner, users, banned, muted, password, isDirectMessage } = chatDTO;
 
 		// console.log('chatDTO:', chatDTO);
 		const newChannel = this.channelRepository.create({
@@ -55,6 +55,7 @@ export class ChatService {
 		  created: new Date(),
 		  isDirectMessage,
 		  banned,
+		  muted,
 		});
 		const savedChannel = await this.channelRepository.save(newChannel);
 		// console.log('new channel:', newChannel);
@@ -162,6 +163,20 @@ export class ChatService {
 		channel.banned = channel.banned.filter((item: string) => item !== user_id.toString());
 		await this.channelRepository.save(channel);
 	}
+	
+	async muteUserFromChannel(user_id: number, channel_id: number)
+	{
+		let channel: Channel = await this.channelRepository.findOne({where: {channel_id: channel_id}});
+		channel.muted.push(user_id.toString());
+		await this.channelRepository.save(channel);
+	}
+	
+	async unmuteUserFromChannel(user_id: number, channel_id: number)
+	{
+		let channel: Channel = await this.channelRepository.findOne({where: {channel_id: channel_id}});
+		channel.muted = channel.muted.filter((item: string) => item !== user_id.toString());
+		await this.channelRepository.save(channel);
+	}
 
 	// Send a message
 	// async sendMessage( sender_id: number, receiver_id: number, content: string ,
@@ -188,27 +203,30 @@ export class ChatService {
 		if (!channel) {
 		  throw new Error(`Channel with id ${receiver_id} not found`);
 		}
-
-		var members: ChannelMember[] = await this.channelMemberRepository.find({where: {channel_id: channel.channel_id}});		
-		members.map(async (member: ChannelMember) =>
+		
+		if (!channel.muted.find((item: string) => item === sender_id.toString()))
 		{
-			if (member.user_id != sender_id)
+			var members: ChannelMember[] = await this.channelMemberRepository.find({where: {channel_id: channel.channel_id}});		
+			members.map(async (member: ChannelMember) =>
 			{
-				var user: User = await this.userService.findOneId(member.user_id);
-				if (user != null)
+				if (member.user_id != sender_id)
 				{
-					var noti: Notification = await this.notificationService.initGroupMessage(channel, user, content);
-					await this.notificationGateway.sendNotiToFrontend(noti);
+					var user: User = await this.userService.findOneId(member.user_id);
+					if (user != null)
+					{
+						var noti: Notification = await this.notificationService.initGroupMessage(channel, user, content);
+						await this.notificationGateway.sendNotiToFrontend(noti);
+					}
 				}
-			}
-		});
+			});
+		}
 
 		const message = this.messageRepository.create({
 		  sender_id,
 		  content,
 		  channel,
 		});
-	  
+
 		const savedMessage = await this.messageRepository.save(message);
 		// console.log('Saved Mdessage->>', savedMessage);  // Log the saved message for debugging
 	  
@@ -245,7 +263,7 @@ export class ChatService {
 
 	async getAllChannels(): Promise<Channel[]> {
 		const channels = await this.channelRepository.find({
-			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password', 'isDirectMessage', 'banned'],
+			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password', 'isDirectMessage', 'banned', 'muted'],
 			relations: ['members', 'messages'], // Ensure messages are included
 		});
 	

@@ -39,6 +39,10 @@ export class ChatDTO {
 	@IsString({ each: true })
 	banned: string[];
 
+  @IsArray()
+	@IsString({ each: true })
+	muted: string[];
+
   @IsOptional()
   @IsString()
   password?: string | null;
