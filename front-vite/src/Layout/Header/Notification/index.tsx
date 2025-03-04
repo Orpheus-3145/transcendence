@@ -611,7 +611,7 @@ export const Notification: React.FC = () => {
 		{
 			friendRequestArray.push(noti);
 		}
-		else if (noti.type == NotificationType.groupChat && !gameInviteArray.find((n: NotificationStruct) => n.id === noti.id))
+		else if (noti.type == NotificationType.gameInvite && !gameInviteArray.find((n: NotificationStruct) => n.id === noti.id))
 		{
 			gameInviteArray.push(noti);
 		}
