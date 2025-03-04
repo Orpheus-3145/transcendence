@@ -66,6 +66,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				setLabel("User doesn't exist with that nickname!");
 				return ;
 			}
+
+			if (settings.users.find((tmp_: UserProps) => tmp_.id === tmp.id))
+			{
+				setFriendName('');
+				setLabel("User already added!");
+				return ;
+			}
 			
 			const data = {
 				channel_id: selectedChannel.id,
@@ -94,13 +101,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				icon: <PersonAddIcon /> //!!
 			};
 			
-			if (settings.users.find((tmp: UserProps) => tmp.id === newUser.id))
-			{
-				setFriendName('');
-				setLabel("User already added!");
-				return ;
-			}
-
 			setSettings({ ...settings, users: [...settings.users, newUser] });
 		}
 		socket.on('joinedChannel', handleUserJoinedChannel);
