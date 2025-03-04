@@ -2,8 +2,8 @@ import { UserStatus } from "./Enum";
 
 export interface MatchRatio {
   title: string;
-  value: number;
-  rate: number;
+  wonGames: number;
+  totGames: number;
 }
 
 export interface LeaderboardData {
