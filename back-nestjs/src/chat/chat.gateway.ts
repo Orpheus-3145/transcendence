@@ -133,7 +133,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			const {user_id, channel_id, role} = data;
 			await this.chatService.removeUserFromChannel(user_id, channel_id, role);
 			client.leave(channel_id.toString());
-			this.server.to(channel_id.toString()).emit('userLeftChannel', { user_id, channel_id });
+			// this.server.to(channel_id.toString()).emit('leftChannel', { user_id, channel_id });
+			this.server.emit('leftChannel', { user_id, channel_id });
 			console.log(`Client ${client.id} left channel ${ channel_id }`);
 			client.emit('leftChannel', { channel_id });
 		} catch (error) {
@@ -293,8 +294,35 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		} catch (error) {
 			console.error(error);
 			client.emit('error', { message: 'Channel privacy could not be changed!' });
+			return { success: false, message: 'Channel privacy could not be changed!' };
 		}
 	}
+
+	// Change user role
+	@SubscribeMessage('changeUserRole')
+	async handleChangeUserRole(
+		@MessageBody() data: { user_id: number; channel_id: number; new_role: string; },
+		@ConnectedSocket() client: Socket,
+	): Promise<{ success: boolean; message?: string }> {
+		const { user_id, channel_id, new_role } = data;
+		try {
+			const updated = await this.chatService.changeUserRole(user_id, channel_id, new_role);
+			if (updated) {
+				console.log(`User with id ${user_id} role changed (db) to ${new_role}`);
+				this.server.to(channel_id.toString()).emit('userRoleChanged', { user_id, new_role });
+				// this.server.emit('userRoleChanged', { user_id, new_role });
+				return { success: true, message: 'User role updated successfully' };
+			} else {
+				client.emit('error', { message: 'User role could not be changed' });
+				return { success: false, message: 'User role could not be changed' };
+			}
+		} catch (error) {
+			console.error(error);
+			client.emit('error', { message: 'Error changing user role' });
+			return { success: false, message: 'Error changing user role' };
+		}
+	}
+	
 
 	@SubscribeMessage('joinRoom')
 	handleJoinRoom(

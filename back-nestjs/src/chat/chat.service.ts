@@ -44,10 +44,8 @@ export class ChatService {
 
 	async createChannel(chatDTO: ChatDTO): Promise<Channel> {
 		const { title, ch_type, ch_owner, users, banned, password, isDirectMessage } = chatDTO;
-	
+
 		// console.log('chatDTO:', chatDTO);
-	  
-		// Create new channel
 		const newChannel = this.channelRepository.create({
 		  title,
 		  ch_type,
@@ -58,11 +56,8 @@ export class ChatService {
 		  isDirectMessage,
 		  banned,
 		});
-	  
 		const savedChannel = await this.channelRepository.save(newChannel);
 		// console.log('new channel:', newChannel);
-
-		// Add the initial users
 		const userEntities = users.map(user => {
 			// console.log('user.nameIntra:', user.nameIntra);
 			return {
@@ -73,13 +68,10 @@ export class ChatService {
 			}	
 		});
 		// console.log('userEntities:', userEntities);
-
 		await this.channelMemberRepository.save(userEntities);
-		// Fetch the full channel, including relations (users and messages)
-		
 		const fullChannel = await this.channelRepository.findOne({
 			where: { channel_id: savedChannel.channel_id },
-			relations: ['members',],
+			relations: ['members'],
 		});
 		// console.log('full channel:', fullChannel);
 		return fullChannel;
@@ -152,9 +144,7 @@ export class ChatService {
 				await this.channelRepository.delete({ channel_id });
 				return;
 			}
-	  }
-	
-	  // Remove the user from the channel
+	  	}
 	  await this.channelMemberRepository.delete({ user_id, channel_id });
 	}
 
@@ -216,7 +206,7 @@ export class ChatService {
 		const message = this.messageRepository.create({
 		  sender_id,
 		  content,
-		  channel,  // Directly link the message to the channel
+		  channel,
 		});
 	  
 		const savedMessage = await this.messageRepository.save(message);
@@ -225,8 +215,6 @@ export class ChatService {
 		return savedMessage;
 	}
 	  
-
-
 	async getMessagesForChannel(channel_id: number): Promise<Message[]> {
 		// Fetch all messages for the channel, including sender details if necessary
 		return this.messageRepository.find({
@@ -242,19 +230,18 @@ export class ChatService {
 	// }
 
  	// Fetch channel by ID
- 	async getChannelById(channel_id: number): Promise<Channel> {
+ 	async getChannelById(channel_id: number): Promise<Channel | null> {
 		return this.channelRepository.findOne({
-			where: { channel_id: channel_id },  // Pass the condition for `channel_id`
+			where: { channel_id: channel_id },
 		});
  	}
 
- 	// Fetch all channels
-	// async getAllChannels(): Promise<Channel[]> {
-	// 	return this.channelRepository.find({               // Fetches all channels from the database
-	// 		select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password',],
-	// 		relations: ['members', 'messages'],
-	// 	});     
- 	// }
+ 	// Fetch channel user
+ 	async getUserById(user_id: number, channel_id: number): Promise<ChannelMember | null> {
+		return this.channelMemberRepository.findOne({
+			where: { user_id, channel_id },  
+		});
+ 	}
 
 	async getAllChannels(): Promise<Channel[]> {
 		const channels = await this.channelRepository.find({
@@ -266,7 +253,6 @@ export class ChatService {
 		return channels;
 	}
 	
-
 	// Delete a channel
 	async deleteChannel(channel_id: number): Promise<Channel | null> {
 		try {
@@ -310,6 +296,17 @@ export class ChatService {
 		}
 		channel.ch_owner = new_owner;
 		await this.channelRepository.save(channel);
+	}
+
+
+	async changeUserRole(user_id: number, channel_id: number, new_role: string) : Promise<boolean> {
+		const user = await this.getUserById(user_id, channel_id);
+		if (!user) {
+			return false;
+		}
+		user.member_role = new_role;
+		await this.channelMemberRepository.save(user);
+		return true;
 	}
 }
 
