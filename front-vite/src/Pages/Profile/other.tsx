@@ -63,6 +63,7 @@ const ProfilePageOther: React.FC = () => {
 	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
 
+
 	let redirectFriend = (id:number) =>
 	{
 		navigate('/profile/' + id.toString());
@@ -201,7 +202,7 @@ const ProfilePageOther: React.FC = () => {
 		);
 	};
 
-	let gameStatsBox = (data: matchRatio) =>
+	let gameStatsBox = (data: MatchRatio) =>
 	{
 		return (
 			<Stack
@@ -226,7 +227,7 @@ const ProfilePageOther: React.FC = () => {
 						}}
 					>
 						<Typography>{data.title}</Typography>
-						<Typography>{data.value}</Typography>
+						<Typography>{data.wonGames}/{data.totGames}</Typography>
 					</Stack>
 					<Stack
 						direction="column"
@@ -239,7 +240,7 @@ const ProfilePageOther: React.FC = () => {
 						<Tooltip title="Win Ratio" arrow>
 						<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
 						</Tooltip>
-						<Typography>{data.rate}%</Typography>
+						<Typography>{Math.round((data.wonGames / data.totGames) * 100)}%</Typography>
 					</Stack>
 				</Stack>
 			</Stack>
@@ -265,27 +266,27 @@ const ProfilePageOther: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
 	};
 
-const fetchOpponentDetails = async (opponentId: string) => {
-		const opponent = await fetchOpponent(opponentId);
-		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
+	const fetchOpponentDetails = async (intraName: string) => {
+		const opponent = await fetchOpponent(intraName);
+		setOpponentDetails((prev) => new Map(prev).set(intraName, opponent));
 	};
 
-	let gameLine = (data: matchData) => 
-	{
+	let gameLine = (data: MatchData) => {
 		var opponent: User | undefined;
 		var intra: string;
 		var nameOther: string;
-		var scoreUser: string;
-		var scoreOther: string;
+		var scoreUser: number;
+		var scoreOther: number;
 		var color: string;
 		var idOther: number;
-		if (data.player1 === userProfile.id.toString())
+
+		if (data.player1 === userProfile?.nameNick)
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
@@ -293,7 +294,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 			opponent = opponentDetails.get(intra);
 			if (opponent)
 			{
-				nameOther = opponent.nameNick;
+				nameOther = opponent.nameNick as string;
 				idOther = opponent.id;
 			}
 		}
@@ -305,7 +306,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 			opponent = opponentDetails.get(intra);
 			if (opponent)
 			{
-				nameOther = opponent.nameNick;
+				nameOther = opponent.nameNick as string;
 				idOther = opponent.id;
 			}
 		}
@@ -315,7 +316,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 			return <Stack>Loading...</Stack>;
 		}
 
-		if (data.whoWon === userProfile.id.toString())
+		if (data.whoWon === userProfile?.nameNick)
 			color = '#1da517'
 		else
 			color = '#b01515';
@@ -415,7 +416,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: MatchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);
@@ -666,15 +667,13 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		addFriend(user.id.toString(), userProfile.id.toString());
 	}
 
-    const [modalOpen, setModalOpen] = useState<Boolean>(false);
+	const handleModalClose = () => {
+			setModalOpen(false);
+	};
 
-    const handleModalClose = () => {
-        setModalOpen(false);
-    };
-
-    const handleModalOpen = () => {
-        setModalOpen(true); 
-    };
+	const handleModalOpen = () => {
+			setModalOpen(true);
+	};
 
 	let InviteToGameIcon = () => 
 	{
@@ -758,8 +757,8 @@ const fetchOpponentDetails = async (opponentId: string) => {
 	const handleKeyDownMessage = (event: React.KeyboardEvent<HTMLInputElement>) => 
 	{
 		const key = event.key;
-	  	if (key === 'Enter') 
-	  	{
+			if (key === 'Enter') 
+			{
 			if (inputMessage.length > 0)
 			{
 				if (checkIfBlocked() == true)
@@ -773,7 +772,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 				sendMessage(user.id.toString(), userProfile.id.toString(), inputMessage);
 			}
 	 	}
-  	}
+		}
 	
 	let SendMessageIcon = () => 
 	{
@@ -848,7 +847,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 					}}
 					/>
 				)}
-		        {showMessageMS && (	
+						{showMessageMS && (	
 					<Stack
 					sx={{
 						position: 'relative',
@@ -1009,8 +1008,6 @@ const fetchOpponentDetails = async (opponentId: string) => {
 			</Container>
 		);
 	};
-
-	
 
 	let getUserProfile = async () : Promise<void> =>
 	{

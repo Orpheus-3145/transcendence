@@ -6,8 +6,8 @@ export default class MatchRatioDTO {
   title: string;
 
   @IsNumber()
-  value: number;
+  wonGames: number;
 
   @IsNumber()
-  rate: number;
+  totGames: number;
 }

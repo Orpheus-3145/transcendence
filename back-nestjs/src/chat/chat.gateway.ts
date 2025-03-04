@@ -39,18 +39,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	constructor(private chatService: ChatService) {};
 	
 	handleConnection(client: Socket) {
-		console.log(`New client connected to ChatGateway: ${client.id}`);
-		
-		// const newConnectedUser = {
-		// 	clientSocket: client,
-		// 	intraId: ,
-		// 	nameIntra: string,
-		// };
-
 
 		this.connectedClients.set(client.id, client);
-		// console.log(this.connectedClients);
-		console.log('Connected clients to ChatGateway: ', Array.from(this.connectedClients.keys()));
 		this.server.emit('clientsUpdated', Array.from(this.connectedClients.keys()));
 	}
 

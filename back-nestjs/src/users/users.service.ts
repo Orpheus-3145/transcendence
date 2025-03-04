@@ -86,6 +86,10 @@ export class UsersService {
 		return this.usersRepository.findOne({ where: { id: id } });
 	}
 
+	async findOneIntraName(intraName: string): Promise<User | null> {
+		return this.usersRepository.findOne({ where: { nameIntra: intraName } });
+	}
+
 	async findOneNick(nameNick: string): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { nameNick } });
 	}
@@ -146,7 +150,6 @@ export class UsersService {
 		var otheruser = await this.getUserId(idother);
 		if ((user == null) || (otheruser == null))
 		{
-			console.log("ERROR accepting friendreq");
 			throw new HttpException('Not Found', 404);
 		}
 		(user).friends.push((otheruser).intraId.toString());
@@ -219,71 +222,37 @@ export class UsersService {
 	async calculateRatio(user: User): Promise<MatchRatioDTO[]>
 	{
 		const games: Game[] = await this.findGamesByUser(user);
-
-		if (games.length === 0)
-		{
-			var tmp: MatchRatioDTO[] = [
-			{
-				title: "Normal", value: 0, rate: 0
-			},
-			{
-				title: "Power ups", value: 0, rate: 0
-			},
-			{
-				title: "All", value: 0, rate: 0
-			}];
-			return (tmp);	
-		}
-
-		var normalWin = 0;
-		var normalAll = 0;
-		var powerWin = 0;
-		var powerAll = 0;
-		var allWin = 0;
-		var allAll = 0;
-
-		games.forEach((item: Game) =>
-		{
-			if (item.powerups === 0)
-			{
-				normalAll += 1;
-				if ((item.player1Score > item.player2Score && item.player1 === user) ||
-						(item.player2Score > item.player1Score && item.player2 === user))
-					normalWin += 1;
+		
+		const totMatches = games.length;
+		let powerUpMatches = 0;
+		let nonPowerUpMatches = 0;
+		let totMatchesWon = 0;
+		let nonPowerUpMatchesWon = 0;
+		let powerUpMatchesWon = 0;
+		
+		for ( const game of games ) {
+			if (game.powerups === 0) {
+				nonPowerUpMatches += 1;
+				if ((game.player1Score > game.player2Score && game.player1.intraId === user.intraId) ||
+						(game.player2Score > game.player1Score && game.player2.intraId === user.intraId)) {
+					totMatchesWon += 1;
+					nonPowerUpMatchesWon += 1;
+				}
 			} else {
-				powerAll += 1;
-				if ((item.player1Score > item.player2Score && item.player1 === user) ||
-						(item.player2Score > item.player1Score && item.player2 === user))
-					powerWin += 1;
+				powerUpMatches += 1;
+				if ((game.player1Score > game.player2Score && game.player1.intraId === user.intraId) ||
+						(game.player2Score > game.player1Score && game.player2.intraId === user.intraId)) {
+					totMatchesWon += 1;
+					powerUpMatchesWon += 1;
+				}
 			}
-			allAll += 1;
-			if ((item.player1Score > item.player2Score && item.player1 === user) ||
-					(item.player2Score > item.player1Score && item.player2 === user))
-				allWin += 1;
-		});
+		};
 
-		var ratioNormal = Math.round((normalWin / normalAll) * 100);
-		var ratioPower = Math.round((powerWin / powerAll) * 100);
-		var ratioAll = Math.round((allWin / allAll) * 100);
-
-		if (normalAll === 0)		// NB is it necessary?
-			ratioNormal = 0;
-		if (powerAll === 0)
-			ratioPower = 0;
-
-		var resultArr: MatchRatioDTO[] = [
-			{
-				title: "Normal", value: normalAll, rate: ratioNormal
-			},
-			{
-				title: "Power ups", value: powerAll, rate: ratioPower
-			},
-			{
-				title: "All", value: allAll, rate: ratioAll
-			}
+		return [
+			{title: "Normal", wonGames: nonPowerUpMatchesWon, totGames: nonPowerUpMatches},
+			{title: "Power ups", wonGames: powerUpMatchesWon, totGames: powerUpMatches},
+			{title: "All", wonGames: totMatchesWon, totGames: totMatches}
 		];
-
-		return (resultArr);
 	}
 
 	async fillArray(allData: LeaderboardDTO[], type: string): Promise<LeaderboardDTO[]>
@@ -300,21 +269,22 @@ export class UsersService {
 			item.ratio.forEach((values: MatchRatioDTO) =>
 			{
 				var tmpType = values.title;
-				var tmpRate = values.rate;
-				if (tmpType === type && values.value > 0)
+				var tmpRate = Math.round((values.wonGames / values.totGames) * 100);
+				if (tmpType === type && values.wonGames > 0)
 				{
 					if (arr.length === 0)
 						arr.push(item);
 					else
 					{
-						if (tmpRate >= arr[0].ratio[ratioIndex].rate)
+						const firstRate = Math.round((arr[0].ratio[ratioIndex].wonGames / arr[0].ratio[ratioIndex].totGames) * 100);
+						if (tmpRate >= firstRate)
 						{
 							arr.unshift(item);
 						}
 						else
 						{
 							var index = 0;
-							while (index < arr.length && tmpRate < arr[index].ratio[ratioIndex].rate)
+							while (index < arr.length && tmpRate < firstRate)
 								index++;
 							if (index < arr.length)
 								arr.splice(index, 0, item);

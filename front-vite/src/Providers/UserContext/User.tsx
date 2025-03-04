@@ -131,8 +131,8 @@ export async function fetchFriend(friend:string): Promise<User> {
 	return response;
 }
 
-export async function fetchOpponent(friend:string): Promise<User> {
-	const request = new Request(BACKEND_URL + '/users/profile/username/opponent/' + friend, {
+export async function fetchOpponent(intraName:string): Promise<User> {
+	const request = new Request(BACKEND_URL + '/users/profile/username/opponent/' + intraName, {
 		method: "GET",
 	});
 
@@ -187,7 +187,7 @@ export async function changePFP(username:string, image:FormData): Promise<string
 	}
 	catch (error)
 	{
-		console.error("ERROR: matchRatio[] not found!" + error);
+		console.error("ERROR: MatchRatio[] not found!" + error);
 	}
 }
 
@@ -202,7 +202,6 @@ export async function fetchRatios(userProfile: User): Promise<MatchRatio[]>
 	} catch (error)
 		{
 			console.error("ERROR: fetchRatios failed!");
-		// NB no matches found, this shouldn't happen!
 	}
 }
 
