@@ -36,7 +36,7 @@ export class AuthService {
 	}
 
 	async handleUserData(intraId: number, access: AccessTokenDTO, userMe: Record<string, any>): Promise<boolean> {
-		let user = await this.userService.findOne(intraId);
+		let user = await this.userService.findOneIntra(intraId);
 
 		if (!user) {
 			try {
@@ -129,7 +129,7 @@ export class AuthService {
 
 		this.logger.log(`Token [${token}] validated`);
 		// Find user
-		const user = await this.userService.findOne(Number(decoded.intraId));
+		const user = await this.userService.findOneIntra(Number(decoded.intraId));
 		if (!user)
 			this.thrower.throwSessionExcp(
 				`User not found`,
@@ -243,7 +243,7 @@ export class AuthService {
 			);
 		}
 
-		const user = await this.userService.findOne(Number(decoded.intraId));
+		const user = await this.userService.findOneIntra(Number(decoded.intraId));
 		if (user === null) {
 			this.thrower.throwSessionExcp(
 				'User not found',
@@ -284,7 +284,7 @@ export class AuthService {
 			return (false);
 		}
 		try {
-			let user = await this.userService.findOne(Number(intraId));
+			let user = await this.userService.findOneIntra(Number(intraId));
 			if (!user) {
 				this.thrower.throwSessionExcp(
 					'User not found',
@@ -329,7 +329,7 @@ export class AuthService {
 	}
 
 	async delete2FA(userId: string, res: Response) {
-		let user = await this.userService.findOne(Number(userId));
+		let user = await this.userService.findOneIntra(Number(userId));
 
 		if (!user) {
 			this.thrower.throwSessionExcp(
@@ -359,7 +359,7 @@ export class AuthService {
 	}
 
 	async get2FAStatus(intraId: string, res: Response) {
-		const user = await this.userService.findOne(Number(intraId));
+		const user = await this.userService.findOneIntra(Number(intraId));
 		if (!user) {
 			this.thrower.throwSessionExcp(
 				'User not found',

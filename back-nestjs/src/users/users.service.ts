@@ -42,17 +42,16 @@ export class UsersService {
 
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
-			var tmp: User | null = await this.findOne(user.intraId);
+			var tmp: User | null = await this.findOneIntra(user.intraId);
+
 			if (tmp != null)
-			{
 				return (new UserDTO(tmp));
-			}
-			await user.validate();
-			await this.usersRepository.save(user);
+
+			await Promise.all([user.validate(), this.usersRepository.save(user)]);
 			return new UserDTO(user);
 		} 
 		catch (error) {
-			console.error('User validation error: ', error);
+			// console.error('User validation error: ', error);
 			throw error;
 		}
 	}
@@ -74,10 +73,6 @@ export class UsersService {
 		return this.usersRepository.find();
 	}
 
-	async findOne(intraId: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { intraId } });
-	}
-
 	async findOneIntra(intraId: number): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { intraId: intraId } });
 	}
@@ -87,7 +82,7 @@ export class UsersService {
 	}
 
 	async findOneNick(nameNick: string): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { nameNick } });
+		return this.usersRepository.findOne({ where: { nameNick: nameNick } });
 	}
 
 	async findGamesByUser(user: User) : Promise<Game[] | undefined> {
@@ -146,7 +141,7 @@ export class UsersService {
 		var otheruser = await this.getUserId(idother);
 		if ((user == null) || (otheruser == null))
 		{
-			console.log("ERROR accepting friendreq");
+			// console.log("ERROR accepting friendreq");
 			throw new HttpException('Not Found', 404);
 		}
 		(user).friends.push((otheruser).intraId.toString());
