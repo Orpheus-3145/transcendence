@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import User from '../entities/user.entity';
+import User from 'src/entities/user.entity';
 import Game from 'src/entities/game.entity';
-import AccessTokenDTO  from '../dto/auth.dto';
-import UserDTO, { UserStatus } from '../dto/user.dto'
+import AccessTokenDTO  from 'src/dto/auth.dto';
+import UserDTO, { UserStatus } from 'src/dto/user.dto'
 import MatchDataDTO from 'src/dto/matchData.dto';
 import LeaderboardDTO from 'src/dto/leaderboard.dto';
 import MatchRatioDTO from 'src/dto/matchRatio.dto';
@@ -20,7 +20,7 @@ export class UsersService {
 		@InjectRepository(Game) private gamesRepository: Repository<Game>,
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
- 	) { 
+ 	) {
 		this.logger.setContext(UsersService.name);	
 	}
 
@@ -51,18 +51,18 @@ export class UsersService {
 			return new UserDTO(user);
 		} 
 		catch (error) {
-			// console.error('User validation error: ', error);
-			throw error;
+			this.thrower.throwSessionExcp(`User intraId: ${user.intraId} failed vaidation: ${error.message}`,
+				`${UsersService.name}.${this.constructor.prototype.createUser.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	async update(user: User): Promise<User> {
 		try {
-			await this.usersRepository.save(user);
-			return user;
+			return (await this.usersRepository.save(user));
 		} catch (error) {
 			this.thrower.throwSessionExcp(
-				`User update error: ${error}`,
+				`User update error: ${error.message}`,
 				`${UsersService.name}.${this.constructor.prototype.update.name}()`,
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			)
@@ -81,44 +81,57 @@ export class UsersService {
 		return this.usersRepository.findOne({ where: { id: id } });
 	}
 
-	async findOneNick(nameNick: string): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { nameNick: nameNick } });
+	async findOneNick(nameNick: string): Promise<User> {
+		const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
+		if (!user)
+			this.thrower.throwSessionExcp(`User with intraname: ${nameNick} not found`,
+				`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+				HttpStatus.NOT_FOUND);
+		return user;
 	}
 
-	async findGamesByUser(user: User) : Promise<Game[] | undefined> {
+	async findGamesByUser(user: User) : Promise<Game[]> {
 
-		const gamesPlayedbyId: Game[] = await this.gamesRepository.find(
+		let gamesPlayedbyId: Game[] = await this.gamesRepository.find(
 			{ where : [
-				{ player1 : {id: user.id} },
-				{ player2 : {id: user.id} },
+					{ player1 : {id: user.id} },
+					{ player2 : {id: user.id} },
 				]
 			}
 		);
+		if (!gamesPlayedbyId)
+			gamesPlayedbyId = [];
 		return gamesPlayedbyId;
 	}
 
-	async getUserId(code: string): Promise<User | null> 
-	{
-		const numb = Number(code);
-		return (this.findOneId(numb));
+	async getUserId(code: string): Promise<User> {
+		const user: User = await this.findOneId(Number(code));
+		if (!user)
+			this.thrower.throwSessionExcp(`User with id: ${code} not found`,
+				`${UsersService.name}.${this.constructor.prototype.getUserId.name}()`,
+				HttpStatus.NOT_FOUND);
+		return (user);
 	}
 
-	async getUserIntraId(code: string): Promise<User | null>
-	{
-		const numb = Number(code);
-		return (this.findOneIntra(numb));
+	async getUserIntraId(code: string): Promise<User> {
+		const user: User = await this.findOneIntra(Number(code));
+		if (!user)
+			this.thrower.throwSessionExcp(`User with intraId: ${code} not found`,
+				`${UsersService.name}.${this.constructor.prototype.getUserIntraId.name}()`,
+				HttpStatus.NOT_FOUND);
+		return (user);
 	}
 
-	async setStatus(Id: string, status: UserStatus)
+	async setStatus(id: string, status: UserStatus)
 	{
-		var user = await this.getUserId(Id);
+		const user = await this.getUserId(id);
 		user.status = status;
 		this.usersRepository.save(user);
 	}
 
 	async setUserStatus(id: number, which: UserStatus)
 	{
-		var user = await this.findOneIntra(id);
+		const user = await this.findOneIntra(id);
 		user.status = which;
 		this.usersRepository.save(user);
 	}
@@ -146,23 +159,20 @@ export class UsersService {
   
 	async getFriend(code: string): Promise<User | null> 
 	{
-		const numb = Number(code);
-		return (this.findOneIntra(numb));
+		return (this.findOneIntra(Number(code)));
 	}
 
 	async friendRequestAccepted(iduser:string, idother:string)
 	{
-		let user = await this.getUserId(iduser);
-		let otheruser = await this.getUserId(idother);
-		if ((user == null) || (otheruser == null))
-		// {
-			// console.log("ERROR accepting friendreq");
-			throw new HttpException('Not Found', 404);
-		// }
+		const [user, otheruser] = await Promise.all([this.getUserId(iduser), this.getUserId(idother)]);
+
 		(user).friends.push((otheruser).intraId.toString());
 		this.usersRepository.save((user));
+
 		(otheruser).friends.push((user).intraId.toString());
 		this.usersRepository.save((otheruser));
+
+		this.logger.log(`Created friendship between ${user.nameNick} and ${otheruser.nameNick}`);
 	}
 
 	async removeFriend(user: User, other: User)
@@ -174,7 +184,7 @@ export class UsersService {
 		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
 		other.friends = newlist;
 		this.usersRepository.save(other);
-		
+
 		this.logger.log(`Removed friendship between ${user.nameNick} and ${other.nameNick}`);
 	}
 
@@ -188,7 +198,7 @@ export class UsersService {
 		user.blocked.push(other.intraId.toString());
 		this.usersRepository.save(user);
 
-		this.logger.log(`User ${user.nameNick} blocked ${other.nameNick}`);
+		this.logger.log(`User ${other.nameNick} blocked by ${user.nameNick}`);
 	}
   
 	async unBlockUser(user: User, other: User)
@@ -196,6 +206,7 @@ export class UsersService {
 		const newlist = user.blocked.filter(blocked => blocked !== other.intraId.toString());
 		user.blocked = newlist;
 		this.usersRepository.save(user);
+	
 		this.logger.log(`User ${user.nameNick} unblocked ${other.nameNick}`);
 	}
 
@@ -216,6 +227,7 @@ export class UsersService {
 			],
 			relations: ['player1', 'player2'],
 		});
+
 		let matchData: MatchDataDTO[] = [];
 		for (const game of gamesDB) {
 
@@ -232,7 +244,7 @@ export class UsersService {
 		}
 
 		this.logger.debug(`Fetching matches for user ${user.nameNick}`);
-		return matchData;
+		return (matchData);
 	}
 
 	async calculateRatio(user: User): Promise<MatchRatioDTO[]>
