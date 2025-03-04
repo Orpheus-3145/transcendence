@@ -123,10 +123,25 @@ export class UsersService {
 		this.usersRepository.save(user);
 	}
 
-	async setNameNick(user: User, nameNick: string)
+	async setNameNick(userId: string, newUsername: string): Promise<string>
 	{
-		user.nameNick = nameNick;
+		if (newUsername.length > 27)
+			return ("lenght is bigger then 27 chars, make it shorter!");
+
+		const regex = /^[a-zA-Z0-9\-_]+$/;
+		if (regex.test(newUsername) === false)
+			return (`'${newUsername}': invalid input, only letters, numbers, - and _ are allowed`)
+
+		const user = await this.getUserId(userId);
+		if (await this.findOneNick(newUsername))
+			return ("name already in use");
+
+		const oldUserName: string = user.nameNick;
+		user.nameNick = newUsername;
 		this.usersRepository.save(user);
+		
+		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`)
+		return ("");
 	}
   
 	async getFriend(code: string): Promise<User | null> 

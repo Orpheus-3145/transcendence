@@ -31,7 +31,7 @@ import Game from './entities/game.entity';
 				database: configService.get<string>('POSTGRES_DB'),
 				entities: [User, Notification, Message, Channel, ChannelMember, Game], // List your entities here
 				synchronize: true,
-				// logging: true,
+				// logging: true,			// log every query done by ORM
 			}),
 		}),
 		AuthModule,

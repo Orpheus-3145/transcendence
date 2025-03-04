@@ -35,55 +35,8 @@ export class UsersController {
 	@Post('/profile/:username/newnick')
 	async setNewNickname(@Param('username') username: string, @Body('newname') newname:string) : Promise<string>
 	{
-		if (newname.length == 0)
-		{
-			return ("lenght is 0, add chars!");
-		}
-		if (newname.length > 27)
-		{
-			return ("lenght is bigger then 27 chars, make it shorter!");
-		}
-
-		let i = Number(0);
-		while (i < newname.length)
-		{
-			if (((newname[i] < 'a') || (newname[i] > 'z')) && ((newname[i] < 'A') || (newname[i] > 'Z')) && ((newname[i] < '0') || (newname[i] > '9')))
-			{
-				if (newname[i] != ' ' && newname[i] != '_' && newname[i] != '-')
-				{
-					var str: string = "char: " + newname[i] + " is not allowed! Only letters, numbers, spaced, - and _ are allowed!";
-					return (str);
-				}
-			}
-			i++;
-		}
-		i = 0;
-		while (i < newname.length)
-		{
-			if (newname[i] != ' ')
-			{
-				break ;
-			}
-			i++;
-		}
-		if (i == newname.length)
-		{	
-			return ("name needs atleast 1 letter or number!");
-		}
-		var user = await this.UserService.getUserId(username);
-		if (user == null)
-		{
-			console.log("error");
-			return ("error");
-		}
-
-		var tmp: User | null = await this.UserService.findOneNick(newname);
-		if (tmp)
-		{
-			return ("name already exists!");
-		}
-		this.UserService.setNameNick(user, newname);
-		return ("");
+		const status: string = await this.UserService.setNameNick(username, newname);
+		return (status);
 	}
 
 	@Get('/profile/:username/friend/:id')
