@@ -50,6 +50,12 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 	return found ? true : false;
 };
 
+export const userBanned = (userName: string, channel: ChatRoom): boolean =>
+{
+	const found = channel.settings.banned.find((user) => user === userName);
+	return found ? true : false;
+}
+
 //////////////////////////////////////////////////////////////////////
 
 let joinedRooms: number[] = [];
@@ -165,6 +171,7 @@ const ChannelsPage: React.FC = () => {
 								icon: <Avatar />,
 							})),
 							owner: newChannel.ch_owner,
+							banned: newChannel.banned,
 						},
 						isDirectMessage: newChannel.isDirectMessage,
 					},
@@ -725,19 +732,24 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	const renderAvailableChannels = (channels: ChatRoom[]) => {
-		const filteredChannels = channels.filter(
+		let filteredChannels = channels.filter(
 			channel => 
 				!userInChannel(user.nameIntra, channel) 
 				// && channel.settings.type !== 'private'
 		);
-
+		
+		filteredChannels = channels.filter(
+			channel => 
+				!userBanned(user.id.toString(), channel) 
+				// && channel.settings.type !== 'private'
+		);
 		// if (filteredChannels.length === 0) {
 		// 	return null;
 		// }
 
 		return (
 			<Stack gap={1}>
-			{channels.map((channel) => ( 
+			{filteredChannels.map((channel) => ( 
 				<AvailableChannelLine key={channel?.id} channel={channel} />
 			))}
 	 		</Stack>

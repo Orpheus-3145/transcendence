@@ -668,7 +668,7 @@ const fetchOpponentDetails = async (opponentId: string) => {
 		addFriend(user.id.toString(), userProfile.id.toString());
 	}
 
-    const [modalOpen, setModalOpen] = React.useState(false);
+    const [modalOpen, setModalOpen] = useState<Boolean>(false);
 
     const handleModalClose = () => {
         setModalOpen(false);
