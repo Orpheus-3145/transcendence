@@ -51,9 +51,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const [label, setLabel] = useState<string>("Add Friend");
 	const theme = useTheme();
 	const { user } = useUser();
-	const navigate = useNavigate();
-
-	const [bruh, setBruh] = useState<string[]>([]);
+	const [banned, setbanned] = useState<Map<string, User>>(new Map());
 
 	// console.log(user);
 
@@ -120,11 +118,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		const updatedUsers = settings.users.filter((item: UserProps) => item.id !== user.id);
 		const tmp: string[] = settings.banned;
 		tmp.push(user.id.toString());
-		setBruh(tmp);
 		setSettings({...settings, users: updatedUsers, banned: tmp});
-		// var tmp: ChatSettings = settings;
-		// tmp.banned.push(user.id.toString());
-		// setSettings(...settings, banned: tmp.banned);
+
 		socket.emit('banUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
 	};
 
@@ -132,11 +127,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	{
 		const updatedUsers = settings.banned.filter((item: string) => item !== user.id.toString());
 		setSettings({...settings, banned: updatedUsers});
-		// const tmp = settings.banned + user.id.toString();
-		// setSettings({...settings, users: updatedUsers, banned: tmp});
-		// // var tmp: ChatSettings = settings;
-		// // tmp.banned.push(user.id.toString());
-		// // setSettings(...settings, banned: tmp.banned);
+
 		socket.emit('unbanUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
 	};
 
@@ -294,8 +285,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		
 
 	};
-
-	const [banned, setbanned] = useState<Map<string, User>>(new Map());
 
 	const fetchbanned = async (bannedId: string) => {
 		const banned = await fetchOpponent(bannedId);
