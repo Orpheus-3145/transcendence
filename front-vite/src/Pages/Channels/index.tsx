@@ -15,10 +15,14 @@ import { Add as AddIcon, Group as GroupIcon, Cancel as CancelIcon, Logout as Log
 import { timeStamp } from 'console';
 import { index } from 'cheerio/dist/commonjs/api/traversing';
 import { useChatContext, socket } from '../../Layout/Chat/ChatContext';
-import { User, useUser } from '../../Providers/UserContext/User';
+import { fetchFriend, fetchOpponent, fetchUser, fetchUserMessage, getUserFromDatabase, useUser } from '../../Providers/UserContext/User';
+import { User } from '../../Types/User/Interfaces';
 import { getAll } from '../../Providers/UserContext/User';
 import { getRandomValues } from 'crypto';
 import { copyFileSync } from 'fs';
+import { GameInviteModal } from '../Game/inviteModal';
+import { PowerUpSelected } from '../../Types/Game/Enum';
+import { inviteToGame } from '../../Providers/NotificationContext/Notification';
 // import { Socket } from 'socket.io-client';
 
 
@@ -50,6 +54,12 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 	return found ? true : false;
 };
 
+export const userBanned = (userName: string, channel: ChatRoom): boolean =>
+{
+	const found = channel.settings.banned.find((user) => user === userName);
+	return found ? true : false;
+}
+
 //////////////////////////////////////////////////////////////////////
 
 let joinedRooms: number[] = [];
@@ -74,7 +84,9 @@ const ChannelsPage: React.FC = () => {
 	const [joinedChannels, setJoinedChannels] = useState<ChatRoom[]>([]);
 	const [selectedChannel, setSelectedChannel] = useState<ChatRoom | null>(null);
 	const [selectedAvailableChannel, setSelectedAvailableChannel] = useState<ChatRoom | null>(null);
-  
+	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
+	const [modalOpen, setModalOpen] = useState<Boolean>(false);
+
 	useEffect(() => {
 		// if (chatProps.chatRooms) {
 		const joined = chatProps.chatRooms.filter((channel) =>
@@ -165,6 +177,8 @@ const ChannelsPage: React.FC = () => {
 								icon: <Avatar />,
 							})),
 							owner: newChannel.ch_owner,
+							banned: newChannel.banned,
+							muted: newChannel.muted,
 						},
 						isDirectMessage: newChannel.isDirectMessage,
 					},
@@ -435,7 +449,6 @@ const ChannelsPage: React.FC = () => {
 				receiver_id: selectedChannel.id,
 				content: newMessage,
 			};
-
 			socket.emit('sendMessage', messageData); 
 		
 			setNewMessage('');
@@ -451,7 +464,7 @@ const ChannelsPage: React.FC = () => {
 			const newMessage: ChatMessage = {
 				id: message.msg_id,
 				message: message.content,
-				user: user.nameIntra,
+				user: message.sender_id,
 				userPP: <Avatar />,
 				timestamp: message.send_time,
 			}
@@ -647,10 +660,35 @@ const ChannelsPage: React.FC = () => {
 	};
 //////////////////////////////////////////////////////////////////////
 
+	const handleModalClose = () => {
+		setModalOpen(false);
+	};
+
+	const handleModalOpen = () => {
+		setModalOpen(true); 
+	};
+
+	const checkIfBlocked = (otherUser: User) =>
+	{
+		if (user.blocked.find((blockedId:string) => blockedId === otherUser.intraId.toString())) 
+		{
+			return (true);
+		}
+		return (false);
+	}
+
+	const InviteGame = (otherUser: User) => {
+		
+		handleModalClose();
+		if (checkIfBlocked(otherUser) == true)
+				return ;
+
+		inviteToGame(user.id.toString(), otherUser.id.toString(), powerupValue);
+	}
+
 	const UserLine: React.FC<{eveuser: User}> = ({user}) => {
 		return (
 			<Stack
-				onClick={() => {(navigate(`/profile/1`))}} // TO BE REPLACED!
 				direction={'row'}
 				paddingX={'0.5em'}
 				justifyContent={'center'}
@@ -672,16 +710,25 @@ const ChannelsPage: React.FC = () => {
 				}}
 			>
 				<AccountCircleIcon sx={{ marginRight: 1}}/>
-				<Typography noWrap sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+				<Typography noWrap onClick={() => {(navigate(`/profile/` + user.id.toString()))}} sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
 					{user.nameIntra}
 		 		 </Typography>
-				<Box sx={{ flexGrow: 1 }} />
-				<IconButton
-					onClick={handleSendGameInvite}
-					sx={{  }}
-				>
-					<GameIcon sx={{ }}/>
-				</IconButton>
+				<Box sx={{ flexGrow: 1 }} /> 
+				<Tooltip title='Send game invite' arrow>
+					<IconButton
+						onClick={handleModalOpen}
+						sx={{  }}
+					>
+						<GameIcon sx={{ }}/>
+					</IconButton>
+				</Tooltip>
+				{modalOpen && 
+					<GameInviteModal 
+						open={modalOpen} 
+						onClose={() => InviteGame(user)} 
+						setValue={(revalue: PowerUpSelected) => {setPowerupValue(revalue)}} 
+					/>
+				}
 				<Tooltip title='Send a direct messsage' arrow>
 					<IconButton
 						onClick={(event: React.MouseEvent) => handleSendDirectMessageClick(event, user)}
@@ -697,15 +744,12 @@ const ChannelsPage: React.FC = () => {
 
 	const renderUsers = () => (
 		<Stack gap={1}>
-			{users.map((user) => (
-				<UserLine key={user.id} user={user} />	
-			))}
-			
-			{/* {Array.from({ length: 20 }).map((_, index) => (
-				<UserLine key={index} />	
-			))} */}
+			{users
+				.filter((item: User) => item.intraId !== user.intraId) // ✅ Filter users first
+				.map((item: User) => <UserLine key={item.id} user={item} />)}
 		</Stack>
 	);
+
 
 	//---Function to render the list of channels---//
 	const renderJoinedChannels = (channels: ChatRoom[]) => {
@@ -725,19 +769,24 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	const renderAvailableChannels = (channels: ChatRoom[]) => {
-		const filteredChannels = channels.filter(
+		let filteredChannels = channels.filter(
 			channel => 
 				!userInChannel(user.nameIntra, channel) 
 				// && channel.settings.type !== 'private'
 		);
-
+		
+		filteredChannels = channels.filter(
+			channel => 
+				!userBanned(user.id.toString(), channel) 
+				// && channel.settings.type !== 'private'
+		);
 		// if (filteredChannels.length === 0) {
 		// 	return null;
 		// }
 
 		return (
 			<Stack gap={1}>
-			{channels.map((channel) => ( 
+			{filteredChannels.map((channel) => ( 
 				<AvailableChannelLine key={channel?.id} channel={channel} />
 			))}
 	 		</Stack>
@@ -763,6 +812,54 @@ const ChannelsPage: React.FC = () => {
 	 		</Stack>
 		);
 	};
+
+	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
+
+	const fetchUser = async (userId: string) => {
+		const user = await fetchUserMessage(userId);
+		setUserMessage((prev) => new Map(prev).set(userId, user));
+	};
+
+	const showMessages =  (muted: string[], msg: ChatMessage, index: number) =>
+	{
+		if (muted.find((item: string) => item == msg.user))
+		{
+			return (
+				<Stack></Stack>
+			);
+		}
+
+		var user = userMessage.get(msg.user);
+		
+		if (!user) {
+			fetchUser(msg.user);
+			return <Stack>Loading...</Stack>;
+		}
+
+		return (
+				<Box
+					key={index}
+					sx={{display: "flex", alignItems: "center", mb: 3}}
+				>
+					<Avatar
+						onClick={()=> (navigate(`/profile/${user.id.toString()}`))}
+						sx={{cursor: 'pointer', mr: 2}}
+						src={user.image}
+					>
+					</Avatar>
+					<Typography 
+						sx={{ whiteSpace: "normal",
+							overflowWrap: 'anywhere',
+							wordBreak: 'break-word',
+							maxWidth: "70%"}}
+						key={index}
+					>
+						{`(${user.nameNick}): `}
+						{msg.message}
+					</Typography>
+				</Box>
+		);
+	}
 
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
@@ -908,31 +1005,7 @@ const ChannelsPage: React.FC = () => {
 					}     
 				  >
 					{/* {console.log(selectedChannel.messages)}; */}
-					{selectedChannel.messages.map((msg, index) => (
-					  <Box
-						key={index}
-						sx={{display: "flex", alignItems: "center", mb: 3}}
-					  >
-					  	<Avatar
-							onClick={()=> (navigate(`/profile/${msg.user}`))}
-							sx={{cursor: 'pointer', mr: 2}}
-						>
-							{msg.userPP}
-						</Avatar>
-					  	<Typography 
-							sx={{ whiteSpace: "normal",
-								overflowWrap: 'anywhere',
-								wordBreak: 'break-word',
-								maxWidth: "70%"}}
-							key={index}
-						>
-							{/* {console.log(msg.user)} */}
-							{`(${msg.user})`}
-							{`(${socket.id}): `}
-							{msg.message}
-						</Typography>
-					  </Box>
-					))}
+					{selectedChannel.messages.map((msg: ChatMessage, index: number) => (showMessages(selectedChannel.settings.muted, msg, index)))}
 				  </Stack>
 				
 				  {/*---Render Input Box---*/}

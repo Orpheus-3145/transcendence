@@ -39,18 +39,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	constructor(private chatService: ChatService) {};
 	
 	handleConnection(client: Socket) {
-		console.log(`New client connected to ChatGateway: ${client.id}`);
-		
-		// const newConnectedUser = {
-		// 	clientSocket: client,
-		// 	intraId: ,
-		// 	nameIntra: string,
-		// };
-
 
 		this.connectedClients.set(client.id, client);
-		// console.log(this.connectedClients);
-		console.log('Connected clients to ChatGateway: ', Array.from(this.connectedClients.keys()));
 		this.server.emit('clientsUpdated', Array.from(this.connectedClients.keys()));
 	}
 
@@ -147,6 +137,30 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	async kickUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
 	{
 		this.chatService.removeUserFromChannel(data.userid, data.channelid, "");
+	}
+
+	@SubscribeMessage('banUserFromChannel')
+	async banUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	{
+		this.chatService.banUserFromChannel(data.userid, data.channelid);
+	}
+
+	@SubscribeMessage('unbanUserFromChannel')
+	async unbanUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	{
+		this.chatService.unbanUserFromChannel(data.userid, data.channelid);
+	}
+
+	@SubscribeMessage('muteUserFromChannel')
+	async muteUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	{
+		this.chatService.muteUserFromChannel(data.userid, data.channelid);
+	}
+
+	@SubscribeMessage('unmuteUserFromChannel')
+	async unmuteUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	{
+		this.chatService.unmuteUserFromChannel(data.userid, data.channelid);
 	}
 
 	@SubscribeMessage('sendMessage')

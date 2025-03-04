@@ -42,6 +42,12 @@ export class Channel {
 	@OneToMany(() => ChannelMember, (channelMember: ChannelMember) => channelMember.channel)
 	members: ChannelMember[];
 
+	@Column("text", { array: true, default: '{}' })
+	banned: string[];
+
+	@Column("text", { array: true, default: '{}' })
+	muted: string[];
+
 	@OneToMany(() => Message, (message: Message) => message.channel)
 	messages: Message[];
 }

@@ -86,14 +86,20 @@ export class UsersController {
 		return ("");
 	}
 
-	@Get('/profile/:username/friend/:id')
+	@Get('/profile/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
 		return (this.UserService.getUserIntraId(id));
 	}
 
-	@Get('/profile/:username/opponent/:id')
-	async fetchOpponent(@Param('id') id: string) 
+	@Get('/profile/opponent/:intraName')
+	async fetchOpponent(@Param('intraName') intraName: string) 
+	{
+		return (this.UserService.findOneIntraName(intraName));
+	}
+
+	@Get('/profile/message/:id')
+	async fetchUserMessage(@Param('id') id: string) 
 	{
 		return (this.UserService.getUserId(id));
 	}
@@ -147,6 +153,7 @@ export class UsersController {
 			console.log("ERROR: image is invalid!");
 			throw new HttpException('Bad Request', 400);
 		}
+		console.log('calling changePFP (users.controller)!');
 		var user = await this.UserService.getUserId(username);
 		if (user == null)
 		{

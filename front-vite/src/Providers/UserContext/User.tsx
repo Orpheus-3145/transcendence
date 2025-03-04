@@ -120,7 +120,7 @@ export async function setNewNickname(username:string, nickname:string): Promise<
 }
 
 export async function fetchFriend(friend:string): Promise<User> {
-	const request = new Request(BACKEND_URL + '/users/profile/username/friend/' + friend, {
+	const request = new Request(BACKEND_URL + '/users/profile/friend/' + friend, {
 		method: "GET",
 	});
 
@@ -131,8 +131,20 @@ export async function fetchFriend(friend:string): Promise<User> {
 	return response;
 }
 
-export async function fetchOpponent(friend:string): Promise<User> {
-	const request = new Request(BACKEND_URL + '/users/profile/username/opponent/' + friend, {
+export async function fetchOpponent(intraName:string): Promise<User> {
+	const request = new Request(BACKEND_URL + '/users/profile/opponent/' + intraName, {
+		method: "GET",
+	});
+
+	const response = await fetch(request)
+		.then((raw) => raw.json())
+		.then((json) => json as User)
+
+	return response;
+}
+
+export async function fetchUserMessage(id:string): Promise<User> {
+	const request = new Request(BACKEND_URL + '/users/profile/message/' + id, {
 		method: "GET",
 	});
 
@@ -187,7 +199,7 @@ export async function changePFP(username:string, image:FormData): Promise<string
 	}
 	catch (error)
 	{
-		console.error("ERROR: matchRatio[] not found!" + error);
+		console.error("ERROR: MatchRatio[] not found!" + error);
 	}
 }
 
@@ -202,7 +214,6 @@ export async function fetchRatios(userProfile: User): Promise<MatchRatio[]>
 	} catch (error)
 		{
 			console.error("ERROR: fetchRatios failed!");
-		// NB no matches found, this shouldn't happen!
 	}
 }
 
