@@ -121,18 +121,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		// setSettings({ ...settings, users: updatedUsers });
 	};
 
-	const handleRoleChange = (name: string, role: string) => {
+	const handleRoleChange = (userId: number, role: string) => {
 		console.log('"Change Role" clicked!');
-		// if (selectedChannel.settings.owner === 'MSELF') { 
-			const newRole = role === 'member' ? 'admin' : 'member';
-			const updatedUsers = settings.users.map(user => user.name === name ? { ...user, role: newRole } : user);
-			setSettings({ ...settings, users: updatedUsers });
-			// } 
-			// else {
-				// 	alert('Only channel owners can change user permissions!');
-				// }
-
-		//--> CALL TO BACKEND <-- //
+		console.log(userId);
+		const data = {
+			user_id: userId,
+			channel_id: selectedChannel.id,
+			new_role: role === 'admin' ? 'member' : 'admin',
+		};
+		socket.emit('changeUserRole', data, (response) => {
+			if (response.success) {
+				const updatedUsers = settings.users.map(user => user.id === userId ? { ...user, role: data.new_role } : user);
+				setSettings({ ...settings, users: updatedUsers });
+			} else {
+				alert(`Error: ${response.message}`);
+			}
+		});
 	};
 
 	const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
@@ -165,27 +169,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 		socket.on('privacyChanged', handlePrivacyChanged);
 		
-		// Cleanup the listener when the component unmounts
 		return () => {
 		  socket.off('privacyChanged', handlePrivacyChanged);
 		};
 	}, []);
-
-	// const handleDeleteChannel = (channel_id: number) => {
-	// 	console.log("'Delete Channel' clicked!");
-
-	// 	socket.emit('deleteChannel', channel_id);
-
-	// 	// if (selectedChannel.settings.owner === user.nameIntra) {
-	// 		const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== channel_id);
-	// 		setChatProps({...chatProps, chatRooms: updatedChannels});
-	// 		setSelectedChannel(null);
-
-	// 	// }
-	// 	socket.on('error', (error) => {
-	// 		console.error(error.message);
-	// 	})
-	// }
 	
 	const handleDeleteChannel = (channel_id: number) => {
 		console.log("'Delete Channel' clicked!");
@@ -208,64 +195,58 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		});
 	};
 	
-
 	const handleLeaveChannel = () => {
-		setIsSettingsView(false);
-
-		const data = {
-			user_id: user.id, 
-			channel_id: selectedChannel.id,
-			role: selectedChannel.settings.users.find(user_ => user.id === user_.id).role,
-		};
-
-		socket.emit('leaveChannel', data);
-		
-		socket.once('leftChannel', (response) => {
-			if (response.channel_id === selectedChannel.id) {
-				setJoinedChannels((prevState) => prevState.filter(ch => ch.id !== selectedChannel.id));
-
-			}
-			
-			const filteredUsers = selectedChannel.settings.users.filter((usr) => usr.name !== user.nameIntra);
-			const updatedChannel: ChatRoom = {
-				...selectedChannel,
-				settings: {
-					...selectedChannel.settings,
-					users: filteredUsers,
-					owner: selectedChannel.settings.owner === user.nameIntra ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
-				},
+		if (selectedChannel.settings.type === 'password'
+			&& !selectedChannel.settings.password) {
+			alert('Must provide a password or change the channel privacy');
+		}
+		else {
+			setIsSettingsView(false);
+	
+			const data = {
+				user_id: user.id, 
+				channel_id: selectedChannel.id,
+				role: selectedChannel.settings.users.find(user_ => user.id === user_.id).role,
 			};
+	
+			socket.emit('leaveChannel', data);
 			
-			// console.log('Filtered users', filteredUsers);
-			// if (filteredUsers.length )
-			// setAvailableChannels((prevState) => {
-			// 	const newChannels = [...prevState, updatedChannel];
-			// 	// console.log("Updated availableChannels:", n`ewChannels);
-			// 	return newChannels;
-			// });
-
-			if (filteredUsers.length > 0) {
-				setAvailableChannels((prevState) => [...prevState, updatedChannel]);
-			}
-
-			setSelectedChannel(null);
-		});
-		
-		socket.once('leavingChannelError', (error) => {
-			console.error(error.message);
-			alert(`Error joining channel: ${error.message}`);
-		});
-
-
-		// if (selectedChannel.settings.users.length === 1 && userInChannel(user.nameIntra, selectedChannel)) {
-		// 	setSelectedChannel(null);
-		// 	return ;
-		// }
-
-		// setAvailableChannels((prevState) => [...prevState, updatedChannel]);
-
-		
-
+			socket.once('leftChannel', (response) => {
+				if (response.channel_id === selectedChannel.id) {
+					setJoinedChannels((prevState) => prevState.filter(ch => ch.id !== selectedChannel.id));
+	
+				}
+				
+				const filteredUsers = selectedChannel.settings.users.filter((usr) => usr.name !== user.nameIntra);
+				const updatedChannel: ChatRoom = {
+					...selectedChannel,
+					settings: {
+						...selectedChannel.settings,
+						users: filteredUsers,
+						owner: selectedChannel.settings.owner === user.nameIntra ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
+					},
+				};
+				
+				// console.log('Filtered users', filteredUsers);
+				// if (filteredUsers.length )
+				// setAvailableChannels((prevState) => {
+				// 	const newChannels = [...prevState, updatedChannel];
+				// 	// console.log("Updated availableChannels:", n`ewChannels);
+				// 	return newChannels;
+				// });
+	
+				if (filteredUsers.length > 0) {
+					setAvailableChannels((prevState) => [...prevState, updatedChannel]);
+				}
+	
+				setSelectedChannel(null);
+			});
+			
+			socket.once('leavingChannelError', (error) => {
+				console.error(error.message);
+				alert(`Error joining channel: ${error.message}`);
+			});
+		}
 	};
 
 
@@ -273,7 +254,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	return (
 		<Modal open={open} onClose={onClose}>
 			{!selectedChannel.isDirectMessage ? (
-			<Box bgcolor={theme.palette.primary.light} p={3} width="450px" borderRadius={2} margin="auto" mt="10%">
+			<Box bgcolor={theme.palette.primary.light} p={3} width="500px" borderRadius={2} margin="auto" mt="10%">
 				{!selectedChannel.isDirectMessage && (
 					<>
 					<Typography variant="h6">{`Channel Owner: ${selectedChannel.settings.owner}`}</Typography>
@@ -364,15 +345,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						</Typography>
 						{/* {console.log(user.nameIntra)} */}
 						{(selectedChannel.settings.owner === user.nameIntra ||
-							userIsAdmin(_user.name, selectedChannel)) &&
+							userIsAdmin(user.nameIntra, selectedChannel)) &&
 							user.nameIntra !== _user.name && (
 						<Stack direction="row" spacing={0.3}>
-							<Button sx={{width: '110px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(user.name, user.role)}>
+							<Button sx={{width: '120px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(_user.id, _user.role)}>
 								{_user.role === 'admin' ? 'Make Member' : 'Make Admin' }
 							</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(user.name)}>Kick</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(user.name)}>Ban</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(user.name)}>Block</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(_user.name)}>Kick</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(_user.name)}>Ban</Button>
+							<Button variant="outlined" color="error" size="small" onClick={() => handleBlockFriend(_user.name)}>Block</Button>
 						</Stack>
 						)}
 						</Stack>
