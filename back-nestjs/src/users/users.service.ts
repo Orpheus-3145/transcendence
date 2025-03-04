@@ -130,7 +130,7 @@ export class UsersService {
 
 		const regex = /^[a-zA-Z0-9\-_]+$/;
 		if (regex.test(newUsername) === false)
-			return (`'${newUsername}': invalid input, only letters, numbers, - and _ are allowed`)
+			return (`'${newUsername}': invalid input, only letters, numbers, - and _ are allowed`);
 
 		const user = await this.getUserId(userId);
 		if (await this.findOneNick(newUsername))
@@ -140,7 +140,7 @@ export class UsersService {
 		user.nameNick = newUsername;
 		this.usersRepository.save(user);
 		
-		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`)
+		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
 		return ("");
 	}
   
@@ -152,13 +152,13 @@ export class UsersService {
 
 	async friendRequestAccepted(iduser:string, idother:string)
 	{
-		var user = await this.getUserId(iduser);
-		var otheruser = await this.getUserId(idother);
+		let user = await this.getUserId(iduser);
+		let otheruser = await this.getUserId(idother);
 		if ((user == null) || (otheruser == null))
-		{
+		// {
 			// console.log("ERROR accepting friendreq");
 			throw new HttpException('Not Found', 404);
-		}
+		// }
 		(user).friends.push((otheruser).intraId.toString());
 		this.usersRepository.save((user));
 		(otheruser).friends.push((user).intraId.toString());
@@ -167,35 +167,43 @@ export class UsersService {
 
 	async removeFriend(user: User, other: User)
 	{
-		var newlist = user.friends.filter(friend => friend !== other.intraId.toString());
+		let newlist = user.friends.filter(friend => friend !== other.intraId.toString());
 		user.friends = newlist;
 		this.usersRepository.save(user);
+		
 		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
 		other.friends = newlist;
 		this.usersRepository.save(other);
+		
+		this.logger.log(`Removed friendship between ${user.nameNick} and ${other.nameNick}`);
 	}
 
 	async blockUser(user: User, other: User)
 	{
-		var str: string = other.intraId.toString();
-		if (user.blocked.find((blockedId) => blockedId === str))
+		// if it's already blocked ignore
+		if (user.blocked.find((blockedId) => blockedId === other.intraId.toString()))
 			return ;
+
 		this.removeFriend(user, other);
 		user.blocked.push(other.intraId.toString());
 		this.usersRepository.save(user);
+
+		this.logger.log(`User ${user.nameNick} blocked ${other.nameNick}`);
 	}
   
 	async unBlockUser(user: User, other: User)
 	{
-		var newlist = user.blocked.filter(blocked => blocked !== other.intraId.toString());
+		const newlist = user.blocked.filter(blocked => blocked !== other.intraId.toString());
 		user.blocked = newlist;
 		this.usersRepository.save(user);
+		this.logger.log(`User ${user.nameNick} unblocked ${other.nameNick}`);
 	}
 
 	async changeProfilePic(user: User, image:string)
 	{
 		user.image = image;
 		this.usersRepository.save(user);
+		this.logger.log(`User ${user.nameNick} updated their profile picture`);
 		return (image);
 	}
 
@@ -223,6 +231,7 @@ export class UsersService {
 			});
 		}
 
+		this.logger.debug(`Fetching matches for user ${user.nameNick}`);
 		return matchData;
 	}
 
@@ -293,6 +302,7 @@ export class UsersService {
 			}
 		];
 
+		this.logger.debug(`Fetching matche ratios for user ${user.nameNick}`);
 		return (resultArr);
 	}
 
@@ -369,6 +379,7 @@ export class UsersService {
 		var result: LeaderboardDTO[][] = [];
 		result.push(normalArr, powerArr, allArr);
 
+		this.logger.debug(`Creating global leaderboard`);
 		return (result);
 	}
 }

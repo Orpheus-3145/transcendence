@@ -54,39 +54,39 @@ export class UsersController {
 	@Get('profile/:username/friend/remove/:id')
 	async removeFriend(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = await this.UserService.getUserId(username);
-		var other = await this.UserService.getUserIntraId(id);
+		const user = await this.UserService.getUserId(username);
+		const other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
-		{
-			console.log("ERROR: failed to get user in removeFriend!");
+		// {
+			// console.log("ERROR: failed to get user in removeFriend!");
 			throw new HttpException('Not Found', 404);
-		}
+		// }
 		return (this.UserService.removeFriend(user, other));
 	}
 
 	@Get('profile/:username/friend/block/:id')
 	async blockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = await this.UserService.getUserId(username);
-		var other = await this.UserService.getUserIntraId(id);
+		const user = await this.UserService.getUserId(username);
+		const other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
-		{
-			console.log("ERROR: failed to get user in blockUser!");
+		// {
+		// 	console.log("ERROR: failed to get user in blockUser!");
 			throw new HttpException('Not Found', 404);
-		}
+		// }
 		return (this.UserService.blockUser(user, other));
 	}
 
 	@Get('profile/:username/friend/unBlock/:id')
 	async unBlockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		var user = await this.UserService.getUserId(username);
-		var other = await this.UserService.getUserIntraId(id);
+		const user = await this.UserService.getUserId(username);
+		const other = await this.UserService.getUserIntraId(id);
 		if (user == null || other == null)
-		{
-			console.log("ERROR: failed to get user in blockUser!");
+		// {
+		// 	console.log("ERROR: failed to get user in blockUser!");
 			throw new HttpException('Not Found', 404);
-		}
+		// }
 		return (this.UserService.unBlockUser(user, other));
 	}
 
@@ -95,17 +95,17 @@ export class UsersController {
 	async changePFP(@Param('username') username:string,  @UploadedFile() file: any) 
 	{
 		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-		if (!image)
-		{
-			console.log("ERROR: image is invalid!");
-			throw new HttpException('Bad Request', 400);
-		}
-		var user = await this.UserService.getUserId(username);
+		// if (!image)
+		// {
+		// 	console.log("ERROR: image is invalid!");
+		// 	throw new HttpException('Bad Request', 400);
+		// }
+		const user = await this.UserService.getUserId(username);
 		if (user == null)
-		{
-			console.log("ERROR: getting user in changePFP!");
+		// {
+		// 	console.log("ERROR: getting user in changePFP!");
 			throw new HttpException('Not Found', 404);
-		}
+		// }
 		return (this.UserService.changeProfilePic(user, image));
 	}
 
@@ -127,6 +127,6 @@ export class UsersController {
 
 	@Get('/fetchLeaderboard')
 	async fetchLeaderboard() {
-		return (this.UserService.leaderboardCalculator());
+		return (await this.UserService.leaderboardCalculator());
 	}
 }
