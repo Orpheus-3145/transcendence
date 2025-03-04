@@ -249,22 +249,59 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		console.log("'Delete Channel' clicked!");
 		socket.emit('deleteChannel', channel_id);
 	
-		// Listen for success or error response from the server
-		socket.once('channelDeleted', (deletedChannel) => {
-			if (deletedChannel) {
-				const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== channel_id);
-				setChatProps({ ...chatProps, chatRooms: updatedChannels });
-				setSelectedChannel(null);
-				console.log(`Channel deleted: ${deletedChannel.title}`);
-			} else {
-				console.error('Failed to delete channel');
-			}
-		});
+		// // // Listen for success or error response from the server
+		// socket.once('channelDeleted', (deletedChannel) => {
+		// 	console.log(`Channel id: ${deletedChannel.channel_id}`);
+
+		// 	if (deletedChannel) {
+		// 		const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== channel_id);
+		// 		// console.log(deletedChannel.id);
+		// 		setChatProps({ ...chatProps, chatRooms: updatedChannels });
+		// 		setSelectedChannel(null);
+		// 		console.log(`Channel deleted: ${deletedChannel.title}`);
+		// 	} else {
+		// 		console.error('Failed to delete channel');
+		// 	}
+		// });
 	
-		socket.once('error', (error) => {
-			console.error(error.message);
-		});
+		// socket.once('error', (error) => {
+		// 	console.error(error.message);
+		// });
 	};
+
+	useEffect(() => {
+		const handleChannelDeleted = (response) => {
+			console.log('Channel deleted', response.channel_id);
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: prevState.chatRooms.filter(chat => chat.id !== response.channel_id),
+			}));
+			setSelectedChannel(null);
+		};
+	
+		socket.on('channelDeleted', handleChannelDeleted);
+		
+		return () => {
+			socket.off('channelDeleted', handleChannelDeleted);
+		};
+	}, []);
+
+	// useEffect(() => {
+	// 	socket.on('channelDeleted', (deletedChannel) => {
+	// 		console.log(`Channel deleted: ${deletedChannel.title}`);
+	// 		console.log(`Channel id: ${deletedChannel.channel_id}`);
+	// 		const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== deletedChannel.id);
+	// 		console.log('Updated Channels', updatedChannels);
+	// 		setChatProps({ ...chatProps, chatRooms: updatedChannels });
+	// 		setSelectedChannel(null);
+	// 	});
+	// 	return () => {
+	// 		socket.off('channelDeleted');
+	// 	};
+	// }, []);
+
+
+	
 	
 	const handleLeaveChannel = () => {
 		if (selectedChannel.settings.type === 'password'

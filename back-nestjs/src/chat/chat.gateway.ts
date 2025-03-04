@@ -248,9 +248,11 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	): Promise<void> {
 		try {
 			const deletedChannel = await this.chatService.deleteChannel(channel_id);
+			// console.log('Deleted Channel', deletedChannel);
 			if (deletedChannel) {
 				console.log(`Channel deleted: ${deletedChannel.title}`);
-				this.server.emit('channelDeleted', deletedChannel);
+				this.server.emit('channelDeleted', {channel_id});
+				// this.server.emit('channelDeleted', deletedChannel);
 				// client.emit('channelDeleted', deletedChannel);
 			} else {
 				client.emit('error', { message: 'Channel not found or could not be deleted' });
