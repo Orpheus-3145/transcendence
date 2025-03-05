@@ -6,10 +6,18 @@ import { Notification } from '../entities/notification.entity';
 import { NotificationGateway } from './notification.gateway';
 import { ChatModule } from 'src/chat/chat.module';
 import GameModule from 'src/game/game.module';
+import AppLoggerModule from 'src/log/log.module';
+import ExceptionModule from 'src/errors/exception.module';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Notification]), forwardRef(() => UsersModule), forwardRef(() => ChatModule), GameModule],
-	controllers: [],
+	imports: [
+		GameModule,
+		AppLoggerModule,
+		ExceptionModule,
+		TypeOrmModule.forFeature([Notification]),
+		forwardRef(() => UsersModule),
+		forwardRef(() => ChatModule),
+	],
 	providers: [NotificationService, NotificationGateway],
 	exports: [NotificationService, NotificationGateway, TypeOrmModule],
 })

@@ -39,12 +39,13 @@ export default class MatchmakingService {
 	_checkNewGame(): void {
 		for (let i = 0; i < this._waitingPlayers.length - 1; i++) {
 			for (let j = i + 1; j < this._waitingPlayers.length; j++) {
+				
 				if ( this._waitingPlayers[i].extras !== this._waitingPlayers[j].extras )
 					continue ;
 				
 				// found a match, a new game can start
-				const player1: WaitingPlayer = this._waitingPlayers[i];
-				const player2: WaitingPlayer = this._waitingPlayers[j];
+				this.startNewGame(this._waitingPlayers[i], this._waitingPlayers[j]);
+				
 				// removing players from queue
 				this._waitingPlayers.splice(i, 1);
 				this._waitingPlayers.splice(j - 1, 1);
@@ -52,22 +53,27 @@ export default class MatchmakingService {
 					clearInterval(this._checker);
 					this._checker = null;
 				}
-				// emitting players, creating game room
-				const initData: GameDataDTO = {
-					sessionToken: uuidv4(),
-					mode: GameMode.multi,
-					difficulty: GameDifficulty.unset,
-					extras: player1.extras,
-				};
-				player1.clientSocket.emit('ready', initData.sessionToken);
-				player2.clientSocket.emit('ready', initData.sessionToken);
-				player1.clientSocket.disconnect();
-				player2.clientSocket.disconnect();
 
-				this.logger.log(`session [${initData.sessionToken}] - creating new room for multiplayer game`);
-				this.roomManager.createRoom(initData);
 				return;
 			}
 		}
+	}
+
+	startNewGame(player1: WaitingPlayer, player2: WaitingPlayer): void {
+	
+		// emitting players, creating game room
+		const initData: GameDataDTO = {
+			sessionToken: uuidv4(),
+			mode: GameMode.multi,
+			difficulty: GameDifficulty.unset,
+			extras: player1.extras,
+		};
+		player1.clientSocket.emit('ready', initData.sessionToken);
+		player2.clientSocket.emit('ready', initData.sessionToken);
+		player1.clientSocket.disconnect();
+		player2.clientSocket.disconnect();
+
+		this.logger.log(`session [${initData.sessionToken}] - creating new room for multiplayer game`);
+		this.roomManager.createRoom(initData);
 	}
 }

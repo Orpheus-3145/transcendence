@@ -7,7 +7,7 @@ import AppLoggerModule from 'src/log/log.module';
 import RoomManagerModule from 'src/game/session/roomManager.module';
 
 @Module({
-	imports: [AppLoggerModule, RoomManagerModule, forwardRef(() => ExceptionModule)],
+	imports: [AppLoggerModule, RoomManagerModule, ExceptionModule],
 	providers: [MatchmakingGateway, MatchmakingService],
 	exports: [MatchmakingService],
 })

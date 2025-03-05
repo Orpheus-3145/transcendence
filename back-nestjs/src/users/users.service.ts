@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import User from '../entities/user.entity';
+import User from 'src/entities/user.entity';
 import Game from 'src/entities/game.entity';
-import AccessTokenDTO  from '../dto/auth.dto';
-import UserDTO, { UserStatus } from '../dto/user.dto'
+import AccessTokenDTO  from 'src/dto/auth.dto';
+import UserDTO, { UserStatus } from 'src/dto/user.dto'
 import MatchDataDTO from 'src/dto/matchData.dto';
 import LeaderboardDTO from 'src/dto/leaderboard.dto';
 import MatchRatioDTO from 'src/dto/matchRatio.dto';
@@ -20,7 +20,7 @@ export class UsersService {
 		@InjectRepository(Game) private gamesRepository: Repository<Game>,
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
- 	) { 
+ 	) {
 		this.logger.setContext(UsersService.name);	
 	}
 
@@ -42,28 +42,27 @@ export class UsersService {
 
 		this.logger.debug(`Inserting user ${user.nameNick} in database`);
 		try {
-			var tmp: User | null = await this.findOne(user.intraId);
-			if (tmp != null)
-			{
+			var tmp: User | null = await this.findOneIntra(user.intraId);
+
+			if (tmp !== null)
 				return (new UserDTO(tmp));
-			}
-			await user.validate();
-			await this.usersRepository.save(user);
+
+			await Promise.all([user.validate(), this.usersRepository.save(user)]);
 			return new UserDTO(user);
 		} 
 		catch (error) {
-			console.error('User validation error: ', error);
-			throw error;
+			this.thrower.throwSessionExcp(`User intraId: ${user.intraId} failed vaidation: ${error.message}`,
+				`${UsersService.name}.${this.constructor.prototype.createUser.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	async update(user: User): Promise<User> {
 		try {
-			await this.usersRepository.save(user);
-			return user;
+			return (await this.usersRepository.save(user));
 		} catch (error) {
 			this.thrower.throwSessionExcp(
-				`User update error: ${error}`,
+				`User update error: ${error.message}`,
 				`${UsersService.name}.${this.constructor.prototype.update.name}()`,
 				HttpStatus.INTERNAL_SERVER_ERROR,
 			)
@@ -74,10 +73,6 @@ export class UsersService {
 		return this.usersRepository.find();
 	}
 
-	async findOne(intraId: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { intraId } });
-	}
-
 	async findOneIntra(intraId: number): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { intraId: intraId } });
 	}
@@ -86,109 +81,150 @@ export class UsersService {
 		return this.usersRepository.findOne({ where: { id: id } });
 	}
 
-	async findOneIntraName(intraName: string): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { nameIntra: intraName } });
-	}
+	async findOneNick(nameNick: string): Promise<User> {
+		const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
+		if (!user)
+			this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
+				`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+				HttpStatus.NOT_FOUND);
+		return user;
+  }
+  
+  async findOneIntraName(intraName: string): Promise<User> {
+    const user: User = await this.usersRepository.findOne({ where: { intraName: intraName } });
+    if (!user)
+      this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
+        `${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+        HttpStatus.NOT_FOUND);
+    return user;
+  }
 
-	async findOneNick(nameNick: string): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { nameNick } });
-	}
 
-	async findGamesByUser(user: User) : Promise<Game[] | undefined> {
+	async findGamesByUser(user: User) : Promise<Game[]> {
 
-		const gamesPlayedbyId: Game[] = await this.gamesRepository.find(
+		let gamesPlayedbyId: Game[] = await this.gamesRepository.find(
 			{ where : [
-				{ player1 : {id: user.id} },
-				{ player2 : {id: user.id} },
+					{ player1 : {id: user.id} },
+					{ player2 : {id: user.id} },
 				]
 			}
 		);
+		if (!gamesPlayedbyId)
+			gamesPlayedbyId = [];
 		return gamesPlayedbyId;
 	}
 
-	async getUserId(code: string): Promise<User | null> 
-	{
-		const numb = Number(code);
-		return (this.findOneId(numb));
+	async getUserId(code: string): Promise<User> {
+		const user: User = await this.findOneId(Number(code));
+		if (!user)
+			this.thrower.throwSessionExcp(`User with id: ${code} not found`,
+				`${UsersService.name}.${this.constructor.prototype.getUserId.name}()`,
+				HttpStatus.NOT_FOUND);
+		return (user);
 	}
 
-	async getUserIntraId(code: string): Promise<User | null>
-	{
-		const numb = Number(code);
-		return (this.findOneIntra(numb));
+	async getUserIntraId(code: string): Promise<User> {
+		const user: User = await this.findOneIntra(Number(code));
+		if (!user)
+			this.thrower.throwSessionExcp(`User with intraId: ${code} not found`,
+				`${UsersService.name}.${this.constructor.prototype.getUserIntraId.name}()`,
+				HttpStatus.NOT_FOUND);
+		return (user);
 	}
 
-	async setStatus(Id: string, status: UserStatus)
+	async setStatus(id: string, status: UserStatus)
 	{
-		var user = await this.getUserId(Id);
+		const user = await this.getUserId(id);
 		user.status = status;
 		this.usersRepository.save(user);
 	}
 
 	async setUserStatus(id: number, which: UserStatus)
 	{
-		var user = await this.findOneIntra(id);
+		const user = await this.findOneIntra(id);
 		user.status = which;
 		this.usersRepository.save(user);
 	}
 
-	async setNameNick(user: User, nameNick: string)
+	async setNameNick(userId: string, newUsername: string): Promise<string>
 	{
-		user.nameNick = nameNick;
+		if (newUsername.length > 27)
+			return ("lenght is bigger then 27 chars, make it shorter!");
+
+		const regex = /^[a-zA-Z0-9\-_]+$/;
+		if (regex.test(newUsername) === false)
+			return (`'${newUsername}': invalid input, only letters, numbers, - and _ are allowed`);
+
+		const user = await this.getUserId(userId);
+		if (await this.findOneNick(newUsername))
+			return ("name already in use");
+
+		const oldUserName: string = user.nameNick;
+		user.nameNick = newUsername;
 		this.usersRepository.save(user);
+		
+		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
+		return ("");
 	}
   
 	async getFriend(code: string): Promise<User | null> 
 	{
-		const numb = Number(code);
-		return (this.findOneIntra(numb));
+		return (this.findOneIntra(Number(code)));
 	}
 
 	async friendRequestAccepted(iduser:string, idother:string)
 	{
-		var user = await this.getUserId(iduser);
-		var otheruser = await this.getUserId(idother);
-		if ((user == null) || (otheruser == null))
-		{
-			throw new HttpException('Not Found', 404);
-		}
+		const [user, otheruser] = await Promise.all([this.getUserId(iduser), this.getUserId(idother)]);
+
 		(user).friends.push((otheruser).intraId.toString());
 		this.usersRepository.save((user));
+
 		(otheruser).friends.push((user).intraId.toString());
 		this.usersRepository.save((otheruser));
+
+		this.logger.log(`Created friendship between ${user.nameNick} and ${otheruser.nameNick}`);
 	}
 
 	async removeFriend(user: User, other: User)
 	{
-		var newlist = user.friends.filter(friend => friend !== other.intraId.toString());
+		let newlist = user.friends.filter(friend => friend !== other.intraId.toString());
 		user.friends = newlist;
 		this.usersRepository.save(user);
+		
 		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
 		other.friends = newlist;
 		this.usersRepository.save(other);
+
+		this.logger.log(`Removed friendship between ${user.nameNick} and ${other.nameNick}`);
 	}
 
 	async blockUser(user: User, other: User)
 	{
-		var str: string = other.intraId.toString();
-		if (user.blocked.find((blockedId) => blockedId === str))
+		// if it's already blocked ignore
+		if (user.blocked.find((blockedId) => blockedId === other.intraId.toString()))
 			return ;
+
 		this.removeFriend(user, other);
 		user.blocked.push(other.intraId.toString());
 		this.usersRepository.save(user);
+
+		this.logger.log(`User ${user.nameNick} blocked ${other.nameNick}`);
 	}
   
 	async unBlockUser(user: User, other: User)
 	{
-		var newlist = user.blocked.filter(blocked => blocked !== other.intraId.toString());
+		const newlist = user.blocked.filter(blocked => blocked !== other.intraId.toString());
 		user.blocked = newlist;
 		this.usersRepository.save(user);
+	
+		this.logger.log(`User ${user.nameNick} unblocked ${other.nameNick}`);
 	}
 
 	async changeProfilePic(user: User, image:string)
 	{
 		user.image = image;
 		this.usersRepository.save(user);
+		this.logger.log(`User ${user.nameNick} updated their profile picture`);
 		return (image);
 	}
 
@@ -201,6 +237,7 @@ export class UsersService {
 			],
 			relations: ['player1', 'player2'],
 		});
+
 		let matchData: MatchDataDTO[] = [];
 		for (const game of gamesDB) {
 
@@ -216,7 +253,8 @@ export class UsersService {
 			});
 		}
 
-		return matchData;
+		this.logger.debug(`Fetching matches for user ${user.nameNick}`);
+		return (matchData);
 	}
 
 	async calculateRatio(user: User): Promise<MatchRatioDTO[]>
@@ -248,6 +286,7 @@ export class UsersService {
 			}
 		};
 
+		this.logger.debug(`Fetching matche ratios for user ${user.nameNick}`);
 		return [
 			{title: "Normal", wonGames: nonPowerUpMatchesWon, totGames: nonPowerUpMatches},
 			{title: "Power ups", wonGames: powerUpMatchesWon, totGames: powerUpMatches},
@@ -329,6 +368,7 @@ export class UsersService {
 		var result: LeaderboardDTO[][] = [];
 		result.push(normalArr, powerArr, allArr);
 
+		this.logger.debug(`Creating global leaderboard`);
 		return (result);
 	}
 }
