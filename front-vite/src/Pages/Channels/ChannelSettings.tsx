@@ -9,7 +9,7 @@ import { fetchOpponent, fetchUser, fetchUserMessage, getUserFromDatabase, User, 
 import { socket } from '../../Layout/Chat/ChatContext';
 import { prev } from 'cheerio/dist/commonjs/api/traversing';
 import { useNavigate } from 'react-router-dom';
-
+import { channel } from 'diagnostics_channel';
 // User test data
 // const testUser = {
 // 	name: 'user_test',
@@ -110,6 +110,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		}
 	}, [settings]);
 
+
+	// // -----------FOR TESTING ONLY ----------- //
 	// const handleAddFriend = () => {
 	// 	console.log('"Add Friend" clicked!');
 	// 	if (friendName) {
@@ -129,18 +131,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	// 			id: response.user_id,
 	// 			name: response.name,
 	// 			role: 'member',
-	// 			email: '',
+	// 			email: response.email,
 	// 			password: '',
 	// 			icon: <PersonAddIcon />
 	// 		};
 	// 		setSettings({ ...settings, users: [...settings.users, newUser] });
 	// 	}
+
 	// 	socket.on('joinedChannel', handleUserJoinedChannel);
+
 	// 	return () => {
 	// 		socket.off('joinedChannel', handleUserJoinedChannel);
 	// 	}
 	// }, [settings]);
 
+////////////////////////////////////////////////////////////////////////////////////////
 
 	const handleKickFriend = (user: UserProps) => 
 	{
@@ -205,60 +210,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		});
 	};
 
-	// const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
-	// 	console.log('"Change Privacy" clicked!');
-
-	// 	socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password }, (response) => {
-	// 		if (response.success) {
-	// 			console.log(`Response: ${response}`);
-	// 			console.log(`Channel privacy changed (react) to: ${type}`);
-	// 			// setSettings({ ...settings, type, password });
-	// 		} else {
-	// 			console.error('Failed to change channel privacy:', response.message);
-	// 		}
-	// 	});
-	// };
-	// useEffect(() => {
-	// 	const handlePrivacyChanged = (updatedChannel) => {
-	// 		// console.log('Updated Channel:', updatedChannel);
-	// 		// console.log('Channel privacy updated:', updatedChannel);
-	// 		console.log('Channel settings:', settings);
-	// 		// setSettings((prevSettings) => ({
-	// 		// 	...prevSettings,
-	// 		// 	type: updatedChannel.ch_type,
-	// 		// 	password: updatedChannel.password,
-	// 		// 	users: prevSettings.users || [],
-	// 		// }));
-	// 		setSettings({ ...settings, type: updatedChannel.ch_type, password: updatedChannel.password})
-	// 	};
-
-	// 	socket.on('privacyChanged', handlePrivacyChanged);
-		
-	// 	return () => {
-	// 	  socket.off('privacyChanged', handlePrivacyChanged);
-	// 	};
-	// }, []);
-
 	useEffect(() => {
-		socket.on('privacyChanged', (updatedChannel) => {
+		const handlePrivacyChanged = (updatedChannel) => {
 			console.log('Channel privacy updated:', updatedChannel);
 			setSettings({ ...settings, type: updatedChannel.ch_type, password: updatedChannel.password})
-	});
-		return () => {
-			socket.off('privacyChanged');
 		};
-	}, []);
+
+		socket.on('privacyChanged', handlePrivacyChanged);
+		
+		return () => {
+			socket.off('privacyChanged', handlePrivacyChanged);
+		};
+	}, [settings]);
 
 	const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
 		console.log('"Change Privacy" clicked!');
 
 		socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password });
-
-		socket.once('privacyChanged', (updatedChannel) => {
-			console.log('Channel settings:', settings);
-			console.log('UpdatedChannel :', updatedChannel);
-			setSettings({ ...settings, type: updatedChannel.ch_type, password: updatedChannel.password });
-		});
 
 		socket.once('error', (error) => {
 			console.error(error.message);
@@ -268,62 +236,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	
 	const handleDeleteChannel = (channel_id: number) => {
 		console.log("'Delete Channel' clicked!");
+		
 		socket.emit('deleteChannel', channel_id);
 	
-		// // // Listen for success or error response from the server
-		// socket.once('channelDeleted', (deletedChannel) => {
-		// 	console.log(`Channel id: ${deletedChannel.channel_id}`);
-
-		// 	if (deletedChannel) {
-		// 		const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== channel_id);
-		// 		// console.log(deletedChannel.id);
-		// 		setChatProps({ ...chatProps, chatRooms: updatedChannels });
-		// 		setSelectedChannel(null);
-		// 		console.log(`Channel deleted: ${deletedChannel.title}`);
-		// 	} else {
-		// 		console.error('Failed to delete channel');
-		// 	}
-		// });
-	
-		// socket.once('error', (error) => {
-		// 	console.error(error.message);
-		// });
+		socket.once('error', (error) => {
+			console.error(error.message);
+		});
 	};
 
-	useEffect(() => {
-		const handleChannelDeleted = (response) => {
-			console.log('Channel deleted', response.channel_id);
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: prevState.chatRooms.filter(chat => chat.id !== response.channel_id),
-			}));
-			setSelectedChannel(null);
-		};
-	
-		socket.on('channelDeleted', handleChannelDeleted);
-		
-		return () => {
-			socket.off('channelDeleted', handleChannelDeleted);
-		};
-	}, []);
-
-	// useEffect(() => {
-	// 	socket.on('channelDeleted', (deletedChannel) => {
-	// 		console.log(`Channel deleted: ${deletedChannel.title}`);
-	// 		console.log(`Channel id: ${deletedChannel.channel_id}`);
-	// 		const updatedChannels = chatProps.chatRooms.filter(chat => chat.id !== deletedChannel.id);
-	// 		console.log('Updated Channels', updatedChannels);
-	// 		setChatProps({ ...chatProps, chatRooms: updatedChannels });
-	// 		setSelectedChannel(null);
-	// 	});
-	// 	return () => {
-	// 		socket.off('channelDeleted');
-	// 	};
-	// }, []);
-
-
-	
-	
 	const handleLeaveChannel = () => {
 		if (selectedChannel.settings.type === 'password'
 			&& !selectedChannel.settings.password) {
@@ -339,38 +259,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			};
 	
 			socket.emit('leaveChannel', data);
-			
-			socket.once('leftChannel', (response) => {
-				if (response.channel_id === selectedChannel.id) {
-					setJoinedChannels((prevState) => prevState.filter(ch => ch.id !== selectedChannel.id));
-	
-				}
-				
-				const filteredUsers = selectedChannel.settings.users.filter((usr) => usr.name !== user.nameIntra);
-				const updatedChannel: ChatRoom = {
-					...selectedChannel,
-					settings: {
-						...selectedChannel.settings,
-						users: filteredUsers,
-						owner: selectedChannel.settings.owner === user.nameIntra ? filteredUsers?.[filteredUsers.length - 1]?.name ?? null : selectedChannel.settings.owner,
-					},
-				};
-				
-				// console.log('Filtered users', filteredUsers);
-				// if (filteredUsers.length )
-				// setAvailableChannels((prevState) => {
-				// 	const newChannels = [...prevState, updatedChannel];
-				// 	// console.log("Updated availableChannels:", n`ewChannels);
-				// 	return newChannels;
-				// });
-	
-				if (filteredUsers.length > 0) {
-					setAvailableChannels((prevState) => [...prevState, updatedChannel]);
-				}
-	
-				setSelectedChannel(null);
-			});
-			
+
 			socket.once('leavingChannelError', (error) => {
 				console.error(error.message);
 				alert(`Error joining channel: ${error.message}`);
