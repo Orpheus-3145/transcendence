@@ -91,7 +91,7 @@ export class UsersService {
   }
   
   async findOneIntraName(intraName: string): Promise<User> {
-    const user: User = await this.usersRepository.findOne({ where: { intraName: intraName } });
+    const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
     if (!user)
       this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
         `${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
