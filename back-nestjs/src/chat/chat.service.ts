@@ -149,6 +149,12 @@ export class ChatService {
 	  await this.channelMemberRepository.delete({ user_id, channel_id });
 	}
 
+	async getUsersFromChannel(channel_id: number)
+	{
+		let channel = await this.getChannelById(channel_id);
+		return (channel.members);
+	}
+
 	async banUserFromChannel(user_id: number, channel_id: number)
 	{
 		await this.removeUserFromChannel(user_id, channel_id, "");

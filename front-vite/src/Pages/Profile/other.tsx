@@ -1027,6 +1027,16 @@ const ProfilePageOther: React.FC = () => {
 		{
 			setUserProfileNumber(number);
 		});
+
+		socket.on('friendAdded', (newFriend: string) => {
+			var newlist = friendsList;
+			if (!friendsList.includes(newFriend, 0))
+			{
+				newlist.push(newFriend);
+				setFriendsList(newlist);
+			}
+		});
+		
 	}, [lastSegment]);
 
 	let PageWrapper = () =>

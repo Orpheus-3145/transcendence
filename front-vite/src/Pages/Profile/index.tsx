@@ -485,25 +485,28 @@ const ProfilePage: React.FC = () => {
 	}
 
 	let userInfo = () => 
-	{
-		return (
-			<Stack
-				justifyContent={'space-between'}
-				margin={'1em'}
-				bgcolor={theme.palette.primary.dark}
-				sx={{
-					maxWidth: '1200px',
-					maxHeight: '300px',
-				}}
-			>
-				{GetProfilePic()}
-				{SetChangePfpButton()}
-				{GetUserStatus()}
-				{putNickName()}
-				{EditNickName()}
-				{OtherInfo()}
-			</Stack>
-		);
+	{	if (userProfile)
+		{
+			return (
+				<Stack
+					justifyContent={'space-between'}
+					margin={'1em'}
+					bgcolor={theme.palette.primary.dark}
+					sx={{
+						maxWidth: '1200px',
+						maxHeight: '300px',
+					}}
+				>
+					{GetProfilePic()}
+					{SetChangePfpButton()}
+					{GetUserStatus()}
+					{putNickName()}
+					{EditNickName()}
+					{OtherInfo()}
+				</Stack>
+			);
+		}
+		return (<Stack></Stack>);
 	};
 
 	let GetProfilePic = () => 
