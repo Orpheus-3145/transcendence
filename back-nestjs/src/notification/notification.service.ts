@@ -3,6 +3,7 @@ import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
 import User from '../entities/user.entity'
 import { UsersService } from 'src/users/users.service';
@@ -13,10 +14,6 @@ import GameDataDTO from 'src/dto/gameData.dto';
 import { Channel } from 'src/entities/chat.entity';
 import AppLoggerService from 'src/log/log.service';
 
-interface Websock {
-	client: Socket;
-	userId: string;
-}
 
 @Injectable()
 export class NotificationService {

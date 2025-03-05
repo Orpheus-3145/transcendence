@@ -1,3 +1,4 @@
+import { Inject, forwardRef, UseFilters, HttpStatus } from '@nestjs/common';
 import { WebSocketGateway,
 	WebSocketServer,
 	OnGatewayDisconnect,
@@ -12,11 +13,8 @@ import { NotificationService } from './notification.service';
 import { UsersService } from 'src/users/users.service';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
 import { UserStatus } from 'src/dto/user.dto';
-import { HttpException, UseFilters, HttpStatus } from '@nestjs/common';
 import {  fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
 // import User from 'src/entities/user.entity';
-
-import { Inject, forwardRef } from '@nestjs/common';
 import AppLoggerService from 'src/log/log.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
@@ -109,8 +107,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 				HttpStatus.INTERNAL_SERVER_ERROR);
 
 		const noti = await this.notificationService.initMessage(user, other, data.message);
-		this.sendNotiToFrontend(noti);
-		this.logger.log(`Sending message from ${user.nameNick} to ${other.nameNick}, content: '${data.message}'`)
+		if (noti === null)
+			this.logger.debug(`User ${user.nameNick} has blocked ${other.nameNick}, message not sent`)
+		else {
+			this.sendNotiToFrontend(noti);
+			this.logger.log(`Sending message from ${user.nameNick} to ${other.nameNick}, content: '${data.message}'`)
+		}
 	}
 
 	@SubscribeMessage('sendFriendReq')
@@ -127,8 +129,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 				HttpStatus.INTERNAL_SERVER_ERROR);
 
 		const noti = await this.notificationService.initRequest(user, other, NotificationType.friendRequest, null);
-		this.sendNotiToFrontend(noti);
-		this.logger.log(`Sending friend request from ${user.nameNick} to ${other.nameNick}`)
+		if (noti === null)
+			this.logger.debug(`User ${user.nameNick} has blocked ${other.nameNick}, friend invite not sent`)
+		else {
+			this.sendNotiToFrontend(noti);
+			this.logger.log(`Sending friend request from ${user.nameNick} to ${other.nameNick}`)
+		}
 	}
 
 	@SubscribeMessage('sendGameInvite')
@@ -143,9 +149,13 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 				`${NotificationGateway.name}.${this.constructor.prototype.sendGameInvite.name}()`,
 				HttpStatus.INTERNAL_SERVER_ERROR);
 
-		var noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite, data.powerUps);
-		this.sendNotiToFrontend(noti);
-		this.logger.log(`Sending game invite from ${user.nameNick} to ${other.nameNick}, powerups: ${fromMaskToArray(data.powerUps)}`)
+		const noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite, data.powerUps);
+		if (noti === null)
+			this.logger.debug(`User ${user.nameNick} has blocked ${other.nameNick}, game invite not sent`)
+		else {
+			this.sendNotiToFrontend(noti);
+			this.logger.log(`Sending game invite from ${user.nameNick} to ${other.nameNick}, powerups: ${fromMaskToArray(data.powerUps)}`)
+		}
 	}
 
 	@SubscribeMessage('acceptNotiFr')
