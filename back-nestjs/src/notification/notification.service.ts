@@ -123,6 +123,7 @@ export class NotificationService {
 
 	async initGroupMessage(channel: Channel, receiver: User, message: string)
 	{
+		
 		var tmp = await this.doesNotificationExist(channel.channel_id, receiver.id, NotificationType.groupChat);
 		if (tmp != null)
 		{

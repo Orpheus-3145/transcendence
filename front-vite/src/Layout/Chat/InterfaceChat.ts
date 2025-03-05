@@ -23,7 +23,6 @@ export interface ChatMessage {
   timestamp: React.ReactElement;
 }
 
-
 export interface UserProps {
   id: number,
   name: string;
@@ -39,6 +38,8 @@ export interface ChatSettings {
 	password: string | null;
 	users: UserProps[];
 	owner: string;
+  banned: string[];
+  muted: string[];
 }
 
 export interface ChatRoom {

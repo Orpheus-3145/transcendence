@@ -25,8 +25,8 @@ import { useUser,
 		fetchOpponent,
 		fetchMatchData} from '../../Providers/UserContext/User';
 import { socket } from '../../Providers/NotificationContext/Notification';
-import {User, MatchData, MatchRatio} from '../../Types/User/Interfaces';
-import {UserStatus} from '../../Types/User/Enum';
+import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
+import { UserStatus } from '../../Types/User/Enum';
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -249,7 +249,7 @@ const ProfilePage: React.FC = () => {
 		);
 	};
 
-	let gameStatsBox = (data: matchRatio) =>
+	let gameStatsBox = (data: MatchRatio) =>
 	{
 		return (
 			<Stack
@@ -274,7 +274,7 @@ const ProfilePage: React.FC = () => {
 						}}
 					>
 						<Typography>{data.title}</Typography>
-						<Typography>{data.value}</Typography>
+						<Typography>{data.wonGames}/{data.totGames}</Typography>
 					</Stack>
 					<Stack
 						direction="column"
@@ -287,7 +287,7 @@ const ProfilePage: React.FC = () => {
 						<Tooltip title="Win Ratio" arrow>
 						<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
 						</Tooltip>
-						<Typography>{data.rate}%</Typography>
+						<Typography>{Math.round((data.wonGames / data.totGames) * 100)}%</Typography>
 					</Stack>
 				</Stack>
 			</Stack>
@@ -313,27 +313,27 @@ const ProfilePage: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: matchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
 				</Stack>
 			</Box>
 		);
 	};
 
-	const fetchOpponentDetails = async (opponentId: string) => {
-		const opponent = await fetchOpponent(opponentId);
-		setOpponentDetails((prev) => new Map(prev).set(opponentId, opponent));
+	const fetchOpponentDetails = async (intraName: string) => {
+		const opponent = await fetchOpponent(intraName);
+		setOpponentDetails((prev) => new Map(prev).set(intraName, opponent));
 	};
 
-	let gameLine = (data: matchData) => 
-	{
+	let gameLine = (data: MatchData) => {
 		var opponent: User | undefined;
 		var intra: string;
 		var nameOther: string;
-		var scoreUser: string;
-		var scoreOther: string;
+		var scoreUser: number;
+		var scoreOther: number;
 		var color: string;
 		var idOther: number;
-		if (data.player1 === userProfile.id.toString())
+
+		if (data.player1 === userProfile?.nameNick)
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
@@ -341,7 +341,7 @@ const ProfilePage: React.FC = () => {
 			opponent = opponentDetails.get(intra);
 			if (opponent)
 			{
-				nameOther = opponent.nameNick;
+				nameOther = opponent.nameNick as string;
 				idOther = opponent.id;
 			}
 		}
@@ -353,7 +353,7 @@ const ProfilePage: React.FC = () => {
 			opponent = opponentDetails.get(intra);
 			if (opponent)
 			{
-				nameOther = opponent.nameNick;
+				nameOther = opponent.nameNick as string;
 				idOther = opponent.id;
 			}
 		}
@@ -363,7 +363,7 @@ const ProfilePage: React.FC = () => {
 			return <Stack>Loading...</Stack>;
 		}
 
-		if (data.whoWon === userProfile.id.toString())
+		if (data.whoWon === userProfile?.nameNick)
 			color = '#1da517'
 		else
 			color = '#b01515';
@@ -464,7 +464,7 @@ const ProfilePage: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.slice().reverse().map((item: matchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: MatchData) => gameLine(item))}
 				</Stack>
 			</Box>
 		);

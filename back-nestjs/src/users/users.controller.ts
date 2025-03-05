@@ -3,8 +3,6 @@ import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import User from '../entities/user.entity';
-// import MatchRatioDTO from 'src/dto/matchRatio.dto';
-// import MatchDataDTO from 'src/dto/matchData.dto';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 
 @Controller('users')
@@ -33,13 +31,32 @@ export class UsersController {
 		return (this.UserService.setNameNick(username, newname));
 	}
 
-	@Get('/profile/:username/friend/:id')
-	async fetchFriend(@Param('id') id: string) {
+// fra changed the end-point, check it in main, remove if not necessary
+// 	@Get('/profile/:username/friend/:id')
+// 	async fetchFriend(@Param('id') id: string) {
+// 		return (this.UserService.getUserIntraId(id));
+// 	}
+
+// 	@Get('/profile/:username/opponent/:id')
+// 	async fetchOpponent(@Param('id') id: string) {
+// 		return (this.UserService.getUserIntraId(id));
+// 	}
+    
+	@Get('/profile/friend/:id')
+	async fetchFriend(@Param('id') id: string) 
+	{
 		return (this.UserService.getUserIntraId(id));
 	}
 
-	@Get('/profile/:username/opponent/:id')
-	async fetchOpponent(@Param('id') id: string) {
+	@Get('/profile/opponent/:intraName')
+	async fetchOpponent(@Param('intraName') intraName: string) 
+	{
+		return (this.UserService.findOneIntraName(intraName));
+	}
+
+	@Get('/profile/message/:id')
+	async fetchUserMessage(@Param('id') id: string) 
+	{
 		return (this.UserService.getUserId(id));
 	}
 
@@ -77,7 +94,7 @@ export class UsersController {
 		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 		const user = await this.UserService.getUserId(username);
 
-		return (this.UserService.changeProfilePic(user, image));
+    return (this.UserService.changeProfilePic(user, image));
 	}
 
 	@Get('profile/:intraId/matches')

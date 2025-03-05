@@ -82,6 +82,8 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	sendNotiToFrontend(Noti: Notification | null): void
 	{
+		if (Noti == null)
+			return ;
 		var websock: Websock = this.sockets.find((socket) => socket.userId === Noti.receiverId.toString());
 		if (websock === undefined)
 			return ;
