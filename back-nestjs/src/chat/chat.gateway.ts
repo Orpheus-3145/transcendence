@@ -95,16 +95,16 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	
 	@SubscribeMessage('joinChannel')
 	async handleJoinChannel(
-		@MessageBody() data: { channel_id: number, name: string, user_id: number, },
+		@MessageBody() data: { channel_id: number, name: string, user_id: number, email: string },
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		const {channel_id, name, user_id,} = data;
+		const {channel_id, name, user_id, email} = data;
 		// console.log(`User ${client.id} joined channel ${channel}`);
 		try {
 			await this.chatService.addUserToChannel(user_id, name, channel_id, );
 			client.join(channel_id.toString());
-			client.emit('joinedChannel', { channel_id });
-			this.server.to(channel_id.toString()).emit('userJoinedChannel', { user_id, channel_id });
+			// client.emit('joinedChannel', { channel_id });
+			this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 			console.log(`User ${user_id} successfully joined channel ${channel_id}`);
 		} catch (error) {
 			console.error(`Error joining channel: ${error.message}`);
@@ -262,9 +262,11 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	): Promise<void> {
 		try {
 			const deletedChannel = await this.chatService.deleteChannel(channel_id);
+			// console.log('Deleted Channel', deletedChannel);
 			if (deletedChannel) {
 				console.log(`Channel deleted: ${deletedChannel.title}`);
-				this.server.emit('channelDeleted', deletedChannel);
+				this.server.emit('channelDeleted', {channel_id});
+				// this.server.emit('channelDeleted', deletedChannel);
 				// client.emit('channelDeleted', deletedChannel);
 			} else {
 				client.emit('error', { message: 'Channel not found or could not be deleted' });

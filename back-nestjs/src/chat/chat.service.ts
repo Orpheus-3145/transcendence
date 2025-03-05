@@ -284,6 +284,7 @@ export class ChatService {
 			await this.channelMemberRepository.delete({ channel_id });
 			// Delete the channel itself
 			await this.channelRepository.remove(channel);
+			// console.log('Channel service', channel);
 			return channel;
 		} catch (error) {
 			console.error('Error in deleting channel:', error);

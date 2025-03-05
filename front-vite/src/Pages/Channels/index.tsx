@@ -109,7 +109,7 @@ const ChannelsPage: React.FC = () => {
 		setDirectMessages(dms);
 
 		// }
-	}, [chatProps.chatRooms])
+	}, [chatProps.chatRooms, joinedRooms])
 
 	useEffect(() => {
 		const fetchUsers = async () => {
