@@ -44,7 +44,7 @@ export class UsersService {
 		try {
 			var tmp: User | null = await this.findOneIntra(user.intraId);
 
-			if (tmp != null)
+			if (tmp !== null)
 				return (new UserDTO(tmp));
 
 			await Promise.all([user.validate(), this.usersRepository.save(user)]);
@@ -198,7 +198,7 @@ export class UsersService {
 		user.blocked.push(other.intraId.toString());
 		this.usersRepository.save(user);
 
-		this.logger.log(`User ${other.nameNick} blocked by ${user.nameNick}`);
+		this.logger.log(`User ${user.nameNick} blocked ${other.nameNick}`);
 	}
   
 	async unBlockUser(user: User, other: User)

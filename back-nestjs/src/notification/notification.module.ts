@@ -7,11 +7,13 @@ import { NotificationGateway } from './notification.gateway';
 import { ChatModule } from 'src/chat/chat.module';
 import GameModule from 'src/game/game.module';
 import AppLoggerModule from 'src/log/log.module';
+import ExceptionModule from 'src/errors/exception.module';
 
 @Module({
 	imports: [
 		GameModule,
 		AppLoggerModule,
+		ExceptionModule,
 		TypeOrmModule.forFeature([Notification]),
 		forwardRef(() => UsersModule),
 		forwardRef(() => ChatModule),

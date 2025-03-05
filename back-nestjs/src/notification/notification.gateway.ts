@@ -12,12 +12,14 @@ import { NotificationService } from './notification.service';
 import { UsersService } from 'src/users/users.service';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
 import { UserStatus } from 'src/dto/user.dto';
-import { HttpException } from '@nestjs/common';
+import { HttpException, UseFilters, HttpStatus } from '@nestjs/common';
 import {  fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
-import User from 'src/entities/user.entity';
+// import User from 'src/entities/user.entity';
 
 import { Inject, forwardRef } from '@nestjs/common';
 import AppLoggerService from 'src/log/log.service';
+import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
 
 interface Websock {
 	client: Socket;
@@ -33,7 +35,7 @@ interface Websock {
 	},
 	transports: ['websocket'],
 })
-
+@UseFilters(SessionExceptionFilter)
 export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
 	@WebSocketServer()
@@ -46,6 +48,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		@Inject(forwardRef(() => UsersService))
 		private readonly userService: UsersService,
 		private readonly logger: AppLoggerService,
+		private readonly thrower: ExceptionFactory,
 	) {
 		this.logger.setContext(NotificationGateway.name);	
 	};
@@ -57,10 +60,11 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	handleDisconnect(client: Socket) {
 		var websock: Websock = this.sockets.find((socket) => socket.client.id === client.id);
 
-		if (!websock)
+		if (websock) {
 			this.userService.setStatus(websock.userId, UserStatus.Offline);
+			this.logger.log(`User id: ${websock.userId} is now offline`);
+		}
 
-		this.logger.log(`User id: ${websock.userId} is now offline`);
 		this.sockets = this.sockets.filter((s) => s.client.id !== client.id);
 	}
 
@@ -98,13 +102,15 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.getUserId(data.username),
 			this.userService.getUserId(data.friend)
 		]);
+
 		if (!user || !other)
-		{
-			throw new HttpException('Not Found', 404);
-		}
+			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
+				`${NotificationGateway.name}.${this.constructor.prototype.sendMessage.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR);
+
 		const noti = await this.notificationService.initMessage(user, other, data.message);
 		this.sendNotiToFrontend(noti);
-		this.logger.log(`Sending message from ${user.nameNick} to ${other.nameNick}, content: ${data.message}`)
+		this.logger.log(`Sending message from ${user.nameNick} to ${other.nameNick}, content: '${data.message}'`)
 	}
 
 	@SubscribeMessage('sendFriendReq')
@@ -114,10 +120,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.getUserId(data.username),
 			this.userService.getUserId(data.friend)
 		]);
+
 		if (!user || !other)
-		{
-			throw new HttpException('Not Found', 404);
-		}
+			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
+				`${NotificationGateway.name}.${this.constructor.prototype.sendFriendReq.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR);
+
 		const noti = await this.notificationService.initRequest(user, other, NotificationType.friendRequest, null);
 		this.sendNotiToFrontend(noti);
 		this.logger.log(`Sending friend request from ${user.nameNick} to ${other.nameNick}`)
@@ -131,9 +139,10 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.getUserId(data.friend)
 		]);
 		if (!user || !other)
-		{
-			throw new HttpException('Not Found', 404);
-		}
+			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
+				`${NotificationGateway.name}.${this.constructor.prototype.sendGameInvite.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR);
+
 		var noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite, data.powerUps);
 		this.sendNotiToFrontend(noti);
 		this.logger.log(`Sending game invite from ${user.nameNick} to ${other.nameNick}, powerups: ${fromMaskToArray(data.powerUps)}`)
@@ -159,7 +168,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	@SubscribeMessage('declineNotiFr')
 	async declineNotiFr(@MessageBody() data: { sender: string, receiver: string})
 	{
-		this.logger.log(`User ${data.sender} refused friend invite from ${data.receiver}}`)
+		this.logger.log(`User ${data.sender} refused friend invite from ${data.receiver}`)
 		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
 	}
 
@@ -169,15 +178,15 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		var senderSock: Websock = this.sockets.find((socket) => socket.userId === data.sender);
 		var receiverSock: Websock = this.sockets.find((socket) => socket.userId === data.receiver);
 
-		this.logger.log(`User ${data.sender} accepted game invite from ${data.receiver}}`)
-		await this.notificationService.startGameFromInvitation(senderSock.client, receiverSock.client, data.sender, data.receiver);
+		this.logger.log(`User ${data.sender} accepted game invite from ${data.receiver}`)
 		await this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
+		await this.notificationService.startGameFromInvitation(senderSock.client, receiverSock.client, data.sender, data.receiver);
 	}
 
 	@SubscribeMessage('declineNotiGI')
 	async declineNotiGI(@MessageBody() data: { sender: string, receiver: string})
 	{
-		this.logger.log(`User ${data.sender} refused game invite from ${data.receiver}}`)
+		this.logger.log(`User ${data.sender} refused game invite from ${data.receiver}`)
 		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
 	}
 
@@ -186,11 +195,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	{
 		var numb = Number(data.id);
 		const noti = await this.notificationService.findNotificationId(numb);
-		if (noti == null)
-		{
-			// console.log("ERROR: notification not found in rmvNotification!");
-			throw new HttpException('Not Found', 404);
-		}
+		
+		if (noti === null)
+			this.thrower.throwSessionExcp(`Notification with id: ${data.id} not found`,
+				`${NotificationGateway.name}.${this.constructor.prototype.removeNotification.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR);
+
 		this.notificationService.removeNotification(noti);		
 	}
 };
