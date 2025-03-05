@@ -103,8 +103,28 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		try {
 			await this.chatService.addUserToChannel(user_id, name, channel_id, );
 			client.join(channel_id.toString());
-			// client.emit('joinedChannel', { channel_id });
+			// client.emit('joinedChannel', { user_id, channel_id, name, email });
 			this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
+			console.log(`User ${user_id} successfully joined channel ${channel_id}`);
+		} catch (error) {
+			console.error(`Error joining channel: ${error.message}`);
+			client.emit('joinChannelError', { message: 'Could not join channel' });
+		}
+	}
+
+	@SubscribeMessage('joinAvailableChannel')
+	async handleJoinAvailableChannel(
+		@MessageBody() data: { channel_id: number, name: string, user_id: number, email: string },
+		@ConnectedSocket() client: Socket,
+	): Promise<void> {
+		const {channel_id, name, user_id, email} = data;
+		// console.log(`User ${client.id} joined channel ${channel}`);
+		try {
+			await this.chatService.addUserToChannel(user_id, name, channel_id, );
+			client.join(channel_id.toString());
+			client.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
+			// this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { user_id, channel_id, name, email });
+			// this.server.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
 			console.log(`User ${user_id} successfully joined channel ${channel_id}`);
 		} catch (error) {
 			console.error(`Error joining channel: ${error.message}`);
@@ -122,11 +142,12 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		try {
 			const {user_id, channel_id, role} = data;
 			await this.chatService.removeUserFromChannel(user_id, channel_id, role);
+			this.server.to(channel_id.toString()).emit('leftChannel', { user_id, channel_id });
+			// client.emit('leftChannel', { user_id, channel_id });
 			client.leave(channel_id.toString());
-			// this.server.to(channel_id.toString()).emit('leftChannel', { user_id, channel_id });
-			this.server.emit('leftChannel', { user_id, channel_id });
+			// this.server.emit('leftChannel', { user_id, channel_id });
 			console.log(`Client ${client.id} left channel ${ channel_id }`);
-			client.emit('leftChannel', { channel_id });
+			// client.emit('leftChannel', { channel_id });
 		} catch (error) {
 			console.error(`Error leaving channel: ${error.message}`);
 			client.emit('leavingChannelError', { message: 'Could not leave channel' });

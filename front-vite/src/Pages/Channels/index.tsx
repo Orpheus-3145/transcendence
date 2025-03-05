@@ -25,7 +25,6 @@ import { PowerUpSelected } from '../../Types/Game/Enum';
 import { inviteToGame } from '../../Providers/NotificationContext/Notification';
 // import { Socket } from 'socket.io-client';
 
-
 interface ChannelTypeEvent {
 	component: React.ReactNode;
 	newColor: string;
@@ -90,15 +89,18 @@ const ChannelsPage: React.FC = () => {
 	useEffect(() => {
 		// if (chatProps.chatRooms) {
 		const joined = chatProps.chatRooms.filter((channel) =>
+				channel.settings.users.length > 0 &&
 				!channel.isDirectMessage &&
 				userInChannel(user.nameIntra, channel)
 			);
-		const available = chatProps.chatRooms.filter((channel) => 
+		const available = chatProps.chatRooms.filter((channel) =>
+				channel.settings.users.length > 0 &&
 				!channel.isDirectMessage &&	
 				!userInChannel(user.nameIntra, channel) &&
 				channel.settings.type !== 'private'
 			);
 		const dms = chatProps.chatRooms.filter((channel) =>
+				channel.settings.users.length > 0 &&
 				channel.isDirectMessage
 			);
 		// console.log("Available (useEffect):", available);
@@ -109,7 +111,7 @@ const ChannelsPage: React.FC = () => {
 		setDirectMessages(dms);
 
 		// }
-	}, [chatProps.chatRooms, joinedRooms])
+	}, [chatProps.chatRooms])
 
 	useEffect(() => {
 		const fetchUsers = async () => {
@@ -136,9 +138,156 @@ const ChannelsPage: React.FC = () => {
 			socket.emit('createChannel', channelDTO);
 		}
 	};	
+
+//////////////////////////////////////////////////////////////////////
+
+	useEffect(() => {
+			const handleChannelDeleted = (response) => {
+				console.log('Channel deleted', response.channel_id);
+				setChatProps((prevState) => ({
+					...prevState,
+					chatRooms: prevState.chatRooms.filter(chat => chat.id !== response.channel_id),
+				}));
+				setSelectedChannel(null);
+			};
 		
+			socket.on('channelDeleted', handleChannelDeleted);
+			
+			return () => {
+				socket.off('channelDeleted', handleChannelDeleted);
+			};
+		}, []);
+
+//////////////////////////////////////////////////////////////////////
+
+	// useEffect(() => {
+	// 		socket.on('privacyChanged', (updatedChannel) => {
+	// 			console.log('Channel privacy updated:', updatedChannel);
+	// 			setSettings({ ...settings, type: updatedChannel.ch_type, password: updatedChannel.password})
+	// 	});
+	// 		return () => {
+	// 			socket.off('privacyChanged');
+	// 		};
+	// 	}, []);
+
+//////////////////////////////////////////////////////////////////////
+
+	useEffect(() => {
+		const handleUserLeftChannel = (response) => {
+		console.log(`User left channel: ${response.channel_id}`);
+	
+		setChatProps((prevState) => ({
+			...prevState,
+			chatRooms: prevState.chatRooms.map((channel) =>
+			channel.id === response.channel_id
+				? {
+					...channel,
+					settings: {
+					...channel.settings,
+					users: channel.settings.users.filter((usr) => usr.id !== response.user_id),
+					owner: channel.settings.owner === response.user_name
+						? channel.settings.users.length > 1
+						? channel.settings.users[channel.settings.users.length - 2]?.name ?? null
+						: null
+						: channel.settings.owner,
+					},
+				}
+				: channel
+			),
+		}));
+
+		// setChatProps((prevState) => {
+        //     const updatedChannel = prevState.chatRooms.find((ch) => ch.id === response.channel_id);
+
+        //     if (updatedChannel && updatedChannel.settings.users.length > 0) {
+        //         setJoinedChannels((prevJoined) =>
+        //             prevJoined.filter((ch) => ch.id !== response.channel_id)
+        //         );
+        //     }
+
+        //     return prevState;
+        // });
+		
+			// setJoinedChannels((prevState) => prevState.filter((ch) => ch.id !== response.channel_id));
+			setSelectedChannel(null);
+		};
+	
+		socket.on('leftChannel', handleUserLeftChannel);
+	
+		return () => {
+		socket.off('leftChannel', handleUserLeftChannel);
+		};
+	}, []);
+  
+//////////////////////////////////////////////////////////////////////
+
+	useEffect(() => {
+			const handleUserJoinedChannel = (response) => {
+				const newUser: UserProps = {
+					id: response.user_id,
+					name: response.name,
+					role: 'member',
+					email: response.email,
+					password: '',
+					// icon: <Avatar src={tmp.image}/> 
+					icon: <PersonAddIcon /> //!!
+				};
+
+				setChatProps((prevState) => ({
+					...prevState,
+					chatRooms: prevState.chatRooms.map((room) =>
+						room.id === response.channel_id
+						?	{
+								...room,
+								settings: {
+									...room.settings,
+									users: [...room.settings.users, newUser],
+								},
+							}
+						: room 
+					)
+				}));
+			}
+
+			socket.on('joinedChannel', handleUserJoinedChannel);
+
+			return () => {
+				socket.off('joinedChannel', handleUserJoinedChannel);
+			}
+
+	}, []);
+
 //////////////////////////////////////////////////////////////////////
 	
+	useEffect(() => {
+		const handlePrivacyChanged = (updatedChannel) => {
+			console.log('Channel privacy updated:', updatedChannel);
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: prevState.chatRooms.map((room) =>
+					room.id === updatedChannel.channel_id
+					?	{
+							...room,
+							settings: {
+								...room.settings,
+								type: updatedChannel.ch_type,
+								password: updatedChannel.password,
+							},
+						}
+					: room 
+				)
+			}));
+		};
+
+		socket.on('privacyChanged', handlePrivacyChanged);
+
+		return () => {
+			socket.off('privacyChanged', handlePrivacyChanged);
+		};
+	}, []);
+
+//////////////////////////////////////////////////////////////////////
+
 	const handleCreateChannel = () => {
 		if (channelName.trim()) {
 			const channelDTO = {
@@ -263,7 +412,9 @@ const ChannelsPage: React.FC = () => {
 		setIsAddingChannel(false);
 		joinRoom(channel.id)
 	};
+
 //////////////////////////////////////////////////////////////////////
+
 	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
 		event.preventDefault();
 		console.log(enteredChannelPass, selectedChannel.settings.password);
@@ -278,13 +429,50 @@ const ChannelsPage: React.FC = () => {
 		}
 	};
 
+//////////////////////////////////////////////////////////////////////
+
+	useEffect(() => {
+		const handleUserJoinedAvailableChannel = (response) => {
+			const newUser: UserProps = {
+				id: response.user_id,
+				name: response.name,
+				role: 'member',
+				email: '',
+				password: '',
+				icon: <PersonAddIcon />
+			};
+
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: prevState.chatRooms.map((room) =>
+					room.id === response.channel_id
+					?	{
+							...room,
+							settings: {
+								...room.settings,
+								users: [...room.settings.users, newUser],
+							},
+						}
+					: room 
+				)
+			}));
+		}
+
+		socket.on('joinedAvailableChannel', handleUserJoinedAvailableChannel);
+
+		return () => {
+			socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
+		}
+
+	}, []);
+
+
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
 		console.log('Available channel clicked!');
 		if (!passwordOk && channel.settings.type === 'password' ) {
 			setSelectedChannel(channel);
 			setIsPasswordModal(true);
-			// return ;
 		} 
 		else {
 			setIsSettingsView(false);
@@ -297,67 +485,17 @@ const ChannelsPage: React.FC = () => {
 				name: user.nameIntra,
 			};
 	
-			socket.emit('joinChannel', data);
-	
-			socket.once('joinedChannel', (response) => {
-				console.log('joinedChannel response from gateway:', response);
-				if (response.channel_id === channel.id) {
-	
-					// setChatProps((prevState) => ({
-					// 	...prevState,
-					// 	chatRooms: [...prevState.chatRooms, channel],
-					// }));
-	
-					// setChatProps((prevState) => {
-					// 	const updatedChatRooms = [
-					// 		...prevState.chatRooms.filter((ch) => ch.id !== channel.id), 
-					// 		channel,
-					// 	];
-		
-					// 	return { ...prevState, chatRooms: updatedChatRooms };
-					// });
-	
-					// console.log('Available ch before: ', availableChannels);
-					// console.log('chatProps.chatRooms before filter: ', chatProps.chatRooms);
-	
-					// const updatedChannel = { ...selectedChannel }; 
-					const updatedChannel: ChatRoom = {
-						...channel,
-						settings: {
-							...channel.settings,
-							users: [
-								...channel.settings.users,
-								{
-									id: user.id,
-									name: user.nameIntra,
-									role: 'member',
-									icon: <Avatar />,
-								},
-							],
-						},
-					}; 
-					
-					setAvailableChannels((prevState) => prevState.filter((ch) => ch.id !== channel.id));
-	
-					setJoinedChannels((prevState) => [...prevState, updatedChannel]);
-	
-					// console.log('chatProps.chatRooms after filter: ', chatProps.chatRooms);
-	
-					// console.log('Available ch after: ', availableChannels);
-	
-					// setSelectedChannel(null);
-				} 
-	
-			});
+			// socket.emit('joinChannel', data);
+			socket.emit('joinAvailableChannel', data);
 	
 			socket.once('joinChannelError', (error) => {
 				console.error(error.message);
 				alert(`Error joining channel: ${error.message}`);
 			});
 		}
-		
-
 	};
+
+
 
 	// useEffect(() => {
 	// 	console.log('Available ch after: ', availableChannels);
