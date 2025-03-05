@@ -10,8 +10,21 @@ import RoomManagerModule from 'src/game/session/roomManager.module';
 import AppLoggerModule from 'src/log/log.module';
 
 @Module({
-	imports: [forwardRef(() => RoomManagerModule), AppLoggerModule],
-	providers: [GameExceptionFilter, ChatExceptionFilter, SessionExceptionFilter, ExceptionFactory],
-	exports: [GameExceptionFilter, ChatExceptionFilter, SessionExceptionFilter, ExceptionFactory],
+	imports: [
+		AppLoggerModule,
+		forwardRef(() => RoomManagerModule),
+	],
+	providers: [
+		GameExceptionFilter,
+		ChatExceptionFilter,
+		SessionExceptionFilter,
+		ExceptionFactory
+	],
+	exports: [
+		GameExceptionFilter,
+		ChatExceptionFilter,
+		SessionExceptionFilter,
+		ExceptionFactory
+	],
 })
 export default class ExceptionModule {}

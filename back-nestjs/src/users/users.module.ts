@@ -11,7 +11,12 @@ import Game from 'src/entities/game.entity';
 
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User, Game]), forwardRef(() => NotificationModule), AppLoggerModule, ExceptionModule],
+	imports: [
+		NotificationModule,
+		AppLoggerModule,
+		ExceptionModule,
+		TypeOrmModule.forFeature([User, Game])
+	],
 	controllers: [UsersController],
 	providers: [UsersService],
 	exports: [UsersService],

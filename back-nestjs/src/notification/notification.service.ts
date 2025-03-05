@@ -11,6 +11,7 @@ import RoomManagerService from 'src/game/session/roomManager.service';
 import { GameDifficulty, GameMode, PowerUpSelected } from 'src/game/types/game.enum';
 import GameDataDTO from 'src/dto/gameData.dto';
 import { Channel } from 'src/entities/chat.entity';
+import AppLoggerService from 'src/log/log.service';
 
 interface Websock {
 	client: Socket;
@@ -26,8 +27,11 @@ export class NotificationService {
 		private readonly userService: UsersService,
 		@Inject(forwardRef(() => ChatService))
 		private readonly chatService: ChatService,
-		private roomManager: RoomManagerService,
-  ) { }
+		private readonly roomManager: RoomManagerService,
+		private readonly logger: AppLoggerService,
+  ) {
+		this.logger.setContext(NotificationService.name);
+	}
 
 	async findAll(): Promise<Notification[]>
 	{
@@ -51,21 +55,19 @@ export class NotificationService {
 		return (noti);
 	}
 
-	async isSenderBlocked(sender:User, receiver:User): Promise<boolean>
+	isSenderBlocked(sender:User, receiver:User): boolean
 	{
 		for (const item of receiver.blocked) 
 		{
 			if (item === sender.intraId.toString()) 
-			{
 				return (true);
-			}
 		}
 		return (false);
 	}
 
 	async initRequest(sender:User, receiver:User, type:NotificationType, powerUps: PowerUpSelected): Promise<Notification | null>
 	{
-		if (await this.isSenderBlocked(sender, receiver) == true)
+		if (this.isSenderBlocked(sender, receiver) == true)
 			return (null);
 		var tmp = await this.doesNotificationExist(sender.id, receiver.id, type);
 		if (tmp != null)
@@ -95,7 +97,7 @@ export class NotificationService {
 
 	async initMessage(sender:User, receiver:User, message:string): Promise<Notification | null>
 	{
-		if (await this.isSenderBlocked(sender, receiver) == true)
+		if (this.isSenderBlocked(sender, receiver) == true)
 			return null;
 		var tmp = await this.doesNotificationExist(sender.id, receiver.id, NotificationType.Message);
 		if (tmp != null)
@@ -150,10 +152,10 @@ export class NotificationService {
 	async removeNotification(noti: Notification): Promise<void>
 	{
 		this.notificationRepository.remove(noti);
+		this.logger.debug(`Removed notification id: ${noti.id}, type: ${noti.type}`);
 	}
 
-	async removeReq(sender:string, receiver:string, type:NotificationType): Promise<void>
-	{
+	async removeReq(sender:string, receiver:string, type:NotificationType): Promise<void> {
 		var send = Number(sender);
 		var recv = Number(receiver);
 		var arr = await this.notificationRepository.find({ where: { receiverId: recv, senderId: send } });
@@ -162,7 +164,7 @@ export class NotificationService {
 		{
 			if (item.type === type) 
 			{
-				await this.notificationRepository.remove(item);
+				await this.removeNotification(item);
 				return ;
 			}
 		}
@@ -173,6 +175,7 @@ export class NotificationService {
 		const senderIdNumber = Number(senderId);
 		const receiverIdNumber = Number(receiverId);
 		const gameNotification: Notification = await this.notificationRepository.findOne({ where: { receiverId: receiverIdNumber, senderId: senderIdNumber, type: NotificationType.gameInvite } });
+		
 		const initData: GameDataDTO = {
 			sessionToken: uuidv4(),
 			mode: GameMode.multi,
