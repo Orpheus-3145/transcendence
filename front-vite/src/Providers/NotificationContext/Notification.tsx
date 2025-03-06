@@ -30,12 +30,13 @@ export enum NotificationStatus {
 export interface NotificationStruct {
 	id: number;
 	senderId: number;
-	senderName: string;
 	receiverId: number;
+	senderName: string;
 	receiverName: string;
 	type: NotificationType;
 	status: NotificationStatus;
 	message: string | null;
+	powerUpsSelected: PowerUpSelected
 }
 
 export async function addFriend(username:string, friend:string): Promise<void> 

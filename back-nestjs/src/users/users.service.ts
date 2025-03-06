@@ -286,7 +286,7 @@ export class UsersService {
 			}
 		};
 
-		this.logger.debug(`Fetching matche ratios for user ${user.nameNick}`);
+		this.logger.debug(`Fetching matches ratios for user ${user.nameNick}`);
 		return [
 			{title: "Normal", wonGames: nonPowerUpMatchesWon, totGames: nonPowerUpMatches},
 			{title: "Power ups", wonGames: powerUpMatchesWon, totGames: powerUpMatches},

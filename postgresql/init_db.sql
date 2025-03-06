@@ -77,3 +77,19 @@ CREATE TABLE IF NOT EXISTS Messages (
 	FOREIGN KEY (sender_id) REFERENCES Users (user_id),
 	FOREIGN KEY (receiver_id) REFERENCES Users (user_id)
 );
+
+CREATE TYPE NOTIFICATION_TYPE AS ENUM ('Message', 'Friend Request', 'Game Invite', 'Group Chat');
+CREATE TYPE NOTIFICATION_STATUS AS ENUM ('Accepted', 'Declined', 'Pending', 'None');
+CREATE TABLE IF NOT EXISTS Notifications (
+	id SERIAL PRIMARY KEY,
+	sender_id INTEGER NOT NULL,
+	receiver_id INTEGER NOT NULL,
+	type NOTIFICATION_TYPE NOT NULL,
+	status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
+	content TEXT DEFAULT '',
+	powerup INTEGER DEFAULT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+	FOREIGN KEY (sender_id) REFERENCES Users(user_id),
+	FOREIGN KEY (receiver_id) REFERENCES Users(user_id)
+)

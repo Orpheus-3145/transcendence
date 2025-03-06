@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Un
 import { IsAscii, Length, validateOrReject } from 'class-validator';
 import { UserStatus } from 'src/dto/user.dto';
 import Game from './game.entity';
-
+import { Notification } from './notification.entity';
 
 
 @Entity('Users')
@@ -65,6 +65,12 @@ export default class User {
 
 	@OneToMany(() => Game, (game) => game.player2)
 	player2Game: Game[];
+
+	@OneToMany(() => Notification, (notification) => notification.sender)
+	senderNotification: Notification[];
+
+	@OneToMany(() => Notification, (notification) => notification.receiver)
+	receiverNotification: Notification[];
 
 	async validate() {
 		await validateOrReject(this);

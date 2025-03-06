@@ -1,13 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { IsAscii, Length } from 'class-validator';
 import { PowerUpSelected } from 'src/game/types/game.enum';
+import User from './user.entity';
 
 
 export enum NotificationStatus {
 	Accepted = 'Accepted',
 	Declined = 'Declined',
 	Pending = 'Pending',
-  None = 'None',
+  None = 'None',      // NB probabily not necessary
 }
 
 export enum NotificationType {
@@ -17,21 +18,28 @@ export enum NotificationType {
   groupChat = 'Group Chat',
 }
 
-@Entity()
+@Entity('Notifications')
 export class Notification {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
-  senderId: number;
+  @ManyToOne(() => User, (user) => user.senderNotification, {
+    nullable: false,
+    eager: true})
+  @JoinColumn({name: 'sender_id'})
+  sender: User;
 
-  @Column({nullable: false})
+  @ManyToOne(() => User, (user) => user.receiverNotification, {
+    nullable: false,
+    eager: true,
+  })
+  @JoinColumn({name: 'receiver_id'})
+  receiver: User;
+
+  @Column({nullable: false})    // NB remove
   senderName: string;
 
-  @Column({ nullable: false })
-  receiverId: number;
-
-  @Column({nullable: false})
+  @Column({nullable: false})    // NB remove
   receiverName: string;
 
   @Column({
@@ -47,12 +55,16 @@ export class Notification {
   })
   status: NotificationStatus;
 
-  @Column({ nullable: true, length: 100 })
+  @Column({
+    name: 'content',
+    nullable: true,
+    length: 100 })
   @IsAscii()
   @Length(0, 100)
   message: string | null;
 
   @Column({
+    name: 'powerup',
     type: 'enum',
     enum: PowerUpSelected,
     default: PowerUpSelected.noPowerUp,
@@ -60,6 +72,6 @@ export class Notification {
   })
   powerUpsSelected: PowerUpSelected;
 
-  @CreateDateColumn()
+  @CreateDateColumn({name: 'created_at'})
   createdAt: Date;
 }

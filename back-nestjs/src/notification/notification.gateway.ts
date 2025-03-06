@@ -18,6 +18,8 @@ import {  fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
 import AppLoggerService from 'src/log/log.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import NotificationDTO from 'src/dto/notification.dto';
+
 
 interface Websock {
 	client: Socket;
@@ -69,26 +71,31 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	@SubscribeMessage('getFromUser')
 	async getFromUser(@ConnectedSocket() client: Socket, @MessageBody() data: { id: string }): Promise<void> 
 	{
-		if (!this.sockets.find(sock => sock.userId === data.id))
-			{
+		if (!this.sockets.find(sock => sock.userId === data.id)) {
+
 			const newwebsock: Websock = { client: client, userId: data.id };
 			this.sockets.push(newwebsock);
 			this.userService.setStatus(data.id, UserStatus.Online);
 			this.logger.log(`User id: ${data.id} is now online`);
 		}
-		var Noti = await this.notificationService.findNotificationReceiver(data.id);
-		client.emit('getAllNotifications', Noti);
+		const notifications: Notification[] = await this.notificationService.findNotificationReceiver(data.id);
+		let notificationsDto: NotificationDTO[] = [];
+		for (const notification of notifications)
+			notificationsDto.push(new NotificationDTO(notification));
+
+		client.emit('getAllNotifications', notificationsDto);
 	}
 
-	sendNotiToFrontend(Noti: Notification | null): void
+	sendNotiToFrontend(notification: Notification | null): void
 	{
-		if (Noti == null)
+		if (notification === null)
 			return ;
-		var websock: Websock = this.sockets.find((socket) => socket.userId === Noti.receiverId.toString());
+		
+		const websock: Websock = this.sockets.find((socket) => socket.userId === notification.receiver.id.toString());
 		if (websock === undefined)
 			return ;
 
-		websock.client.emit('sendNoti', Noti);
+		websock.client.emit('sendNoti', new NotificationDTO(notification));
 	}
 
 	@SubscribeMessage('sendMessage')
@@ -173,7 +180,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		]);
 		const senderSock: Websock =  this.sockets.find((socket) => socket.userId === data.sender);
 		const receiverSock: Websock =  this.sockets.find((socket) => socket.userId === data.receiver);
-		senderSock.client.emit('friendAdded',re.intraId.toString());
+		senderSock.client.emit('friendAdded', re.intraId.toString());
 		receiverSock.client.emit('friendAdded', se.intraId.toString());
 	}
 

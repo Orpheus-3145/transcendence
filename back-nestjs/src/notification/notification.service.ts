@@ -37,8 +37,7 @@ export class NotificationService {
 
 	async findNotificationReceiver(id: string): Promise<Notification[]>
 	{
-		var tmp = Number(id);
-		return (this.notificationRepository.find({where: {receiverId: tmp}}));
+		return (this.notificationRepository.find({where: {receiver: {id : Number(id)}}}));
 	}
 
 	async findNotificationId(id:number): Promise<Notification>
@@ -48,7 +47,14 @@ export class NotificationService {
 
 	async doesNotificationExist(sender: number, receiver: number, type:NotificationType): Promise<Notification | null>
 	{
-		var noti: Notification = await this.notificationRepository.findOne({where: {senderId: sender, receiverId: receiver, type: type}});
+		var noti: Notification = await this.notificationRepository.findOne({
+			where: {
+				sender: {id: sender},
+				receiver: {id: receiver},
+				type: type
+			}
+		});
+			
 		return (noti);
 	}
 
@@ -79,9 +85,9 @@ export class NotificationService {
 		else
 		{
 			var noti = new Notification();
-			noti.senderId = sender.id;
+			noti.sender = sender;
 			noti.senderName = sender.nameNick;
-			noti.receiverId = receiver.id;
+			noti.receiver = receiver;
 			noti.receiverName = receiver.nameNick;
 			noti.type = type;
 			noti.status = NotificationStatus.Pending;
@@ -107,9 +113,9 @@ export class NotificationService {
 		else
 		{
 			var noti = new Notification();
-			noti.senderId = sender.id;
+			noti.sender = sender;
 			noti.senderName = sender.nameNick;
-			noti.receiverId = receiver.id;
+			noti.receiver = receiver;
 			noti.receiverName = receiver.nameNick;
 			noti.type = NotificationType.Message;
 			noti.status = NotificationStatus.None;
@@ -134,9 +140,9 @@ export class NotificationService {
 		else
 		{
 			var noti = new Notification();
-			noti.senderId = channel.channel_id;
+			// noti.senderId = channel.channel_id;
 			noti.senderName = channel.title;
-			noti.receiverId = receiver.id;
+			// noti.receiverId = receiver.id;
 			noti.receiverName = receiver.nameNick;
 			noti.type = NotificationType.groupChat;
 			noti.status = NotificationStatus.None;
@@ -156,7 +162,11 @@ export class NotificationService {
 	async removeReq(sender:string, receiver:string, type:NotificationType): Promise<void> {
 		var send = Number(sender);
 		var recv = Number(receiver);
-		var arr = await this.notificationRepository.find({ where: { receiverId: recv, senderId: send } });
+		var arr = await this.notificationRepository.find(
+			{ where: { 
+				sender: {id: send},
+				receiver: {id: recv} } 
+		});
 
 		for (const item of arr) 
 		{
@@ -172,7 +182,13 @@ export class NotificationService {
 
 		const senderIdNumber = Number(senderId);
 		const receiverIdNumber = Number(receiverId);
-		const gameNotification: Notification = await this.notificationRepository.findOne({ where: { receiverId: receiverIdNumber, senderId: senderIdNumber, type: NotificationType.gameInvite } });
+		const gameNotification: Notification = await this.notificationRepository.findOne(
+			{ where: { 
+				receiver: { id: receiverIdNumber },
+				sender: { id: senderIdNumber },
+				type: NotificationType.gameInvite 
+			} 
+		});
 		
 		const initData: GameDataDTO = {
 			sessionToken: uuidv4(),
