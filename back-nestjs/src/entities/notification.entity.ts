@@ -8,7 +8,6 @@ export enum NotificationStatus {
 	Accepted = 'Accepted',
 	Declined = 'Declined',
 	Pending = 'Pending',
-  None = 'None',      // NB probabily not necessary
 }
 
 export enum NotificationType {
@@ -35,12 +34,6 @@ export class Notification {
   })
   @JoinColumn({name: 'receiver_id'})
   receiver: User;
-
-  @Column({nullable: false})    // NB remove
-  senderName: string;
-
-  @Column({nullable: false})    // NB remove
-  receiverName: string;
 
   @Column({
     type: 'enum',

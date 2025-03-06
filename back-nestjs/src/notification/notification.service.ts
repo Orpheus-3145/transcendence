@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
 import User from '../entities/user.entity'
 import { UsersService } from 'src/users/users.service';
-import { ChatService } from 'src/chat/chat.service';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import { GameDifficulty, GameMode, PowerUpSelected } from 'src/game/types/game.enum';
 import GameDataDTO from 'src/dto/gameData.dto';
@@ -22,8 +21,6 @@ export class NotificationService {
     private notificationRepository: Repository<Notification>,
 		@Inject(forwardRef(() => UsersService))
 		private readonly userService: UsersService,
-		@Inject(forwardRef(() => ChatService))
-		private readonly chatService: ChatService,
 		private readonly roomManager: RoomManagerService,
 		private readonly logger: AppLoggerService,
   ) {
@@ -86,9 +83,7 @@ export class NotificationService {
 		{
 			var noti = new Notification();
 			noti.sender = sender;
-			noti.senderName = sender.nameNick;
 			noti.receiver = receiver;
-			noti.receiverName = receiver.nameNick;
 			noti.type = type;
 			noti.status = NotificationStatus.Pending;
 			noti.message = null;
@@ -107,22 +102,18 @@ export class NotificationService {
 		{
 			tmp.message = message;
 			this.notificationRepository.save(tmp);
-			// this.chatService.saveMessage(sender.intraId, receiver.intraId, message);
 			return (tmp);
 		}
 		else
 		{
 			var noti = new Notification();
 			noti.sender = sender;
-			noti.senderName = sender.nameNick;
 			noti.receiver = receiver;
-			noti.receiverName = receiver.nameNick;
 			noti.type = NotificationType.Message;
-			noti.status = NotificationStatus.None;
+			noti.status = NotificationStatus.Pending;
 			noti.message = message;
 			noti.powerUpsSelected = null;
 			this.notificationRepository.save(noti);
-			// this.chatService.saveMessage(sender.intraId, receiver.intraId, message);
 			return (noti);
 		}
 	}
@@ -141,11 +132,9 @@ export class NotificationService {
 		{
 			var noti = new Notification();
 			// noti.senderId = channel.channel_id;
-			noti.senderName = channel.title;
 			// noti.receiverId = receiver.id;
-			noti.receiverName = receiver.nameNick;
 			noti.type = NotificationType.groupChat;
-			noti.status = NotificationStatus.None;
+			noti.status = NotificationStatus.Pending;
 			noti.message = message;
 			noti.powerUpsSelected = null;
 			this.notificationRepository.save(noti);

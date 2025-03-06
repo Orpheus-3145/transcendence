@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS Messages (
 );
 
 CREATE TYPE NOTIFICATION_TYPE AS ENUM ('Message', 'Friend Request', 'Game Invite', 'Group Chat');
-CREATE TYPE NOTIFICATION_STATUS AS ENUM ('Accepted', 'Declined', 'Pending', 'None');
+CREATE TYPE NOTIFICATION_STATUS AS ENUM ('Accepted', 'Declined', 'Pending');
 CREATE TABLE IF NOT EXISTS Notifications (
 	id SERIAL PRIMARY KEY,
 	sender_id INTEGER NOT NULL,

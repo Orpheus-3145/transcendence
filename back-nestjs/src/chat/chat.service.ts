@@ -221,7 +221,7 @@ export class ChatService {
 					if (user != null)
 					{
 						var noti: Notification = await this.notificationService.initGroupMessage(channel, user, content);
-						await this.notificationGateway.sendNotiToFrontend(noti);
+						this.notificationGateway.sendNotiToFrontend(noti);
 					}
 				}
 			});
