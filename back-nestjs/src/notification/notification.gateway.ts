@@ -14,7 +14,6 @@ import { UsersService } from 'src/users/users.service';
 import { Notification, NotificationType } from 'src/entities/notification.entity';
 import { UserStatus } from 'src/dto/user.dto';
 import {  fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
-// import User from 'src/entities/user.entity';
 import AppLoggerService from 'src/log/log.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
@@ -113,7 +112,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		if (!user || !other)
 			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
 				`${NotificationGateway.name}.${this.constructor.prototype.sendMessage.name}()`,
-				HttpStatus.INTERNAL_SERVER_ERROR);
+				HttpStatus.NOT_FOUND);
 
 		const noti = await this.notificationService.initMessage(user, other, data.message);
 		if (noti === null)
@@ -135,7 +134,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		if (!user || !other)
 			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
 				`${NotificationGateway.name}.${this.constructor.prototype.sendFriendReq.name}()`,
-				HttpStatus.INTERNAL_SERVER_ERROR);
+				HttpStatus.NOT_FOUND);
 
 		const noti = await this.notificationService.initRequest(user, other, NotificationType.friendRequest, null);
 		if (noti === null)
@@ -156,7 +155,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		if (!user || !other)
 			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
 				`${NotificationGateway.name}.${this.constructor.prototype.sendGameInvite.name}()`,
-				HttpStatus.INTERNAL_SERVER_ERROR);
+				HttpStatus.NOT_FOUND);
 
 		const noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite, data.powerUps);
 		if (noti === null)
@@ -198,8 +197,11 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		var receiverSock: Websock = this.sockets.find((socket) => socket.userId === data.receiver);
 
 		this.logger.log(`User ${data.sender} accepted game invite from ${data.receiver}`)
-		await this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
-		await this.notificationService.startGameFromInvitation(senderSock.client, receiverSock.client, data.sender, data.receiver);
+
+		await Promise.all([
+			this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite),
+			this.notificationService.startGameFromInvitation(senderSock.client, receiverSock.client, data.sender, data.receiver)
+		]);
 	}
 
 	@SubscribeMessage('declineNotiGI')
@@ -218,7 +220,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		if (noti === null)
 			this.thrower.throwSessionExcp(`Notification with id: ${data.id} not found`,
 				`${NotificationGateway.name}.${this.constructor.prototype.removeNotification.name}()`,
-				HttpStatus.INTERNAL_SERVER_ERROR);
+				HttpStatus.NOT_FOUND);
 
 		this.notificationService.removeNotification(noti);		
 	}

@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
 import { IsBoolean } from 'class-validator';
 import User  from './user.entity';
+import { ChatNotification } from './chatNotification.entity';
 
 // Channel entity
 @Entity('Channels')
@@ -50,6 +51,8 @@ export class Channel {
 
 	@OneToMany(() => Message, (message: Message) => message.channel)
 	messages: Message[];
+
+	@OneToMany(() => ChatNotification, (ChatNotification))
 }
 
 // Channel_Members entity
@@ -93,7 +96,10 @@ export class Message {
 
 	@ManyToOne(() => Channel, (channel: Channel) => channel.messages)
 	@JoinColumn({ name: 'channel_id' })
-	channel: Channel;
+	channel: Channel; 
+
+	@OneToMany(() => ChatNotification, (chatNotification: ChatNotification) => chatNotification.message)
+	chatNotifications: ChatNotification[]
 
 	@CreateDateColumn()
 	send_time: Date;

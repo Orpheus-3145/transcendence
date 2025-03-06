@@ -2,6 +2,7 @@ import { IsEnum, IsNumber, IsString } from "class-validator";
 import { Notification, NotificationStatus, NotificationType } from "src/entities/notification.entity";
 import { PowerUpSelected } from "src/game/types/game.enum";
 
+
 export default class NotificationDTO {
 
   constructor(notiEntity: Notification) {

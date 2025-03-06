@@ -151,10 +151,11 @@ export class NotificationService {
 	async removeReq(sender:string, receiver:string, type:NotificationType): Promise<void> {
 		var send = Number(sender);
 		var recv = Number(receiver);
-		var arr = await this.notificationRepository.find(
-			{ where: { 
+		var arr = await this.notificationRepository.find({
+			where: { 
 				sender: {id: send},
-				receiver: {id: recv} } 
+				receiver: {id: recv}
+			}
 		});
 
 		for (const item of arr) 
@@ -171,14 +172,14 @@ export class NotificationService {
 
 		const senderIdNumber = Number(senderId);
 		const receiverIdNumber = Number(receiverId);
-		const gameNotification: Notification = await this.notificationRepository.findOne(
-			{ where: { 
+		const gameNotification: Notification = await this.notificationRepository.findOne({
+			where: { 
 				receiver: { id: receiverIdNumber },
 				sender: { id: senderIdNumber },
 				type: NotificationType.gameInvite 
 			} 
 		});
-		
+
 		const initData: GameDataDTO = {
 			sessionToken: uuidv4(),
 			mode: GameMode.multi,
