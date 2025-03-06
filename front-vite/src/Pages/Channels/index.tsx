@@ -132,6 +132,10 @@ const ChannelsPage: React.FC = () => {
 					return (prevState);
 	
 				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== user.id);
+				if (selectedChannel != null && selectedChannel.id === channel.id)
+				{
+					setSelectedChannel(null);
+				}
 				return {
 					...prevState,
 					chatRooms: prevState.chatRooms.map((room) =>
@@ -139,6 +143,7 @@ const ChannelsPage: React.FC = () => {
 					),
 				};
 			});
+			
 		};
 	
 		socket.on("userKicked", handleUserKickedChannel);
@@ -160,7 +165,10 @@ const ChannelsPage: React.FC = () => {
 				const updatedUsers: UserProps[] = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
 				const updatedBanned: string[] = channel.settings.banned;
 				updatedBanned.push(data.userId);
-
+				if (selectedChannel != null && selectedChannel.id === channel.id)
+				{
+					setSelectedChannel(null);
+				}
 				return {
 					...prevState,
 					chatRooms: prevState.chatRooms.map((room) =>
