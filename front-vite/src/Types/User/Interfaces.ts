@@ -33,6 +33,7 @@ export interface User {
   status: UserStatus;
   friends: string[];
   blocked: string[];
+  twoFactorSecret: string;
 }
 
 export interface UserContextType {
