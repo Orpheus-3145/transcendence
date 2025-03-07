@@ -46,7 +46,7 @@ export const Notification: React.FC = () => {
 	{
 		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);
 		
-		if (type == NotificationType.Message || type == NotificationType.groupChat)
+		if (type === NotificationType.message || type == NotificationType.groupChat)
 		{
 			setMessageArray(tmparr);
 		}
@@ -63,7 +63,7 @@ export const Notification: React.FC = () => {
 	let removeNotification = (noti: NotificationStruct) =>
 	{
 		removeNotiFromArray(noti, messageArray, noti.type);
-		removeNotificationDb(noti.id.toString());
+		removeNotificationDb(noti.id, noti.type);
 	}
 
 	let whichMessage = (noti: NotificationStruct) =>

@@ -7,11 +7,14 @@ import { UsersModule } from 'src/users/users.module';
 import GameModule from 'src/game/game.module';
 import ExceptionModule from 'src/errors/exception.module';
 import AppLoggerModule from 'src/log/log.module';
-import { Notification } from './entities/notification.entity';
-import { Message, Channel, ChannelMember } from './entities/chat.entity';
+import { Channel, ChannelMember } from './entities/chat.entity';
 import { ChatModule } from './chat/chat.module';
 import { NotificationModule } from './notification/notification.module';
 import Game from './entities/game.entity';
+import { Message } from './entities/message.entity';
+import { MessageNotification } from './entities/messageNotification.entity';
+import { GameInvitation } from './entities/gameInvitation.entity';
+import { FriendRequest } from './entities/friendRequest.entity';
 
 
 @Module({
@@ -29,7 +32,7 @@ import Game from './entities/game.entity';
 				username: configService.get<string>('POSTGRES_USER'),
 				password: configService.get<string>('POSTGRES_PASSWORD'),
 				database: configService.get<string>('POSTGRES_DB'),
-				entities: [User, Notification, Message, Channel, ChannelMember, Game], // List your entities here
+				entities: [User, Game, Channel, ChannelMember, Message, MessageNotification, GameInvitation, FriendRequest], // List your entities here
 				synchronize: true,
 				// logging: true,			// log every query done by ORM
 			}),
@@ -40,7 +43,7 @@ import Game from './entities/game.entity';
 		AppLoggerModule,
 		ExceptionModule,
 		ChatModule,
-    	NotificationModule,
+		NotificationModule,
 	],
 })
 export default class AppModule {}

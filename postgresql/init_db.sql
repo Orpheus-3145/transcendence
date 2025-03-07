@@ -39,58 +39,49 @@ CREATE TYPE CHANNEL_TYPE AS ENUM ('public', 'protected', 'private', 'chat');
 CREATE TABLE IF NOT EXISTS Channels (
 	channel_id SERIAL PRIMARY KEY,
 	ch_type CHANNEL_TYPE DEFAULT 'public',
+	channel_photo TEXT DEFAULT 'default_channel_photo.png',
+	is_active BOOLEAN DEFAULT TRUE,
+	is_direct BOOLEAN DEFAULT FALSE,
+	ch_owner INTEGER NOT NULL,
+	password TEXT DEFAULT NULL,
 	title TEXT DEFAULT 'Welcome to my Channel!',
 	channel_photo TEXT DEFAULT 'default_channel_photo.png',
-	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	banned ARRAY[] DEFAULT [],
+	muted ARRAY[] DEFAULT [],
+
+	FOREIGN KEY (ch_owner) REFERENCES Channel_Members(channel_member_id)
 );
 
 CREATE TYPE CHANNEL_ROLE AS ENUM ('owner', 'admin', 'member');
 CREATE TABLE IF NOT EXISTS Channel_Members (
+	channel_member_id SERIAL PRIMARY KEY,
 	channel_id INTEGER NOT NULL CHECK (channel_id > 0),
 	user_id INTEGER NOT NULL CHECK (user_id > 0),
 	member_role CHANNEL_ROLE DEFAULT 'member',
 
-	PRIMARY KEY (channel_id, user_id),
-	FOREIGN KEY (user_id) REFERENCES Users (user_id),
-	FOREIGN KEY (channel_id) REFERENCES Channels (channel_id)
+	FOREIGN KEY (channel_id) REFERENCES Channels (channel_id),
+	FOREIGN KEY (user_id) REFERENCES Users (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS Messages (
 	msg_id SERIAL PRIMARY KEY,
+	channel_id INTEGER NOT NULL,
 	sender_id INTEGER NOT NULL,
-	receiver_id INTEGER NOT NULL,
 	content TEXT NOT NULL,
 	send_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-	FOREIGN KEY (sender_id) REFERENCES Users (user_id),
-	FOREIGN KEY (receiver_id) REFERENCES Users (user_id)
+	FOREIGN KEY (channel_id) REFERENCES Channels (channel_id),
+	FOREIGN KEY (sender_id) REFERENCES Channel_Members(channel_member_id)
 );
 
-CREATE TYPE NOTIFICATION_TYPE AS ENUM ('Message', 'Friend Request', 'Game Invite', 'Group Chat');
 CREATE TYPE NOTIFICATION_STATUS AS ENUM ('Accepted', 'Declined', 'Pending');
-CREATE TABLE IF NOT EXISTS Notifications (
-	id SERIAL PRIMARY KEY,
-	sender_id INTEGER NOT NULL,
-	receiver_id INTEGER NOT NULL,
-	type NOTIFICATION_TYPE NOT NULL,
-	status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
-	content TEXT DEFAULT '',
-	powerup INTEGER DEFAULT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-
-	FOREIGN KEY (sender_id) REFERENCES Users(user_id),
-	FOREIGN KEY (receiver_id) REFERENCES Users(user_id)
-)
-
 CREATE TABLE IF NOT EXISTS FriendRequests (
 	id SERIAL PRIMARY KEY,
 	sender_id INTEGER NOT NULL,
 	receiver_id INTEGER NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	-- type NOTIFICATION_TYPE NOT NULL,
 	status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
-	-- content TEXT DEFAULT '',
-	-- powerup INTEGER DEFAULT NULL,
 
 	FOREIGN KEY (sender_id) REFERENCES Users(user_id),
 	FOREIGN KEY (receiver_id) REFERENCES Users(user_id)
@@ -101,26 +92,20 @@ CREATE TABLE IF NOT EXISTS GameInvitations (
 	sender_id INTEGER NOT NULL,
 	receiver_id INTEGER NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	-- type NOTIFICATION_TYPE NOT NULL,
 	status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
-	-- content TEXT DEFAULT '',
 	powerup INTEGER DEFAULT NULL,
 
 	FOREIGN KEY (sender_id) REFERENCES Users(user_id),
 	FOREIGN KEY (receiver_id) REFERENCES Users(user_id)
 )
 
-CREATE TABLE IF NOT EXISTS ChatNotifications (
+CREATE TABLE IF NOT EXISTS MessageNotifications (
 	id SERIAL PRIMARY KEY,
-	channel_id INTEGER NOT NULL,
-	receiver_id INTEGER NOT NULL,
 	message_id INTEGER NOT NULL,
+	receiver_id INTEGER NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	-- type NOTIFICATION_TYPE NOT NULL,
-	-- status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
-	-- content TEXT DEFAULT '',
-	-- powerup INTEGER DEFAULT NULL,
+	status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
 
-	FOREIGN KEY (channel_id) REFERENCES Channels(channel_id),
-	FOREIGN KEY (receiver_id) REFERENCES Users(user_id)
+	FOREIGN KEY (message_id) REFERENCES Messages(msg_id),
+	FOREIGN KEY (receiver_id) REFERENCES Channel_Members(channel_member_id)
 )

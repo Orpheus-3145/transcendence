@@ -172,7 +172,7 @@ export class UsersService {
 		return (this.findOneIntra(Number(code)));
 	}
 
-	async friendRequestAccepted(iduser:string, idother:string)
+	async updateNewFriendship(iduser:string, idother:string)
 	{
 		const [user, otheruser] = await Promise.all([this.getUserId(iduser), this.getUserId(idother)]);
 
@@ -361,9 +361,15 @@ export class UsersService {
 
 		allData = await this.initLeaderboardArr(allUser);
 
-		var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
-		var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
-		var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
+		// var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
+		// var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
+		// var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
+
+		const [normalArr, powerArr, allArr] = await Promise.all([
+			this.fillArray(allData, "Normal"),
+			this.fillArray(allData, "Power ups"),
+			this.fillArray(allData, "All"),
+		])
 
 		var result: LeaderboardDTO[][] = [];
 		result.push(normalArr, powerArr, allArr);

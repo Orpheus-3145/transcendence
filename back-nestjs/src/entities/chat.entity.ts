@@ -1,7 +1,22 @@
 import { Entity, PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
 import { IsBoolean } from 'class-validator';
-import User  from './user.entity';
-import { ChatNotification } from './chatNotification.entity';
+import { Message } from './message.entity';
+import User from './user.entity';
+import { MessageNotification } from './messageNotification.entity';
+
+
+export enum ChannelTypes {
+	public = 'public',
+	protected = 'protected',
+	private = 'private',
+	chat = 'chat',
+}
+
+export enum ChannelMemberTypes {
+	owner = 'owner',
+	admin = 'admin',
+	member = 'member',
+}
 
 // Channel entity
 @Entity('Channels')
@@ -11,24 +26,33 @@ export class Channel {
 
 	@Column({
 		type: 'enum',
-		enum: ['public', 'protected', 'private', 'chat'],
+		enum: ChannelTypes,
 		default: 'public',
 	})
+	ch_type: ChannelTypes;
 
 	// @Column({ nullable: true })
 	// isDirectMessage: string;
 
 	@IsBoolean()
-	@Column({ type: 'boolean', default: false })
+	@Column({ name: 'is_active', type: 'boolean', default: true })
+	isActive: boolean;
+
+	@IsBoolean()
+	@Column({ name: 'is_direct', type: 'boolean', default: false })
 	isDirectMessage: boolean;
 
-	@Column()
-	ch_type: string;
+	// @Column({ type: 'varchar', nullable: false })
+	// ch_owner: string;
 
-	@Column({ type: 'varchar', nullable: false })
-	ch_owner: string;
+	@ManyToOne(() => User, (user: User) => user.channelMember, {
+		nullable: false,
+		eager: true
+	})
+	@JoinColumn({name: 'ch_owner'})
+	ch_owner: User;
 
-	@Column({ type: 'varchar', nullable: true })
+	@Column({ type: 'varchar', nullable: true, default: null })
 	password: string | null;
 
 	@Column({ type: 'varchar', length: 50, default: 'Welcome to my Channel!' })
@@ -40,68 +64,51 @@ export class Channel {
 	@CreateDateColumn()
 	created: Date;
 
-	@OneToMany(() => ChannelMember, (channelMember: ChannelMember) => channelMember.channel)
-	members: ChannelMember[];
-
-	@Column("text", { array: true, default: '{}' })
+	@Column("text", { array: true, default: '{}' })		// NB should move this info into channel member?
 	banned: string[];
 
-	@Column("text", { array: true, default: '{}' })
+	@Column("text", { array: true, default: '{}' })		// NB should move this info into channel member?
 	muted: string[];
 
 	@OneToMany(() => Message, (message: Message) => message.channel)
 	messages: Message[];
 
-	@OneToMany(() => ChatNotification, (ChatNotification))
+	@OneToMany(() => ChannelMember, (channelMember: ChannelMember) => channelMember.channel)
+	members: ChannelMember[];
 }
 
 // Channel_Members entity
 @Entity('Channel_Members')
 export class ChannelMember {
-	@PrimaryColumn()
-	user_id: number;
 
-	@PrimaryColumn()
-	channel_id: number;
+	@PrimaryGeneratedColumn( {name: 'channel_member_id'} )
+	channel_members_id: number
 
-	@Column({ nullable: true })
+	@ManyToOne(() => Channel, (channel: Channel) => channel.members, {
+		nullable: false,
+		eager: true})
+	@JoinColumn({ name: 'channel_id' })
+	channel: Channel;
+
+	@ManyToOne(() => User, (user: User) => user.channelMember, {
+		nullable: false,
+		eager: true})
+	@JoinColumn({ name: 'user_id' })
+	member: User;
+
+	@Column({ nullable: true })		// NB what is it?
 	name: string;
 
 	@Column({
 		type: 'enum',
-		enum: ['owner', 'admin', 'member'],
-		default: 'member',
+		enum: ChannelMemberTypes,
+		default: ChannelMemberTypes.member,
 	})
-	member_role: string;
+	member_role: ChannelMemberTypes;
+	
+	@OneToMany(() => Message, (message: Message) => message.sender)
+	sender: Message[];
 
-	@ManyToOne(() => Channel, (channel: Channel) => channel.members)
-	@JoinColumn({ name: 'channel_id' })
-	channel: Channel;
+	@OneToMany(() => MessageNotification, (chatNotification: MessageNotification) => chatNotification.receiver)
+	chatNotification: MessageNotification[];
 }
-
-// Messages entity
-@Entity('Messages')
-export class Message {
-	@PrimaryGeneratedColumn()
-	msg_id: number;
-
-	@Column()
-	sender_id: number;
-
-	// @Column()
-	// receiver_id: number;
-
-	@Column('text')
-	content: string;
-
-	@ManyToOne(() => Channel, (channel: Channel) => channel.messages)
-	@JoinColumn({ name: 'channel_id' })
-	channel: Channel; 
-
-	@OneToMany(() => ChatNotification, (chatNotification: ChatNotification) => chatNotification.message)
-	chatNotifications: ChatNotification[]
-
-	@CreateDateColumn()
-	send_time: Date;
-}
-

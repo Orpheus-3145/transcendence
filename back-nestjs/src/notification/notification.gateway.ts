@@ -8,19 +8,24 @@ import { WebSocketGateway,
 	OnGatewayConnection,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { v4 as uuidv4 } from 'uuid';
 
 import { NotificationService } from './notification.service';
 import { UsersService } from 'src/users/users.service';
-import { Notification, NotificationType } from 'src/entities/notification.entity';
+import GameDataDTO from 'src/dto/gameData.dto';
 import { UserStatus } from 'src/dto/user.dto';
-import {  fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
+import { GameDifficulty, GameMode, fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
 import AppLoggerService from 'src/log/log.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
-import NotificationDTO from 'src/dto/notification.dto';
+import NotificationDTO, { NotificationType } from 'src/dto/notification.dto';
+import { GameInvitation } from 'src/entities/gameInvitation.entity';
+import { FriendRequest } from 'src/entities/friendRequest.entity';
+import { MessageNotification } from 'src/entities/messageNotification.entity';
+import RoomManagerService from 'src/game/session/roomManager.service';
 
 
-interface Websock {
+export interface Websock {
 	client: Socket;
 	userId: string;
 }
@@ -47,6 +52,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		@Inject(forwardRef(() => UsersService))
 		private readonly userService: UsersService,
 		private readonly logger: AppLoggerService,
+		private readonly roomManager: RoomManagerService,
 		private readonly thrower: ExceptionFactory,
 	) {
 		this.logger.setContext(NotificationGateway.name);	
@@ -67,161 +73,163 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		this.sockets = this.sockets.filter((s) => s.client.id !== client.id);
 	}
 
+	getUser(userId: string): Websock {
+
+		const user: Websock = this.sockets.find((socket) => socket.userId === userId);
+		if (!user)
+			this.thrower.throwSessionExcp(
+				`User with id: ${userId} not found`,
+				`${NotificationGateway.name}.${this.constructor.prototype.getUser.name}()`,
+				HttpStatus.NOT_FOUND);
+
+		return (user);
+	}
+
 	@SubscribeMessage('getFromUser')
 	async getFromUser(@ConnectedSocket() client: Socket, @MessageBody() data: { id: string }): Promise<void> 
 	{
-		if (!this.sockets.find(sock => sock.userId === data.id)) {
+		let user: Websock = this.getUser(data.id);
+		if (!user) {
 
-			const newwebsock: Websock = { client: client, userId: data.id };
-			this.sockets.push(newwebsock);
-			this.userService.setStatus(data.id, UserStatus.Online);
-			this.logger.log(`User id: ${data.id} is now online`);
+			user = { client: client, userId: data.id };
+			this.sockets.push(user);
+			this.userService.setStatus(user.userId, UserStatus.Online);
+			this.logger.log(`User id: ${user.userId} is now online`);
 		}
-		const notifications: Notification[] = await this.notificationService.findNotificationReceiver(data.id);
-		let notificationsDto: NotificationDTO[] = [];
-		for (const notification of notifications)
-			notificationsDto.push(new NotificationDTO(notification));
+		const allNotifications = await this.notificationService.findAllNotifications();
+		const notificationsDto: NotificationDTO[] = [];
+
+		for (const notificationType in allNotifications) {
+			for (const notification of allNotifications[notificationType])
+				notificationsDto.push(new NotificationDTO(notification));
+		}
 
 		client.emit('getAllNotifications', notificationsDto);
 	}
 
-	sendNotiToFrontend(notification: Notification | null): void
-	{
-		if (notification === null)
-			return ;
-		
-		const websock: Websock = this.sockets.find((socket) => socket.userId === notification.receiver.id.toString());
-		if (websock === undefined)
-			return ;
+	// @SubscribeMessage('sendMessage')
+	// async sendMessage(@MessageBody() data: { senderId: string, receiverId: string, message: string }): Promise<void> 
+	// {
+	// 	if (data.message.length == 0) {
+	// 		this.logger.warn(`Received an empty message`);
+	// 		return ;
+	// 	}
+	// 	const [user, other] = await Promise.all([
+	// 		this.userService.getUserId(data.senderId),
+	// 		this.userService.getUserId(data.receiverId)
+	// 	]);
 
-		websock.client.emit('sendNoti', new NotificationDTO(notification));
-	}
+	// 	if (!user || !other)
+	// 		this.thrower.throwSessionExcp(`User with id: ${data.senderId} or ${data.receiverId} not found`,
+	// 			`${NotificationGateway.name}.${this.constructor.prototype.sendMessage.name}()`,
+	// 			HttpStatus.NOT_FOUND);
 
-	@SubscribeMessage('sendMessage')
-	async sendMessage(@MessageBody() data: { username: string, friend: string, message: string }): Promise<void> 
-	{
-		if (data.message.length == 0) {
-			this.logger.warn(`Received an empty message`);
-			return ;
-		}
-		const [user, other] = await Promise.all([
-			this.userService.getUserId(data.username),
-			this.userService.getUserId(data.friend)
-		]);
-
-		if (!user || !other)
-			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
-				`${NotificationGateway.name}.${this.constructor.prototype.sendMessage.name}()`,
-				HttpStatus.NOT_FOUND);
-
-		const noti = await this.notificationService.initMessage(user, other, data.message);
-		if (noti === null)
-			this.logger.debug(`User ${user.nameNick} has blocked ${other.nameNick}, message not sent`)
-		else {
-			this.sendNotiToFrontend(noti);
-			this.logger.log(`Sending message from ${user.nameNick} to ${other.nameNick}, content: '${data.message}'`)
-		}
-	}
+	// 	const chatNoti = await this.notificationService.initMessage(user, other, data.message);
+	// 	if (chatNoti === null)
+	// 		this.logger.debug(`User ${user.nameNick} has blocked ${other.nameNick}, message not sent`)
+	// 	else {
+	// 		this.sendNotiToFrontend(chatNoti);
+	// 		this.logger.log(`Sending message from ${user.nameNick} to ${other.nameNick}, content: '${data.message}'`)
+	// 	}
+	// }
 
 	@SubscribeMessage('sendFriendReq')
-	async sendFriendReq(@MessageBody() data: { username: string, friend: string, message: string }): Promise<void> 
+	async sendFriendReq(@MessageBody() data: { senderId: string, receiverId: string }): Promise<void> 
 	{
 		const [user, other] = await Promise.all([
-			this.userService.getUserId(data.username),
-			this.userService.getUserId(data.friend)
+			this.userService.getUserId(data.senderId),
+			this.userService.getUserId(data.receiverId)
 		]);
 
 		if (!user || !other)
-			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
+			this.thrower.throwSessionExcp(`User with id: ${data.senderId} or ${data.receiverId} not found`,
 				`${NotificationGateway.name}.${this.constructor.prototype.sendFriendReq.name}()`,
 				HttpStatus.NOT_FOUND);
 
-		const noti = await this.notificationService.initRequest(user, other, NotificationType.friendRequest, null);
-		if (noti === null)
-			this.logger.debug(`User ${user.nameNick} has blocked ${other.nameNick}, friend invite not sent`)
-		else {
-			this.sendNotiToFrontend(noti);
-			this.logger.log(`Sending friend request from ${user.nameNick} to ${other.nameNick}`)
-		}
-	}
-
-	@SubscribeMessage('sendGameInvite')
-	async sendGameInvite(@MessageBody() data: { username: string, friend: string, powerUps: PowerUpSelected }): Promise<void> 
-	{
-		const [user, other] = await Promise.all([
-			this.userService.getUserId(data.username),
-			this.userService.getUserId(data.friend)
-		]);
-		if (!user || !other)
-			this.thrower.throwSessionExcp(`User with id: ${data.username} or ${data.friend} not found`,
-				`${NotificationGateway.name}.${this.constructor.prototype.sendGameInvite.name}()`,
-				HttpStatus.NOT_FOUND);
-
-		const noti = await this.notificationService.initRequest(user, other, NotificationType.gameInvite, data.powerUps);
-		if (noti === null)
-			this.logger.debug(`User ${user.nameNick} has blocked ${other.nameNick}, game invite not sent`)
-		else {
-			this.sendNotiToFrontend(noti);
-			this.logger.log(`Sending game invite from ${user.nameNick} to ${other.nameNick}, powerups: ${fromMaskToArray(data.powerUps)}`)
+		const friendRequestNoti: FriendRequest = await this.notificationService.createFriendRequest(user, other);
+		
+		if (friendRequestNoti) {
+			const socket: Socket = this.getUser(data.receiverId).client;
+			socket.emit('sendNoti', new NotificationDTO(friendRequestNoti));
 		}
 	}
 
 	@SubscribeMessage('acceptNotiFr')
-	async acceptNotiFr(@MessageBody() data: { sender: string, receiver: string})
+	async acceptNotiFr(@MessageBody() data: { notificationId: number })
 	{
+		const acceptedFriendRequest: FriendRequest = await this.notificationService.getFriendRequest(data.notificationId);
+		const senderId: string = acceptedFriendRequest.sender.id.toString();
+		const receiverId: string = acceptedFriendRequest.receiver.id.toString();
+	
 		await Promise.all([
-			this.userService.friendRequestAccepted(data.sender, data.receiver),
-			this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest)
+			this.userService.updateNewFriendship(senderId, receiverId),
+			this.notificationService.acceptFriendRequest(acceptedFriendRequest),
 		]);
-		const [se, re] = await Promise.all([
-			this.userService.findOneId(Number(data.sender)),
-			this.userService.findOneId(Number(data.receiver))
-		]);
-		const senderSock: Websock =  this.sockets.find((socket) => socket.userId === data.sender);
-		const receiverSock: Websock =  this.sockets.find((socket) => socket.userId === data.receiver);
-		senderSock.client.emit('friendAdded', re.intraId.toString());
-		receiverSock.client.emit('friendAdded', se.intraId.toString());
+
+		this.getUser(senderId).client.emit('friendAdded', senderId);
+		this.getUser(receiverId).client.emit('friendAdded', receiverId);
 	}
 
 	@SubscribeMessage('declineNotiFr')
-	async declineNotiFr(@MessageBody() data: { sender: string, receiver: string})
+	async declineNotiFr(@MessageBody() data: { notificationId: number })
 	{
-		this.logger.log(`User ${data.sender} refused friend invite from ${data.receiver}`)
-		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.friendRequest);
+		const refusedFriendRequest: FriendRequest = await this.notificationService.getFriendRequest(data.notificationId);
+	
+		this.notificationService.refuseFriendRequest(refusedFriendRequest);
+	}
+
+	@SubscribeMessage('sendGameInvite')
+	async sendGameInvite(@MessageBody() data: { senderId: string, receiverId: string, powerUps: PowerUpSelected }): Promise<void> 
+	{
+		const [user, other] = await Promise.all([
+			this.userService.getUserId(data.receiverId),
+			this.userService.getUserId(data.receiverId)
+		]);
+		if (!user || !other)
+			this.thrower.throwSessionExcp(`User with id: ${data.receiverId} or ${data.receiverId} not found`,
+				`${NotificationGateway.name}.${this.constructor.prototype.sendGameInvite.name}()`,
+				HttpStatus.NOT_FOUND);
+
+		const gameInvitationNoti = await this.notificationService.createGameInvitation(user, other, data.powerUps);
+
+		if (gameInvitationNoti) {
+			const socket: Socket = this.getUser(data.receiverId).client;
+			socket.emit('sendNoti', new NotificationDTO(gameInvitationNoti));
+		}
 	}
 
 	@SubscribeMessage('acceptNotiGI')
-	async acceptNotiGI(@MessageBody() data: { sender: string, receiver: string})
+	async acceptNotiGI(@MessageBody() data: { notificationId: number })
 	{
-		var senderSock: Websock = this.sockets.find((socket) => socket.userId === data.sender);
-		var receiverSock: Websock = this.sockets.find((socket) => socket.userId === data.receiver);
+		const acceptedGameInvitation: GameInvitation = await this.notificationService.getGameInvitation(data.notificationId);
+		const senderId: string = acceptedGameInvitation.sender.id.toString();
+		const receiverId: string = acceptedGameInvitation.receiver.id.toString();
+		
+		await this.notificationService.acceptGameInvitation(acceptedGameInvitation);
 
-		this.logger.log(`User ${data.sender} accepted game invite from ${data.receiver}`)
+		const initData: GameDataDTO = {
+			sessionToken: uuidv4(),
+			mode: GameMode.multi,
+			difficulty: GameDifficulty.unset,
+			extras: acceptedGameInvitation.powerUpsSelected,
+		};
+		this.roomManager.createRoom(initData);
 
-		await Promise.all([
-			this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite),
-			this.notificationService.startGameFromInvitation(senderSock.client, receiverSock.client, data.sender, data.receiver)
-		]);
+		this.getUser(senderId).client.emit('goToGame', initData);
+		this.getUser(receiverId).client.emit('goToGame', initData);
 	}
 
 	@SubscribeMessage('declineNotiGI')
-	async declineNotiGI(@MessageBody() data: { sender: string, receiver: string})
+	async declineNotiGI(@MessageBody() data: { notificationId: number })
 	{
-		this.logger.log(`User ${data.sender} refused game invite from ${data.receiver}`)
-		this.notificationService.removeReq(data.sender, data.receiver, NotificationType.gameInvite);
+		const refusedGameInvitation: GameInvitation = await this.notificationService.getGameInvitation(data.notificationId);
+	
+		this.notificationService.refuseGameInvitation(refusedGameInvitation);
 	}
 
 	@SubscribeMessage('removeNotification')
-	async removeNotification(@MessageBody() data: { id: string})
+	async removeNotification(@MessageBody() data: { notificationId: number, type: NotificationType })
 	{
-		var numb = Number(data.id);
-		const noti = await this.notificationService.findNotificationId(numb);
-		
-		if (noti === null)
-			this.thrower.throwSessionExcp(`Notification with id: ${data.id} not found`,
-				`${NotificationGateway.name}.${this.constructor.prototype.removeNotification.name}()`,
-				HttpStatus.NOT_FOUND);
-
-		this.notificationService.removeNotification(noti);		
+		this.notificationService.removeNotification(data.notificationId, data.type);		
 	}
 };

@@ -15,10 +15,10 @@ socket.on('connect_error', (error) => {
 });
 
 export enum NotificationType {
-	Message = 'Message',
+  gameInvite = 'Game Invite',
 	friendRequest = 'Friend Request',
-	gameInvite = 'Game Invite',
-	groupChat = 'Group Chat',
+	message = 'message',
+	groupChat = 'groupChat',
 }
 
 export enum NotificationStatus {
@@ -39,42 +39,43 @@ export interface NotificationStruct {
 	powerUpsSelected: PowerUpSelected
 }
 
-export async function addFriend(username:string, friend:string): Promise<void> 
+export async function addFriend(senderId:string, receiverId:string): Promise<void> 
 {
-	socket.emit('sendFriendReq', {username: username, friend: friend});
+	socket.emit('sendFriendReq', {senderId: senderId, receiverId: receiverId});
 }
 
-export async function inviteToGame(username:string, friend:string, powerups: PowerUpSelected): Promise<void> 
+// NB change string into number
+export async function inviteToGame(senderId:string, receiverId:string, powerups: PowerUpSelected): Promise<void> 
 {
-	socket.emit('sendGameInvite', {username: username, friend: friend, powerUps: powerups});
+	socket.emit('sendGameInvite', {senderId: senderId, receiverId: receiverId, powerUps: powerups});
 }
 
-export async function sendMessage(username:string, friend:string, message:string): Promise<void> 
+export async function sendMessage(senderId:string, receiverId:string, message:string): Promise<void> 
 {
-	socket.emit('sendMessage', {username: username, friend: friend, message: message});
+	socket.emit('sendMessage', {senderId: senderId, receiverId: receiverId, message: message});
 }
 
-export async function removeNotificationDb(id:string): Promise<void>
+export async function removeNotificationDb(notificationId: number): Promise<void>
 {
-	socket.emit('removeNotification', { id: id });
+	socket.emit('removeNotification', { notificationId: notificationId, type: NotificationType });
 }
 
-export async function acceptFriendRequest(senderid:string, receiverid: string) 
+export async function acceptFriendRequest(notificationId: number) 
 {
-	socket.emit('acceptNotiFr', { sender: senderid, receiver: receiverid });
+	socket.emit('acceptNotiFr', { notificationId: notificationId });
 }
 
-export async function declineFriendRequest(senderid:string, receiverid: string) 
+export async function declineFriendRequest(notificationId: number) 
 {
-	socket.emit('declineNotiFr', { sender: senderid, receiver: receiverid });
+	socket.emit('declineNotiFr', { notificationId: notificationId });
 }
 
-export async function acceptGameInvite(senderid:string, receiverid: string)
+export async function acceptGameInvite(notificationId: number)
 {
-	socket.emit('acceptNotiGI', { sender: senderid, receiver: receiverid });
+	socket.emit('acceptNotiGI', { notificationId: notificationId });
 }
 
-export async function declineGameInvite(senderid:string, receiverid: string) 
+export async function declineGameInvite(notificationId: number) 
 {
-	socket.emit('declineNotiGI', { sender: senderid, receiver: receiverid });
+	socket.emit('declineNotiGI', { notificationId: notificationId });
 }

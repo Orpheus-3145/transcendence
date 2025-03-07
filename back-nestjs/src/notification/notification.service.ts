@@ -1,58 +1,66 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { Socket } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Notification, NotificationStatus, NotificationType } from '../entities/notification.entity';
 import User from '../entities/user.entity'
-import { UsersService } from 'src/users/users.service';
-import RoomManagerService from 'src/game/session/roomManager.service';
-import { GameDifficulty, GameMode, PowerUpSelected } from 'src/game/types/game.enum';
-import GameDataDTO from 'src/dto/gameData.dto';
-import { Channel } from 'src/entities/chat.entity';
+import { fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
+import { ChannelMember } from 'src/entities/chat.entity';
 import AppLoggerService from 'src/log/log.service';
+import { MessageNotification } from 'src/entities/messageNotification.entity';
+import { GameInvitation } from 'src/entities/gameInvitation.entity';
+import { FriendRequest, NotificationStatus } from 'src/entities/friendRequest.entity';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import { Message } from 'src/entities/message.entity';
+import { NotificationType } from 'src/dto/notification.dto';
 
 
 @Injectable()
 export class NotificationService {
   constructor(
-    @InjectRepository(Notification)
-    private notificationRepository: Repository<Notification>,
-		@Inject(forwardRef(() => UsersService))
-		private readonly userService: UsersService,
-		private readonly roomManager: RoomManagerService,
+    @InjectRepository(MessageNotification)
+    private messageNotificationRepository: Repository<MessageNotification>,
+    @InjectRepository(GameInvitation)
+    private gameInvitationRepository: Repository<GameInvitation>,
+    @InjectRepository(FriendRequest)
+    private friendRequestRepository: Repository<FriendRequest>,
 		private readonly logger: AppLoggerService,
+		private readonly thrower: ExceptionFactory,
   ) {
 		this.logger.setContext(NotificationService.name);
 	}
 
-	async findAll(): Promise<Notification[]>
+	async findAllNotifications(): Promise<{
+			gameInv: GameInvitation[],
+			friendReq: FriendRequest[],
+			messageNoti: MessageNotification[],
+		}>
 	{
-		return (this.notificationRepository.find());
-	}
-
-	async findNotificationReceiver(id: string): Promise<Notification[]>
-	{
-		return (this.notificationRepository.find({where: {receiver: {id : Number(id)}}}));
-	}
-
-	async findNotificationId(id:number): Promise<Notification>
-	{
-		return (this.notificationRepository.findOne({where: {id: id}}));
-	}
-
-	async doesNotificationExist(sender: number, receiver: number, type:NotificationType): Promise<Notification | null>
-	{
-		var noti: Notification = await this.notificationRepository.findOne({
-			where: {
-				sender: {id: sender},
-				receiver: {id: receiver},
-				type: type
-			}
+		const [gameInv, friendReq, messageNoti ] = await Promise.all([
+			this.gameInvitationRepository.find( { where: { status: NotificationStatus.Pending}} ),
+			this.friendRequestRepository.find( { where: { status: NotificationStatus.Pending}} ),
+			this.messageNotificationRepository.find( { where: { status: NotificationStatus.Pending}} ),
+		]);
+		
+		return ({
+			gameInv: gameInv,
+			friendReq: friendReq,
+			messageNoti: messageNoti,
 		});
-			
-		return (noti);
+	}
+
+	async getFriendRequest(notificationId: number): Promise<FriendRequest | null> {
+
+		return (await this.friendRequestRepository.findOne( { where: {id: notificationId}}));
+	}
+
+	async getGameInvitation(notificationId: number): Promise<GameInvitation | null> {
+
+		return (await this.gameInvitationRepository.findOne( { where: {id: notificationId}}));
+	}
+
+	async getMessageNotification(notificationId: number): Promise<MessageNotification | null> {
+
+		return (await this.messageNotificationRepository.findOne( { where: {id: notificationId}}));
 	}
 
 	isSenderBlocked(sender:User, receiver:User): boolean
@@ -65,130 +73,152 @@ export class NotificationService {
 		return (false);
 	}
 
-	async initRequest(sender:User, receiver:User, type:NotificationType, powerUps: PowerUpSelected): Promise<Notification | null>
-	{
-		if (this.isSenderBlocked(sender, receiver) == true)
-			return (null);
-		var tmp = await this.doesNotificationExist(sender.id, receiver.id, type);
-		if (tmp != null)
-			return (tmp);
-		tmp = await this.doesNotificationExist(receiver.id, sender.id, type);
-		if ((tmp != null) && (tmp.type == NotificationType.friendRequest))
-		{
-			this.removeReq(receiver.id.toString(), sender.id.toString(), type);
-			this.userService.friendRequestAccepted(sender.id.toString(), receiver.id.toString());
+	async createFriendRequest(sender:User, receiver:User): Promise<FriendRequest | null> {
+
+		if (this.isSenderBlocked(sender, receiver) == true) {
+			this.logger.debug(`${receiver.nameNick} has blocked ${sender.nameNick}, friend request not sent`);
 			return (null);
 		}
-		else
-		{
-			var noti = new Notification();
-			noti.sender = sender;
-			noti.receiver = receiver;
-			noti.type = type;
-			noti.status = NotificationStatus.Pending;
-			noti.message = null;
-			noti.powerUpsSelected = powerUps;
-			this.notificationRepository.save(noti);
-			return (noti);
-		}
-	}
 
-	async initMessage(sender:User, receiver:User, message:string): Promise<Notification | null>
-	{
-		if (this.isSenderBlocked(sender, receiver) == true)
-			return null;
-		var tmp = await this.doesNotificationExist(sender.id, receiver.id, NotificationType.Message);
-		if (tmp != null)
-		{
-			tmp.message = message;
-			this.notificationRepository.save(tmp);
-			return (tmp);
-		}
-		else
-		{
-			var noti = new Notification();
-			noti.sender = sender;
-			noti.receiver = receiver;
-			noti.type = NotificationType.Message;
-			noti.status = NotificationStatus.Pending;
-			noti.message = message;
-			noti.powerUpsSelected = null;
-			this.notificationRepository.save(noti);
-			return (noti);
-		}
-	}
+		const existingFriendRequest = await this.friendRequestRepository.findOne({
+			where: {
+				sender: {id: sender.id},
+				receiver: {id: receiver.id},
+			}
+		});
+		if (existingFriendRequest !== null)
+			return existingFriendRequest;
 
-	async initGroupMessage(channel: Channel, receiver: User, message: string)
-	{
+		const newFriendRequest: FriendRequest = this.friendRequestRepository.create({
+			sender: sender,
+			receiver: receiver,
+		});
+		await this.friendRequestRepository.save(newFriendRequest);
+		this.logger.log(`Sending friend request from ${sender.nameNick} to ${receiver.nameNick}`);
 		
-		var tmp = await this.doesNotificationExist(channel.channel_id, receiver.id, NotificationType.groupChat);
-		if (tmp != null)
-		{
-			tmp.message = message;
-			this.notificationRepository.save(tmp);
-			return (tmp);
+		return newFriendRequest;
+	}
+
+	async acceptFriendRequest(friendRequest: FriendRequest): Promise<void> {
+
+		friendRequest.status = NotificationStatus.Accepted;
+		await this.friendRequestRepository.save(friendRequest);
+		
+		this.logger.log(`${friendRequest.receiver.nameNick} accepted friend request from ${friendRequest.sender.nameNick}`)
+	}
+
+	async refuseFriendRequest(friendRequest: FriendRequest): Promise<void> {
+
+		friendRequest.status = NotificationStatus.Declined;
+		await this.friendRequestRepository.save(friendRequest);
+		
+		this.logger.log(`${friendRequest.receiver.nameNick} declined friend request from ${friendRequest.sender.nameNick}`)
+	}
+	
+	async createGameInvitation(sender:User, receiver:User, powerUps: PowerUpSelected): Promise<GameInvitation | null> {
+
+		if (this.isSenderBlocked(sender, receiver) == true) {
+			this.logger.debug(`${receiver.nameNick} has blocked ${sender.nameNick}, game invite not sent`);
+			return (null);
 		}
-		else
-		{
-			var noti = new Notification();
-			// noti.senderId = channel.channel_id;
-			// noti.receiverId = receiver.id;
-			noti.type = NotificationType.groupChat;
-			noti.status = NotificationStatus.Pending;
-			noti.message = message;
-			noti.powerUpsSelected = null;
-			this.notificationRepository.save(noti);
-			return (noti);
-		}		
-	}
 
-	async removeNotification(noti: Notification): Promise<void>
-	{
-		this.notificationRepository.remove(noti);
-		this.logger.debug(`Removed notification id: ${noti.id}, type: ${noti.type}`);
-	}
-
-	async removeReq(sender:string, receiver:string, type:NotificationType): Promise<void> {
-		var send = Number(sender);
-		var recv = Number(receiver);
-		var arr = await this.notificationRepository.find({
-			where: { 
-				sender: {id: send},
-				receiver: {id: recv}
+		const existingGameInvitation = await this.gameInvitationRepository.findOne({
+			where: {
+				sender: {id: sender.id},
+				receiver: {id: receiver.id},
+				powerUpsSelected: powerUps,
 			}
 		});
+		if (existingGameInvitation !== null)
+			return existingGameInvitation;
 
-		for (const item of arr) 
-		{
-			if (item.type === type) 
-			{
-				await this.removeNotification(item);
-				return ;
+		const newGameInvitation: GameInvitation = this.gameInvitationRepository.create({
+			sender: sender,
+			receiver: receiver,
+			powerUpsSelected: powerUps,
+		});
+		await this.gameInvitationRepository.save(newGameInvitation);
+		this.logger.log(`Sending game invite from ${sender.nameNick} to ${receiver.nameNick}, powerups: ${fromMaskToArray(powerUps)}`)
+		
+		return newGameInvitation;
+	}
+
+	async acceptGameInvitation(gameInvitation: GameInvitation): Promise<void> {
+
+		gameInvitation.status = NotificationStatus.Accepted;
+		await this.gameInvitationRepository.save(gameInvitation);
+		
+		this.logger.log(`${gameInvitation.receiver.nameNick} accepted game invite from ${gameInvitation.sender.nameNick}`)
+	}
+
+	async refuseGameInvitation(gameInvitation: GameInvitation): Promise<void> {
+
+		gameInvitation.status = NotificationStatus.Declined;
+		await this.gameInvitationRepository.save(gameInvitation);
+		
+		this.logger.log(`${gameInvitation.receiver.nameNick} declined game invite from ${gameInvitation.sender.nameNick}`)
+	}
+	
+	async createMessageNotification(message: Message, receiver: ChannelMember): Promise<MessageNotification | null> {
+
+		if (this.isSenderBlocked(message.sender.member, receiver.member) == true)
+			return null;
+	
+		const newMessageNotification: MessageNotification = this.messageNotificationRepository.create({
+			message: message,
+			receiver: receiver,
+		});
+		await this.messageNotificationRepository.save(newMessageNotification);
+		return newMessageNotification;
+	}
+
+	async removeNotification(notificationId: number, type: NotificationType): Promise<void> {
+
+		if (type === NotificationType.friendRequest) {
+			const toRemove: FriendRequest = await this.getFriendRequest(notificationId);
+			
+			if (toRemove) {
+				await this.friendRequestRepository.remove(toRemove);
+				this.logger.log(`Removed friend request id: ${toRemove.id}`);
+			}
+		} else if (type === NotificationType.gameInvite) {
+			const toRemove: GameInvitation = await this.getGameInvitation(notificationId);
+			
+			if (toRemove) {
+				await this.gameInvitationRepository.remove(toRemove);
+				this.logger.log(`Removed game invite id: ${toRemove.id}`);
+			}
+		} else if (type === NotificationType.message) {
+			const toRemove: MessageNotification = await this.getMessageNotification(notificationId);
+			
+			if (toRemove) {
+				await this.messageNotificationRepository.remove(toRemove);
+				this.logger.log(`Removed message notification id: ${toRemove.id}`);
 			}
 		}
 	}
 
-	async startGameFromInvitation(sender: Socket, receiver: Socket, senderId: string, receiverId: string): Promise<void> {
-
-		const senderIdNumber = Number(senderId);
-		const receiverIdNumber = Number(receiverId);
-		const gameNotification: Notification = await this.notificationRepository.findOne({
-			where: { 
-				receiver: { id: receiverIdNumber },
-				sender: { id: senderIdNumber },
-				type: NotificationType.gameInvite 
-			} 
-		});
-
-		const initData: GameDataDTO = {
-			sessionToken: uuidv4(),
-			mode: GameMode.multi,
-			difficulty: GameDifficulty.unset,
-			extras: gameNotification.powerUpsSelected,
-		};
-		this.roomManager.createRoom(initData);
-
-		sender.emit('goToGame', initData);
-		receiver.emit('goToGame', initData);
-	}
+	// called in chatService
+	// async initGroupMessage(channel: Channel, receiver: User, message: string)
+	// {
+	// 	var tmp = await this.doesNotificationExist(channel.channel_id, receiver.id, NotificationType.groupChat);
+	// 	if (tmp != null)
+	// 	{
+	// 		tmp.message = message;
+	// 		this.notificationRepository.save(tmp);
+	// 		return (tmp);
+	// 	}
+	// 	else
+	// 	{
+	// 		var noti = new Notification();
+	// 		// noti.senderId = channel.channel_id;
+	// 		// noti.receiverId = receiver.id;
+	// 		noti.type = NotificationType.groupChat;
+	// 		noti.status = NotificationStatus.Pending;
+	// 		noti.message = message;
+	// 		noti.powerUpsSelected = null;
+	// 		this.notificationRepository.save(noti);
+	// 		return (noti);
+	// 	}		
+	// }
 }

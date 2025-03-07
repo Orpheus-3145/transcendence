@@ -2,7 +2,11 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Un
 import { IsAscii, Length, validateOrReject } from 'class-validator';
 import { UserStatus } from 'src/dto/user.dto';
 import Game from './game.entity';
-import { Notification } from './notification.entity';
+import { FriendRequest } from './friendRequest.entity';
+import { GameInvitation } from './gameInvitation.entity';
+import { ChannelMember } from './chat.entity';
+import { Message } from './message.entity';
+import { MessageNotification } from './messageNotification.entity';
 
 
 @Entity('Users')
@@ -66,11 +70,26 @@ export default class User {
 	@OneToMany(() => Game, (game) => game.player2)
 	player2Game: Game[];
 
-	@OneToMany(() => Notification, (notification) => notification.sender)
-	senderNotification: Notification[];
+	@OneToMany(() => FriendRequest, (friendRequest: FriendRequest) => friendRequest.sender)
+	senderFriendRequests: FriendRequest[];
 
-	@OneToMany(() => Notification, (notification) => notification.receiver)
-	receiverNotification: Notification[];
+	@OneToMany(() => FriendRequest, (friendRequest: FriendRequest) => friendRequest.receiver)
+	receiverFriendRequests: FriendRequest[];
+
+	@OneToMany(() => GameInvitation, (gameInvitation: GameInvitation) => gameInvitation.sender)
+	senderGameInvitations: GameInvitation[];
+
+	@OneToMany(() => GameInvitation, (gameInvitation: GameInvitation) => gameInvitation.receiver)
+	receiverGameInvitations: GameInvitation[];
+
+	// @OneToMany(() => MessageNotification, (messNotification: MessageNotification) => messNotification.receiver)
+	// receiverMessageNotifications: MessageNotification[];
+
+	// @OneToMany(() => Message, (message: Message) => message.sender)
+	// senderMessage: Message[];
+
+	@OneToMany(() => ChannelMember, (channelMember: ChannelMember) => channelMember.member)
+	channelMember: ChannelMember[];
 
 	async validate() {
 		await validateOrReject(this);

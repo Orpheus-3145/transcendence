@@ -78,7 +78,6 @@ export class ChatService {
 		return fullChannel;
 	}
 	  
-
 	// Add user to a channel
 	async addUserToChannel(user_id: number, name: string, channel_id: number, role = 'member') {
 		const membership = this.channelMemberRepository.create({
@@ -103,7 +102,17 @@ export class ChatService {
 	
 	// 	return savedMessage;
 	// }
-	  
+	
+	async createMessage(channel: Channel, sender: ChannelMember, content: string) {
+
+		const newMessage = this.messageRepository.create({
+			channel: channel,
+			sender: sender,
+			content: content,
+		});
+
+		return (await this.messageRepository.save(newMessage));
+	}
 
 	// Remove user to a channel
 	async removeUserFromChannel(user_id: number, channel_id: number, role: string) {
@@ -277,7 +286,6 @@ export class ChatService {
 		return channels;
 	}
 	
-	// Delete a channel
 	async deleteChannel(channel_id: number): Promise<Channel | null> {
 		try {
 			const channel = await this.getChannelById(channel_id);
@@ -322,7 +330,6 @@ export class ChatService {
 		channel.ch_owner = new_owner;
 		await this.channelRepository.save(channel);
 	}
-
 
 	async changeUserRole(user_id: number, channel_id: number, new_role: string) : Promise<boolean> {
 		const user = await this.getUserById(user_id, channel_id);
