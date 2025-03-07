@@ -55,8 +55,9 @@ export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
 
 export const userBanned = (userName: string, channel: ChatRoom): boolean =>
 {
-	const found = channel.settings.banned.find((user) => user === userName);
-	return found ? true : false;
+	if (channel.settings.banned.find((user) => String(user) === String(userName))) 
+		return true;
+	return (false);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -85,6 +86,8 @@ const ChannelsPage: React.FC = () => {
 	const [selectedAvailableChannel, setSelectedAvailableChannel] = useState<ChatRoom | null>(null);
 	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
+	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
+
 
 	useEffect(() => {
 		// if (chatProps.chatRooms) {
@@ -121,6 +124,134 @@ const ChannelsPage: React.FC = () => {
 		}
 		fetchUsers();
 	}, []);
+
+	useEffect(() => {
+		const handleUserKickedChannel = (data) => {
+			setChatProps((prevState: ChatProps) => 
+			{
+				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
+				if (!channel)
+					return (prevState);
+	
+				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== user.id);
+				if (selectedChannel != null && selectedChannel.id === channel.id)
+				{
+					setSelectedChannel(null);
+				}
+				return {
+					...prevState,
+					chatRooms: prevState.chatRooms.map((room) =>
+						room.id === channel.id ? { ...room, settings: { ...room.settings, users: updatedUsers } } : room
+					),
+				};
+			});
+			
+		};
+	
+		socket.on("userKicked", handleUserKickedChannel);
+		return () => {
+			socket.off("userKicked", handleUserKickedChannel);
+		};
+	}, []);
+	
+
+	useEffect(() => 
+	{
+		const handleUserBannedChannel = (data) => 
+		{
+			setChatProps((prevState: ChatProps) => {
+				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
+				if (!channel)
+					return (prevState);
+				
+				const updatedUsers: UserProps[] = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
+				const updatedBanned: string[] = channel.settings.banned;
+				updatedBanned.push(data.userId);
+				if (selectedChannel != null && selectedChannel.id === channel.id)
+				{
+					setSelectedChannel(null);
+				}
+				return {
+					...prevState,
+					chatRooms: prevState.chatRooms.map((room) =>
+						room.id === channel.id ? { ...room, settings: { ...room.settings, users: updatedUsers, banned: updatedBanned }} : room
+					),
+				};
+			});
+		};
+		
+		const handleUserUnbannedChannel = (data) => 
+		{
+			setChatProps((prevState: ChatProps) => {
+				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
+				if (!channel)
+					return (prevState);
+				
+				const updatedBanned = channel.settings.banned.filter((item: string) => item !== data.userId);
+
+				return {
+					...prevState,
+					chatRooms: prevState.chatRooms.map((room) =>
+						room.id === channel.id ? { ...room, settings: { ...room.settings, banned: updatedBanned }} : room
+					),
+				};
+			});
+		}
+
+		socket.on('userBanned', handleUserBannedChannel);
+		socket.on('userUnbanned', handleUserUnbannedChannel);
+		return () => {
+			socket.off('userBanned', handleUserBannedChannel);
+			socket.off('userUnbanned', handleUserUnbannedChannel);
+		}
+	}, []);
+
+
+	useEffect(() => 
+	{
+		const handleUserMutedChannel = (data) => 
+		{
+			setChatProps((prevState: ChatProps) => {
+				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
+				if (!channel)
+					return (prevState);
+				
+				const updatedMuted: string[] = channel.settings.muted;
+				updatedMuted.push(data.userId);
+				return {
+					...prevState,
+					chatRooms: prevState.chatRooms.map((room) =>
+						room.id === channel.id ? { ...room, settings: { ...room.settings, muted: updatedMuted }} : room
+					),
+				};
+			});
+		}
+
+		const handleUserUnmutedChannel = (data) => 
+		{
+			setChatProps((prevState: ChatProps) => {
+				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
+				if (!channel)
+					return (prevState);
+				
+				const updatedMuted: string[] = channel.settings.muted.filter((item: string) => item !== data.userId);
+				return {
+					...prevState,
+					chatRooms: prevState.chatRooms.map((room) =>
+						room.id === channel.id ? { ...room, settings: { ...room.settings, muted: updatedMuted }} : room
+					),
+				};
+			});
+		}
+					
+		socket.on('userMuted', handleUserMutedChannel);
+		socket.on('userUnmuted', handleUserUnmutedChannel);
+		return () => {
+			socket.off('userMuted', handleUserMutedChannel);
+			socket.off('userUnmuted', handleUserUnmutedChannel);
+		}
+	}, []);
+	
 
 
 	const handleCreateDirectMessage = () => {
@@ -342,7 +473,7 @@ const ChannelsPage: React.FC = () => {
 		};
 	}, []);
 
-	
+
 //////////////////////////////////////////////////////////////////////
 
 	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
@@ -951,16 +1082,14 @@ const ChannelsPage: React.FC = () => {
 		);
 	};
 
-	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
-
 	const fetchUser = async (userId: string) => {
 		const user = await fetchUserMessage(userId);
 		setUserMessage((prev) => new Map(prev).set(userId, user));
 	};
 
-	const showMessages =  (muted: string[], msg: ChatMessage, index: number) =>
+	const showMessages =  (msg: ChatMessage, index: number) =>
 	{
-		if (muted.find((item: string) => item == msg.user))
+		if (selectedChannel.settings.muted.find((item) => String(item) === String(msg.user)))
 		{
 			return (
 				<Stack></Stack>
@@ -983,8 +1112,7 @@ const ChannelsPage: React.FC = () => {
 						onClick={()=> (navigate(`/profile/${user.id.toString()}`))}
 						sx={{cursor: 'pointer', mr: 2}}
 						src={user.image}
-					>
-					</Avatar>
+					/>
 					<Typography 
 						sx={{ whiteSpace: "normal",
 							overflowWrap: 'anywhere',
@@ -1143,7 +1271,7 @@ const ChannelsPage: React.FC = () => {
 					}     
 				  >
 					{/* {console.log(selectedChannel.messages)}; */}
-					{selectedChannel.messages.map((msg: ChatMessage, index: number) => (showMessages(selectedChannel.settings.muted, msg, index)))}
+					{selectedChannel.messages.map((msg: ChatMessage, index: number) => (showMessages(msg, index)))}
 				  </Stack>
 				
 				  {/*---Render Input Box---*/}

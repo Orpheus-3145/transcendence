@@ -158,30 +158,36 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	async kickUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
 	{
 		this.chatService.removeUserFromChannel(data.userid, data.channelid, "");
+		this.server.emit('userKicked', {id: data.channelid, userId: data.userid});
 	}
 
 	@SubscribeMessage('banUserFromChannel')
 	async banUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
 	{
 		this.chatService.banUserFromChannel(data.userid, data.channelid);
+		this.server.emit('userBanned', {id: data.channelid, userId: data.userid});
 	}
 
 	@SubscribeMessage('unbanUserFromChannel')
 	async unbanUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
 	{
 		this.chatService.unbanUserFromChannel(data.userid, data.channelid);
+		this.server.emit('userUnbanned', {id: data.channelid, userId: data.userid});
 	}
 
 	@SubscribeMessage('muteUserFromChannel')
 	async muteUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
 	{
 		this.chatService.muteUserFromChannel(data.userid, data.channelid);
+		this.server.emit('userMuted', {id: data.channelid, userId: data.userid});
+
 	}
 
 	@SubscribeMessage('unmuteUserFromChannel')
 	async unmuteUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
 	{
 		this.chatService.unmuteUserFromChannel(data.userid, data.channelid);
+		this.server.emit('userUnmuted', {id: data.channelid, userId: data.userid});
 	}
 
 	@SubscribeMessage('sendMessage')
