@@ -796,6 +796,11 @@ const ProfilePageOther: React.FC = () => {
 			}
 	 	}
 		}
+
+	let redirectToChat = () =>
+	{
+		navigate('/channels', {state: {otherId: userProfile.id.toString()}});
+	}
 	
 	let SendMessageIcon = () => 
 	{
@@ -841,7 +846,7 @@ const ProfilePageOther: React.FC = () => {
 				<Tooltip title="Send Message!" arrow>
 					<IconButton
 						variant="contained"
-						onClick={CheckChangeMessage}
+						onClick={() => redirectToChat()}
 						sx={{
 								fontSize: '30px',
 								top: top,
@@ -855,7 +860,7 @@ const ProfilePageOther: React.FC = () => {
 						<MessageIcon fontSize="inherit"/>
 					</IconButton>
 				</Tooltip>
-				{showInputMessage && (
+				{/* {showInputMessage && (
 					<Input
 					value={inputMessage}
 					onChange={(e) => setInputMessage(e.target.value)}
@@ -882,7 +887,7 @@ const ProfilePageOther: React.FC = () => {
 					>
 						{messageHandeler("MS")}
 					</Stack>
-				)}
+				)} */}
 			</Stack>
 		);
 	}

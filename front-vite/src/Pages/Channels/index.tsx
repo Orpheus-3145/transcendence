@@ -5,7 +5,7 @@ import { Chat as ChatIcon } from '@mui/icons-material';
 import { SettingsModal } from './ChannelSettings';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon,  AccountCircle as AccountCircleIcon } from '@mui/icons-material';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Tooltip, Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SportsEsportsRoundedIcon from '@mui/icons-material/SportsEsportsRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
@@ -71,6 +71,7 @@ const ChannelsPage: React.FC = () => {
 	let passwordOk = false;
 	const theme = useTheme();
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [channelName, setChannelName] = useState('');
 	const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
@@ -88,6 +89,41 @@ const ChannelsPage: React.FC = () => {
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
 	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
 
+	useEffect(() => {
+		const fetchUsers = async () => {
+			const usersList = await getAll();
+			// console.log("Fetched users (channels page):", usersList);
+			setUsers(usersList);
+		}
+		fetchUsers();
+	}, []);
+
+
+	let checkLocation =  (dms: ChatRoom[]) =>
+	{
+		if (location.state && location.state.otherId)
+		{
+			if (directMessages)
+			{
+				const channel = dms.find((room: ChatRoom) => 
+					((room.settings.users[0].id.toString() === user.id.toString()) || (room.settings.users[0].id.toString() === location.state.otherId.toString())) &&
+					((room.settings.users[1].id.toString() === user.id.toString()) || (room.settings.users[1].id.toString() === location.state.otherId.toString())));
+				
+				if (channel != undefined)
+					setSelectedChannel(channel);
+				else
+				{
+					var otherUser = users.find((item: UserProps) => item.id.toString() === location.state.otherId.toString());
+					console.log(otherUser);
+					if (otherUser)
+					{
+						blablabla(otherUser);
+						location.state = "";
+					}
+				}
+			}
+		}
+	}
 
 	useEffect(() => {
 		// if (chatProps.chatRooms) {
@@ -112,18 +148,10 @@ const ChannelsPage: React.FC = () => {
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
 		setDirectMessages(dms);
-
+		checkLocation(dms);
 		// }
-	}, [chatProps.chatRooms])
+	}, [chatProps.chatRooms, users])
 
-	useEffect(() => {
-		const fetchUsers = async () => {
-			const usersList = await getAll();
-			// console.log("Fetched users (channels page):", usersList);
-			setUsers(usersList);
-		}
-		fetchUsers();
-	}, []);
 
 	useEffect(() => {
 		const handleUserKickedChannel = (data) => {
@@ -479,6 +507,25 @@ const ChannelsPage: React.FC = () => {
 	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
 		event.stopPropagation();
 		console.log("'Send Direct Message' clicked!");
+		if (otherUser.id !== user.id) {
+			const channelDTO = {
+				title: otherUser.nameIntra,
+				ch_type: 'private',
+				ch_owner: user.nameIntra,
+				users: [
+					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
+					{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
+	
+				],
+				password: null,
+				isDirectMessage: true,
+			};
+			socket.emit('createChannel', channelDTO);
+		}
+	};
+
+	const blablabla = (otherUser: User) => {
+		console.log("'Sendaaaaaaaaaaaaaaaaa");
 		if (otherUser.id !== user.id) {
 			const channelDTO = {
 				title: otherUser.nameIntra,
@@ -1126,6 +1173,28 @@ const ChannelsPage: React.FC = () => {
 				</Box>
 		);
 	}
+
+	// useEffect(() => 
+	// {
+	// 	if (location.state)
+	// 	{
+	// 		if (directMessages)
+	// 		{
+	// 			console.log(location.state.otherId);
+	// 			console.log(directMessages);
+	// 			console.log(user.id.toString());
+	// 			const channel = directMessages.find((room: ChatRoom) => 
+	// 				((room.settings.users[0].id.toString() === user.id.toString()) || (room.settings.users[0].id.toString() === location.state.otherId.toString())) &&
+	// 				((room.settings.users[1].id.toString() === user.id.toString()) || (room.settings.users[1].id.toString() === location.state.otherId.toString())));
+				  
+	// 			console.log("a");
+	// 			console.log(channel);
+	// 		}
+	// 	}
+	// 	return () => {
+		
+	// 	};
+	// }, []);
 
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
