@@ -99,7 +99,7 @@ export class AuthService {
 	}
 
 	// Maybe think about adding some of this inside a middleware guard
-	async validate(req: Request, res: Response) {
+	async validateUser(req: Request, res: Response) {
 		const twoFAToken = req.cookies['2fa-token'];
 		if (twoFAToken) {
 			return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
