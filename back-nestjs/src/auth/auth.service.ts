@@ -24,7 +24,7 @@ export class AuthService {
 			this.logger.setLogLevels(['log', 'warn', 'error', 'fatal']);
 	}
 
-	async checkCode(code: string): Promise<{access: AccessTokenDTO, intraId: number, userMe: Record<string, any>}> {
+	async checkCode(code: string, res: Response): Promise<{access: AccessTokenDTO, intraId: number, userMe: Record<string, any>}> {
 		const access: AccessTokenDTO = await this.getUserAccessToken(code);
 		if (access === null)
 			return null;
@@ -32,6 +32,14 @@ export class AuthService {
 		if (userMe === null)
 			return null;
 		const intraId: number = userMe.id;
+		if (access === null || userMe === null || isNaN(Number(intraId))) {
+			res.status(HttpStatus.UNAUTHORIZED).clearCookie('auth-token');
+			this.thrower.throwSessionExcp(
+				`Login failed, invalid code`,
+				`${AuthService.name}.${this.constructor.prototype.login.name}()`,
+				HttpStatus.UNAUTHORIZED,
+			)
+		}
 		return {access: access, intraId: intraId, userMe: userMe};
 	}
 
@@ -40,7 +48,7 @@ export class AuthService {
 
 		if (!user) {
 			try {
-				const userDTO = await this.userService.createUser(access, userMe);
+				await this.userService.createUser(access, userMe);
 				return false;
 			} catch (error) {
 				this.thrower.throwSessionExcp(
@@ -55,7 +63,13 @@ export class AuthService {
 	}
 
 
-	// authType is either auth_token or 2fa_token
+	async redirectTo2FA(intraId: number, res: Response) {
+		this.addCookie('2fa-token', intraId, res);
+		const frontend2FARedirect = `${this.config.get<string>('URL_FRONTEND_2FA')}`;
+		res.redirect(frontend2FARedirect);
+	}
+
+	// authType is either auth-token or 2fa-token
 	addCookie(authType: string, intraId: number, res: Response) {
 		const signedToken = sign({ intraId: intraId }, this.config.get<string>('SECRET_KEY'));
 		res.cookie(authType, signedToken, {httpOnly: true, maxAge: 10 * 365 * 24 * 60 * 60 * 1000,});
@@ -69,45 +83,35 @@ export class AuthService {
 				HttpStatus.UNAUTHORIZED,
 			);
 		this.logger.debug(`Login attempt, code [${code}]`);
-		const {access, intraId, userMe} = await this.checkCode(code);
-		if (access === null || userMe === null || intraId === null) {
-			res.status(HttpStatus.UNAUTHORIZED).clearCookie('auth_token');
-			this.thrower.throwSessionExcp(
-				`Login failed, invalid code`,
-				`${AuthService.name}.${this.constructor.prototype.login.name}()`,
-				HttpStatus.UNAUTHORIZED,
-			)
-		}
-		const is2FAEnabled = await this.handleUserData(intraId, access, userMe);
 
-	
+		const {access, intraId, userMe} = await this.checkCode(code, res);
+		const is2FAEnabled = await this.handleUserData(intraId, access, userMe);
+ 	
 		// If 2FA is enabled, send a response prompting for 2FA verification
 		if (is2FAEnabled) {
-			this.logger.debug(`2FA required for user ${userMe.login}`);
-			this.addCookie('2fa_token', intraId, res);
-			const frontend2FARedirect = `${this.config.get<string>('URL_FRONTEND_2FA')}`;
-			res.redirect(frontend2FARedirect);
+			this.logger.log(`2FA required for user ${userMe.login}`);
+			this.redirectTo2FA(intraId, res);
 			return ;
 		}
 		// Add auth cookie to complete authentication
-		this.addCookie('auth_token', intraId, res);
+		this.addCookie('auth-token', intraId, res);
 		res.redirect(this.config.get<string>('URL_FRONTEND'));
 	}
 
 	// Maybe think about adding some of this inside a middleware guard
-	async validate(req: Request, res: Response) {
-		const twoFAToken = req.cookies['2fa_token'];
+	async validateUser(req: Request, res: Response) {
+		const twoFAToken = req.cookies['2fa-token'];
 		if (twoFAToken) {
-			return res.status(200).json({ user: { id: 0, auth2F: true } });
+			return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
 		}
 
 		// Extract token
-		const token = req.cookies['auth_token'];
+		const token = req.cookies['auth-token'];
 		if (!token) {
 			return res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 		}
-
 		this.logger.log(`Validating token [${token}]`);
+
 		// Verify token
 		let decoded: string | JwtPayload;
 		try {
@@ -119,6 +123,7 @@ export class AuthService {
 				HttpStatus.UNAUTHORIZED,
 			);
 		}
+
 		// Check decoded type
 		if (typeof decoded !== 'object' || isNaN(Number(decoded.intraId)))
 			this.thrower.throwSessionExcp(
@@ -128,6 +133,7 @@ export class AuthService {
 			);
 
 		this.logger.log(`Token [${token}] validated`);
+
 		// Find user
 		const user = await this.userService.findOneIntra(Number(decoded.intraId));
 		if (!user)
@@ -143,7 +149,7 @@ export class AuthService {
 	}
 
 	async logout(res: Response, redir?: string, mess?: string) {
-		res.clearCookie('auth_token');
+		res.clearCookie('auth-token');
 
 		const responseObj: any = {};
 
@@ -224,7 +230,7 @@ export class AuthService {
 
 	// Validates 2fa code and completes authentication process
 	async validate2FA(token: string, req: Request, res: Response) {
-		const twoFactorToken = req.cookies['2fa_token'];
+		const twoFactorToken = req.cookies['2fa-token'];
 		if (!twoFactorToken) {
 			this.thrower.throwSessionExcp(
 				'2FA token is missing',
@@ -270,8 +276,8 @@ export class AuthService {
 		}
 		
 		// Complete authentication after the 2fa code is validated
-		this.addCookie('auth_token', decoded.intraId, res);
- 		res.clearCookie('2fa_token').status(200).json({user: new UserDTO(user), valid: isValid});
+		this.addCookie('auth-token', decoded.intraId, res);
+ 		res.clearCookie('2fa-token').status(200).json({user: new UserDTO(user), valid: isValid});
 	}
 
 	// Verify QRcode to enabled 2fa
@@ -304,7 +310,7 @@ export class AuthService {
 				HttpStatus.NOT_FOUND
 			);
 		}
-		this.logger.debug("QR Code verified, 2FA successfully enabled.")
+		this.logger.log("QR Code verified, 2FA successfully enabled.")
 		return (true);
 	}
 
@@ -324,8 +330,6 @@ export class AuthService {
 		};
 
 		res.status(200).json(responseData);
-		// 	return ;
-		// return { qrCode: qrCode, secret: secret.base32 };
 	}
 
 	async delete2FA(userId: string, res: Response) {
@@ -343,7 +347,7 @@ export class AuthService {
 		try {
 			user.twoFactorSecret = null;
 			await this.userService.update(user);
-			res.clearCookie('2fa_token');
+			res.clearCookie('2fa-token');
 
 		}
 		catch (error) {
@@ -354,8 +358,6 @@ export class AuthService {
 			);
 		}
 		res.status(200).json({ message: '2FA has been disabled successfully.' });
-
-		// return { message: '2FA has been disabled successfully.' };
 	}
 
 	async get2FAStatus(intraId: string, res: Response) {
@@ -367,8 +369,8 @@ export class AuthService {
 				HttpStatus.NOT_FOUND
 			);
 		}
+		// If twoFactorSecret is not null, 2FA is enabled
 		const twoFactorEnabled = user.twoFactorSecret != null
 		res.status(200).json({is2FAEnabled: twoFactorEnabled});
 	}
-
 }
