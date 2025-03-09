@@ -140,7 +140,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
 		try {
-			const {user_id, user_name channel_id, role} = data;
+			const {user_id, user_name, channel_id, role} = data;
 			await this.chatService.removeUserFromChannel(user_id, channel_id, role);
 			this.server.to(channel_id.toString()).emit('leftChannel', { user_id, user_name, channel_id });
 			// client.emit('leftChannel', { user_id, channel_id });
