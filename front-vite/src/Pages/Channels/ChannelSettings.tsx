@@ -92,6 +92,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	useEffect(() => {
 		const handleUserJoinedChannel = (response) => {
+			
 			const newUser: UserProps = {
 				id: response.user_id,
 				name: response.name,
@@ -105,10 +106,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			setSettings({ ...settings, users: [...settings.users, newUser] });
 		}
 		socket.on('joinedChannel', handleUserJoinedChannel);
+
 		return () => {
 			socket.off('joinedChannel', handleUserJoinedChannel);
 		}
 	}, [settings]);
+
+	useEffect(() => {
+			const handleUserJoinedAvailableChannel = (response) => {
+				const newUser: UserProps = {
+					id: response.user_id,
+					name: response.name,
+					role: 'member',
+					email: '',
+					password: '',
+					icon: <PersonAddIcon />
+				};
+				setSettings({ ...settings, users: [...settings.users, newUser] });
+
+			}
+			socket.on('joinedAvailableChannel', handleUserJoinedAvailableChannel);
+
+			return () => {
+				socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
+			}
+		}, [settings]);
 
 
 	// // -----------FOR TESTING ONLY ----------- //
@@ -295,9 +317,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		}
 		else {
 			setIsSettingsView(false);
+			setSelectedChannel(null);
 	
 			const data = {
-				user_id: user.id, 
+				user_id: user.id,
+				user_name: user.nameNick,
 				channel_id: selectedChannel.id,
 				role: selectedChannel.settings.users.find(user_ => user.id === user_.id).role,
 			};
