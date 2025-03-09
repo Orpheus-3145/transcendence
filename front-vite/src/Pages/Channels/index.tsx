@@ -94,17 +94,18 @@ const ChannelsPage: React.FC = () => {
 		const joined = chatProps.chatRooms.filter((channel) =>
 				channel.settings.users.length > 0 &&
 				!channel.isDirectMessage &&
-				userInChannel(user.nameIntra, channel)
+				userInChannel(user.nameNick, channel)
 			);
 		const available = chatProps.chatRooms.filter((channel) =>
 				channel.settings.users.length > 0 &&
 				!channel.isDirectMessage &&	
-				!userInChannel(user.nameIntra, channel) &&
+				!userInChannel(user.nameNick, channel) &&
 				channel.settings.type !== 'private'
 			);
 		const dms = chatProps.chatRooms.filter((channel) =>
 				channel.settings.users.length > 0 &&
-				channel.isDirectMessage
+				channel.isDirectMessage &&
+				userInChannel(user.nameNick, channel)
 			);
 		// console.log("Available (useEffect):", available);
 		// console.log("Joined (useEffect):", joined);
