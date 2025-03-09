@@ -12,11 +12,6 @@ import { ChatService } from './chat.service';
 import { ChatDTO } from '../dto/chat.dto';
 import { Channel, ChannelMemberType, ChannelType } from '../entities/chat.entity';
 
-// export interface ConnectedUser {
-// 	clientSocket: Socket,
-// 	intraId: number,
-// 	nameIntra: string,
-// }
 
 @WebSocketGateway( {
 	namespace: process.env.WS_NS_CHAT, 		// Defines WebSocket namespace (e.g., "/chat")
@@ -31,7 +26,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@WebSocketServer()
 	server: Server;
 
-	// private connectedUsers: Array<ConnectedUser> = new Array(); 
 	private connectedClients = new Map<string, Socket>();
 	
 	constructor(private chatService: ChatService) {};
@@ -49,11 +43,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		this.server.emit('clientsUpdated', Array.from(this.connectedClients.keys()));
 	}
 
-	// getAllConnectedClients(): string[] {
-	// 	return Array.from(this.connectedClients.keys());
-	// }
-
-	// Handle channel creation
 	@SubscribeMessage('createChannel')
 	async handleCreateChannel(
 		@MessageBody() chatDTO: ChatDTO, 
@@ -75,22 +64,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		}
 	}
 
-	// Join a specific room/channel (ORIGINAL VERSION)
-	// @SubscribeMessage('joinChannel')
-	// async handleJoinChannel(
-	// 	@MessageBody('channel') channel: string,
-	// 	@ConnectedSocket() client: Socket,
-	// ): Promise<void> {
-	// 	console.log(`Client ${client.id} joined channel ${channel}`);
-	// 	// Add the user to the database if needed
-	// 	await this.chatService.addUserToChannel(+client.id, +channel);
-	// 	// Join the channel
-	// 	client.join(channel);
-	// 	client.emit('joinedChannel', { channel });
-	// }
-
-	// Join a specific room/channel
-	
 	@SubscribeMessage('joinChannel')
 	async handleJoinChannel(
 		@MessageBody() data: { channel_id: number, name: string, user_id: number, email: string },
@@ -127,7 +100,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		}
 	}
 
-	// Leave a specific room/channel
 	@SubscribeMessage('leaveChannel')
 	async handleLeaveChannel(
 		@MessageBody() data: { user_id: number, channel_id: number },
@@ -199,60 +171,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	  }
 	}
 
-	// // Handle messages sent to a specific channel
-	// @SubscribeMessage('sendMessage')
-	// async handleMessage(
-	// 	@MessageBody() data: {client_id: number, channel_id: number, message: string,}, 
-	// 	@ConnectedSocket() client: Socket,
-	// ): Promise<void> {
-	// 	const {client_id, channel_id, message,} = data; 
-
-	// 	console.log(`Message to channel_id ${channel_id} from user_id ${client_id} (socket id: ${client.id}): ${message}`);
-
-	// 	// Save the message to the database
-	// 	const savedMessage = await this.chatService.sendMessage(client_id, channel_id, message);
-	// 	console.log('New message:', savedMessage);
-
-	// 	// const updatedMessages = await this.chatService.getMessagesForChannel(channel_id);
-
-	// 	// console.log('updatedMessages: ', updatedMessages);
-
-	// 	// this.server.emit('newMessage', {
-	// 	// 	channel_id,
-	// 	// 	messages: updatedMessages, // Send the full list of messages for the channel
-	// 	// });
-
-	// 	// this.server.emit('newMessage', { channel_id, message: savedMessage });
-		
-	// 	this.server.to(channel_id.toString()).emit('newMessage', {
-	// 		channel_id,
-	// 		message: savedMessage, // Send only the new message
-	// 	});
-
-	// 	// // Broadcast the updated messages to clients in the channel
-  	// 	// this.server.to(channel_id.toString()).emit('newMessage', {
-  	// 	// 	channel_id,
-  	// 	// 	messages: updatedMessages, // Send the full list of messages for the channel
-  	// 	// });
-	// }
-
-	// // Handle messages sent to a specific channel
-	// @SubscribeMessage('sendMessage')
-	// // async handleMessage(
-	// 	// @MessageBody('channel') channel: string,
-		// // @MessageBody('message') message: string,
-	// 	// @ConnectedSocket() client: Socket,
-	// // ): Promise<void> {
-	// 	// console.log(`Message to channel ${channel} from ${client.id}: ${message}`);
-
-		// Save the message to the database
-		// // await this.chatService.sendMessage(+client.id, +channel, message);
-
-		// Broadcast to other clients in the channel
-	// 	// this.server.to(channel).emit('newMessage', { message, channel, senderId: client.id });
-	// // }
-
-	// Get all channels
 	@SubscribeMessage('getChannels')
 	async handleGetChannels(@ConnectedSocket() client: Socket): Promise<void> {
 		try {
@@ -267,7 +185,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		}
 	}
 
-	// Delete a channel
 	@SubscribeMessage('deleteChannel')
 	async handleDeleteChannel(
 		@MessageBody() channel_id: number,
@@ -287,7 +204,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		}
 	}
 
-	// Change privacy
 	@SubscribeMessage('changePrivacy')
 	async handleChangePrivacy(
 		@MessageBody() data: { channel_type: ChannelType, channel_id: number, password: string | null },
@@ -312,7 +228,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		}
 	}
 
-	// Change user role
 	@SubscribeMessage('changeUserRole')
 	async handleChangeUserRole(
 		@MessageBody() data: { user_id: number; channel_id: number; new_role: ChannelMemberType; },
@@ -336,7 +251,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			return { success: false, message: 'Error changing user role' };
 		}
 	}
-	
 
 	@SubscribeMessage('joinRoom')
 	handleJoinRoom(
@@ -357,16 +271,4 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			console.log(`Socket ${client.id} joined room ${roomId}`);
 		})
 	}
-
-	// @SubscribeMessage('changeUserRole')
-	// async handleChangeUserRole(
-	// 	@MessageBody() data: {channel_id: number, user_id: number, role: string},
-	// 	@ConnectedSocket() client: Socket,
-	// ): Promise<void> {
-	// 	const [channel_id, intraId, ]
-	// 	try {
-
-	// 	} catch (error) {}
-	// }
-
 };

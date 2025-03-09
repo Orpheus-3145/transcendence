@@ -14,14 +14,13 @@ import { NotificationService } from './notification.service';
 import { UsersService } from 'src/users/users.service';
 import GameDataDTO from 'src/dto/gameData.dto';
 import { UserStatus } from 'src/dto/user.dto';
-import { GameDifficulty, GameMode, fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
+import { GameDifficulty, GameMode, PowerUpSelected } from 'src/game/types/game.enum';
 import AppLoggerService from 'src/log/log.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import NotificationDTO, { NotificationType } from 'src/dto/notification.dto';
 import { GameInvitation } from 'src/entities/gameInvitation.entity';
 import { FriendRequest } from 'src/entities/friendRequest.entity';
-import { MessageNotification } from 'src/entities/messageNotification.entity';
 import RoomManagerService from 'src/game/session/roomManager.service';
 
 
@@ -48,11 +47,15 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	constructor(
 		@Inject(forwardRef(() => NotificationService))
-		private readonly notificationService: NotificationService, 
+		private readonly notificationService: NotificationService,
+
 		@Inject(forwardRef(() => UsersService))
 		private readonly userService: UsersService,
+
 		private readonly logger: AppLoggerService,
+
 		private readonly roomManager: RoomManagerService,
+
 		private readonly thrower: ExceptionFactory,
 	) {
 		this.logger.setContext(NotificationGateway.name);	
@@ -106,32 +109,6 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 		client.emit('getAllNotifications', notificationsDto);
 	}
-
-	// @SubscribeMessage('sendMessage')
-	// async sendMessage(@MessageBody() data: { senderId: string, receiverId: string, message: string }): Promise<void> 
-	// {
-	// 	if (data.message.length == 0) {
-	// 		this.logger.warn(`Received an empty message`);
-	// 		return ;
-	// 	}
-	// 	const [user, other] = await Promise.all([
-	// 		this.userService.getUserId(data.senderId),
-	// 		this.userService.getUserId(data.receiverId)
-	// 	]);
-
-	// 	if (!user || !other)
-	// 		this.thrower.throwSessionExcp(`User with id: ${data.senderId} or ${data.receiverId} not found`,
-	// 			`${NotificationGateway.name}.${this.constructor.prototype.sendMessage.name}()`,
-	// 			HttpStatus.NOT_FOUND);
-
-	// 	const chatNoti = await this.notificationService.initMessage(user, other, data.message);
-	// 	if (chatNoti === null)
-	// 		this.logger.debug(`User ${user.nameNick} has blocked ${other.nameNick}, message not sent`)
-	// 	else {
-	// 		this.sendNotiToFrontend(chatNoti);
-	// 		this.logger.log(`Sending message from ${user.nameNick} to ${other.nameNick}, content: '${data.message}'`)
-	// 	}
-	// }
 
 	@SubscribeMessage('sendFriendReq')
 	async sendFriendReq(@MessageBody() data: { senderId: string, receiverId: string }): Promise<void> 

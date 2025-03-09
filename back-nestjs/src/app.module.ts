@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import User from 'src/entities/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
@@ -32,7 +33,7 @@ import { FriendRequest } from './entities/friendRequest.entity';
 				username: configService.get<string>('POSTGRES_USER'),
 				password: configService.get<string>('POSTGRES_PASSWORD'),
 				database: configService.get<string>('POSTGRES_DB'),
-				entities: [User, Game, Channel, ChannelMember, Message, MessageNotification, GameInvitation, FriendRequest], // List your entities here
+				entities: [User, Game, Channel, ChannelMember, Message, MessageNotification, GameInvitation, FriendRequest],
 				synchronize: true,
 				// logging: true,			// log every query done by ORM
 			}),

@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 
 import AppLoggerService from 'src/log/log.service';
 import { GameException, SessionException, ChatException } from 'src/errors/exceptions';

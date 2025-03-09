@@ -16,16 +16,20 @@ import { NotificationType } from 'src/dto/notification.dto';
 
 @Injectable()
 export class NotificationService {
-  constructor(
-    @InjectRepository(MessageNotification)
-    private messageNotificationRepository: Repository<MessageNotification>,
-    @InjectRepository(GameInvitation)
-    private gameInvitationRepository: Repository<GameInvitation>,
-    @InjectRepository(FriendRequest)
-    private friendRequestRepository: Repository<FriendRequest>,
+	constructor(
+		@InjectRepository(MessageNotification)
+		private messageNotificationRepository: Repository<MessageNotification>,
+
+		@InjectRepository(GameInvitation)
+		private gameInvitationRepository: Repository<GameInvitation>,
+
+		@InjectRepository(FriendRequest)
+		private friendRequestRepository: Repository<FriendRequest>,
+
 		private readonly logger: AppLoggerService,
+		
 		private readonly thrower: ExceptionFactory,
-  ) {
+	) {
 		this.logger.setContext(NotificationService.name);
 	}
 

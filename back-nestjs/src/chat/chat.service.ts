@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
@@ -24,7 +24,6 @@ export class ChatService {
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 
-		@Inject()
 		private readonly notificationService: NotificationService,
 	) {}
 

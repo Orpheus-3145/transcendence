@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { NotificationService } from './notification.service';
@@ -17,11 +17,11 @@ import { Message } from 'src/entities/message.entity';
 		GameModule,
 		AppLoggerModule,
 		ExceptionModule,
+		UsersModule,
 		TypeOrmModule.forFeature([MessageNotification, GameInvitation, FriendRequest, Message]),
-		forwardRef(() => UsersModule),
 	],
 	providers: [NotificationService, NotificationGateway],
-	exports: [NotificationService, NotificationGateway],
+	exports: [NotificationService],
 })
 export class NotificationModule {}
 
