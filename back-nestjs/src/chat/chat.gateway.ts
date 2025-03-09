@@ -141,11 +141,12 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	): Promise<void> {
 		try {
 			const {user_id, user_name, channel_id, role} = data;
-			await this.chatService.removeUserFromChannel(user_id, channel_id, role);
-			this.server.to(channel_id.toString()).emit('leftChannel', { user_id, user_name, channel_id });
+			const new_owner =  await this.chatService.removeUserFromChannel(user_id, channel_id, role);
+			// await this.chatService.removeUserFromChannel(user_id, channel_id, role);
+			this.server.to(channel_id.toString()).emit('leftChannel', { user_id, user_name, channel_id, new_owner });
 			// client.emit('leftChannel', { user_id, channel_id });
+			// this.server.emit('leftChannel', { user_id, user_name, channel_id });
 			client.leave(channel_id.toString());
-			// this.server.emit('leftChannel', { user_id, channel_id });
 			console.log(`Client ${client.id} left channel ${ channel_id }`);
 			// client.emit('leftChannel', { channel_id });
 		} catch (error) {

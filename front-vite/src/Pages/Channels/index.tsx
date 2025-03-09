@@ -304,52 +304,76 @@ const ChannelsPage: React.FC = () => {
 
 //////////////////////////////////////////////////////////////////////
 
-	useEffect(() => {
-		const handleUserLeftChannel = (response) => {
-		console.log(`User left channel: ${response.user_name}`);
-	
-		setChatProps((prevState) => ({
-			...prevState,
-			chatRooms: prevState.chatRooms.map((channel) =>
-			channel.id === response.channel_id
-				? {
-					...channel,
-					settings: {
-					...channel.settings,
-					users: channel.settings.users.filter((usr) => usr.id !== response.user_id),
-					owner: channel.settings.owner === response.user_name
-						? channel.settings.users.length > 1
-						? channel.settings.users[channel.settings.users.length - 2]?.name ?? null
-						: null
-						: channel.settings.owner,
-					},
-				}
-				: channel
-			),
-		}));
-
-		// setChatProps((prevState) => {
-        //     const updatedChannel = prevState.chatRooms.find((ch) => ch.id === response.channel_id);
-
-        //     if (updatedChannel && updatedChannel.settings.users.length > 0) {
-        //         setJoinedChannels((prevJoined) =>
-        //             prevJoined.filter((ch) => ch.id !== response.channel_id)
-        //         );
-        //     }
-
-        //     return prevState;
-        // });
+	// useEffect(() => {
+	// 	const handleUserLeftChannel = (response) => {
+	// 		console.log(`User left channel (index): ${response.user_name}`);
 		
-			// setJoinedChannels((prevState) => prevState.filter((ch) => ch.id !== response.channel_id));
-			// setSelectedChannel(null);
-		};
+	// 		setChatProps((prevState) => ({
+	// 			...prevState,
+	// 			chatRooms: prevState.chatRooms.map((channel) =>
+	// 			channel.id === response.channel_id
+	// 				? {
+	// 					...channel,
+	// 					settings: {
+	// 						...channel.settings,
+	// 						owner: channel.settings.owner === response.user_name
+	// 						? channel.settings.users.length > 1
+	// 						? channel.settings.users[channel.settings.users.length - 2]?.name ?? null
+	// 						: null
+	// 						: channel.settings.owner,
+	// 						users: channel.settings.users.filter((usr) => usr.id !== response.user_id).map(usr => usr.name === channel.settings.owner ? {...usr, role: 'owner'}: usr),
+	// 					},
+	// 				}
+	// 				: channel
+	// 			),
+	// 		}));
+	// 		console.log('channel after user left (index)', selectedChannel);
+	// 	};
 	
-		socket.on('leftChannel', handleUserLeftChannel);
+	// 	socket.on('leftChannel', handleUserLeftChannel);
 	
-		return () => {
-		socket.off('leftChannel', handleUserLeftChannel);
-		};
-	}, []);
+	// 	return () => {
+	// 	socket.off('leftChannel', handleUserLeftChannel);
+	// 	};
+	// }, []);
+
+
+	useEffect(() => {
+    const handleUserLeftChannel = (response) => {
+        console.log(`User left channel (index): ${response.user_name}`);
+		
+        setChatProps((prevState) => ({
+            ...prevState,
+            chatRooms: prevState.chatRooms.map((channel) => {
+                if (channel.id !== response.channel_id) {
+					return channel;
+				}
+                const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.user_id);
+                const newOwner = response.new_owner;
+                return {
+                    ...channel,
+                    settings: {
+                        ...channel.settings,
+                        owner: newOwner,
+                        users: updatedUsers.map(usr => ({
+                            ...usr,
+                            role: usr.name === newOwner ? 'owner' : usr.role,
+                        })),
+                    },
+                };
+            }),
+        }));
+
+        // console.log('channel after user left (index)', selectedChannel);
+    };
+
+    socket.on('leftChannel', handleUserLeftChannel);
+
+    return () => {
+        socket.off('leftChannel', handleUserLeftChannel);
+    };
+}, []);
+
   
 //////////////////////////////////////////////////////////////////////
 
@@ -566,7 +590,7 @@ const ChannelsPage: React.FC = () => {
 
 	useEffect(() => {
 		const handleUserJoinedAvailableChannel = (response) => {
-			console.log('User joined available channel');
+			console.log('User joined available channel (index)');
 			const newUser: UserProps = {
 				id: response.user_id,
 				name: response.name,
