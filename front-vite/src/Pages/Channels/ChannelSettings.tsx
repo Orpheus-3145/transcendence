@@ -2,7 +2,7 @@ import React from 'react';
 import {useState, useEffect} from 'react';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
 import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl, Avatar} from '@mui/material';
-import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
+import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps, ChannelType } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
 import { userInChannel, userIsAdmin } from '../Channels/index';
 import { fetchOpponent, fetchUser, fetchUserMessage, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
@@ -16,6 +16,7 @@ import { channel } from 'diagnostics_channel';
 
 // };
 let testUserId = 20;
+
 
 interface SettingsModalProps {
     open: boolean;
@@ -95,7 +96,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			const newUser: UserProps = {
 				id: response.user_id,
 				name: response.name,
-				role: 'member',
+				role: UserRoles.member,
 				email: response.email,
 				password: '',
 				// icon: <Avatar src={tmp.image}/> 
@@ -162,8 +163,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 		socket.on('userKicked', updateSettings)
 	};
-
-
 
 	const handleBanFriend = (user: UserProps) => 
 	{
@@ -242,7 +241,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		const data = {
 			user_id: userId,
 			channel_id: selectedChannel.id,
-			new_role: role === 'admin' ? 'member' : 'admin',
+			new_role: role === UserRoles.admin ? UserRoles.member : UserRoles.admin,
 		};
 		socket.emit('changeUserRole', data, (response) => {
 			if (response.success) {
@@ -267,7 +266,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		};
 	}, [settings]);
 
-	const handleChangePrivacy = (type: 'public' | 'private' | 'password', password: string | null) => {
+	const handleChangePrivacy = (type: ChannelType, password: string | null) => {
 		console.log('"Change Privacy" clicked!');
 
 		socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password });
@@ -289,7 +288,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	};
 
 	const handleLeaveChannel = () => {
-		if (selectedChannel.settings.type === 'password'
+		if (selectedChannel.settings.type === ChannelType.protected
 			&& !selectedChannel.settings.password) {
 			alert('Must provide a password or change the channel privacy');
 		}
@@ -299,7 +298,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			const data = {
 				user_id: user.id, 
 				channel_id: selectedChannel.id,
-				role: selectedChannel.settings.users.find(user_ => user.id === user_.id).role,
 			};
 	
 			socket.emit('leaveChannel', data);
@@ -360,17 +358,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				<>
 					{/* Privacy Options */}
 					<Stack direction="row" spacing={2}>
-					<Button variant={settings?.type === 'public' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('public', null)}>Public</Button>
-					<Button variant={settings?.type === 'private' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('private', null)}>Private</Button>
-					<Button variant={settings?.type === 'password' ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy('password', settings.password)}>Password Protected</Button>
+					<Button variant={settings?.type === ChannelType.public ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.public, null)}>Public</Button>
+					<Button variant={settings?.type === ChannelType.private ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.private, null)}>Private</Button>
+					<Button variant={settings?.type === ChannelType.protected ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.protected, settings.password)}>Password Protected</Button>
 					</Stack>
 
 					{/* Password field for password protected */}
-					{settings?.type === 'password' && (
+					{settings?.type === ChannelType.protected && (
 					<TextField
 						label="Password"
 						value={settings.password || ''}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangePrivacy('password', e.target.value)}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangePrivacy(ChannelType.protected, e.target.value)}
 						fullWidth
 						sx={{ mt: 2 }}
 					/>
@@ -442,7 +440,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							(user.nameIntra !== _user.name) && (isUserMuted(_user) === false) && (
 						<Stack direction="row" spacing={0.3}>
 							<Button sx={{width: '120px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(_user.id, _user.role)}>
-								{_user.role === 'admin' ? 'Make Member' : 'Make Admin' }
+								{_user.role === UserRoles.admin ? 'Make Member' : 'Make Admin' }
 							</Button>
 							<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(_user)}>Kick</Button>
 							<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(_user)}>Ban</Button>

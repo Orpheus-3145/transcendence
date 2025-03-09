@@ -1,79 +1,102 @@
-import { Entity, PrimaryGeneratedColumn, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
-import { IsBoolean } from 'class-validator';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
 import { Message } from './message.entity';
 import User from './user.entity';
 import { MessageNotification } from './messageNotification.entity';
 
 
-export enum ChannelTypes {
+export enum ChannelType {		// NB not used
 	public = 'public',
 	protected = 'protected',
 	private = 'private',
-	chat = 'chat',
 }
 
-export enum ChannelMemberTypes {
+export enum ChannelMemberType {		// NB not used
 	owner = 'owner',
 	admin = 'admin',
 	member = 'member',
 }
 
+// Nb change camel_case into pascalCase
+
 // Channel entity
 @Entity('Channels')
 export class Channel {
+
 	@PrimaryGeneratedColumn()
 	channel_id: number;
 
 	@Column({
 		type: 'enum',
-		enum: ChannelTypes,
-		default: 'public',
+		enum: ChannelType,
+		default: ChannelType.public,
 	})
-	ch_type: ChannelTypes;
+	channel_type: ChannelType;
 
-	// @Column({ nullable: true })
-	// isDirectMessage: string;
+	@ManyToOne(
+		() => User,
+		(user: User) => user.channelMember,
+		{
+			eager: true,
+			onDelete: "CASCADE"
+		}
+	)
+	@JoinColumn({ name: 'channel_owner' })
+	channel_owner: User;
 
-	@IsBoolean()
-	@Column({ name: 'is_active', type: 'boolean', default: true })
+	@Column({
+		name: 'is_active',
+		type: 'boolean',
+		default: true
+	})
 	isActive: boolean;
 
-	@IsBoolean()
-	@Column({ name: 'is_direct', type: 'boolean', default: false })
+	@Column({
+		name: 'is_direct',
+		type: 'boolean',
+		default: false
+	})
 	isDirectMessage: boolean;
 
-	// @Column({ type: 'varchar', nullable: false })
-	// ch_owner: string;
-
-	@ManyToOne(() => User, (user: User) => user.channelMember, {
-		nullable: false,
-		eager: true
+	@Column({
+		type: 'text',
+		nullable: true,
+		default: null
 	})
-	@JoinColumn({name: 'ch_owner'})
-	ch_owner: User;
-
-	@Column({ type: 'varchar', nullable: true, default: null })
 	password: string | null;
 
-	@Column({ type: 'varchar', length: 50, default: 'Welcome to my Channel!' })
+	@Column({
+		type: 'text',
+		default: 'Welcome to my Channel!'
+	})
 	title: string;
 
-	@Column({ type: 'varchar', length: 50, default: 'default_channel_photo.png' })
-	channel_photo: string;
-
-	@CreateDateColumn()
+	@CreateDateColumn({ name: 'created_at' })
 	created: Date;
 
-	@Column("text", { array: true, default: '{}' })		// NB should move this info into channel member?
+	@Column({
+		type: "text",
+		array: true,
+		default: '{}'
+	})		// NB should move this info into channel member?
 	banned: string[];
 
-	@Column("text", { array: true, default: '{}' })		// NB should move this info into channel member?
+	@Column({
+		type: "text",
+		array: true,
+		default: '{}'
+	})		// NB should move this info into channel member?
 	muted: string[];
 
-	@OneToMany(() => Message, (message: Message) => message.channel)
+	@OneToMany(
+		() => Message,
+		(message: Message) => message.channel
+	)
 	messages: Message[];
 
-	@OneToMany(() => ChannelMember, (channelMember: ChannelMember) => channelMember.channel)
+	@OneToMany(
+		() => ChannelMember,
+		(channelMember: ChannelMember) => channelMember.channel
+	)
 	members: ChannelMember[];
 }
 
@@ -81,34 +104,47 @@ export class Channel {
 @Entity('Channel_Members')
 export class ChannelMember {
 
-	@PrimaryGeneratedColumn( {name: 'channel_member_id'} )
-	channel_members_id: number
+	@PrimaryGeneratedColumn({ name: 'channel_member_id' })
+	channelMemberId: number
 
-	@ManyToOne(() => Channel, (channel: Channel) => channel.members, {
-		nullable: false,
-		eager: true})
+	@ManyToOne(
+		() => Channel,
+		(channel: Channel) => channel.members,
+		{
+			eager: true,
+			onDelete: "CASCADE"
+		}
+	)
 	@JoinColumn({ name: 'channel_id' })
 	channel: Channel;
 
-	@ManyToOne(() => User, (user: User) => user.channelMember, {
-		nullable: false,
-		eager: true})
+	@ManyToOne(
+		() => User,
+		(user: User) => user.channelMember,
+		{
+			eager: true,
+			onDelete: "CASCADE"
+		}
+	)
 	@JoinColumn({ name: 'user_id' })
 	member: User;
 
-	@Column({ nullable: true })		// NB what is it?
-	name: string;
-
 	@Column({
 		type: 'enum',
-		enum: ChannelMemberTypes,
-		default: ChannelMemberTypes.member,
+		enum: ChannelMemberType,
+		default: ChannelMemberType.member,
 	})
-	member_role: ChannelMemberTypes;
+	memberRole: ChannelMemberType;
 	
-	@OneToMany(() => Message, (message: Message) => message.sender)
+	@OneToMany(
+		() => Message,
+		(message: Message) => message.sender
+	)
 	sender: Message[];
 
-	@OneToMany(() => MessageNotification, (chatNotification: MessageNotification) => chatNotification.receiver)
+	@OneToMany(
+		() => MessageNotification,
+		(chatNotification: MessageNotification) => chatNotification.receiver
+	)
 	chatNotification: MessageNotification[];
 }

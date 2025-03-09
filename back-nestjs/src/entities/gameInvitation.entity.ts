@@ -9,21 +9,30 @@ export class GameInvitation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user: User) => user.senderGameInvitations, {
-    nullable: false,
-    eager: true})
-  @JoinColumn({name: 'sender_id'})
+  @ManyToOne(
+    () => User,
+    (user: User) => user.senderGameInvitations,
+		{
+			eager: true,
+			onDelete: "CASCADE"
+		}
+  )
+  @JoinColumn({ name: 'sender_id' })
   sender: User;
 
-  @ManyToOne(() => User, (user: User) => user.receiverGameInvitations, {
-    nullable: false,
-    eager: true,
-  })
-  @JoinColumn({name: 'receiver_id'})
+  @ManyToOne(
+    () => User,
+    (user: User) => user.receiverGameInvitations,
+		{
+			eager: true,
+			onDelete: "CASCADE"
+		}
+  )
+  @JoinColumn({ name: 'receiver_id' })
   receiver: User;
 
-  @CreateDateColumn({name: 'created_at'})
-  createdAt: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  created: Date;
 
   @Column({
     type: 'enum',

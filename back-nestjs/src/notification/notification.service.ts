@@ -63,7 +63,7 @@ export class NotificationService {
 		return (await this.messageNotificationRepository.findOne( { where: {id: notificationId}}));
 	}
 
-	isSenderBlocked(sender:User, receiver:User): boolean
+	isSenderBlocked(sender: User, receiver: User): boolean
 	{
 		for (const item of receiver.blocked) 
 		{
@@ -73,7 +73,7 @@ export class NotificationService {
 		return (false);
 	}
 
-	async createFriendRequest(sender:User, receiver:User): Promise<FriendRequest | null> {
+	async createFriendRequest(sender: User, receiver: User): Promise<FriendRequest | null> {
 
 		if (this.isSenderBlocked(sender, receiver) == true) {
 			this.logger.debug(`${receiver.nameNick} has blocked ${sender.nameNick}, friend request not sent`);
@@ -115,7 +115,7 @@ export class NotificationService {
 		this.logger.log(`${friendRequest.receiver.nameNick} declined friend request from ${friendRequest.sender.nameNick}`)
 	}
 	
-	async createGameInvitation(sender:User, receiver:User, powerUps: PowerUpSelected): Promise<GameInvitation | null> {
+	async createGameInvitation(sender: User, receiver: User, powerUps: PowerUpSelected): Promise<GameInvitation | null> {
 
 		if (this.isSenderBlocked(sender, receiver) == true) {
 			this.logger.debug(`${receiver.nameNick} has blocked ${sender.nameNick}, game invite not sent`);

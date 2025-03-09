@@ -8,24 +8,37 @@ export class Message {
 	@PrimaryGeneratedColumn()
 	msg_id: number;
 
-	@ManyToOne(() => Channel, (channel: Channel) => channel.messages, {
-		nullable: false,
-		eager: true})
+	@ManyToOne(
+		() => Channel,
+		(channel: Channel) => channel.messages,
+		{
+			eager: true,
+			onDelete: "CASCADE"
+		}
+	)
 	@JoinColumn({ name: 'channel_id' })
 	channel: Channel; 
 
-	@ManyToOne(() => ChannelMember, (member: ChannelMember) => member.sender, {
-		nullable: false,
-		eager: true})
+	@ManyToOne(
+		() => ChannelMember,
+		(member: ChannelMember) => member.sender,
+		{
+			eager: true,
+			onDelete: "CASCADE"
+		}
+	)
 	@JoinColumn({ name: 'sender_id' })
 	sender: ChannelMember;
 
-	@Column('text')
+	@Column()
 	content: string;
 
-	@CreateDateColumn()
-	send_time: Date;
+	@CreateDateColumn({ name: 'created_at' })
+	created: Date;
 
-	@OneToMany(() => MessageNotification, (chatNotification: MessageNotification) => chatNotification.message)
+	@OneToMany(
+		() => MessageNotification,
+		(chatNotification: MessageNotification) => chatNotification.message
+	)
 	chatMessage: MessageNotification[];
 }

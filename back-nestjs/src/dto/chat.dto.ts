@@ -1,39 +1,58 @@
-import { IsArray, IsInt , IsEnum, IsOptional, IsString, MaxLength, ValidateNested, IsBoolean } from 'class-validator';
+import { IsArray,
+  IsInt ,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateNested,
+  IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import UserDTO from './user.dto';
 import { MessageDTO } from './message.dto';
-import { ChannelMember } from 'src/entities/chat.entity';
-// import { each } from 'cheerio/dist/commonjs/api/traversing';
+import { Channel, ChannelType } from 'src/entities/chat.entity';
 
 export class ChatDTO {
+
+  constructor(channel: Channel) {
+
+    this.channel_id = channel.channel_id;
+    this.ch_type = channel.channel_type;
+    this.ch_owner = channel.channel_owner.nameNick;
+    this.isActive = channel.isActive;
+    this.isDirectMessage = channel.isDirectMessage;
+    this.password = channel.password;
+    this.title = channel.title;
+    this.banned = channel.banned;
+    this.muted = channel.muted;
+    for (const member of channel.members)
+      this.users.push(new UserDTO(member.member));
+    for (const message of channel.messages)
+      this.messages.push(new MessageDTO(message));
+  }
 
   @IsOptional() // Only required for updates
   @IsInt()
   channel_id?: number;
 
-  @IsString()
-  @MaxLength(50)
-  title: string;
- 
-//   @IsOptional()
-  @IsBoolean()
-  isDirectMessage: boolean = false;
+  @IsEnum(ChannelType)
+  ch_type: ChannelType
 
   @IsString()
   ch_owner: string;
 
-  @IsEnum(['public', 'protected', 'private', 'chat'])
-  ch_type: string;
+  @IsBoolean()
+  isActive: boolean = true;
+
+  @IsBoolean()
+  isDirectMessage: boolean = false;
 
   @IsOptional()
   @IsString()
-  @MaxLength(50)
-  channel_photo?: string;
+  password?: string | null;
 
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => UserDTO)
-  users?: UserDTO[];
+  @IsString()
+  @MaxLength(50)
+  title: string;
 
 	@IsArray()
 	@IsString({ each: true })
@@ -44,23 +63,13 @@ export class ChatDTO {
 	muted: string[];
 
   @IsOptional()
-  @IsString()
-  password?: string | null;
+  @ValidateNested({ each: true })
+  @Type(() => UserDTO)
+  users?: UserDTO[];
 
   @IsOptional()
   @ValidateNested({ each: true })
   @Type (() => MessageDTO)
   messages?: MessageDTO[];
 }
-
-// export class ChannelMemberDTO {
-// 	@IsInt()
-// 	user_id: number;
-
-	
-
-
-
-
-// }
 

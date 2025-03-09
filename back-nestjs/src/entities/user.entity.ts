@@ -1,55 +1,56 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Unique } from 'typeorm';
-import { IsAscii, Length, validateOrReject } from 'class-validator';
-import { UserStatus } from 'src/dto/user.dto';
+import { validateOrReject } from 'class-validator';
+import UserDTO, { UserStatus } from 'src/dto/user.dto';
 import Game from './game.entity';
 import { FriendRequest } from './friendRequest.entity';
 import { GameInvitation } from './gameInvitation.entity';
 import { ChannelMember } from './chat.entity';
-import { Message } from './message.entity';
-import { MessageNotification } from './messageNotification.entity';
 
 
 @Entity('Users')
 export default class User {
-	@PrimaryGeneratedColumn()
+
+	constructor(user?: UserDTO) {
+		if (!user)
+			return;
+
+		this.id = user.id;
+		this.intraId = user.intraId;
+		this.nameIntra = user.nameIntra;
+		this.email = user.email;
+		this.nameFirst = user.nameFirst;
+		this.nameLast = user.nameLast;
+		this.nameNick = user.nameNick;
+		this.greeting = user.greeting;
+		this.status = user.status;
+		this.image = user.image;
+		this.friends = user.friends;
+		this.blocked = user.blocked;
+	}
+
+	@PrimaryGeneratedColumn({ name: 'user_id' })
 	id: number;
 
-	@Column({ nullable: false })
+	@Column({ name: 'intra_id' })
 	intraId: number;
 
-	@Column({ nullable: false })
-	accessToken: string;
+	@Column({ name: 'intra_name'})
+	nameIntra: string;
 
-	@Column({ nullable: true})
-	@IsAscii()
-	nameNick: string | null;
-
-	@Column({ nullable: true, length: 20 })
-	@IsAscii()
-	nameIntra: string | null;
-
-	@Column({ nullable: false })
-	nameFirst: string;
-
-	@Column({ nullable: false })
-	nameLast: string;
-
-	@Column({ nullable: false })
+	@Column({ name: 'intra_email' })
 	email: string;
 
-	@Column({ nullable: true, default: 'default_profile_photo.png' })
-	image: string | null;
+	@Column({ name: 'first_name'})
+	nameFirst: string;
 
-	@Column("text", { array: true, default: '{}' })
-	friends: string[];
+	@Column({ name: 'last_name'})
+	nameLast: string;
 
-	@Column("text", { array: true, default: '{}' })
-	blocked: string[];
+	@Column({ name: 'nickname' })
+	nameNick: string;
 
-	@Column({ nullable: true, default: 'Hello, I have just landed!', length: 100 })
-	@IsAscii()
-	@Length(0, 100)
-	greeting: string | null;
+	@Column({ default: 'Hello, I have just landed!' })
+	greeting: string;
 
 	@Column({
 		type: 'enum',
@@ -58,37 +59,79 @@ export default class User {
 	})
 	status: UserStatus;
 
-	@Column({ nullable: true, default: null})
+	@Column({
+		name: 'profile_photo',
+		default: 'default_profile_photo.png'
+	})
+	image: string;
+
+	@Column({
+		type: 'text',
+		array: true,
+		default: '{}'
+	})
+	friends: string[];
+
+	@Column({
+		type: 'text',
+		array: true,
+		default: '{}'
+	})
+	blocked: string[];
+
+	@Column({ name: 'token' })
+	accessToken: string;
+
+	@Column({
+		name: '2fa_secret',
+		nullable: true,
+		default: null
+	})
 	twoFactorSecret: string;
 
-	@CreateDateColumn()
-	createdAt: Date;
+	@CreateDateColumn({ name: 'created_at' })
+	created: Date;
 
-	@OneToMany(() => Game, (game) => game.player1)
+	@OneToMany(
+		() => Game,
+		(game) => game.player1
+	)
 	player1Game: Game[];
 
-	@OneToMany(() => Game, (game) => game.player2)
+	@OneToMany(
+		() => Game,
+		(game) => game.player2
+	)
 	player2Game: Game[];
 
-	@OneToMany(() => FriendRequest, (friendRequest: FriendRequest) => friendRequest.sender)
+	@OneToMany(
+		() => FriendRequest,
+		(friendRequest: FriendRequest) => friendRequest.sender
+	)
 	senderFriendRequests: FriendRequest[];
 
-	@OneToMany(() => FriendRequest, (friendRequest: FriendRequest) => friendRequest.receiver)
+	@OneToMany(
+		() => FriendRequest,
+		(friendRequest: FriendRequest) => friendRequest.receiver
+	)
 	receiverFriendRequests: FriendRequest[];
 
-	@OneToMany(() => GameInvitation, (gameInvitation: GameInvitation) => gameInvitation.sender)
+	@OneToMany(
+		() => GameInvitation,
+		(gameInvitation: GameInvitation) => gameInvitation.sender
+	)
 	senderGameInvitations: GameInvitation[];
 
-	@OneToMany(() => GameInvitation, (gameInvitation: GameInvitation) => gameInvitation.receiver)
+	@OneToMany(
+		() => GameInvitation,
+		(gameInvitation: GameInvitation) => gameInvitation.receiver
+	)
 	receiverGameInvitations: GameInvitation[];
 
-	// @OneToMany(() => MessageNotification, (messNotification: MessageNotification) => messNotification.receiver)
-	// receiverMessageNotifications: MessageNotification[];
-
-	// @OneToMany(() => Message, (message: Message) => message.sender)
-	// senderMessage: Message[];
-
-	@OneToMany(() => ChannelMember, (channelMember: ChannelMember) => channelMember.member)
+	@OneToMany(
+		() => ChannelMember,
+		(channelMember: ChannelMember) => channelMember.member
+	)
 	channelMember: ChannelMember[];
 
 	async validate() {

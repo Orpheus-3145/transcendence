@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect } from 'react';
 import axios from 'axios';
-import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
+import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps, ChannelType } from '../../Layout/Chat/InterfaceChat';
 import { Chat as ChatIcon } from '@mui/icons-material';
 import { SettingsModal } from './ChannelSettings';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon,  AccountCircle as AccountCircleIcon } from '@mui/icons-material';
@@ -45,7 +45,7 @@ interface ChannelTypeEvent {
 export const userIsAdmin = (userName: string, channel: ChatRoom): boolean => {
 	// 
 	const found = channel.settings.users.find((user) => user.name === userName);
-	return found?.role === 'admin';
+	return found?.role === UserRoles.admin;
 };
 
 export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
@@ -100,7 +100,7 @@ const ChannelsPage: React.FC = () => {
 				channel.settings.users.length > 0 &&
 				!channel.isDirectMessage &&	
 				!userInChannel(user.nameIntra, channel) &&
-				channel.settings.type !== 'private'
+				channel.settings.type !== ChannelType.private
 			);
 		const dms = chatProps.chatRooms.filter((channel) =>
 				channel.settings.users.length > 0 &&
@@ -243,7 +243,7 @@ const ChannelsPage: React.FC = () => {
 				};
 			});
 		}
-					
+
 		socket.on('userMuted', handleUserMutedChannel);
 		socket.on('userUnmuted', handleUserUnmutedChannel);
 		return () => {
@@ -258,10 +258,10 @@ const ChannelsPage: React.FC = () => {
 		if (channelName.trim()) {
 			const channelDTO = {
 				title: channelName,
-				ch_type: 'private',
-				ch_owner: user.nameIntra,
+				ch_type: ChannelType.private,
+				ch_owner: user.id.toString(),
 				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
+					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email }
 				],
 				password: null,
 				isDirectMessage: true,
@@ -357,7 +357,7 @@ const ChannelsPage: React.FC = () => {
 				const newUser: UserProps = {
 					id: response.user_id,
 					name: response.name,
-					role: 'member',
+					role: UserRoles.member,
 					email: response.email,
 					password: '',
 					// icon: <Avatar src={tmp.image}/> 
@@ -423,10 +423,10 @@ const ChannelsPage: React.FC = () => {
 		if (channelName.trim()) {
 			const channelDTO = {
 				title: channelName,
-				ch_type: 'public',
-				ch_owner: user.nameIntra,
+				ch_type: ChannelType.public,
+				ch_owner: user.id.toString(),
 				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
+					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email }
 				],
 				password: null,
 				isDirectMessage: false,
@@ -482,11 +482,11 @@ const ChannelsPage: React.FC = () => {
 		if (otherUser.id !== user.id) {
 			const channelDTO = {
 				title: otherUser.nameIntra,
-				ch_type: 'private',
-				ch_owner: user.nameIntra,
+				ch_type: ChannelType.private,
+				ch_owner: user.id.toString(),
 				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
-					{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
+					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email },
+					{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: UserRoles.member, email: otherUser.email },
 	
 				],
 				password: null,
@@ -567,7 +567,7 @@ const ChannelsPage: React.FC = () => {
 			const newUser: UserProps = {
 				id: response.user_id,
 				name: response.name,
-				role: 'member',
+				role: UserRoles.member,
 				email: '',
 				password: '',
 				icon: <PersonAddIcon />
@@ -601,7 +601,7 @@ const ChannelsPage: React.FC = () => {
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
 		console.log('Available channel clicked!');
-		if (!passwordOk && channel.settings.type === 'password' ) {
+		if (!passwordOk && channel.settings.type === ChannelType.private ) {
 			setSelectedChannel(channel);
 			setIsPasswordModal(true);
 		} 

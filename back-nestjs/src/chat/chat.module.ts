@@ -2,16 +2,17 @@ import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
-import { ChatController } from './chat.controller';
-import { Message, Channel, ChannelMember } from 'src/entities/chat.entity';
-import { UsersModule } from 'src/users/users.module';
+import { Channel, ChannelMember } from 'src/entities/chat.entity';
 import { NotificationModule } from 'src/notification/notification.module';
-import { NotificationGateway } from 'src/notification/notification.gateway';
+import { Message } from 'src/entities/message.entity';
+import User from 'src/entities/user.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Channel, ChannelMember, Message]), forwardRef(() => UsersModule),  forwardRef(() => NotificationModule)],
+	imports: [
+		TypeOrmModule.forFeature([Channel, ChannelMember, Message, User]),
+		forwardRef(() => NotificationModule)
+	],
 	providers: [ChatService, ChatGateway],
-	controllers: [ChatController],
 	exports: [ChatService],
 })
 export class ChatModule {}

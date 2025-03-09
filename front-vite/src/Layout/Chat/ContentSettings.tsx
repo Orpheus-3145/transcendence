@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChatProps, ChatStatus, ChatRoom, UserRoles } from './InterfaceChat';
+import { ChatProps, ChatStatus, ChatRoom, UserRoles, ChannelType } from './InterfaceChat';
 import {
 	Box,
 	Stack,
@@ -39,12 +39,12 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ chatProps, setChatPro
 	const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
 		const newValue: string = event.target.value;
 		if (
-			newValue === 'public' ||
-			newValue === 'private' ||
-			newValue === 'password' ||
+			newValue === ChannelType.public ||
+			newValue === ChannelType.private ||
+			newValue === ChannelType.protected ||
 			newValue === undefined
 		) {
-			setSelectedType(newValue as 'public' | 'private' | 'password' | undefined);
+			setSelectedType(newValue as ChannelType | undefined);
 		} else {
 			console.error('Invalid type selected');
 		}
@@ -227,9 +227,9 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ chatProps, setChatPro
 								</Typography>
 								<FormControl variant='standard' sx={{ alignSelf: 'center', width: 'auto' }}>
 									<Select value={selectedType} onChange={handleChange}>
-										<MenuItem value={'public'}>Public</MenuItem>
-										<MenuItem value={'private'}>Private</MenuItem>
-										<MenuItem value={'password'}>Password protected</MenuItem>
+										<MenuItem value={ChannelType.public}>Public</MenuItem>
+										<MenuItem value={ChannelType.private}>Private</MenuItem>
+										<MenuItem value={ChannelType.protected}>Password protected</MenuItem>
 									</Select>
 								</FormControl>
 							</Stack>
@@ -242,7 +242,7 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ chatProps, setChatPro
 								<SaveIcon />
 							</IconButton>
 						</Stack>
-						{selectedType === 'password' && (
+						{selectedType === ChannelType.private && (
 							<TextField type='password' label='Password' variant='standard' />
 						)}
 					</Stack>
@@ -316,7 +316,7 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ chatProps, setChatPro
 							</Typography>
 						</IconButton>
 						{chatProps.selected?.settings?.users?.map((user, index) =>
-							user.role !== UserRoles.Owner ? (
+							user.role !== UserRoles.owner ? (
 								<Stack
 									padding={'0.5em'}
 									height={'3.3em'}
@@ -356,7 +356,7 @@ const ContentSettings: React.FC<ContentSettingsProps> = ({ chatProps, setChatPro
 											}}
 										>
 											{Object.entries(UserRoles)
-												.filter(([key]) => key !== 'Owner')
+												.filter(([key]) => key !== UserRoles.owner)
 												.map(([key, value], index) => (
 													<MenuItem key={index} value={value}>
 														{key}

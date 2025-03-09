@@ -185,6 +185,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.getUserId(data.receiverId),
 			this.userService.getUserId(data.receiverId)
 		]);
+
 		if (!user || !other)
 			this.thrower.throwSessionExcp(`User with id: ${data.receiverId} or ${data.receiverId} not found`,
 				`${NotificationGateway.name}.${this.constructor.prototype.sendGameInvite.name}()`,
