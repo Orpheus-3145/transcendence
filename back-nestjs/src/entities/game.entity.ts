@@ -1,7 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn } from 'typeorm';
+import {
+	Entity,
+	PrimaryGeneratedColumn,
+	Column,
+	ManyToOne,
+	CreateDateColumn,
+	JoinColumn
+} from 'typeorm';
 import User from './user.entity';
 
-// NB add JoinColumn for definition of foreign keys in player1 and player2
+
 @Entity('Games')
 export default class Game {
 	@PrimaryGeneratedColumn({ name: 'game_id' })

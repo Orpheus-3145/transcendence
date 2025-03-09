@@ -4,21 +4,20 @@ import User from './user.entity';
 import { MessageNotification } from './messageNotification.entity';
 
 
-export enum ChannelType {		// NB not used
+export enum ChannelType {
 	public = 'public',
 	protected = 'protected',
 	private = 'private',
 }
 
-export enum ChannelMemberType {		// NB not used
+export enum ChannelMemberType {
 	owner = 'owner',
 	admin = 'admin',
 	member = 'member',
 }
 
-// Nb change camel_case into pascalCase
+// NB change camel_case into pascalCase
 
-// Channel entity
 @Entity('Channels')
 export class Channel {
 
