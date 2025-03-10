@@ -9,11 +9,12 @@ import { WebSocketGateway,
 import { Server, Socket } from 'socket.io';
 
 import { ChatService } from './chat.service';
-import { ChatDTO } from '../dto/chat.dto';
+import { ChatRoomDTO } from '../dto/chatRoom.dto'
 import { Channel, ChannelMemberType, ChannelType } from '../entities/chat.entity';
 import AppLoggerService from 'src/log/log.service';
 import { UseFilters } from '@nestjs/common';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
+import { ChannelDTO } from 'src/dto/channel.dto';
 
 
 @WebSocketGateway( {
@@ -54,10 +55,10 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	}
 
 	@SubscribeMessage('createChannel')
-	async handleCreateChannel(@MessageBody() chatDTO: ChatDTO, @ConnectedSocket() client: Socket): Promise<void> {
+	async handleCreateChannel(@MessageBody() channelDTO: ChannelDTO, @ConnectedSocket() client: Socket): Promise<void> {
 		
-		// Assuming chatDTO contains channel information like title, type, users, etc.
-		const newChannel = await this.chatService.createChannel(chatDTO);
+		// Assuming channelDTO contains channel information like title, type, users, etc.
+		const newChannel = await this.chatService.createChannel(channelDTO);
 		// Join the channel
 		client.join(newChannel.channel_id.toString());
 		// Emit back the created channel to the client
@@ -153,9 +154,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
 		const channels: Channel[] = await this.chatService.getAllChannels();
 
-		const chatDto: ChatDTO[] = [];
+		const chatDto: ChatRoomDTO[] = [];
 		for (const chat of channels)
-			chatDto.push(new ChatDTO(chat));
+			chatDto.push(new ChatRoomDTO(chat));
 	
 		client.emit('channelsList', chatDto);  // Emit back the channels to the client
 	}

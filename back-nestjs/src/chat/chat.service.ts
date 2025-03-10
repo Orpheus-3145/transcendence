@@ -4,13 +4,13 @@ import { Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/chat.entity';
-import { ChatDTO } from '../dto/chat.dto'
 import { NotificationService } from 'src/notification/notification.service';
 import User from 'src/entities/user.entity';
 import { Message } from 'src/entities/message.entity';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import AppLoggerService from 'src/log/log.service';
 import { ConfigService } from '@nestjs/config';
+import { ChannelDTO } from 'src/dto/channel.dto';
 
 
 @Injectable()
@@ -74,25 +74,25 @@ export class ChatService {
 		return member;
 	}
 
-	async createChannel(chatDTO: ChatDTO): Promise<Channel> {
+	async createChannel(channelDTO: ChannelDTO): Promise<Channel> {
 
-		const channelOwner: User = await this.getUser(parseInt(chatDTO.ch_owner, 10));
+		const channelOwner: User = await this.getUser(parseInt(channelDTO.ch_owner, 10));
 		const newChannel = this.channelRepository.create({
-			channel_type: chatDTO.ch_type,
+			channel_type: channelDTO.ch_type,
 			channel_owner: channelOwner,
-			isActive: chatDTO.isActive,
-			isDirectMessage: chatDTO.isDirectMessage,
-			password: chatDTO.password,
-			title: chatDTO.title,
+			isActive: channelDTO.isActive,
+			isDirectMessage: channelDTO.isDirectMessage,
+			password: channelDTO.password,
+			title: channelDTO.title,
 			created: new Date(),
-			banned: chatDTO.banned,
-			muted: chatDTO.muted,
+			banned: channelDTO.banned,
+			muted: channelDTO.muted,
 		});
 
 		await this.channelRepository.save(newChannel);
 		this.logger.log(`Created new channel id: ${newChannel.channel_id}`);
 
-		for (const member of chatDTO.users)
+		for (const member of channelDTO.users)
 			this.addUserToChannel(newChannel, member.id);
 
 		// setting owner of the newliy created channel

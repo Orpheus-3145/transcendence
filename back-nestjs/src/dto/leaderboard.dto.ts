@@ -1,4 +1,4 @@
-import { ValidateNested } from 'class-validator';
+import { IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import UserDTO from './user.dto';
 import MatchRatioDTO from './matchRatio.dto';
@@ -9,6 +9,7 @@ export default class LeaderboardDTO {
   @Type(() => UserDTO)
   user: UserDTO;
 
+  @IsArray()
   @ValidateNested()
   @Type(() => MatchRatioDTO)
   ratio: MatchRatioDTO[];

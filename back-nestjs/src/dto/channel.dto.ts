@@ -3,7 +3,12 @@ import { IsArray,
   IsEnum,
   IsOptional,
   IsString,
+  MaxLength,
+  ValidateNested,
   IsBoolean } from 'class-validator';
+import { Type } from 'class-transformer';
+import UserDTO from './user.dto';
+import { MessageDTO } from './message.dto';
 import { Channel, ChannelType } from 'src/entities/chat.entity';
 
 export class ChannelDTO {
@@ -11,24 +16,31 @@ export class ChannelDTO {
   constructor(channel: Channel) {
 
     this.channel_id = channel.channel_id;
-    this.channel_type = channel.channel_type;
-    this.channel_owner_id = channel.channel_owner.id;
+    this.ch_type = channel.channel_type;
+    this.ch_owner = channel.channel_owner.nameNick;
     this.isActive = channel.isActive;
     this.isDirectMessage = channel.isDirectMessage;
     this.password = channel.password;
     this.title = channel.title;
     this.banned = channel.banned;
     this.muted = channel.muted;
+    this.users = [];
+    for (const member of channel.members)
+      this.users.push(new UserDTO(member.member));
+    this.messages = [];
+    for (const message of channel.messages)
+      this.messages.push(new MessageDTO(message));
   }
 
+  @IsOptional() // Only required for updates
   @IsInt()
-  channel_id: number;
+  channel_id?: number;
 
   @IsEnum(ChannelType)
-  channel_type: ChannelType
+  ch_type: ChannelType
 
   @IsString()
-  channel_owner_id: number;
+  ch_owner: string;
 
   @IsBoolean()
   isActive: boolean = true;
@@ -36,19 +48,32 @@ export class ChannelDTO {
   @IsBoolean()
   isDirectMessage: boolean = false;
 
-  @IsOptional() 
+  @IsOptional()
   @IsString()
-  password: string | null;
+  password?: string | null;
 
   @IsString()
+  @MaxLength(50)
   title: string;
 
-  @IsArray()
-  @IsString({ each: true })
-  banned: string[];
+	@IsArray()
+	@IsString({ each: true })
+	banned: string[];
 
   @IsArray()
-  @IsString({ each: true })
-  muted: string[];
+	@IsString({ each: true })
+	muted: string[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => UserDTO)
+  users?: UserDTO[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type (() => MessageDTO)
+  messages?: MessageDTO[];
 }
 
