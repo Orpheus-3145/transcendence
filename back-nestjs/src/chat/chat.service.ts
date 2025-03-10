@@ -51,7 +51,6 @@ export class ChatService {
 		  ch_type,
 		  ch_owner,
 		  password,
-		//   channel_photo: chatDTO.channel_photo || 'default_channel_photo.png',
 		  created: new Date(),
 		  isDirectMessage,
 		  banned,
