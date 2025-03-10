@@ -105,39 +105,80 @@ export class ChatService {
 	// }
 	  
 
-	// Remove user to a channel
+	// // Remove user to a channel
+	// async removeUserFromChannel(user_id: number, channel_id: number, role: string) {
+	//   // Find the user's membership in the channel
+	//   const membership = await this.channelMemberRepository.findOne({
+	// 	where: { user_id, channel_id },
+	//   });
+	//   console.log('Membership:', membership.member_role);
+	
+	//   if (!membership) {
+	// 	throw new Error('User is not a member of the channel');
+	//   }
+	
+	//   // Check if the user is the owner of the channel
+	//   if (membership.member_role === 'owner') {
+	// 		// Transfer ownership to another admin or member
+	// 		const otherMembers = await this.channelMemberRepository.find({
+	// 			where: { channel_id },
+	// 			order: { member_role: 'ASC' }, // Admins will appear before members
+	// 		});
+		
+	// 		if (otherMembers.length > 1) {
+	// 			// Assign the first non-owner member as the new owner
+	// 			const newOwner = otherMembers.find(
+	// 				(member: ChannelMember) => member.user_id !== user_id
+	// 			);
+	// 			console.log(newOwner);
+	// 			if (newOwner) {
+	// 				newOwner.member_role = 'owner';
+	// 				await this.channelMemberRepository.save(newOwner);
+	// 			}
+
+	// 			this.changeOwner(channel_id, newOwner.name);
+
+	// 		} else {
+	// 			console.log('Channel empty!');
+	// 			// If the channel is empty, delete the channel
+	// 			await this.channelMemberRepository.delete({ channel_id });
+	// 			await this.channelRepository.delete({ channel_id });
+	// 			return;
+	// 		}
+	//   	}
+	//   await this.channelMemberRepository.delete({ user_id, channel_id });
+	// }
+
+
 	async removeUserFromChannel(user_id: number, channel_id: number, role: string) {
-	  // Find the user's membership in the channel
-	  const membership = await this.channelMemberRepository.findOne({
-		where: { user_id, channel_id },
-	  });
-	  console.log('Membership:', membership.member_role);
+		// Find the user's membership in the channel
+		const membership = await this.channelMemberRepository.findOne({
+			where: { user_id, channel_id },
+		});
+		console.log('Membership:', membership?.member_role);
 	
-	  if (!membership) {
-		throw new Error('User is not a member of the channel');
-	  }
+		if (!membership) {
+			throw new Error('User is not a member of the channel');
+		}
 	
-	  // Check if the user is the owner of the channel
-	  if (membership.member_role === 'owner') {
+		// Check if the user is the owner of the channel
+		let newOwner = null;
+		if (membership.member_role === 'owner') {
 			// Transfer ownership to another admin or member
 			const otherMembers = await this.channelMemberRepository.find({
 				where: { channel_id },
 				order: { member_role: 'ASC' }, // Admins will appear before members
 			});
-		
+	
 			if (otherMembers.length > 1) {
 				// Assign the first non-owner member as the new owner
-				const newOwner = otherMembers.find(
+				newOwner = otherMembers.find(
 					(member: ChannelMember) => member.user_id !== user_id
 				);
-				console.log(newOwner);
 				if (newOwner) {
 					newOwner.member_role = 'owner';
 					await this.channelMemberRepository.save(newOwner);
 				}
-
-				this.changeOwner(channel_id, newOwner.name);
-
 			} else {
 				console.log('Channel empty!');
 				// If the channel is empty, delete the channel
@@ -145,9 +186,15 @@ export class ChatService {
 				await this.channelRepository.delete({ channel_id });
 				return;
 			}
-	  	}
-	  await this.channelMemberRepository.delete({ user_id, channel_id });
+		}
+	
+		// Remove the user from the channel
+		await this.channelMemberRepository.delete({ user_id, channel_id });
+	
+		// Return the new owner (or null if there is no new owner)
+		return newOwner ? newOwner.name : null;
 	}
+	
 
 	async getUsersFromChannel(channel_id: number)
 	{

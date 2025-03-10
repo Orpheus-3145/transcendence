@@ -92,6 +92,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	useEffect(() => {
 		const handleUserJoinedChannel = (response) => {
+			console.log('User added to channel (settings) ');
 			const newUser: UserProps = {
 				id: response.user_id,
 				name: response.name,
@@ -105,45 +106,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			setSettings({ ...settings, users: [...settings.users, newUser] });
 		}
 		socket.on('joinedChannel', handleUserJoinedChannel);
+
 		return () => {
 			socket.off('joinedChannel', handleUserJoinedChannel);
 		}
 	}, [settings]);
 
+	useEffect(() => {
+			const handleUserJoinedAvailableChannel = (response) => {
+				const newUser: UserProps = {
+					id: response.user_id,
+					name: response.name,
+					role: 'member',
+					email: '',
+					password: '',
+					icon: <PersonAddIcon />
+				};
+				setSettings({ ...settings, users: [...settings.users, newUser] });
 
-	// // -----------FOR TESTING ONLY ----------- //
-	// const handleAddFriend = () => {
-	// 	console.log('"Add Friend" clicked!');
-	// 	if (friendName) {
-	// 		const data = {
-	// 			channel_id: selectedChannel.id,
-	// 			user_id: testUserId++,
-	// 			name: friendName,
-	// 		};
-	// 		socket.emit('joinChannel', data);
-	// 		setFriendName('');
-	// 	}
-	// }
+			}
+			socket.on('joinedAvailableChannel', handleUserJoinedAvailableChannel);
 
-	// useEffect(() => {
-	// 	const handleUserJoinedChannel = (response) => {
-	// 		const newUser: UserProps = {
-	// 			id: response.user_id,
-	// 			name: response.name,
-	// 			role: 'member',
-	// 			email: response.email,
-	// 			password: '',
-	// 			icon: <PersonAddIcon />
-	// 		};
-	// 		setSettings({ ...settings, users: [...settings.users, newUser] });
-	// 	}
-
-	// 	socket.on('joinedChannel', handleUserJoinedChannel);
-
-	// 	return () => {
-	// 		socket.off('joinedChannel', handleUserJoinedChannel);
-	// 	}
-	// }, [settings]);
+			return () => {
+				socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
+			}
+	}, [settings]);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -295,9 +282,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		}
 		else {
 			setIsSettingsView(false);
+			setSelectedChannel(null);
 	
 			const data = {
-				user_id: user.id, 
+				user_id: user.id,
+				user_name: user.nameNick,
 				channel_id: selectedChannel.id,
 				role: selectedChannel.settings.users.find(user_ => user.id === user_.id).role,
 			};
@@ -310,6 +299,58 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			});
 		}
 	};
+
+	// useEffect(() => {
+	// 	const handleUserLeftChannel = (response) => {
+	// 		console.log(`User left channel (settings): ${response.user_name}`);
+		
+	// 		setSettings({
+	// 			...settings,
+	// 			owner: settings.owner === response.user_name
+	// 			? settings.users.length > 1
+	// 			? settings.users[settings.users.length - 2]?.name ?? null
+	// 			: null
+	// 			: settings.owner,
+	// 			users: settings.users.filter((usr) => usr.id !== response.user_id).map(usr => usr.name === settings.owner ? { ...usr, role: 'owner' }: usr),
+	// 		});
+
+	// 		// console.log('channel after user left (settings)', selectedChannel);
+
+		
+	// 	};
+	// 	socket.on('leftChannel', handleUserLeftChannel);
+	
+	// 	return () => {
+	// 		socket.off('leftChannel', handleUserLeftChannel);
+	// 	};
+	// }, []);
+
+
+	useEffect(() => {
+		const handleUserLeftChannel = (response) => {
+			console.log(`User left channel (settings): ${response.user_name}`);
+	
+			setSettings({
+				...settings,
+				owner: response.new_owner,
+				users: settings.users
+					.filter((usr) => usr.id !== response.user_id)
+					.map(usr => ({
+						...usr,
+						role: usr.name === response.new_owner ? 'owner' : usr.role,
+					})),
+			});
+		};
+	
+		socket.on('leftChannel', handleUserLeftChannel);
+	
+		return () => {
+			socket.off('leftChannel', handleUserLeftChannel);
+		};
+	}, [settings]);
+	
+	
+	
 
 	const fetchbanned = async (bannedId: string) => {
 		const banned = await fetchUserMessage(bannedId);
