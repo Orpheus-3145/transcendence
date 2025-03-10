@@ -81,7 +81,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		const user: Websock = this.sockets.find((socket) => socket.userId === userId);
 		if (!user)
 			this.thrower.throwSessionExcp(
-				`User with id: ${userId} not found`,
+				`User with id: ${userId} not found in notification gateway`,
 				`${NotificationGateway.name}.${this.constructor.prototype.getUser.name}()`,
 				HttpStatus.NOT_FOUND);
 
@@ -118,17 +118,13 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.getUserId(data.receiverId)
 		]);
 
-		if (!user || !other)
-			this.thrower.throwSessionExcp(`User with id: ${data.senderId} or ${data.receiverId} not found`,
-				`${NotificationGateway.name}.${this.constructor.prototype.sendFriendReq.name}()`,
-				HttpStatus.NOT_FOUND);
-
 		const friendRequestNoti: FriendRequest = await this.notificationService.createFriendRequest(user, other);
-		
-		if (friendRequestNoti) {
-			const socket: Socket = this.getUser(data.receiverId).client;
+
+		const socket: Socket = this.getUser(data.receiverId).client;
+		if (friendRequestNoti)
 			socket.emit('sendNoti', new NotificationDTO(friendRequestNoti));
-		}
+		else
+			socket.emit('sendNoti', null);		// NB handle this on front-end
 	}
 
 	@SubscribeMessage('acceptNotiFr')
@@ -163,17 +159,13 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.getUserId(data.receiverId)
 		]);
 
-		if (!user || !other)
-			this.thrower.throwSessionExcp(`User with id: ${data.receiverId} or ${data.receiverId} not found`,
-				`${NotificationGateway.name}.${this.constructor.prototype.sendGameInvite.name}()`,
-				HttpStatus.NOT_FOUND);
-
 		const gameInvitationNoti = await this.notificationService.createGameInvitation(user, other, data.powerUps);
 
-		if (gameInvitationNoti) {
-			const socket: Socket = this.getUser(data.receiverId).client;
+		const socket: Socket = this.getUser(data.receiverId).client;
+		if (gameInvitationNoti)
 			socket.emit('sendNoti', new NotificationDTO(gameInvitationNoti));
-		}
+		else
+			socket.emit('sendNoti', null);		// NB handle this on front-end
 	}
 
 	@SubscribeMessage('acceptNotiGI')

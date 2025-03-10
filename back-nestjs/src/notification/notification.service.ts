@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -52,19 +52,37 @@ export class NotificationService {
 		});
 	}
 
-	async getFriendRequest(notificationId: number): Promise<FriendRequest | null> {
+	async getFriendRequest(notificationId: number, throwExcept: boolean = true): Promise<FriendRequest | null> {
 
-		return (await this.friendRequestRepository.findOne( { where: {id: notificationId}}));
+		const friendReq: FriendRequest = await this.friendRequestRepository.findOne( { where: {id: notificationId}});
+		if (!friendReq && throwExcept === true)
+			this.thrower.throwChatExcp(`No friend request found with id: ${notificationId}`,
+				`${NotificationService.name}.${this.constructor.prototype.getFriendRequest.name}()`,
+				HttpStatus.NOT_FOUND);
+		
+				return friendReq;
 	}
 
-	async getGameInvitation(notificationId: number): Promise<GameInvitation | null> {
+	async getGameInvitation(notificationId: number, throwExcept: boolean = true): Promise<GameInvitation | null> {
 
-		return (await this.gameInvitationRepository.findOne( { where: {id: notificationId}}));
+		const gameInvitation: GameInvitation = await this.gameInvitationRepository.findOne( { where: {id: notificationId}});
+		if (!gameInvitation && throwExcept === true)
+			this.thrower.throwChatExcp(`No game invitation found with id: ${notificationId}`,
+				`${NotificationService.name}.${this.constructor.prototype.getGameInvitation.name}()`,
+				HttpStatus.NOT_FOUND);
+		
+		return gameInvitation;
 	}
 
-	async getMessageNotification(notificationId: number): Promise<MessageNotification | null> {
+	async getMessageNotification(notificationId: number, throwExcept: boolean = true): Promise<MessageNotification | null> {
 
-		return (await this.messageNotificationRepository.findOne( { where: {id: notificationId}}));
+		const messageNotification: MessageNotification = await this.messageNotificationRepository.findOne( { where: {id: notificationId}});
+		if (!messageNotification && throwExcept === true)
+			this.thrower.throwChatExcp(`No message invitation found with id: ${notificationId}`,
+				`${NotificationService.name}.${this.constructor.prototype.getMessageNotification.name}()`,
+				HttpStatus.NOT_FOUND);
+		
+		return messageNotification;
 	}
 
 	isSenderBlocked(sender: User, receiver: User): boolean
