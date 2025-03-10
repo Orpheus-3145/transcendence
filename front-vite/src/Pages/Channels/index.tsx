@@ -101,7 +101,7 @@ const ChannelsPage: React.FC = () => {
 
 	let checkLocation = (dms: ChatRoom[]) =>
 	{
-		if (location.state && location.state.otherId)
+		if (location.state && Object.keys(location.state).length > 0)
 		{
 			if (directMessages)
 			{
@@ -112,7 +112,7 @@ const ChannelsPage: React.FC = () => {
 				if (channel != undefined)
 				{
 					setSelectedChannel(channel);
-					location.state = "";
+					navigate(location.pathname, { replace: true, state: null });
 				}
 				else
 				{
