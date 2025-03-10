@@ -99,7 +99,7 @@ const ChannelsPage: React.FC = () => {
 	}, []);
 
 
-	let checkLocation =  (dms: ChatRoom[]) =>
+	let checkLocation = (dms: ChatRoom[]) =>
 	{
 		if (location.state && location.state.otherId)
 		{
@@ -110,15 +110,30 @@ const ChannelsPage: React.FC = () => {
 					((room.settings.users[1].id.toString() === user.id.toString()) || (room.settings.users[1].id.toString() === location.state.otherId.toString())));
 				
 				if (channel != undefined)
+				{
 					setSelectedChannel(channel);
+					location.state = "";
+				}
 				else
 				{
 					var otherUser = users.find((item: UserProps) => item.id.toString() === location.state.otherId.toString());
-					console.log(otherUser);
 					if (otherUser)
 					{
-						blablabla(otherUser);
-						location.state = "";
+						if (otherUser.id !== user.id) {
+							const channelDTO = {
+								title: otherUser.nameIntra,
+								ch_type: 'private',
+								ch_owner: user.nameIntra,
+								users: [
+									{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
+									{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
+					
+								],
+								password: null,
+								isDirectMessage: true,
+							};
+							socket.emit('createChannel', channelDTO);
+						}
 					}
 				}
 			}
@@ -150,7 +165,7 @@ const ChannelsPage: React.FC = () => {
 		setDirectMessages(dms);
 		checkLocation(dms);
 		// }
-	}, [chatProps.chatRooms, users])
+	}, [chatProps.chatRooms, users]);
 
 
 	useEffect(() => {
@@ -507,25 +522,6 @@ const ChannelsPage: React.FC = () => {
 	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
 		event.stopPropagation();
 		console.log("'Send Direct Message' clicked!");
-		if (otherUser.id !== user.id) {
-			const channelDTO = {
-				title: otherUser.nameIntra,
-				ch_type: 'private',
-				ch_owner: user.nameIntra,
-				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
-					{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
-	
-				],
-				password: null,
-				isDirectMessage: true,
-			};
-			socket.emit('createChannel', channelDTO);
-		}
-	};
-
-	const blablabla = (otherUser: User) => {
-		console.log("'Sendaaaaaaaaaaaaaaaaa");
 		if (otherUser.id !== user.id) {
 			const channelDTO = {
 				title: otherUser.nameIntra,
