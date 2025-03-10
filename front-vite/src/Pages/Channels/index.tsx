@@ -706,18 +706,18 @@ const ChannelsPage: React.FC = () => {
 				// console.log('Checking room.id:', room.id);
 			  if (room.id === message.channel.channel_id) {
 				  return {
-					...room,
-					messages: [
-					  ...room.messages,
-					  newMessage,
-					],
+						...room,
+						messages: [
+						  ...room.messages,
+						  newMessage,
+						],
 					};
 				}
 				return room;
 		  	}),
 		  }));
 
-		  if (selectedChannel) {
+		  if (selectedChannel && ( selectedChannel.id === message.channel.channel_id)) {
 			setSelectedChannel((prevState) => ({
 				...prevState,
 				messages: [...prevState.messages, newMessage]
@@ -1143,11 +1143,12 @@ const ChannelsPage: React.FC = () => {
 					sx={{display: 'flex', flexDirection: 'column',  height: '100%'}}
 				>
 				  {/* <Typography variant="h6">{selectedChannel.name}</Typography> */}
+				  <Typography variant="h6" sx={{ textAlign: 'center'}}>{selectedChannel.name}</Typography>
 				  <Stack 
 				  	mt={2}
 				  	sx={{
-						flexGrow: 1, // Ensures this takes up available vertical space
-						overflowY: 'auto', // Enables scrolling if content overflows
+						flexGrow: 1,
+						overflowY: 'auto',
 						padding: '1em',
 						// scrollbarWidth: 'thin',
 						scrollbarColor: (theme) => `${theme.palette.primary.main} transparent`, 
