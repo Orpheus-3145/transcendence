@@ -349,12 +349,13 @@ const ChannelsPage: React.FC = () => {
 					return channel;
 				}
                 const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.user_id);
-                const newOwner = response.new_owner;
+				const newOwner = response.new_owner;
+				console.log('New owner (index) :', newOwner);
                 return {
                     ...channel,
                     settings: {
                         ...channel.settings,
-                        owner: newOwner,
+                        owner: newOwner || channel.settings.owner,
                         users: updatedUsers.map(usr => ({
                             ...usr,
                             role: usr.name === newOwner ? 'owner' : usr.role,
@@ -502,23 +503,38 @@ const ChannelsPage: React.FC = () => {
 
 //////////////////////////////////////////////////////////////////////
 
+	const directMessageExists = (otherUser: User): boolean => {
+		const messageExists = directMessages.find(room => users.some(usr => usr.id === otherUser.id));
+		if (messageExists) {
+			alert("A direct message with this user already exists.");
+			return true;
+		}
+		return false;
+	};
+
 	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
 		event.stopPropagation();
 		console.log("'Send Direct Message' clicked!");
-		if (otherUser.id !== user.id) {
-			const channelDTO = {
-				title: otherUser.nameIntra,
-				ch_type: 'private',
-				ch_owner: user.nameIntra,
-				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
-					{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
-	
-				],
-				password: null,
-				isDirectMessage: true,
-			};
-			socket.emit('createChannel', channelDTO);
+		if (!directMessageExists(otherUser)) {
+			if (otherUser.id !== user.id) {
+				const channelDTO = {
+					title: otherUser.nameIntra,
+					ch_type: 'private',
+					ch_owner: user.nameIntra,
+					users: [
+						{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
+						{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
+		
+					],
+					password: null,
+					isDirectMessage: true,
+				};
+				socket.emit('createChannel', channelDTO);
+				socket.once('errorCreatingChannel', (error) => {
+					console.error(error.message);
+					alert(`Error creating channel: ${error.message}`);
+				});
+			}
 		}
 	};
 
@@ -687,10 +703,9 @@ const ChannelsPage: React.FC = () => {
 
 	useEffect(() => {
 		socket.on('newMessage', (message) => {
-		  console.log('Received new message (React):', message);
-			//   console.log('Receiver id:', message.channel.channel_id);
-			console.log('Before update:', chatProps.chatRooms);
-			
+		  	console.log('Received new message (React):', message);
+		  	// console.log('Before update:', chatProps.chatRooms);
+
 			const newMessage: ChatMessage = {
 				id: message.msg_id,
 				message: message.content,
@@ -702,21 +717,20 @@ const ChannelsPage: React.FC = () => {
 			setChatProps((prevProps) => ({
 			  ...prevProps,
 			  chatRooms: prevProps.chatRooms.map((room) => {
-				// console.log('Checking room.id:', room.id);
 			  if (room.id === message.channel.channel_id) {
 				  return {
-					...room,
-					messages: [
-					  ...room.messages,
-					  newMessage,
-					],
+						...room,
+						messages: [
+						  ...room.messages,
+						  newMessage,
+						],
 					};
 				}
 				return room;
 		  	}),
 		  }));
 
-		  if (selectedChannel) {
+		  if (selectedChannel && ( selectedChannel.id === message.channel.channel_id)) {
 			setSelectedChannel((prevState) => ({
 				...prevState,
 				messages: [...prevState.messages, newMessage]
@@ -908,7 +922,7 @@ const ChannelsPage: React.FC = () => {
 	const renderUsers = () => (
 		<Stack gap={1}>
 			{users
-				.filter((item: User) => item.intraId !== user.intraId) // ✅ Filter users first
+				.filter((item: User) => item.intraId !== user.intraId)
 				.map((item: User) => <UserLine key={item.id} user={item} />)}
 		</Stack>
 	);
@@ -1142,11 +1156,12 @@ const ChannelsPage: React.FC = () => {
 					sx={{display: 'flex', flexDirection: 'column',  height: '100%'}}
 				>
 				  {/* <Typography variant="h6">{selectedChannel.name}</Typography> */}
+				  <Typography variant="h6" sx={{ textAlign: 'center'}}>{selectedChannel.name}</Typography>
 				  <Stack 
 				  	mt={2}
 				  	sx={{
-						flexGrow: 1, // Ensures this takes up available vertical space
-						overflowY: 'auto', // Enables scrolling if content overflows
+						flexGrow: 1,
+						overflowY: 'auto',
 						padding: '1em',
 						// scrollbarWidth: 'thin',
 						scrollbarColor: (theme) => `${theme.palette.primary.main} transparent`, 

@@ -69,30 +69,14 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
   	    // Emit back the created channel to the client
   	    this.server.emit('channelCreated', newChannel);
 		// Send success message to the user who created the channel
-		client.emit('createChannelSuccess', { message: 'Channel created successfully', channel: newChannel });
   	    console.log(`New channel created: ${newChannel.title}`);
   	  } catch (error) {
   	    console.error('Error creating channel:', error);
-  	    client.emit('error', { message: 'Error creating channel' });
+  	    client.emit('errorCreatingChannel', { message: 'Error creating channel' });
   	  }
   	}
 
-	// Join a specific room/channel (ORIGINAL VERSION)
-	// @SubscribeMessage('joinChannel')
-	// async handleJoinChannel(
-	// 	@MessageBody('channel') channel: string,
-	// 	@ConnectedSocket() client: Socket,
-	// ): Promise<void> {
-	// 	console.log(`Client ${client.id} joined channel ${channel}`);
-	// 	// Add the user to the database if needed
-	// 	await this.chatService.addUserToChannel(+client.id, +channel);
-	// 	// Join the channel
-	// 	client.join(channel);
-	// 	client.emit('joinedChannel', { channel });
-	// }
-
 	// Join a specific room/channel
-	
 	@SubscribeMessage('joinChannel')
 	async handleJoinChannel(
 		@MessageBody() data: { channel_id: number, name: string, user_id: number, email: string },
