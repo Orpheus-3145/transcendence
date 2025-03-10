@@ -48,8 +48,8 @@ export const userIsAdmin = (userName: string, channel: ChatRoom): boolean => {
 	return found?.role === 'admin';
 };
 
-export const userInChannel = (userName: string, channel: ChatRoom): boolean => {
-	const found = channel.settings.users.find((user) => user.name === userName);
+export const userInChannel = (userId: number, channel: ChatRoom): boolean => {
+	const found = channel.settings.users.find((user) => user.id.toString() === userId.toString());
 	return found ? true : false;
 };
 
@@ -145,18 +145,18 @@ const ChannelsPage: React.FC = () => {
 		const joined = chatProps.chatRooms.filter((channel) =>
 				channel.settings.users.length > 0 &&
 				!channel.isDirectMessage &&
-				userInChannel(user.nameNick, channel)
+				userInChannel(user.id, channel)
 			);
 		const available = chatProps.chatRooms.filter((channel) =>
 				channel.settings.users.length > 0 &&
 				!channel.isDirectMessage &&	
-				!userInChannel(user.nameNick, channel) &&
+				!userInChannel(user.id, channel) &&
 				channel.settings.type !== 'private'
 			);
 		const dms = chatProps.chatRooms.filter((channel) =>
 				channel.settings.users.length > 0 &&
 				channel.isDirectMessage &&
-				userInChannel(user.nameNick, channel)
+				userInChannel(user.id, channel)
 			);
 		// console.log("Available (useEffect):", available);
 		// console.log("Joined (useEffect):", joined);
@@ -590,7 +590,7 @@ const ChannelsPage: React.FC = () => {
 
 	const joinRooms = () => {
 		chatProps.chatRooms.forEach((room) => {
-			if (!joinedRooms.includes(room.id) && userInChannel(user.nameIntra, room)) {
+			if (!joinedRooms.includes(room.id) && userInChannel(user.id, room)) {
 			  socket.emit('joinRoom', room.id);
 			  joinedRooms.push(room.id);
 			  console.log(`Client socket joined room: ${room.id}`);
@@ -990,7 +990,7 @@ const ChannelsPage: React.FC = () => {
 	const renderAvailableChannels = (channels: ChatRoom[]) => {
 		let filteredChannels = channels.filter(
 			channel => 
-				!userInChannel(user.nameIntra, channel) 
+				!userInChannel(user.id, channel) 
 				// && channel.settings.type !== 'private'
 		);
 		
