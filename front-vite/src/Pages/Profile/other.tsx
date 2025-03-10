@@ -871,8 +871,8 @@ const ProfilePageOther: React.FC = () => {
 		setShowMessageFR(false);
 		setShowMessageGR(false);
 		setShowMessageBL(true);
-		blockFriend(user.id.toString(), profileIntraId.toString());
-		user.blocked.push(profileIntraId.toString());
+		blockFriend(user.id.toString(), userProfile.id.toString());
+		user.blocked.push(userProfile.id.toString());
 	}
 
 	let BlockUserIcon = () =>

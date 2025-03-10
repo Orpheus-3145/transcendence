@@ -78,14 +78,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	getUser(userId: string): Websock {
 
-		const user: Websock = this.sockets.find((socket) => socket.userId === userId);
-		if (!user)
-			this.thrower.throwSessionExcp(
-				`User with id: ${userId} not found in notification gateway`,
-				`${NotificationGateway.name}.${this.constructor.prototype.getUser.name}()`,
-				HttpStatus.NOT_FOUND);
-
-		return (user);
+		return (this.sockets.find((socket) => socket.userId === userId));
 	}
 
 	@SubscribeMessage('getFromUser')
@@ -155,7 +148,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	async sendGameInvite(@MessageBody() data: { senderId: string, receiverId: string, powerUps: PowerUpSelected }): Promise<void> 
 	{
 		const [user, other] = await Promise.all([
-			this.userService.getUserId(data.receiverId),
+			this.userService.getUserId(data.senderId),
 			this.userService.getUserId(data.receiverId)
 		]);
 
@@ -184,7 +177,6 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			extras: acceptedGameInvitation.powerUpsSelected,
 		};
 		this.roomManager.createRoom(initData);
-
 		this.getUser(senderId).client.emit('goToGame', initData);
 		this.getUser(receiverId).client.emit('goToGame', initData);
 	}

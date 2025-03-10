@@ -12,6 +12,8 @@ import { ChatService } from './chat.service';
 import { ChatDTO } from '../dto/chat.dto';
 import { Channel, ChannelMemberType, ChannelType } from '../entities/chat.entity';
 import AppLoggerService from 'src/log/log.service';
+import { UseFilters } from '@nestjs/common';
+import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 
 
 @WebSocketGateway( {
@@ -23,6 +25,7 @@ import AppLoggerService from 'src/log/log.service';
 	},
 	transports: ['websocket'],				// Uses only WebSocket (no polling)
 })
+@UseFilters(SessionExceptionFilter)
 export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@WebSocketServer()
 	server: Server;

@@ -45,7 +45,7 @@ export class UsersController {
 	@Get('/profile/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
-		return (this.UserService.getUserIntraId(id));
+		return (this.UserService.getUserId(id));
 	}
 
 	@Get('/profile/opponent/:intraName')
@@ -64,7 +64,7 @@ export class UsersController {
 	async removeFriend(@Param('username') username:string, @Param('id') id: string) 
 	{
 		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserIntraId(id);
+		const other = this.UserService.getUserId(id);
 		
 		return (this.UserService.removeFriend(await user,await other));
 	}
@@ -73,7 +73,7 @@ export class UsersController {
 	async blockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
 		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserIntraId(id);
+		const other = this.UserService.getUserId(id);
 
 		return (this.UserService.blockUser(await user,await other));
 	}
@@ -82,7 +82,7 @@ export class UsersController {
 	async unBlockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
 		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserIntraId(id);
+		const other = this.UserService.getUserId(id);
 
 		return (this.UserService.unBlockUser(await user,await other));
 	}

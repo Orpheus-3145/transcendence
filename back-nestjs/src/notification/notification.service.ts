@@ -70,7 +70,7 @@ export class NotificationService {
 			this.thrower.throwChatExcp(`No game invitation found with id: ${notificationId}`,
 				`${NotificationService.name}.${this.constructor.prototype.getGameInvitation.name}()`,
 				HttpStatus.NOT_FOUND);
-		
+
 		return gameInvitation;
 	}
 

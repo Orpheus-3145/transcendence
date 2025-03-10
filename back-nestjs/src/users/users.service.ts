@@ -176,10 +176,10 @@ export class UsersService {
 	{
 		const [user, otheruser] = await Promise.all([this.getUserId(iduser), this.getUserId(idother)]);
 
-		(user).friends.push((otheruser).intraId.toString());
+		(user).friends.push((otheruser).id.toString());
 		this.usersRepository.save((user));
 
-		(otheruser).friends.push((user).intraId.toString());
+		(otheruser).friends.push((user).id.toString());
 		this.usersRepository.save((otheruser));
 
 		this.logger.log(`Created friendship between ${user.nameNick} and ${otheruser.nameNick}`);
@@ -187,11 +187,11 @@ export class UsersService {
 
 	async removeFriend(user: User, other: User)
 	{
-		let newlist = user.friends.filter(friend => friend !== other.intraId.toString());
+		let newlist = user.friends.filter(friend => friend !== other.id.toString());
 		user.friends = newlist;
 		this.usersRepository.save(user);
 		
-		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
+		newlist = other.friends.filter(afriend => afriend !== user.id.toString());
 		other.friends = newlist;
 		this.usersRepository.save(other);
 
