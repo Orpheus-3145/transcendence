@@ -329,10 +329,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	useEffect(() => {
 		const handleUserLeftChannel = (response) => {
 			console.log(`User left channel (settings): ${response.user_name}`);
+			// console.log(`New owner (settings): ${ response.new_owner}`);
 	
 			setSettings({
 				...settings,
-				owner: response.new_owner,
+				owner: response.new_owner || settings.owner,
 				users: settings.users
 					.filter((usr) => usr.id !== response.user_id)
 					.map(usr => ({
