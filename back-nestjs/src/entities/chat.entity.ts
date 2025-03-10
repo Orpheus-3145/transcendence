@@ -17,6 +17,7 @@ export enum ChannelMemberType {
 }
 
 // NB change camel_case into pascalCase
+// NB remove eager when not necessary
 
 @Entity('Channels')
 export class Channel {
@@ -117,7 +118,7 @@ export class ChannelMember {
 	@JoinColumn({ name: 'channel_id' })
 	channel: Channel;
 
-	@ManyToOne(
+	@ManyToOne( // NB change 'member' into 'user'
 		() => User,
 		(user: User) => user.channelMember,
 		{

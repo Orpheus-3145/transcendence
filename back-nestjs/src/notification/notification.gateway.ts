@@ -17,7 +17,6 @@ import { UserStatus } from 'src/dto/user.dto';
 import { GameDifficulty, GameMode, PowerUpSelected } from 'src/game/types/game.enum';
 import AppLoggerService from 'src/log/log.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
-import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import NotificationDTO, { NotificationType } from 'src/dto/notification.dto';
 import { GameInvitation } from 'src/entities/gameInvitation.entity';
 import { FriendRequest } from 'src/entities/friendRequest.entity';
@@ -46,17 +45,10 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	private sockets: Websock[] = [];
 
 	constructor(
-		@Inject(forwardRef(() => NotificationService))
 		private readonly notificationService: NotificationService,
-
-		@Inject(forwardRef(() => UsersService))
 		private readonly userService: UsersService,
-
 		private readonly logger: AppLoggerService,
-
 		private readonly roomManager: RoomManagerService,
-
-		private readonly thrower: ExceptionFactory,
 	) {
 		this.logger.setContext(NotificationGateway.name);	
 	};

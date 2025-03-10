@@ -24,8 +24,10 @@ export class ChatDTO {
     this.title = channel.title;
     this.banned = channel.banned;
     this.muted = channel.muted;
+    this.users = [];
     for (const member of channel.members)
       this.users.push(new UserDTO(member.member));
+    this.messages = [];
     for (const message of channel.messages)
       this.messages.push(new MessageDTO(message));
   }

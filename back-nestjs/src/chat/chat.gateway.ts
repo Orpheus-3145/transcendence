@@ -35,7 +35,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	constructor(
 		private readonly chatService: ChatService,
 		private readonly logger: AppLoggerService
-	) {};
+	) {
+		this.logger.setContext(ChatGateway.name);	
+	};
 	
 	handleConnection(client: Socket) {
 
@@ -185,7 +187,10 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	): Promise<void> {
 		
 		const { user_id, channel_id, new_role } = data;
-		await this.chatService.changeUserRole(user_id, channel_id, new_role);
+		await this.chatService.changeMemberRole(user_id, channel_id, new_role);
+		if (new_role === ChannelMemberType.owner)
+			await this.chatService.changeOwnershipChannel(user_id, channel_id);
+	
 		this.server.to(channel_id.toString()).emit('userRoleChanged', { user_id, new_role });
 	}
 

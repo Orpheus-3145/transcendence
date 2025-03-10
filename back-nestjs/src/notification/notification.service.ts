@@ -219,28 +219,4 @@ export class NotificationService {
 			}
 		}
 	}
-
-	// called in chatService
-	// async initGroupMessage(channel: Channel, receiver: User, message: string)
-	// {
-	// 	var tmp = await this.doesNotificationExist(channel.channel_id, receiver.id, NotificationType.groupChat);
-	// 	if (tmp != null)
-	// 	{
-	// 		tmp.message = message;
-	// 		this.notificationRepository.save(tmp);
-	// 		return (tmp);
-	// 	}
-	// 	else
-	// 	{
-	// 		var noti = new Notification();
-	// 		// noti.senderId = channel.channel_id;
-	// 		// noti.receiverId = receiver.id;
-	// 		noti.type = NotificationType.groupChat;
-	// 		noti.status = NotificationStatus.Pending;
-	// 		noti.message = message;
-	// 		noti.powerUpsSelected = null;
-	// 		this.notificationRepository.save(noti);
-	// 		return (noti);
-	// 	}		
-	// }
 }
