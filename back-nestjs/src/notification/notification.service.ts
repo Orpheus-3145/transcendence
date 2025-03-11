@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import User from '../entities/user.entity'
 import { fromMaskToArray, PowerUpSelected } from 'src/game/types/game.enum';
-import { ChannelMember } from 'src/entities/chat.entity';
+import { ChannelMember } from 'src/entities/channel.entity';
 import AppLoggerService from 'src/log/log.service';
 import { MessageNotification } from 'src/entities/messageNotification.entity';
 import { GameInvitation } from 'src/entities/gameInvitation.entity';
@@ -111,11 +111,11 @@ export class NotificationService {
 		if (existingFriendRequest !== null)
 			return existingFriendRequest;
 
-		const newFriendRequest: FriendRequest = this.friendRequestRepository.create({
+		let newFriendRequest: FriendRequest = this.friendRequestRepository.create({
 			sender: sender,
 			receiver: receiver,
 		});
-		await this.friendRequestRepository.save(newFriendRequest);
+		newFriendRequest = await this.friendRequestRepository.save(newFriendRequest);
 		this.logger.log(`Sending friend request from ${sender.nameNick} to ${receiver.nameNick}`);
 		
 		return newFriendRequest;
@@ -126,7 +126,7 @@ export class NotificationService {
 		friendRequest.status = NotificationStatus.Accepted;
 		await this.friendRequestRepository.save(friendRequest);
 		
-		this.logger.log(`${friendRequest.receiver.nameNick} accepted friend request from ${friendRequest.sender.nameNick}`)
+		this.logger.log(`${friendRequest.receiver.nameNick} accepted friend request from ${friendRequest.sender.nameNick}`);
 	}
 
 	async refuseFriendRequest(friendRequest: FriendRequest): Promise<void> {
@@ -134,7 +134,7 @@ export class NotificationService {
 		friendRequest.status = NotificationStatus.Declined;
 		await this.friendRequestRepository.save(friendRequest);
 		
-		this.logger.log(`${friendRequest.receiver.nameNick} declined friend request from ${friendRequest.sender.nameNick}`)
+		this.logger.log(`${friendRequest.receiver.nameNick} declined friend request from ${friendRequest.sender.nameNick}`);
 	}
 	
 	async createGameInvitation(sender: User, receiver: User, powerUps: PowerUpSelected): Promise<GameInvitation | null> {
@@ -154,13 +154,13 @@ export class NotificationService {
 		if (existingGameInvitation !== null)
 			return existingGameInvitation;
 
-		const newGameInvitation: GameInvitation = this.gameInvitationRepository.create({
+		let newGameInvitation: GameInvitation = this.gameInvitationRepository.create({
 			sender: sender,
 			receiver: receiver,
 			powerUpsSelected: powerUps,
 		});
-		await this.gameInvitationRepository.save(newGameInvitation);
-		this.logger.log(`Sending game invite from ${sender.nameNick} to ${receiver.nameNick}, powerups: ${fromMaskToArray(powerUps)}`)
+		newGameInvitation = await this.gameInvitationRepository.save(newGameInvitation);
+		this.logger.log(`Sending game invite from ${sender.nameNick} to ${receiver.nameNick}, powerups: ${fromMaskToArray(powerUps)}`);
 		
 		return newGameInvitation;
 	}
@@ -170,7 +170,7 @@ export class NotificationService {
 		gameInvitation.status = NotificationStatus.Accepted;
 		await this.gameInvitationRepository.save(gameInvitation);
 		
-		this.logger.log(`${gameInvitation.receiver.nameNick} accepted game invite from ${gameInvitation.sender.nameNick}`)
+		this.logger.log(`${gameInvitation.receiver.nameNick} accepted game invite from ${gameInvitation.sender.nameNick}`);
 	}
 
 	async refuseGameInvitation(gameInvitation: GameInvitation): Promise<void> {
@@ -178,7 +178,7 @@ export class NotificationService {
 		gameInvitation.status = NotificationStatus.Declined;
 		await this.gameInvitationRepository.save(gameInvitation);
 		
-		this.logger.log(`${gameInvitation.receiver.nameNick} declined game invite from ${gameInvitation.sender.nameNick}`)
+		this.logger.log(`${gameInvitation.receiver.nameNick} declined game invite from ${gameInvitation.sender.nameNick}`);
 	}
 	
 	async createMessageNotification(message: Message, receiver: ChannelMember): Promise<MessageNotification | null> {
@@ -186,11 +186,14 @@ export class NotificationService {
 		if (this.isSenderBlocked(message.sender.member, receiver.member) == true)
 			return null;
 	
-		const newMessageNotification: MessageNotification = this.messageNotificationRepository.create({
+		let newMessageNotification: MessageNotification = this.messageNotificationRepository.create({
 			message: message,
 			receiver: receiver,
 		});
-		await this.messageNotificationRepository.save(newMessageNotification);
+		newMessageNotification = await this.messageNotificationRepository.save(newMessageNotification);
+		this.logger.log(`Sending message notification from ${message.sender.member.nameNick} to ${receiver.member.nameNick}`);
+		console.log(`Notification: ${JSON.stringify(newMessageNotification)}`);
+		
 		return newMessageNotification;
 	}
 

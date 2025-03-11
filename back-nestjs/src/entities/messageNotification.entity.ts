@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Message } from './message.entity';
-import { ChannelMember } from './chat.entity';
+import { ChannelMember } from './channel.entity';
 import { NotificationStatus } from './friendRequest.entity';
 
 

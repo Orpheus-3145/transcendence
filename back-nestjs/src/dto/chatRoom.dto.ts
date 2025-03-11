@@ -9,7 +9,7 @@ import { IsArray,
   IsEmail,
   IsTimeZone} from 'class-validator';
 import { Type } from 'class-transformer';
-import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/chat.entity';
+import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/channel.entity';
 import { Message } from 'src/entities/message.entity';
 
 
@@ -38,7 +38,7 @@ class UserPropsDTO {
   // password: string;
 }
 
-class ChatMessageDTO {
+export class ChatMessageDTO {
 
   constructor(message: Message) {
 
@@ -77,7 +77,7 @@ class ChatSettingsDTO {
   @IsEnum(ChannelType)
   type: ChannelType;
 
-  // NB password should't be given back to front-end, it should cal the chatGateway endpoint to check it
+  // NB password should't be given to front-end, it should cal the chatGateway endpoint to check it
   @IsOptional()
   @IsString()
 	password: string | null;

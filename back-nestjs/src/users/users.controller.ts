@@ -18,6 +18,7 @@ export class UsersController {
 
 	@Get('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
+		console.log(`calling from getUserfromdb: ${username}`);
 		return (this.UserService.getUserId(username));
 	}
 
@@ -45,6 +46,7 @@ export class UsersController {
 	@Get('/profile/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
+		console.log(`calling from getUserfromdb: ${id}`);
 		return (this.UserService.getUserId(id));
 	}
 
@@ -57,34 +59,44 @@ export class UsersController {
 	@Get('/profile/message/:id')
 	async fetchUserMessage(@Param('id') id: string) 
 	{
+		console.log(`calling from fetchUserMessage: ${id}`);
 		return (this.UserService.getUserId(id));
 	}
 
 	@Get('profile/:username/friend/remove/:id')
 	async removeFriend(@Param('username') username:string, @Param('id') id: string) 
 	{
-		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserId(id);
-		
-		return (this.UserService.removeFriend(await user,await other));
+		console.log(`calling from fetchUserMessage: ${username} - ${id}`);
+		const [user, other] = await Promise.all([
+			this.UserService.getUserId(username),
+			this.UserService.getUserId(id),
+		]);
+
+		return (this.UserService.removeFriend(user, other));
 	}
 
 	@Get('profile/:username/friend/block/:id')
 	async blockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserId(id);
+		console.log(`calling from blockUser: ${username} - ${id}`);
+		const [user, other] = await Promise.all([
+			this.UserService.getUserId(username),
+			this.UserService.getUserId(id),
+		]);
 
-		return (this.UserService.blockUser(await user,await other));
+		return (this.UserService.blockUser(user, other));
 	}
 
 	@Get('profile/:username/friend/unBlock/:id')
 	async unBlockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserId(id);
+		console.log(`calling from unBlockUser: ${username} - ${id}`);
+		const [user, other] = await Promise.all([
+			this.UserService.getUserId(username),
+			this.UserService.getUserId(id),
+		]);
 
-		return (this.UserService.unBlockUser(await user,await other));
+		return (this.UserService.unBlockUser(user, other));
 	}
 
 	@Post('profile/:username/changepfp')
@@ -92,6 +104,7 @@ export class UsersController {
 	async changePFP(@Param('username') username:string,  @UploadedFile() file: any) 
 	{
 		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+		console.log(`calling from changePFP: ${username}`);
 		const user = await this.UserService.getUserId(username);
 
     return (this.UserService.changeProfilePic(user, image));

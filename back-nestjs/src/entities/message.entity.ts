@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn} from 'typeorm';
 import { MessageNotification } from './messageNotification.entity';
-import { Channel, ChannelMember } from './chat.entity';
+import { Channel, ChannelMember } from './channel.entity';
 
 
 @Entity('Messages')

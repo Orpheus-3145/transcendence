@@ -1,9 +1,9 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { ConsoleLogger, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/chat.entity';
+import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/channel.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import User from 'src/entities/user.entity';
 import { Message } from 'src/entities/message.entity';
@@ -38,6 +38,7 @@ export class ChatService {
 
 	async getUser(userId: number, throwExcept: boolean = true): Promise<User | null> {
 
+		console.log(`calling getUser with id: ${userId}`);
 		const user: User = await this.userRepository.findOne({ where: { id: userId }});
 		if (!user && throwExcept === true)
 			this.thrower.throwChatExcp(`No user found with id: ${userId}`,
@@ -49,7 +50,10 @@ export class ChatService {
 
 	async getChannel(channelId: number, throwExcept: boolean = true): Promise<Channel | null> {
 
-		const channel: Channel = await this.channelRepository.findOne({ where: { channel_id: channelId }});
+		const channel: Channel = await this.channelRepository.findOne({
+			where: { channel_id: channelId },
+			relations: ['members', 'messages']
+		});
 		if (!channel && throwExcept === true)
 			this.thrower.throwChatExcp(`No channel found with id: ${channelId}`,
 				`${ChatService.name}.${this.constructor.prototype.getChannel.name}()`,
@@ -77,7 +81,7 @@ export class ChatService {
 	async createChannel(channelDTO: ChannelDTO): Promise<Channel> {
 
 		const channelOwner: User = await this.getUser(parseInt(channelDTO.ch_owner, 10));
-		const newChannel = this.channelRepository.create({
+		let	newChannel = this.channelRepository.create({
 			channel_type: channelDTO.ch_type,
 			channel_owner: channelOwner,
 			isActive: channelDTO.isActive,
@@ -88,12 +92,11 @@ export class ChatService {
 			banned: channelDTO.banned,
 			muted: channelDTO.muted,
 		});
-
-		await this.channelRepository.save(newChannel);
-		this.logger.log(`Created new channel id: ${newChannel.channel_id}`);
+		newChannel = await this.channelRepository.save(newChannel);
+		this.logger.log(`${channelOwner.nameNick} created channel id: ${newChannel.channel_id}`);
 
 		for (const member of channelDTO.users)
-			this.addUserToChannel(newChannel, member.id);
+			await this.addUserToChannel(newChannel, member.id);
 
 		// setting owner of the newliy created channel
 		await Promise.all([
@@ -123,14 +126,15 @@ export class ChatService {
 		
 		if (typeof user === 'number')
 			user = await this.getUser(user);
-	
-		const newMember: ChannelMember = this.channelMemberRepository.create({
+
+		let newMember: ChannelMember = this.channelMemberRepository.create({
 			channel: channel,
 			member: user,
 		});
-		await this.channelMemberRepository.save(newMember);
+		newMember = await this.channelMemberRepository.save(newMember);
+		console.log(`creating new member: ${user.nameNick}`);
 
-		this.logger.log(`User ${user.nameNick} added to channel id: ${channel.channel_id}`);
+		this.logger.log(`${user.nameNick} joined channel id: ${channel.channel_id}`);
 	}
 
 	async removeUserFromChannel(userToRemove: number | User, channel: number | Channel): Promise<void> {
@@ -140,7 +144,7 @@ export class ChatService {
 
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
-		
+
 		// fetching user to remove and al the other users of the channl
 		const [memberToRemove, otherMembers] = await Promise.all([
 			this.getMember(channel.channel_id, userToRemove.id),
@@ -154,15 +158,16 @@ export class ChatService {
 		
 		if (otherMembers.length === 0) {
 			// no other members, remove channel
-			this.logger.log(`User ${userToRemove.nameNick} was the last in the channel, removing it`);
-			this.deleteChannel(memberToRemove.channel);
+			this.logger.log(`${userToRemove.nameNick} was the last in the channel, removing it`);
+			await this.deleteChannel(memberToRemove.channel);
 			return ;
 		}
 
 		// if the user to remove is the owner, the ownership has to be changed
 		if (memberToRemove.memberRole === ChannelMemberType.owner) {
 			const newOwner: ChannelMember = otherMembers[0];
-			this.logger.log(`User ${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership with ${newOwner.member.nameNick}`);
+			this.logger.log(`${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership with ${newOwner.member.nameNick}`);
+			
 			await Promise.all([
 					this.changeMemberRole(newOwner.member, newOwner.channel, ChannelMemberType.owner),
 					this.changeOwnershipChannel(newOwner.member, channel),
@@ -170,7 +175,7 @@ export class ChatService {
 		}
 		await this.channelMemberRepository.delete({ channelMemberId: memberToRemove.channelMemberId });
 
-		this.logger.log(`User ${userToRemove.nameNick} removed from channel id ${channel.channel_id}`);
+		this.logger.log(`${userToRemove.nameNick} removed from channel id ${channel.channel_id}`);
 	}
 
 	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message> {
@@ -183,32 +188,31 @@ export class ChatService {
 		
 		// fetching member from user
 		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id);
-		const newMessage: Message = this.messageRepository.create({
+		let newMessage: Message = this.messageRepository.create({
 			channel: channel,
 			sender: memberSender,
 			content: content,
 		});
-		await this.messageRepository.save(newMessage);
+		newMessage = await this.messageRepository.save(newMessage);
 
 		this.logger.log(`New message from ${sender.nameNick} in channel id: ${channel.channel_id}, content: '${content}'`);
 
 		const receivers: ChannelMember[] = await this.channelMemberRepository.find({
 			where: {
 				channel: { channel_id: channel.channel_id },
-				member: { id: Not(memberSender.member.id) }
+				channelMemberId: Not(memberSender.channelMemberId)
 			}
 		});
-		for (const member of receivers)
-			console.log(`member: ${JSON.stringify(member)}`);
 		if (receivers.length === 0)
 			this.thrower.throwChatExcp(`Channel id: ${channel.channel_id} has only one member`,
 				`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
 				HttpStatus.INTERNAL_SERVER_ERROR);
-		
+				
+		console.log(`receivers: ${JSON.stringify(receivers)}`);
 		// sending notification of the new message to all the channel members
 		for (const receiver of receivers)
 			await this.notificationService.createMessageNotification(newMessage, receiver);
-
+		console.log('notifications sent');
 		return newMessage;
 	}
 
@@ -357,7 +361,7 @@ export class ChatService {
 		memberToChange.memberRole = newRole;
 		await this.channelMemberRepository.save(memberToChange);
 
-		this.logger.log(`Changed role of user ${userToChange.nameNick} into ${newRole} in channel id: ${channel.channel_id}`);
+		this.logger.log(`Changed role of user ${userToChange.nameNick} into ${newRole} of channel id: ${channel.channel_id}`);
 
 		return memberToChange;
 	}

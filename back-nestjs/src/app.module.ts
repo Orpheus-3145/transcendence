@@ -8,7 +8,7 @@ import { UsersModule } from 'src/users/users.module';
 import GameModule from 'src/game/game.module';
 import ExceptionModule from 'src/errors/exception.module';
 import AppLoggerModule from 'src/log/log.module';
-import { Channel, ChannelMember } from './entities/chat.entity';
+import { Channel, ChannelMember } from './entities/channel.entity';
 import { ChatModule } from './chat/chat.module';
 import { NotificationModule } from './notification/notification.module';
 import Game from './entities/game.entity';

@@ -4,7 +4,7 @@ import UserDTO, { UserStatus } from 'src/dto/user.dto';
 import Game from './game.entity';
 import { FriendRequest } from './friendRequest.entity';
 import { GameInvitation } from './gameInvitation.entity';
-import { ChannelMember } from './chat.entity';
+import { ChannelMember } from './channel.entity';
 
 
 @Entity('Users')

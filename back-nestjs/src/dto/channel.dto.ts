@@ -9,7 +9,7 @@ import { IsArray,
 import { Type } from 'class-transformer';
 import UserDTO from './user.dto';
 import { MessageDTO } from './message.dto';
-import { Channel, ChannelType } from 'src/entities/chat.entity';
+import { Channel, ChannelType } from 'src/entities/channel.entity';
 
 export class ChannelDTO {
 

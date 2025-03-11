@@ -436,33 +436,12 @@ const ChannelsPage: React.FC = () => {
 	};	
 			
 	useEffect(() => {
-		const handleChannelCreated = (newChannel) => {
+		const handleChannelCreated = (newChannel: ChatRoom) => {
+			console.log(`channel created: ${JSON.stringify(newChannel)}`);
 			// Update the state with the new channel data received from the server
 			setChatProps((prevState) => ({
 				...prevState,
-				chatRooms: [
-					...prevState.chatRooms,
-					{
-						id: newChannel.channel_id, // Use the ID returned by the server
-						name: newChannel.title,
-						icon: <GroupIcon />,
-						messages: [],
-						settings: {
-							type: newChannel.ch_type,
-							password: newChannel.password,
-							users: newChannel.members.map((member) => ({
-								id: member.user_id,
-								name: member.name,
-								role: member.member_role,
-								icon: <Avatar />,
-							})),
-							owner: newChannel.ch_owner,
-							banned: newChannel.banned,
-							muted: newChannel.muted,
-						},
-						isDirectMessage: newChannel.isDirectMessage,
-					},
-				],
+				chatRooms: [newChannel],
 			}));
 			setChannelName('');
 			setIsAddingChannel(false);
@@ -725,24 +704,25 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	useEffect(() => {
-		socket.on('newMessage', (message) => {
+		socket.on('newMessage', (message: ChatMessage) => {
 		  console.log('Received new message (React):', message);
 			//   console.log('Receiver id:', message.channel.channel_id);
 			console.log('Before update:', chatProps.chatRooms);
 			
+			// const newMessage = message;
 			const newMessage: ChatMessage = {
-				id: message.msg_id,
-				message: message.content,
-				user: message.sender_id,
+				id: message.id,
+				message: message.message,
+				user: message.user,
 				userPP: <Avatar />,
-				timestamp: message.send_time,
+				timestamp: message.timestamp,
 			}
 
 			setChatProps((prevProps) => ({
 			  ...prevProps,
 			  chatRooms: prevProps.chatRooms.map((room) => {
 				// console.log('Checking room.id:', room.id);
-			  if (room.id === message.channel.channel_id) {
+			  if (room.id === message.receiver_id) {
 				  return {
 					...room,
 					messages: [
