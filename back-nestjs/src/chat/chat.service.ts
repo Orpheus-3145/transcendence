@@ -164,7 +164,7 @@ export class ChatService {
 		// if the user to remove is the owner, the ownership has to be changed
 		if (memberToRemove.memberRole === ChannelMemberType.owner) {
 			const newOwner: ChannelMember = otherMembers[0];
-			this.logger.log(`${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership with ${newOwner.user.nameNick}`);
+			this.logger.log(`${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership to ${newOwner.user.nameNick}`);
 			
 			await Promise.all([
 					this.changeMemberRole(newOwner.user, newOwner.channel, ChannelMemberType.owner),
@@ -173,7 +173,7 @@ export class ChatService {
 		}
 		await this.channelMemberRepository.delete({ channelMemberId: memberToRemove.channelMemberId });
 
-		this.logger.log(`${userToRemove.nameNick} removed from channel id ${channel.channel_id}`);
+		this.logger.log(`${userToRemove.nameNick} left channel id: ${channel.channel_id}`);
 	}
 
 	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message> {
@@ -342,7 +342,7 @@ export class ChatService {
 		channel.channel_owner = newOwner;
 		await this.channelRepository.save(channel);
 
-		this.logger.log(`Changed ownership of channel id: ${channel.channel_id} to user ${newOwner.nameNick}`);
+		this.logger.log(`Changed ownership of channel id: ${channel.channel_id} to ${newOwner.nameNick}`);
 	}
 	
 	async changeMemberRole(userToChange: number | User, channel: number | Channel, newRole: ChannelMemberType): Promise<ChannelMember> {
