@@ -70,22 +70,18 @@ export class UsersService {
 	}
 
 	async findAll(): Promise<User[]> {
-		console.log('fetching all users');
 		return this.usersRepository.find();
 	}
 
 	async findOneIntra(intraId: number): Promise<User | null> {
-		console.log(`fetching user ${intraId} (findOneIntra)`);
 		return this.usersRepository.findOne({ where: { intraId: intraId } });
 	}
 
 	async findOneId(id: number): Promise<User | null> {
-		console.log(`fetching user ${id} (findOneId)`);
 		return this.usersRepository.findOne({ where: { id: id } });
 	}
 
 	async findOneNick(nameNick: string): Promise<User> {
-		console.log(`fetching user ${nameNick} (findOneNick)`);
 		const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
 		if (!user)
 			this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
@@ -95,7 +91,6 @@ export class UsersService {
   }
   
   async findOneIntraName(intraName: string): Promise<User> {
-		console.log(`fetching user ${intraName} (findOneIntraName)`);
     const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
     if (!user)
       this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
@@ -139,7 +134,6 @@ export class UsersService {
 
 	async setStatus(id: string, status: UserStatus)
 	{
-		console.log(`calling from setStatus: ${id}`);
 		const user = await this.getUserId(id);
 		user.status = status;
 		this.usersRepository.save(user);
@@ -161,7 +155,6 @@ export class UsersService {
 		if (regex.test(newUsername) === false)
 			return (`'${newUsername}': invalid input, only letters, numbers, - and _ are allowed`);
 
-		console.log(`calling from setNameNick: ${userId}`);
 		const user = await this.getUserId(userId);
 		if (await this.findOneNick(newUsername))
 			return ("name already in use");
@@ -181,7 +174,6 @@ export class UsersService {
 
 	async updateNewFriendship(iduser:string, idother:string)
 	{
-		console.log(`calling from updateNewFriendship: ${iduser} - ${idother}`);
 		const [user, otheruser] = await Promise.all([this.getUserId(iduser), this.getUserId(idother)]);
 
 		(user).friends.push((otheruser).id.toString());

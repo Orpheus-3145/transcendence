@@ -130,7 +130,7 @@ export default class User {
 
 	@OneToMany(
 		() => ChannelMember,
-		(channelMember: ChannelMember) => channelMember.member
+		(channelMember: ChannelMember) => channelMember.user
 	)
 	channelMember: ChannelMember[];
 

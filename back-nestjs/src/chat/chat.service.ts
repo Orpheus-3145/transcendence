@@ -38,7 +38,6 @@ export class ChatService {
 
 	async getUser(userId: number, throwExcept: boolean = true): Promise<User | null> {
 
-		console.log(`calling getUser with id: ${userId}`);
 		const user: User = await this.userRepository.findOne({ where: { id: userId }});
 		if (!user && throwExcept === true)
 			this.thrower.throwChatExcp(`No user found with id: ${userId}`,
@@ -67,7 +66,7 @@ export class ChatService {
 		const member: ChannelMember = await this.channelMemberRepository.findOne({
 			where: {
 				channel: { channel_id: channelId },
-				member: { id: userId }
+				user: { id: userId }
 			}
 		});
 		if (!member && throwExcept === true)
@@ -129,10 +128,9 @@ export class ChatService {
 
 		let newMember: ChannelMember = this.channelMemberRepository.create({
 			channel: channel,
-			member: user,
+			user: user,
 		});
 		newMember = await this.channelMemberRepository.save(newMember);
-		console.log(`creating new member: ${user.nameNick}`);
 
 		this.logger.log(`${user.nameNick} joined channel id: ${channel.channel_id}`);
 	}
@@ -151,7 +149,7 @@ export class ChatService {
 			this.channelMemberRepository.find({
 				where: { 
 					channel: { channel_id: channel.channel_id },
-					member: { id: Not(userToRemove.id) }},
+					user: { id: Not(userToRemove.id) }},
 				order: { memberRole: 'ASC' },
 			})
 		])
@@ -166,11 +164,11 @@ export class ChatService {
 		// if the user to remove is the owner, the ownership has to be changed
 		if (memberToRemove.memberRole === ChannelMemberType.owner) {
 			const newOwner: ChannelMember = otherMembers[0];
-			this.logger.log(`${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership with ${newOwner.member.nameNick}`);
+			this.logger.log(`${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership with ${newOwner.user.nameNick}`);
 			
 			await Promise.all([
-					this.changeMemberRole(newOwner.member, newOwner.channel, ChannelMemberType.owner),
-					this.changeOwnershipChannel(newOwner.member, channel),
+					this.changeMemberRole(newOwner.user, newOwner.channel, ChannelMemberType.owner),
+					this.changeOwnershipChannel(newOwner.user, channel),
 			]);
 		}
 		await this.channelMemberRepository.delete({ channelMemberId: memberToRemove.channelMemberId });
@@ -208,11 +206,10 @@ export class ChatService {
 				`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
 				HttpStatus.INTERNAL_SERVER_ERROR);
 				
-		console.log(`receivers: ${JSON.stringify(receivers)}`);
 		// sending notification of the new message to all the channel members
 		for (const receiver of receivers)
 			await this.notificationService.createMessageNotification(newMessage, receiver);
-		console.log('notifications sent');
+
 		return newMessage;
 	}
 

@@ -26,7 +26,7 @@ export class ChannelDTO {
     this.muted = channel.muted;
     this.users = [];
     for (const member of channel.members)
-      this.users.push(new UserDTO(member.member));
+      this.users.push(new UserDTO(member.user));
     this.messages = [];
     for (const message of channel.messages)
       this.messages.push(new MessageDTO(message));

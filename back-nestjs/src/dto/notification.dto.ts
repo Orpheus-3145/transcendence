@@ -41,10 +41,10 @@ export default class NotificationDTO {
 
     } else if (notification instanceof MessageNotification) {
       this.id = notification.id;
-      this.senderId = notification.message.sender.member.id;
-      this.receiverId = notification.receiver.member.id;
-      this.senderName = notification.message.sender.member.nameNick;
-      this.receiverName = notification.receiver.member.nameNick;
+      this.senderId = notification.message.sender.user.id;
+      this.receiverId = notification.receiver.user.id;
+      this.senderName = notification.message.sender.user.nameNick;
+      this.receiverName = notification.receiver.user.nameNick;
       this.type = NotificationType.message;
       this.status = notification.status;
       this.message = notification.message.content;

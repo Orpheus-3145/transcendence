@@ -16,10 +16,10 @@ import { Message } from 'src/entities/message.entity';
 class UserPropsDTO {
 
   constructor( member: ChannelMember) {
-    this.id = member.member.id;
-    this.name = member.member.nameNick;
+    this.id = member.user.id;
+    this.name = member.user.nameNick;
     this.role = member.memberRole;
-    this.email = member.member.email;
+    this.email = member.user.email;
   }
 
   @IsInt()
@@ -44,7 +44,7 @@ export class ChatMessageDTO {
 
     this.id = message.msg_id;
     this.message = message.content;
-    this.user = message.sender.member.nameNick;
+    this.user = message.sender.user.nameNick;
     this.timestamp = message.created;
   }
 

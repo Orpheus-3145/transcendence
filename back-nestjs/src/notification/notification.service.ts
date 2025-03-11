@@ -183,7 +183,7 @@ export class NotificationService {
 	
 	async createMessageNotification(message: Message, receiver: ChannelMember): Promise<MessageNotification | null> {
 
-		if (this.isSenderBlocked(message.sender.member, receiver.member) == true)
+		if (this.isSenderBlocked(message.sender.user, receiver.user) == true)
 			return null;
 	
 		let newMessageNotification: MessageNotification = this.messageNotificationRepository.create({
@@ -191,8 +191,7 @@ export class NotificationService {
 			receiver: receiver,
 		});
 		newMessageNotification = await this.messageNotificationRepository.save(newMessageNotification);
-		this.logger.log(`Sending message notification from ${message.sender.member.nameNick} to ${receiver.member.nameNick}`);
-		console.log(`Notification: ${JSON.stringify(newMessageNotification)}`);
+		this.logger.log(`Sending message notification from ${message.sender.user.nameNick} to ${receiver.user.nameNick}`);
 		
 		return newMessageNotification;
 	}

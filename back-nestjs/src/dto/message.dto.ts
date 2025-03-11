@@ -7,7 +7,7 @@ export class MessageDTO {
 
 		this.id = message.msg_id;
 		this.message = message.content;
-		this.user = message.sender.member.nameNick;
+		this.user = message.sender.user.nameNick;
 		this.timestamp = message.created;
 		this.sender_id = message.sender.channelMemberId;
 		this.receiver_id = message.channel.channel_id;

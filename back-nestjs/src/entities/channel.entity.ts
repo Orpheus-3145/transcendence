@@ -16,7 +16,6 @@ export enum ChannelMemberType {
 	member = 'member',
 }
 
-// NB change camel_case into pascalCase
 // NB remove eager when not necessary
 
 @Entity('Channels')
@@ -127,7 +126,7 @@ export class ChannelMember {
 		}
 	)
 	@JoinColumn({ name: 'user_id' })
-	member: User;
+	user: User;
 
 	@Column({
 		type: 'enum',

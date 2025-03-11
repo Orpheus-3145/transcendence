@@ -58,7 +58,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('createChannel')
 	async handleCreateChannel(@MessageBody() channelDTO: ChannelDTO, @ConnectedSocket() client: Socket): Promise<void> {
 		
-		console.log('calling handleCreateChannel');
 		// Assuming channelDTO contains channel information like title, type, users, etc.
 		let newChannel = await this.chatService.createChannel(channelDTO);
 		// Join the channel
@@ -77,7 +76,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
 		
-		console.log('calling joinChannel');
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id);
 		client.join(channel_id.toString());
@@ -90,7 +88,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
 		
-		console.log('calling joinAvailableChannel');
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id );
 		client.join(channel_id.toString());
@@ -103,7 +100,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
 
-		console.log('calling leaveChannel');
 		const { user_id, channel_id } = data;
 		await this.chatService.removeUserFromChannel(user_id, channel_id);
 		this.server.to(channel_id.toString()).emit('leftChannel', { user_id, channel_id });
@@ -113,7 +109,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('kickUserFromChannel')
 	async kickUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
 	{
-		console.log('calling kickUserFromChannel');
 		await this.chatService.removeUserFromChannel(data.userid, data.channelid);
 		this.server.emit('userKicked', {id: data.channelid, userId: data.userid});
 	}
@@ -121,7 +116,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('banUserFromChannel')
 	async banUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
 	{
-		console.log('calling banUserFromChannel');
 		await this.chatService.banUserFromChannel(data.userid, data.channelId);
 		this.server.emit('userBanned', {id: data.channelId, userId: data.userid});
 	}
@@ -129,7 +123,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('unbanUserFromChannel')
 	async unbanUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
 	{
-		console.log('calling unbanUserFromChannel');
 		await this.chatService.unbanUserFromChannel(data.userid, data.channelId);
 		this.server.emit('userUnbanned', {id: data.channelId, userId: data.userid});
 	}
@@ -137,7 +130,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('muteUserFromChannel')
 	async muteUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
 	{
-		console.log('calling muteUserFromChannel');
 		await this.chatService.muteUserFromChannel(data.userid, data.channelId);
 		this.server.emit('userMuted', {id: data.channelId, userId: data.userid});
 	}
@@ -145,7 +137,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('unmuteUserFromChannel')
 	async unmuteUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
 	{
-		console.log('calling unmuteUserFromChannel');
 		await this.chatService.unmuteUserFromChannel(data.userid, data.channelId);
 		this.server.emit('userUnmuted', {id: data.channelId, userId: data.userid});
 	}
@@ -155,7 +146,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	  @MessageBody() messageData: { sender_id: number, receiver_id: number, content: string }
 	): Promise<void> {
 		
-		console.log('calling sendMessage');
 		const { sender_id, receiver_id, content } = messageData;
 		const newMessage = await this.chatService.createMessage(receiver_id, sender_id, content);
 		// Emit the message to the specific channel
@@ -165,7 +155,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('getChannels')
 	async handleGetChannels(@ConnectedSocket() client: Socket): Promise<void> {
 
-		console.log('calling getChannels');
 		const channels: Channel[] = await this.chatService.getAllChannels();
 
 		const chatDto: ChatRoomDTO[] = [];
@@ -181,7 +170,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
 
-		console.log('calling deleteChannel');
 		await this.chatService.deleteChannel(channel_id);
 		this.server.emit('channelDeleted', {channel_id});
 	}
@@ -191,7 +179,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@MessageBody() data: { channel_type: ChannelType, channel_id: number, password: string | null },
 	): Promise<void> {
 
-		console.log('calling changePrivacy');
 		const { channel_type, channel_id, password } = data;
 		const channelToUpdate: Channel = await this.chatService.getChannel(channel_id);
 		await this.chatService.changePrivacy(channelToUpdate, channel_type, password);
@@ -202,13 +189,12 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	async handleChangeUserRole(
 		@MessageBody() data: { user_id: number; channel_id: number; new_role: ChannelMemberType; },
 	): Promise<void> {
-		
-		console.log('calling changeUserRole');
+
 		const { user_id, channel_id, new_role } = data;
 		await this.chatService.changeMemberRole(user_id, channel_id, new_role);
 		if (new_role === ChannelMemberType.owner)
 			await this.chatService.changeOwnershipChannel(user_id, channel_id);
-	
+
 		this.server.to(channel_id.toString()).emit('userRoleChanged', { user_id, new_role });
 	}
 
