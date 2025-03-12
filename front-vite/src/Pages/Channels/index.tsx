@@ -541,24 +541,26 @@ const ChannelsPage: React.FC = () => {
 	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
 		event.stopPropagation();
 		console.log("'Send Direct Message' clicked!");
-		if (otherUser.id !== user.id) {
-			const channelDTO = {
-				title: otherUser.nameIntra,
-				ch_type: ChannelType.private,
-				ch_owner: user.id.toString(),
-				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email },
-					{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: UserRoles.member, email: otherUser.email },
-	
-				],
-				password: null,
-				isDirectMessage: true,
-			};
-			socket.emit('createChannel', channelDTO);
-      socket.once('errorCreatingChannel', (error) => {
-					console.error(error.message);
-					alert(`Error creating channel: ${error.message}`);
-				});
+		if (!directMessageExists(otherUser)) {
+			if (otherUser.id !== user.id) {
+				const channelDTO = {
+					title: otherUser.nameIntra,
+					ch_type: ChannelType.private,
+					ch_owner: user.id.toString(),
+					users: [
+						{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email },
+						{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: UserRoles.member, email: otherUser.email },
+		
+					],
+					password: null,
+					isDirectMessage: true,
+				};
+				socket.emit('createChannel', channelDTO);
+				socket.once('errorCreatingChannel', (error) => {
+						console.error(error.message);
+						alert(`Error creating channel: ${error.message}`);
+			});
+		}
 
 // 		if (!directMessageExists(otherUser)) {
 // 			if (otherUser.id !== user.id) {
