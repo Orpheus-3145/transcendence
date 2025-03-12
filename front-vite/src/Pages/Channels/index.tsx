@@ -475,8 +475,8 @@ const ChannelsPage: React.FC = () => {
 							...room,
 							settings: {
 								...room.settings,
-								type: updatedChannel.ch_type,
-								password: updatedChannel.password,
+								type: updatedChannel.settings.type,
+								password: updatedChannel.settings.password,
 							},
 						}
 					: room 
