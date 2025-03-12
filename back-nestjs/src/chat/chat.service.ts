@@ -1,13 +1,17 @@
-import { Injectable, Inject, forwardRef} from '@nestjs/common';
+import { ConsoleLogger, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Message, Channel, ChannelMember } from 'src/entities/chat.entity';
-import {ChatDTO } from '../dto/chat.dto'
+import { Not, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+
+import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/channel.entity';
 import { NotificationService } from 'src/notification/notification.service';
-import { UsersService } from 'src/users/users.service';
 import User from 'src/entities/user.entity';
-import {Notification} from 'src/entities/notification.entity'
-import { NotificationGateway } from 'src/notification/notification.gateway';
+import { Message } from 'src/entities/message.entity';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import AppLoggerService from 'src/log/log.service';
+import { ConfigService } from '@nestjs/config';
+import { ChannelDTO } from 'src/dto/channel.dto';
+
 
 @Injectable()
 export class ChatService {
@@ -21,364 +25,358 @@ export class ChatService {
 		@InjectRepository(Message)
 		private readonly messageRepository: Repository<Message>,
 
-		@Inject(forwardRef(() => UsersService))
-		private readonly userService: UsersService,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
 
-		@Inject(forwardRef(() => NotificationService))
 		private readonly notificationService: NotificationService,
+		private readonly thrower: ExceptionFactory,
+		private readonly logger: AppLoggerService,
+		private readonly config: ConfigService,
+	) {
+		this.logger.setContext(ChatService.name);	
+	};
 
-		private readonly notificationGateway: NotificationGateway,
-	) {}
+	async getUser(userId: number, throwExcept: boolean = true): Promise<User | null> {
 
-	// // Create or find a channel
-	// async findOrCreateChannel(channelData: Partial<Channel>): Promise<Channel> {
-	// 	let channel = await this.channelRepository.findOneBy({
-	// 		title: channelData.title,
-	// 	});
-	// 	if (!channel) {
-	// 		channel = this.channelRepository.create(channelData);
-	// 		await this.channelRepository.save(channel);
-	// 	}
-	// 	return channel;
-	// }
+		const user: User = await this.userRepository.findOne({ where: { id: userId }});
+		if (!user && throwExcept === true)
+			this.thrower.throwChatExcp(`No user found with id: ${userId}`,
+				`${ChatService.name}.${this.constructor.prototype.getUser.name}()`,
+				HttpStatus.NOT_FOUND);
 
-	async createChannel(chatDTO: ChatDTO): Promise<Channel> {
-		const { title, ch_type, ch_owner, users, banned, muted, password, isDirectMessage } = chatDTO;
-
-		// console.log('chatDTO:', chatDTO);
-		const newChannel = this.channelRepository.create({
-		  title,
-		  ch_type,
-		  ch_owner,
-		  password,
-		  created: new Date(),
-		  isDirectMessage,
-		  banned,
-		  muted,
-		});
-		const savedChannel = await this.channelRepository.save(newChannel);
-		// console.log('new channel:', newChannel);
-		const userEntities = users.map(user => {
-			// console.log('user.nameIntra:', user.nameIntra);
-			return {
-				user_id: user.id,
-				name: user.nameIntra,
-		  		channel_id: savedChannel.channel_id,
-		  		member_role: user.role,
-			}	
-		});
-		// console.log('userEntities:', userEntities);
-		await this.channelMemberRepository.save(userEntities);
-		const fullChannel = await this.channelRepository.findOne({
-			where: { channel_id: savedChannel.channel_id },
-			relations: ['members'],
-		});
-		// console.log('full channel:', fullChannel);
-		return fullChannel;
-	}
-	  
-
-	// Add user to a channel
-	async addUserToChannel(user_id: number, name: string, channel_id: number, role = 'member') {
-		const membership = this.channelMemberRepository.create({
-			user_id,
-			name,
-			channel_id,
-			member_role: role,
-		});
-		console.log(membership);
-		return this.channelMemberRepository.save(membership);
+		return user;
 	}
 
-	// async createMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {
-	// 	const message = this.messageRepository.create({
-	// 		sender_id,
-	// 		receiver_id,
-	// 		content,
-	// 	});
-	
-	// 	const savedMessage = await this.messageRepository.save(message);
-	// 	console.log('Saved Message in service', savedMessage);
-	
-	// 	return savedMessage;
-	// }
-	  
+	async getChannel(channelId: number, throwExcept: boolean = true): Promise<Channel | null> {
 
-	// // Remove user to a channel
-	// async removeUserFromChannel(user_id: number, channel_id: number, role: string) {
-	//   // Find the user's membership in the channel
-	//   const membership = await this.channelMemberRepository.findOne({
-	// 	where: { user_id, channel_id },
-	//   });
-	//   console.log('Membership:', membership.member_role);
-	
-	//   if (!membership) {
-	// 	throw new Error('User is not a member of the channel');
-	//   }
-	
-	//   // Check if the user is the owner of the channel
-	//   if (membership.member_role === 'owner') {
-	// 		// Transfer ownership to another admin or member
-	// 		const otherMembers = await this.channelMemberRepository.find({
-	// 			where: { channel_id },
-	// 			order: { member_role: 'ASC' }, // Admins will appear before members
-	// 		});
-		
-	// 		if (otherMembers.length > 1) {
-	// 			// Assign the first non-owner member as the new owner
-	// 			const newOwner = otherMembers.find(
-	// 				(member: ChannelMember) => member.user_id !== user_id
-	// 			);
-	// 			console.log(newOwner);
-	// 			if (newOwner) {
-	// 				newOwner.member_role = 'owner';
-	// 				await this.channelMemberRepository.save(newOwner);
-	// 			}
-
-	// 			this.changeOwner(channel_id, newOwner.name);
-
-	// 		} else {
-	// 			console.log('Channel empty!');
-	// 			// If the channel is empty, delete the channel
-	// 			await this.channelMemberRepository.delete({ channel_id });
-	// 			await this.channelRepository.delete({ channel_id });
-	// 			return;
-	// 		}
-	//   	}
-	//   await this.channelMemberRepository.delete({ user_id, channel_id });
-	// }
-
-
-	async removeUserFromChannel(user_id: number, channel_id: number, role: string) {
-		// Find the user's membership in the channel
-		const membership = await this.channelMemberRepository.findOne({
-			where: { user_id, channel_id },
+		const channel: Channel = await this.channelRepository.findOne({
+			where: { channel_id: channelId },
+			relations: ['members', 'messages']
 		});
-		console.log('Membership:', membership?.member_role);
-	
-		if (!membership) {
-			throw new Error('User is not a member of the channel');
-		}
-	
-		// Check if the user is the owner of the channel
-		let newOwner = null;
-		if (membership.member_role === 'owner') {
-			// Transfer ownership to another admin or member
-			const otherMembers = await this.channelMemberRepository.find({
-				where: { channel_id },
-				order: { member_role: 'ASC' }, // Admins will appear before members
-			});
-	
-			if (otherMembers.length > 1) {
-				// Assign the first non-owner member as the new owner
-				newOwner = otherMembers.find(
-					(member: ChannelMember) => member.user_id !== user_id
-				);
-				if (newOwner) {
-					newOwner.member_role = 'owner';
-					await this.channelMemberRepository.save(newOwner);
-				}
-			} else {
-				console.log('Channel empty!');
-				// If the channel is empty, delete the channel
-				await this.channelMemberRepository.delete({ channel_id });
-				await this.channelRepository.delete({ channel_id });
-				return;
+		if (!channel && throwExcept === true)
+			this.thrower.throwChatExcp(`No channel found with id: ${channelId}`,
+				`${ChatService.name}.${this.constructor.prototype.getChannel.name}()`,
+				HttpStatus.NOT_FOUND);
+
+		return channel;
+	}
+
+	async getMember(channelId: number, userId: number, throwExcept: boolean = true): Promise<ChannelMember | null> {
+
+		const member: ChannelMember = await this.channelMemberRepository.findOne({
+			where: {
+				channel: { channel_id: channelId },
+				user: { id: userId }
 			}
-		}
-	
-		// Remove the user from the channel
-		await this.channelMemberRepository.delete({ user_id, channel_id });
-	
-		// Return the new owner (or null if there is no new owner)
-		return newOwner ? newOwner.name : null;
-	}
-	
+		});
+		if (!member && throwExcept === true)
+			this.thrower.throwChatExcp(`No member found with userId: ${userId} belonging to channel id: ${channelId}`,
+				`${ChatService.name}.${this.constructor.prototype.getMember.name}()`,
+				HttpStatus.NOT_FOUND);
 
-	async getUsersFromChannel(channel_id: number)
-	{
-		let channel = await this.getChannelById(channel_id);
+		return member;
+	}
+
+	async createChannel(channelDTO: ChannelDTO): Promise<Channel> {
+
+		const channelOwner: User = await this.getUser(parseInt(channelDTO.ch_owner, 10));
+		let	newChannel = this.channelRepository.create({
+			channel_type: channelDTO.ch_type,
+			channel_owner: channelOwner,
+			isActive: channelDTO.isActive,
+			isDirectMessage: channelDTO.isDirectMessage,
+			password: channelDTO.password,
+			title: channelDTO.title,
+			created: new Date(),
+			banned: channelDTO.banned,
+			muted: channelDTO.muted,
+		});
+		newChannel = await this.channelRepository.save(newChannel);
+		this.logger.log(`${channelOwner.nameNick} created channel id: ${newChannel.channel_id}`);
+
+		for (const member of channelDTO.users)
+			await this.addUserToChannel(newChannel, member.id);
+
+		// setting owner of the newliy created channel
+		await Promise.all([
+			this.changeMemberRole(channelOwner, newChannel, ChannelMemberType.owner),
+			this.changeOwnershipChannel(channelOwner, newChannel),
+		])
+
+		return newChannel;
+	}
+
+	async deleteChannel(channelToDelete: number | Channel): Promise<void> {
+
+		if (typeof channelToDelete === 'number')
+			channelToDelete = await this.getChannel(channelToDelete);
+
+		// because of the 'ON CASCADE' option, every message and every channel member
+		// related to chis channel will be removed as well 
+		await this.channelRepository.delete({ channel_id: channelToDelete.channel_id });
+
+		this.logger.log(`Deleting channel id: ${channelToDelete.channel_id} (cleaning all related messages and members)`);
+	}
+
+	async addUserToChannel(channel: number | Channel, user: number | User): Promise<void> {
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+		
+		if (typeof user === 'number')
+			user = await this.getUser(user);
+
+		let newMember: ChannelMember = this.channelMemberRepository.create({
+			channel: channel,
+			user: user,
+		});
+		newMember = await this.channelMemberRepository.save(newMember);
+
+		this.logger.log(`${user.nameNick} joined channel id: ${channel.channel_id}`);
+	}
+
+	async removeUserFromChannel(userToRemove: number | User, channel: number | Channel): Promise<void> {
+
+		if (typeof userToRemove === 'number')
+			userToRemove = await this.getUser(userToRemove);
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		// fetching user to remove and al the other users of the channl
+		const [memberToRemove, otherMembers] = await Promise.all([
+			this.getMember(channel.channel_id, userToRemove.id),
+			this.channelMemberRepository.find({
+				where: { 
+					channel: { channel_id: channel.channel_id },
+					user: { id: Not(userToRemove.id) }},
+				order: { memberRole: 'ASC' },
+			})
+		])
+		
+		if (otherMembers.length === 0) {
+			// no other members, remove channel
+			this.logger.log(`${userToRemove.nameNick} was the last in the channel, removing it`);
+			await this.deleteChannel(memberToRemove.channel);
+			return ;
+		}
+
+		// if the user to remove is the owner, the ownership has to be changed
+		if (memberToRemove.memberRole === ChannelMemberType.owner) {
+			const newOwner: ChannelMember = otherMembers[0];
+			this.logger.log(`${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership to ${newOwner.user.nameNick}`);
+			
+			await Promise.all([
+					this.changeMemberRole(newOwner.user, newOwner.channel, ChannelMemberType.owner),
+					this.changeOwnershipChannel(newOwner.user, channel),
+			]);
+		}
+		await this.channelMemberRepository.delete({ channelMemberId: memberToRemove.channelMemberId });
+
+		this.logger.log(`${userToRemove.nameNick} left channel id: ${channel.channel_id}`);
+	}
+
+	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message> {
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		if (typeof sender === 'number')
+			sender = await this.getUser(sender);
+		
+		// fetching member from user
+		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id);
+		let newMessage: Message = this.messageRepository.create({
+			channel: channel,
+			sender: memberSender,
+			content: content,
+		});
+		newMessage = await this.messageRepository.save(newMessage);
+
+		this.logger.log(`New message from ${sender.nameNick} in channel id: ${channel.channel_id}, content: '${content}'`);
+
+		const receivers: ChannelMember[] = await this.channelMemberRepository.find({
+			where: {
+				channel: { channel_id: channel.channel_id },
+				channelMemberId: Not(memberSender.channelMemberId)
+			}
+		});
+		if (receivers.length === 0)
+			this.thrower.throwChatExcp(`Channel id: ${channel.channel_id} has only one member`,
+				`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
+				HttpStatus.INTERNAL_SERVER_ERROR);
+				
+		// sending notification of the new message to all the channel members
+		for (const receiver of receivers)
+			await this.notificationService.createMessageNotification(newMessage, receiver);
+
+		return newMessage;
+	}
+
+	async getMembersFromChannel(channel: number | Channel): Promise<ChannelMember[]> {
+	
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+	
+		this.logger.log(`Fetching all members from channel id: ${channel.channel_id}`);
 		return (channel.members);
 	}
 
-	async banUserFromChannel(user_id: number, channel_id: number)
-	{
-		await this.removeUserFromChannel(user_id, channel_id, "");
-		let channel: Channel = await this.channelRepository.findOne({where: {channel_id: channel_id}});
-		channel.banned.push(user_id.toString());
-		await this.channelRepository.save(channel);
+	async getMessagesForChannel(channel: number | Channel): Promise<Message[]> {
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		this.logger.log(`Fetching all messages from channel id: ${channel.channel_id}`);
+		return channel.messages;
 	}
-
-	async unbanUserFromChannel(user_id: number, channel_id: number)
-	{
-		let channel: Channel = await this.channelRepository.findOne({where: {channel_id: channel_id}});
-		channel.banned = channel.banned.filter((item: string) => item !== user_id.toString());
-		await this.channelRepository.save(channel);
-	}
-	
-	async muteUserFromChannel(user_id: number, channel_id: number)
-	{
-		let channel: Channel = await this.channelRepository.findOne({where: {channel_id: channel_id}});
-		channel.muted.push(user_id.toString());
-		await this.channelRepository.save(channel);
-	}
-	
-	async unmuteUserFromChannel(user_id: number, channel_id: number)
-	{
-		let channel: Channel = await this.channelRepository.findOne({where: {channel_id: channel_id}});
-		channel.muted = channel.muted.filter((item: string) => item !== user_id.toString());
-		await this.channelRepository.save(channel);
-	}
-
-	// Send a message
-	// async sendMessage( sender_id: number, receiver_id: number, content: string ,
-	// ): Promise<Message> {
-	// 	const message = this.messageRepository.create({
-	// 		sender_id,
-	// 		receiver_id,
-	// 		content,
-	// 	});
-
-	// 	// const updatedMessages = await this.messageRepository.find({
-	// 	// 	where: { receiver_id },
-	// 	// 	relations: ['sender'],
-	// 	// });
-
-	// 	return this.messageRepository.save(message);
-	// }
-
-	async saveMessage(sender_id: number, receiver_id: number, content: string): Promise<Message> {	
-		const channel: Channel = await this.channelRepository.findOne({
-		  where: { channel_id: receiver_id },
-		});
-
-		if (!channel) {
-		  throw new Error(`Channel with id ${receiver_id} not found`);
-		}
-		
-		if (!channel.muted.find((item: string) => item === sender_id.toString()))
-		{
-			var members: ChannelMember[] = await this.channelMemberRepository.find({where: {channel_id: channel.channel_id}});		
-			members.map(async (member: ChannelMember) =>
-			{
-				if (member.user_id != sender_id)
-				{
-					var user: User = await this.userService.findOneId(member.user_id);
-					if (user != null)
-					{
-						var noti: Notification = await this.notificationService.initGroupMessage(channel, user, content);
-						await this.notificationGateway.sendNotiToFrontend(noti);
-					}
-				}
-			});
-		}
-
-		const message = this.messageRepository.create({
-		  sender_id,
-		  content,
-		  channel,
-		});
-
-		const savedMessage = await this.messageRepository.save(message);
-		// console.log('Saved Mdessage->>', savedMessage);  // Log the saved message for debugging
-	  
-		return savedMessage;
-	}
-	  
-	async getMessagesForChannel(channel_id: number): Promise<Message[]> {
-		// Fetch all messages for the channel, including sender details if necessary
-		return this.messageRepository.find({
-		  	where: { channel: { channel_id } },
-		  	relations: ['channel'],
-		  	order: { send_time: 'ASC' },
-		});
-	}
-	
-	// // Get messages for a channel
-	// async getChannelMessages(channel_id: number): Promise<Message[]> {
-	// 	return this.messageRepository.find({ where: { receiver_id: channel_id } });
-	// }
-
- 	// Fetch channel by ID
- 	async getChannelById(channel_id: number): Promise<Channel | null> {
-		return this.channelRepository.findOne({
-			where: { channel_id: channel_id },
-		});
- 	}
-
- 	// Fetch channel user
- 	async getUserById(user_id: number, channel_id: number): Promise<ChannelMember | null> {
-		return this.channelMemberRepository.findOne({
-			where: { user_id, channel_id },  
-		});
- 	}
 
 	async getAllChannels(): Promise<Channel[]> {
-		const channels = await this.channelRepository.find({
-			select: ['channel_id', 'title', 'ch_type', 'ch_owner', 'password', 'isDirectMessage', 'banned', 'muted'],
-			relations: ['members', 'messages'], // Ensure messages are included
+
+		const channels: Channel[] = await this.channelRepository.find({
+			select: [
+				'channel_id',
+				'channel_type',
+				'title',
+				'channel_owner',
+				'password',
+				'isDirectMessage',
+				'banned',
+				'muted'
+			],
+			relations: ['members', 'messages'], // Ensure members and messages are included
 		});
-	
-		// console.log('Channels with messages:', JSON.stringify(channels, null, 2)); // Debugging log
+
+		this.logger.log(`Fetching all chats`);
 		return channels;
 	}
+
+	async banUserFromChannel(userToBan: number | User, channel: number | Channel): Promise<void> {
 	
-	// Delete a channel
-	async deleteChannel(channel_id: number): Promise<Channel | null> {
-		try {
-			const channel = await this.getChannelById(channel_id);
-			if (!channel) {
-				return null;
-			}
-			// Delete associated messages if necessary
-			await this.messageRepository.delete({ channel: { channel_id } });
-			// Delete associated channel members if necessary
-			await this.channelMemberRepository.delete({ channel_id });
-			// Delete the channel itself
-			await this.channelRepository.remove(channel);
-			// console.log('Channel service', channel);
-			return channel;
-		} catch (error) {
-			console.error('Error in deleting channel:', error);
-			throw new Error('Error deleting channel');
-		}
+		if (typeof userToBan === 'number')
+			userToBan = await this.getUser(userToBan);
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		channel.banned.push(userToBan.id.toString());
+		await Promise.all([
+			this.channelRepository.save(channel),
+			this.removeUserFromChannel(userToBan, channel)
+		]);
+		this.logger.log(`Banning ${userToBan.nameNick} from channel id: ${channel.channel_id}`);
 	}
 
-	async changePrivacy(channel_type: string, channel_id: number, password: string) : Promise<Channel | null> {
-		try {
-			const channel = await this.getChannelById(channel_id);
-			if (!channel) {
-				return null;
-			}
-			channel.ch_type = channel_type;
-			channel.password = password;
-			await this.channelRepository.save(channel);
-			return channel;
-		} catch (error) {
-			console.error(`Error changing channel privacy: ${error}`);
-			return null;
-		}
-	}
+	async unbanUserFromChannel(userToUnban: number | User, channel: number | Channel): Promise<void> {
+	
+		if (typeof userToUnban === 'number')
+			userToUnban = await this.getUser(userToUnban);
 
-	async changeOwner(channel_id: number, new_owner: string) : Promise<void> {
-		const channel = await this.getChannelById(channel_id);
-		if (!channel) {
-			throw new Error(`Channel with ID ${channel_id} not found`);
-		}
-		channel.ch_owner = new_owner;
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		channel.banned = channel.banned.filter((item: string) => item !== userToUnban.id.toString());
+		await Promise.all([
+			this.channelRepository.save(channel),
+			this.addUserToChannel(channel, userToUnban),
+		]);
+		this.logger.log(`Unbanning ${userToUnban.nameNick} from channel id: ${channel.channel_id}`);
+	}
+	
+	async muteUserFromChannel(userToMute: number | User, channel: number | Channel): Promise<void> {
+	
+		if (typeof userToMute === 'number')
+			userToMute = await this.getUser(userToMute);
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		channel.muted.push(userToMute.id.toString());
 		await this.channelRepository.save(channel);
+
+		this.logger.log(`Muting ${userToMute.nameNick} from channel id: ${channel.channel_id}`);
+	}
+	
+	async unmuteUserFromChannel(userToUnmute: number | User, channel: number | Channel): Promise<void> {
+	
+		if (typeof userToUnmute === 'number')
+			userToUnmute = await this.getUser(userToUnmute);
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		channel.muted = channel.muted.filter((item: string) => item !== userToUnmute.id.toString());
+		await this.channelRepository.save(channel);
+
+		this.logger.log(`Unmuting ${userToUnmute.nameNick} from channel id: ${channel.channel_id}`);
 	}
 
+	async changePrivacy(channelToChange: number | Channel, newChannelPolicy: ChannelType, password: string | null): Promise<void> {
+		
+		if (typeof channelToChange === 'number')
+			channelToChange = await this.getChannel(channelToChange);
 
-	async changeUserRole(user_id: number, channel_id: number, new_role: string) : Promise<boolean> {
-		const user = await this.getUserById(user_id, channel_id);
-		if (!user) {
-			return false;
+		channelToChange.channel_type = newChannelPolicy;
+		if (newChannelPolicy === ChannelType.protected) {
+			if (!password)
+				this.thrower.throwChatExcp(`Channel password not provided or null`,
+					`${ChatService.name}.${this.constructor.prototype.changePrivacy.name}()`,
+					HttpStatus.BAD_REQUEST);
+			
+			// channel password is stored hashed
+			channelToChange.password = await this.hashPassword(password);
 		}
-		user.member_role = new_role;
-		await this.channelMemberRepository.save(user);
-		return true;
+		await this.channelRepository.save(channelToChange);
+
+		this.logger.log(`Changing privacy of channel id: ${channelToChange.channel_id}, new policy: ${newChannelPolicy}`);
+	}
+
+	async changeOwnershipChannel(newOwner: number | User, channel: number | Channel): Promise<void> {
+
+		if (typeof newOwner === 'number')
+			newOwner = await this.getUser(newOwner);
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		channel.channel_owner = newOwner;
+		await this.channelRepository.save(channel);
+
+		this.logger.log(`Changed ownership of channel id: ${channel.channel_id} to ${newOwner.nameNick}`);
+	}
+	
+	async changeMemberRole(userToChange: number | User, channel: number | Channel, newRole: ChannelMemberType): Promise<ChannelMember> {
+		
+		if (typeof userToChange === 'number')
+			userToChange = await this.getUser(userToChange);
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+	
+		const memberToChange: ChannelMember = await this.getMember(channel.channel_id, userToChange.id);
+
+		memberToChange.memberRole = newRole;
+		await this.channelMemberRepository.save(memberToChange);
+
+		this.logger.log(`Changed role of user ${userToChange.nameNick} into ${newRole} of channel id: ${channel.channel_id}`);
+
+		return memberToChange;
+	}
+
+	async hashPassword(pwd: string): Promise<string> {
+		const saltRounds = parseInt(this.config.get<string>('POSTGRES_SALT_HASH'), 10);
+		const hashPwd: string = await bcrypt.hash(pwd, saltRounds);
+		
+		return hashPwd;
+	}
+
+	async verifyPassword(inputPassword: string, channel: number | Channel): Promise<boolean> {
+
+		if (typeof channel === 'number')
+			channel = await this.getChannel(channel);
+
+		const channelPassword: string = channel.password;
+
+		return (await bcrypt.compare(inputPassword, channelPassword));
 	}
 }
-
-

@@ -87,8 +87,8 @@ export class ChatExceptionFilter implements ExceptionFilter {
 
 		const ctx = host.switchToWs();
 		const client = ctx.getClient();
-		const data = ctx.getData();
+		// const data = ctx.getData();
 
-		// do the stuff for chat
+		client.emit('channelError', { message: `Internal error: ${exception.message}` });
 	}
 }

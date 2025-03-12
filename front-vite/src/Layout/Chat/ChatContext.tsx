@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { ChatProps, ChatStatus } from './InterfaceChat';
+import { ChatProps, ChatRoom, ChatStatus } from './InterfaceChat';
 import { children } from 'cheerio/dist/commonjs/api/traversing';
 import { Group as GroupIcon } from '@mui/icons-material';
 import { Typography } from '@mui/material';
@@ -67,63 +67,22 @@ export const ChatProvider: React.FC = ({ children }) => {
     });
 
     useEffect(() => {
-		if (!user || !user.nameIntra) {
-			return ;
-		}
-		// console.log(user.nameIntra);
+			if (!user || !user.nameIntra) {
+				return ;
+			}
+			const fetchAllChannels = () => {
+				socket.emit('getChannels');
+				socket.on('channelsList', (channels: ChatRoom[]) => {
+					setChatProps((prevState) => ({
+						...prevState,
+						chatRooms: channels,
+					}))
+				});
 
-        const fetchAllChannels = () => {
-            socket.emit('getChannels');
-			// console.log(user.nameIntra);
-
-            socket.on('channelsList', (channels) => {
-				setChatProps((prevState) => ({
-					...prevState,
-                    chatRooms: channels.map((channel) => ({
-						id: channel.channel_id,
-                        name: channel.title,
-                        icon: <GroupIcon />,
-						messages: (channel.messages || [])
-						.slice()
-          				.reverse()
-          				.map((message) => ({
-          				  	id: message.msg_id,
-          				  	message: message.content,
-          				  	user: message.sender_id,
-          				  	userPP: <Avatar />,
-          				  	timestamp: message.send_time,
-          				})),
-                        settings: {
-							type: channel.ch_type,
-                            password: channel.password,
-                            users: channel.members.map(member =>({
-								id: member.user_id,
-								name: member.name,
-								role: member.member_role,
-								// email: '',
-								icon: <Avatar />
-								
-							})) ,
-                            owner: channel.ch_owner,
-							banned: channel.banned,
-							muted: channel.muted,
-
-                        },
-						isDirectMessage: channel.isDirectMessage,
-                    })),
-                }));
-				
-				console.log('Channels from database:', channels);
-				// console.log('Channels (frontend):', chatProps.chatRooms);
-            });
-			
-			
-            return () => {
-				socket.off('channelsList');
-            };
-        };
+			return (() => socket.off('channelsList'));
+			};
 		
-        fetchAllChannels();
+			fetchAllChannels();
     }, [user]);
 
 	// useEffect(() => {

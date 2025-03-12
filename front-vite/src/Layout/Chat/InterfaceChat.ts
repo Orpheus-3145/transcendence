@@ -10,9 +10,15 @@ export enum ChatStatus {
 }
 
 export enum UserRoles {
-  Admin = 'admin',
-  Member = 'member',
-  Owner = 'owner',
+  admin = 'admin',
+  member = 'member',
+  owner = 'owner',
+}
+
+export enum ChannelType {
+	public = 'public',
+	protected = 'protected',
+	private = 'private',
 }
 
 export interface ChatMessage {
@@ -34,7 +40,7 @@ export interface UserProps {
 
 export interface ChatSettings {
 	icon: React.ReactElement;
-	type: 'public' | 'private' | 'password';
+	type: ChannelType;
 	password: string | null;
 	users: UserProps[];
 	owner: string;

@@ -9,28 +9,25 @@ GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${POSTGRES_USER};
 -- and for every new entity created
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${POSTGRES_USER};
 
+
+CREATE TYPE USER_STATUS AS ENUM ('online', 'offline', 'ingame');
 CREATE TABLE IF NOT EXISTS Users (
 	user_id SERIAL PRIMARY KEY,
-	nickname TEXT UNIQUE NOT NULL,
-	-- status ENUM ('online', 'offline', 'ingame') DEFAULT 'offline',
-	greeting TEXT DEFAULT 'Hello, I have just landed!',
-	authkey TEXT DEFAULT NULL,
-	profile_photo TEXT DEFAULT 'default_profile_photo.png',
-	time_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	intra_id INTEGER UNIQUE NOT NULL,
 	intra_name TEXT NOT NULL,
-	intra_surname TEXT NOT NULL,
-	intra_email TEXT
-);
-
-CREATE TYPE FRIEND_REQUEST_STATUS AS ENUM ('active', 'inactive', 'pending');
-CREATE TABLE IF NOT EXISTS Friends (
-	sender_id INTEGER NOT NULL CHECK (sender_id > 0),
-	receiver_id INTEGER NOT NULL CHECK (receiver_id > 0),
-	request_status FRIEND_REQUEST_STATUS NOT NULL,
-
-	PRIMARY KEY (sender_id, receiver_id),
-	FOREIGN KEY (sender_id) REFERENCES Users (user_id),
-	FOREIGN KEY (receiver_id) REFERENCES Users (user_id)
+	intra_email TEXT NOT NULL,
+	first_name TEXT NOT NULL,
+	last_name TEXT NOT NULL,
+	nickname TEXT UNIQUE NOT NULL,
+	-- status ENUM ('online', 'offline', 'ingame') DEFAULT 'offline',		NB this should be used!
+	greeting TEXT DEFAULT 'Hello, I have just landed!',
+	status USER_STATUS DEFAULT 'offline',
+	profile_photo TEXT DEFAULT 'default_profile_photo.png',
+	friends ARRAY[] DEFAULT [],
+	blocked ARRAY[] DEFAULT [],
+	token TEXT NOT NULL,
+	2fa_secret TEXT DEFAULT NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE IF NOT EXISTS Games (
@@ -46,34 +43,75 @@ CREATE TABLE IF NOT EXISTS Games (
 	FOREIGN KEY (player2_id) REFERENCES Users (user_id)
 );
 
--- Think about dynamic tables f.e. table for every channel like: Channel_id_Members
-CREATE TYPE CHANNEL_TYPE AS ENUM ('public', 'protected', 'private', 'chat');
+CREATE TYPE CHANNEL_TYPE AS ENUM ('public', 'protected', 'private');
 CREATE TABLE IF NOT EXISTS Channels (
 	channel_id SERIAL PRIMARY KEY,
-	ch_type CHANNEL_TYPE DEFAULT 'public',
+	channel_type CHANNEL_TYPE DEFAULT 'public',
+	channel_owner INTEGER NOT NULL,
+	is_active BOOLEAN DEFAULT TRUE,
+	is_direct BOOLEAN DEFAULT FALSE,
+	password TEXT DEFAULT NULL,
 	title TEXT DEFAULT 'Welcome to my Channel!',
-	channel_photo TEXT DEFAULT 'default_channel_photo.png',
-	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	banned ARRAY[] DEFAULT [],
+	muted ARRAY[] DEFAULT [],
+
+	FOREIGN KEY (channel_owner) REFERENCES Channel_Members(channel_member_id)
 );
 
 CREATE TYPE CHANNEL_ROLE AS ENUM ('owner', 'admin', 'member');
 CREATE TABLE IF NOT EXISTS Channel_Members (
+	channel_member_id SERIAL PRIMARY KEY,
 	channel_id INTEGER NOT NULL CHECK (channel_id > 0),
 	user_id INTEGER NOT NULL CHECK (user_id > 0),
 	member_role CHANNEL_ROLE DEFAULT 'member',
 
-	PRIMARY KEY (channel_id, user_id),
-	FOREIGN KEY (user_id) REFERENCES Users (user_id),
-	FOREIGN KEY (channel_id) REFERENCES Channels (channel_id)
+	FOREIGN KEY (channel_id) REFERENCES Channels (channel_id),
+	FOREIGN KEY (user_id) REFERENCES Users (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS Messages (
 	msg_id SERIAL PRIMARY KEY,
+	channel_id INTEGER NOT NULL,
+	sender_id INTEGER NOT NULL,
+	content TEXT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+	FOREIGN KEY (channel_id) REFERENCES Channels (channel_id),
+	FOREIGN KEY (sender_id) REFERENCES Channel_Members(channel_member_id)
+);
+
+CREATE TYPE NOTIFICATION_STATUS AS ENUM ('Accepted', 'Declined', 'Pending');
+CREATE TABLE IF NOT EXISTS FriendRequests (
+	id SERIAL PRIMARY KEY,
 	sender_id INTEGER NOT NULL,
 	receiver_id INTEGER NOT NULL,
-	content TEXT NOT NULL,
-	send_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
 
-	FOREIGN KEY (sender_id) REFERENCES Users (user_id),
-	FOREIGN KEY (receiver_id) REFERENCES Users (user_id)
-);
+	FOREIGN KEY (sender_id) REFERENCES Users(user_id),
+	FOREIGN KEY (receiver_id) REFERENCES Users(user_id)
+)
+
+CREATE TABLE IF NOT EXISTS GameInvitations (
+	id SERIAL PRIMARY KEY,
+	sender_id INTEGER NOT NULL,
+	receiver_id INTEGER NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
+	powerup INTEGER DEFAULT NULL,
+
+	FOREIGN KEY (sender_id) REFERENCES Users(user_id),
+	FOREIGN KEY (receiver_id) REFERENCES Users(user_id)
+)
+
+CREATE TABLE IF NOT EXISTS MessageNotifications (
+	id SERIAL PRIMARY KEY,
+	message_id INTEGER NOT NULL,
+	receiver_id INTEGER NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	status NOTIFICATION_STATUS NOT NULL DEFAULT 'Pending',
+
+	FOREIGN KEY (message_id) REFERENCES Messages(msg_id),
+	FOREIGN KEY (receiver_id) REFERENCES Channel_Members(channel_member_id)
+)

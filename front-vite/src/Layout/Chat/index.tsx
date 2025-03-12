@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
-import { ChatProps, ChatStatus } from './InterfaceChat';
+import { ChatProps, ChatRoom, ChatStatus } from './InterfaceChat';
 import { Chat as ChatIcon } from '@mui/icons-material';
 import ContentBubble from './ContentBubble';
 import ContentDrawer from './ContentDrawer';

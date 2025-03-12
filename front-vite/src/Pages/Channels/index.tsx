@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect } from 'react';
 import axios from 'axios';
-import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps } from '../../Layout/Chat/InterfaceChat';
+import { ChatStatus, ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps, ChannelType } from '../../Layout/Chat/InterfaceChat';
 import { Chat as ChatIcon } from '@mui/icons-material';
 import { SettingsModal } from './ChannelSettings';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIcon,  AccountCircle as AccountCircleIcon } from '@mui/icons-material';
@@ -45,7 +45,7 @@ interface ChannelTypeEvent {
 export const userIsAdmin = (userName: string, channel: ChatRoom): boolean => {
 	// 
 	const found = channel.settings.users.find((user) => user.name === userName);
-	return found?.role === 'admin';
+	return found?.role === UserRoles.admin;
 };
 
 export const userInChannel = (userId: number, channel: ChatRoom): boolean => {
@@ -151,7 +151,7 @@ const ChannelsPage: React.FC = () => {
 				channel.settings.users.length > 0 &&
 				!channel.isDirectMessage &&	
 				!userInChannel(user.id, channel) &&
-				channel.settings.type !== 'private'
+				channel.settings.type !== ChannelType.private
 			);
 		const dms = chatProps.chatRooms.filter((channel) =>
 				channel.settings.users.length > 0 &&
@@ -287,7 +287,7 @@ const ChannelsPage: React.FC = () => {
 				};
 			});
 		}
-					
+
 		socket.on('userMuted', handleUserMutedChannel);
 		socket.on('userUnmuted', handleUserUnmutedChannel);
 		return () => {
@@ -302,10 +302,10 @@ const ChannelsPage: React.FC = () => {
 		if (channelName.trim()) {
 			const channelDTO = {
 				title: channelName,
-				ch_type: 'private',
-				ch_owner: user.nameIntra,
+				ch_type: ChannelType.private,
+				ch_owner: user.id.toString(),
 				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
+					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email }
 				],
 				password: null,
 				isDirectMessage: true,
@@ -427,7 +427,7 @@ const ChannelsPage: React.FC = () => {
 				const newUser: UserProps = {
 					id: response.user_id,
 					name: response.name,
-					role: 'member',
+					role: UserRoles.member,
 					email: response.email,
 					password: '',
 					// icon: <Avatar src={tmp.image}/> 
@@ -493,10 +493,10 @@ const ChannelsPage: React.FC = () => {
 		if (channelName.trim()) {
 			const channelDTO = {
 				title: channelName,
-				ch_type: 'public',
-				ch_owner: user.nameIntra,
+				ch_type: ChannelType.public,
+				ch_owner: user.id.toString(),
 				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email }
+					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email }
 				],
 				password: null,
 				isDirectMessage: false,
@@ -506,33 +506,12 @@ const ChannelsPage: React.FC = () => {
 	};	
 			
 	useEffect(() => {
-		const handleChannelCreated = (newChannel) => {
+		const handleChannelCreated = (newChannel: ChatRoom) => {
+			console.log(`channel created: ${JSON.stringify(newChannel)}`);
 			// Update the state with the new channel data received from the server
 			setChatProps((prevState) => ({
 				...prevState,
-				chatRooms: [
-					...prevState.chatRooms,
-					{
-						id: newChannel.channel_id, // Use the ID returned by the server
-						name: newChannel.title,
-						icon: <GroupIcon />,
-						messages: [],
-						settings: {
-							type: newChannel.ch_type,
-							password: newChannel.password,
-							users: newChannel.members.map((member) => ({
-								id: member.user_id,
-								name: member.name,
-								role: member.member_role,
-								icon: <Avatar />,
-							})),
-							owner: newChannel.ch_owner,
-							banned: newChannel.banned,
-							muted: newChannel.muted,
-						},
-						isDirectMessage: newChannel.isDirectMessage,
-					},
-				],
+				chatRooms: [newChannel],
 			}));
 			setChannelName('');
 			setIsAddingChannel(false);
@@ -558,26 +537,45 @@ const ChannelsPage: React.FC = () => {
 	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
 		event.stopPropagation();
 		console.log("'Send Direct Message' clicked!");
-		if (!directMessageExists(otherUser)) {
-			if (otherUser.id !== user.id) {
-				const channelDTO = {
-					title: otherUser.nameIntra,
-					ch_type: 'private',
-					ch_owner: user.nameIntra,
-					users: [
-						{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
-						{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
-		
-					],
-					password: null,
-					isDirectMessage: true,
-				};
-				socket.emit('createChannel', channelDTO);
-				socket.once('errorCreatingChannel', (error) => {
+		if (otherUser.id !== user.id) {
+			const channelDTO = {
+				title: otherUser.nameIntra,
+				ch_type: ChannelType.private,
+				ch_owner: user.id.toString(),
+				users: [
+					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email },
+					{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: UserRoles.member, email: otherUser.email },
+	
+				],
+				password: null,
+				isDirectMessage: true,
+			};
+			socket.emit('createChannel', channelDTO);
+      socket.once('errorCreatingChannel', (error) => {
 					console.error(error.message);
 					alert(`Error creating channel: ${error.message}`);
 				});
-			}
+
+// 		if (!directMessageExists(otherUser)) {
+// 			if (otherUser.id !== user.id) {
+// 				const channelDTO = {
+// 					title: otherUser.nameIntra,
+// 					ch_type: 'private',
+// 					ch_owner: user.nameIntra,
+// 					users: [
+// 						{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
+// 						{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
+		
+// 					],
+// 					password: null,
+// 					isDirectMessage: true,
+// 				};
+// 				socket.emit('createChannel', channelDTO);
+// 				socket.once('errorCreatingChannel', (error) => {
+// 					console.error(error.message);
+// 					alert(`Error creating channel: ${error.message}`);
+// 				});
+// 			}
 		}
 	};
 
@@ -594,7 +592,7 @@ const ChannelsPage: React.FC = () => {
 			  socket.emit('joinRoom', room.id);
 			  joinedRooms.push(room.id);
 			  console.log(`Client socket joined room: ${room.id}`);
-			} 
+			}
 			// else {
 			//   console.log(`Already in room: ${room.id}`);
 			// }
@@ -653,7 +651,7 @@ const ChannelsPage: React.FC = () => {
 			const newUser: UserProps = {
 				id: response.user_id,
 				name: response.name,
-				role: 'member',
+				role: UserRoles.member,
 				email: '',
 				password: '',
 				icon: <PersonAddIcon />
@@ -688,7 +686,7 @@ const ChannelsPage: React.FC = () => {
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
 		console.log('Available channel clicked!');
-		if (!passwordOk && channel.settings.type === 'password' ) {
+		if (!passwordOk && channel.settings.type === ChannelType.private ) {
 			setSelectedChannel(channel);
 			setIsPasswordModal(true);
 		} 
@@ -745,22 +743,24 @@ const ChannelsPage: React.FC = () => {
 	};
 
 	useEffect(() => {
-		socket.on('newMessage', (message) => {
-		  	console.log('Received new message (React):', message);
-		  	// console.log('Before update:', chatProps.chatRooms);
+		socket.on('newMessage', (message: ChatMessage) => {
+		  console.log('Received new message (React):', message);
+			//   console.log('Receiver id:', message.channel.channel_id);
+			console.log('Before update:', chatProps.chatRooms);
 
 			const newMessage: ChatMessage = {
-				id: message.msg_id,
-				message: message.content,
-				user: message.sender_id,
+				id: message.id,
+				message: message.message,
+				user: message.user,
 				userPP: <Avatar />,
-				timestamp: message.send_time,
+				timestamp: message.timestamp,
 			}
 
 			setChatProps((prevProps) => ({
 			  ...prevProps,
 			  chatRooms: prevProps.chatRooms.map((room) => {
-			  if (room.id === message.channel.channel_id) {
+				// console.log('Checking room.id:', room.id);
+			  if (room.id === message.receiver_id) {			// NB shall ChatMessage be modified to receive the receiver_id as well
 				  return {
 						...room,
 						messages: [
