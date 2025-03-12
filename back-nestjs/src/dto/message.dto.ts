@@ -8,6 +8,7 @@ export class MessageDTO {
 		this.id = message.msg_id;
 		this.message = message.content;
 		this.user = message.sender.user.nameNick;
+		this.userId = message.sender.user.id;
 		this.timestamp = message.created;
 		this.sender_id = message.sender.channelMemberId;
 		this.receiver_id = message.channel.channel_id;
@@ -22,6 +23,9 @@ export class MessageDTO {
 
 	@IsString()
 	user: string;
+
+	@IsInt()
+	userId: number;
 
 	@IsTimeZone()
 	timestamp: Date;

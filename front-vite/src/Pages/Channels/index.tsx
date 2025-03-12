@@ -159,7 +159,7 @@ const ChannelsPage: React.FC = () => {
 				userInChannel(user.id, channel)
 			);
 		// console.log("Available (useEffect):", available);
-		// console.log("Joined (useEffect):", joined);
+		console.log("Joined (useEffect):", joined);
 		
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
@@ -382,17 +382,20 @@ const ChannelsPage: React.FC = () => {
 
 
 	useEffect(() => {
-    const handleUserLeftChannel = (response) => {
-        console.log(`User left channel (index): ${response.user_name}`);
-		
+    const handleUserLeftChannel = (response: {channel: ChatRoom, userId: number}) => {
+        console.log(`User left channel (index): ${JSON.stringify(response)}`);
+		if (!response.channel) {
+			return;
+		}
+
         setChatProps((prevState) => ({
             ...prevState,
             chatRooms: prevState.chatRooms.map((channel) => {
-                if (channel.id !== response.channel_id) {
+                if (channel.id !== response.channel.id) {
 					return channel;
 				}
-                const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.user_id);
-				const newOwner = response.new_owner;
+                const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.userId);
+				const newOwner = response.channel.settings.owner;
 				console.log('New owner (index) :', newOwner);
                 return {
                     ...channel,
@@ -462,7 +465,8 @@ const ChannelsPage: React.FC = () => {
 	
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
-			console.log('Channel privacy updated:', updatedChannel);
+			// console.log('Channel privacy updated:', updatedChannel);
+			console.log('Channel privacy updated to:', updatedChannel.settings.type);
 			setChatProps((prevState) => ({
 				...prevState,
 				chatRooms: prevState.chatRooms.map((room) =>
@@ -511,7 +515,7 @@ const ChannelsPage: React.FC = () => {
 			// Update the state with the new channel data received from the server
 			setChatProps((prevState) => ({
 				...prevState,
-				chatRooms: [newChannel],
+				chatRooms: [...prevState.chatRooms, newChannel],
 			}));
 			setChannelName('');
 			setIsAddingChannel(false);
@@ -750,10 +754,12 @@ const ChannelsPage: React.FC = () => {
 
 			const newMessage: ChatMessage = {
 				id: message.id,
+				userId: message.userId, 
 				message: message.message,
 				user: message.user,
 				userPP: <Avatar />,
 				timestamp: message.timestamp,
+				receiver_id: message.receiver_id,
 			}
 
 			setChatProps((prevProps) => ({
@@ -773,7 +779,7 @@ const ChannelsPage: React.FC = () => {
 		  	}),
 		  }));
 
-		  if (selectedChannel && ( selectedChannel.id === message.channel.channel_id)) {
+		  if (selectedChannel && ( selectedChannel.id === message.receiver_id)) {
 			setSelectedChannel((prevState) => ({
 				...prevState,
 				messages: [...prevState.messages, newMessage]
@@ -1036,10 +1042,9 @@ const ChannelsPage: React.FC = () => {
 			);
 		}
 
-		var user = userMessage.get(msg.user);
-		
+		var user = userMessage.get(msg.userId.toString());
 		if (!user) {
-			fetchUser(msg.user);
+			fetchUser(msg.userId.toString());
 			return <Stack>Loading...</Stack>;
 		}
 

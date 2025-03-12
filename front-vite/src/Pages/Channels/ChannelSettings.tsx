@@ -242,7 +242,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
-			console.log('Channel privacy updated:', updatedChannel);
+			console.log('Channel privacy updated to:', updatedChannel.settings.type);
 			setSettings({ ...settings, type: updatedChannel.ch_type, password: updatedChannel.password})
 		};
 
@@ -256,7 +256,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const handleChangePrivacy = (type: ChannelType, password: string | null) => {
 		console.log('"Change Privacy" clicked!');
 
-		socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password });
+		// socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password });
 
 		socket.once('error', (error) => {
 			console.error(error.message);
@@ -324,19 +324,45 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	// }, []);
 
 
-	useEffect(() => {
-		const handleUserLeftChannel = (response) => {
-			console.log(`User left channel (settings): ${response.user_name}`);
-			// console.log(`New owner (settings): ${ response.new_owner}`);
+	// useEffect(() => {
+	// 	const handleUserLeftChannel = (response: ChatRoom) => {
+	// 		console.log(`User left channel (settings): ${response.user_name}`);
+	// 		// console.log(`New owner (settings): ${ response.new_owner}`);
 	
+	// 		setSettings({
+	// 			...settings,
+	// 			owner: response.new_owner || settings.owner,
+	// 			users: settings.users
+	// 				.filter((usr) => usr.id !== response.user_id)
+	// 				.map(usr => ({
+	// 					...usr,
+	// 					role: usr.name === response.new_owner ? 'owner' : usr.role,
+	// 				})),
+	// 		});
+	// 	};
+	
+	// 	socket.on('leftChannel', handleUserLeftChannel);
+	
+	// 	return () => {
+	// 		socket.off('leftChannel', handleUserLeftChannel);
+	// 	};
+	// }, [settings]);
+
+	useEffect(() => {
+		const handleUserLeftChannel = (response: {channel: ChatRoom, userId: number}) => {
+			console.log(`User left channel (settings): ${JSON.stringify(response)}`);
+			// console.log(`New owner (settings): ${ response.new_owner}`);
+			if (!response.channel) {
+				return;
+			}
 			setSettings({
 				...settings,
-				owner: response.new_owner || settings.owner,
+				owner: response.channel.settings.owner || settings.owner,
 				users: settings.users
-					.filter((usr) => usr.id !== response.user_id)
+					.filter((usr) => usr.id !== response.userId)
 					.map(usr => ({
 						...usr,
-						role: usr.name === response.new_owner ? 'owner' : usr.role,
+						role: usr.name === response.channel.settings.owner ? 'owner' : usr.role,
 					})),
 			});
 		};
@@ -404,6 +430,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					<Button variant={settings?.type === ChannelType.private ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.private, null)}>Private</Button>
 					<Button variant={settings?.type === ChannelType.protected ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.protected, settings.password)}>Password Protected</Button>
 					</Stack>
+					
 
 					{/* Password field for password protected */}
 					{settings?.type === ChannelType.protected && (

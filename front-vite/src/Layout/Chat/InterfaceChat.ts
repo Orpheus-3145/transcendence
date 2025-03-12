@@ -22,15 +22,17 @@ export enum ChannelType {
 }
 
 export interface ChatMessage {
-  id: number,
+  id: number;
   message: React.ReactElement<typeof Typography>;
   user: string;
+  userId: number;
   userPP: React.ReactElement;
   timestamp: React.ReactElement;
+  receiver_id: number;
 }
 
 export interface UserProps {
-  id: number,
+  id: number;
   name: string;
   role: string;
   email: string;
@@ -49,7 +51,7 @@ export interface ChatSettings {
 }
 
 export interface ChatRoom {
-  id: number,
+  id: number;
   name: string;
   icon: React.ReactElement;
   messages: ChatMessage[];

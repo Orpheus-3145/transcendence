@@ -73,10 +73,11 @@ export const ChatProvider: React.FC = ({ children }) => {
 			const fetchAllChannels = () => {
 				socket.emit('getChannels');
 				socket.on('channelsList', (channels: ChatRoom[]) => {
-					setChatProps((prevState) => ({
-						...prevState,
-						chatRooms: channels,
-					}))
+					setChatProps((prevState) => {
+						console.log("Inside useEffect:", JSON.stringify(channels));
+						return {...prevState,
+						chatRooms: channels,}
+					})
 				});
 
 			return (() => socket.off('channelsList'));

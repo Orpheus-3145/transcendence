@@ -13,6 +13,7 @@ import { Channel, ChannelType } from 'src/entities/channel.entity';
 
 export class ChannelDTO {
 
+	
   constructor(channel: Channel) {
 
     this.channel_id = channel.channel_id;
