@@ -135,7 +135,7 @@ export class ChatService {
 		this.logger.log(`${user.nameNick} joined channel id: ${channel.channel_id}`);
 	}
 
-	async removeUserFromChannel(userToRemove: number | User, channel: number | Channel): Promise<void> {
+	async removeUserFromChannel(userToRemove: number | User, channel: number | Channel): Promise<Channel> {
 
 		if (typeof userToRemove === 'number')
 			userToRemove = await this.getUser(userToRemove);
@@ -158,7 +158,7 @@ export class ChatService {
 			// no other members, remove channel
 			this.logger.log(`${userToRemove.nameNick} was the last in the channel, removing it`);
 			await this.deleteChannel(memberToRemove.channel);
-			return ;
+			return null;
 		}
 
 		// if the user to remove is the owner, the ownership has to be changed
@@ -172,8 +172,8 @@ export class ChatService {
 			]);
 		}
 		await this.channelMemberRepository.delete({ channelMemberId: memberToRemove.channelMemberId });
-
 		this.logger.log(`${userToRemove.nameNick} left channel id: ${channel.channel_id}`);
+		return channel;
 	}
 
 	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message> {

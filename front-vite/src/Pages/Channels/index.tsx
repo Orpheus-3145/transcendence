@@ -1037,7 +1037,7 @@ const ChannelsPage: React.FC = () => {
 		}
 
 		var user = userMessage.get(msg.user);
-		
+		console.log(msg.user);
 		if (!user) {
 			fetchUser(msg.user);
 			return <Stack>Loading...</Stack>;
