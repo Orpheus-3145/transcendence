@@ -513,7 +513,7 @@ const ChannelsPage: React.FC = () => {
 			// Update the state with the new channel data received from the server
 			setChatProps((prevState) => ({
 				...prevState,
-				chatRooms: [newChannel],
+				chatRooms: [...prevState.chatRooms, newChannel],
 			}));
 			setChannelName('');
 			setIsAddingChannel(false);
