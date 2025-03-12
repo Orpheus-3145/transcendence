@@ -754,6 +754,7 @@ const ChannelsPage: React.FC = () => {
 				user: message.user,
 				userPP: <Avatar />,
 				timestamp: message.timestamp,
+				receiver_id: message.receiver_id,
 			}
 
 			setChatProps((prevProps) => ({
@@ -773,7 +774,7 @@ const ChannelsPage: React.FC = () => {
 		  	}),
 		  }));
 
-		  if (selectedChannel && ( selectedChannel.id === message.channel.channel_id)) {
+		  if (selectedChannel && ( selectedChannel.id === message.receiver_id)) {
 			setSelectedChannel((prevState) => ({
 				...prevState,
 				messages: [...prevState.messages, newMessage]
