@@ -750,6 +750,7 @@ const ChannelsPage: React.FC = () => {
 
 			const newMessage: ChatMessage = {
 				id: message.id,
+				userId: message.userId, 
 				message: message.message,
 				user: message.user,
 				userPP: <Avatar />,
@@ -1037,10 +1038,9 @@ const ChannelsPage: React.FC = () => {
 			);
 		}
 
-		var user = userMessage.get(msg.user);
-		console.log(msg.user);
+		var user = userMessage.get(msg.userId.toString());
 		if (!user) {
-			fetchUser(msg.user);
+			fetchUser(msg.userId.toString());
 			return <Stack>Loading...</Stack>;
 		}
 
