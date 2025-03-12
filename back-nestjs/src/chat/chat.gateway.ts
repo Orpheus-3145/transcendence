@@ -100,9 +100,10 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
 		const { user_id, channel_id } = data;
-		const ownerChannelName: string = await this.chatService.removeUserFromChannel(user_id, channel_id);
-		// ownerChannelName is an empty string if the channel got deleted, otherwise the owner name (regardless if it changed or not)
-		this.server.to(channel_id.toString()).emit('leftChannel', ownerChannelName);
+		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
+		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
+
+		this.server.to(channel_id.toString()).emit('leftChannel', channelDto);
 		client.leave(channel_id.toString());
 	}
 
