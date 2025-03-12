@@ -159,7 +159,7 @@ const ChannelsPage: React.FC = () => {
 				userInChannel(user.id, channel)
 			);
 		// console.log("Available (useEffect):", available);
-		// console.log("Joined (useEffect):", joined);
+		console.log("Joined (useEffect):", joined);
 		
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
@@ -382,17 +382,19 @@ const ChannelsPage: React.FC = () => {
 
 
 	useEffect(() => {
-    const handleUserLeftChannel = (response) => {
-        console.log(`User left channel (index): ${response.user_name}`);
-		
+    const handleUserLeftChannel = (response: ChatRoom, user_id: number) => {
+        console.log(`User left channel (index): ${response.id}`);
+		if (!response) {
+			return;
+		}
         setChatProps((prevState) => ({
             ...prevState,
             chatRooms: prevState.chatRooms.map((channel) => {
-                if (channel.id !== response.channel_id) {
+                if (channel.id !== response.id) {
 					return channel;
 				}
-                const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.user_id);
-				const newOwner = response;
+                const updatedUsers = channel.settings.users.filter((usr) => usr.id !== user_id);
+				const newOwner = response.settings.owner;
 				console.log('New owner (index) :', newOwner);
                 return {
                     ...channel,

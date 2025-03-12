@@ -102,7 +102,7 @@ export class ChatService {
 			this.changeMemberRole(channelOwner, newChannel, ChannelMemberType.owner),
 			this.changeOwnershipChannel(channelOwner, newChannel),
 		])
-		console.log(JSON.stringify(this.getAllChannels()));
+		// console.log(JSON.stringify(this.getAllChannels()));
 		return newChannel;
 	}
 

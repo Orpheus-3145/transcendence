@@ -324,19 +324,46 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	// }, []);
 
 
-	useEffect(() => {
-		const handleUserLeftChannel = (response) => {
-			console.log(`User left channel (settings): ${response.user_name}`);
-			// console.log(`New owner (settings): ${ response.new_owner}`);
+	// useEffect(() => {
+	// 	const handleUserLeftChannel = (response: ChatRoom) => {
+	// 		console.log(`User left channel (settings): ${response.user_name}`);
+	// 		// console.log(`New owner (settings): ${ response.new_owner}`);
 	
+	// 		setSettings({
+	// 			...settings,
+	// 			owner: response.new_owner || settings.owner,
+	// 			users: settings.users
+	// 				.filter((usr) => usr.id !== response.user_id)
+	// 				.map(usr => ({
+	// 					...usr,
+	// 					role: usr.name === response.new_owner ? 'owner' : usr.role,
+	// 				})),
+	// 		});
+	// 	};
+	
+	// 	socket.on('leftChannel', handleUserLeftChannel);
+	
+	// 	return () => {
+	// 		socket.off('leftChannel', handleUserLeftChannel);
+	// 	};
+	// }, [settings]);
+
+	useEffect(() => {
+		const handleUserLeftChannel = (response: ChatRoom, user_id: number) => {
+			console.log(`User left channel (settings): ${response.id}`);
+			// console.log(`New owner (settings): ${ response.new_owner}`);
+			if (!response) {
+				return;
+			}
+			
 			setSettings({
 				...settings,
-				owner: response.new_owner || settings.owner,
+				owner: response.settings.owner || settings.owner,
 				users: settings.users
-					.filter((usr) => usr.id !== response.user_id)
+					.filter((usr) => usr.id !== user_id)
 					.map(usr => ({
 						...usr,
-						role: usr.name === response.new_owner ? 'owner' : usr.role,
+						role: usr.name === response.settings.owner ? 'owner' : usr.role,
 					})),
 			});
 		};
