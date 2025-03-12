@@ -43,6 +43,7 @@ export class ChatMessageDTO {
   constructor(message: Message) {
 
     this.id = message.msg_id;
+    this.receiver_id = message.channel.channel_id;
     this.message = message.content;
     this.user = message.sender.user.nameNick;
     this.timestamp = message.created;
@@ -51,11 +52,17 @@ export class ChatMessageDTO {
   @IsInt()
   id: number;
 
+  @IsInt()
+  receiver_id: number;
+
   @IsString()
   message: string;
 
   @IsString()
   user: string;
+
+  @IsInt()
+  userId: number;
 
   @IsTimeZone()
   timestamp: Date;
