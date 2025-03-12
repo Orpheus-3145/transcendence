@@ -46,6 +46,7 @@ export class ChatMessageDTO {
     this.receiver_id = message.channel.channel_id;
     this.message = message.content;
     this.user = message.sender.user.nameNick;
+    this.userId = message.sender.user.id;
     this.timestamp = message.created;
   }
 

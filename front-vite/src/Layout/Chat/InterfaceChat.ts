@@ -25,6 +25,7 @@ export interface ChatMessage {
   id: number;
   message: React.ReactElement<typeof Typography>;
   user: string;
+  userId: number;
   userPP: React.ReactElement;
   timestamp: React.ReactElement;
   receiver_id: number;
