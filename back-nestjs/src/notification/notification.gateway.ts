@@ -118,7 +118,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		const acceptedFriendRequest: FriendRequest = await this.notificationService.getFriendRequest(data.notificationId);
 		const senderId: string = acceptedFriendRequest.sender.id.toString();
 		const receiverId: string = acceptedFriendRequest.receiver.id.toString();
-	
+
 		await Promise.all([
 			this.userService.updateNewFriendship(senderId, receiverId),
 			this.notificationService.acceptFriendRequest(acceptedFriendRequest),

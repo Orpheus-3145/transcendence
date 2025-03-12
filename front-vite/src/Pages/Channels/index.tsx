@@ -488,7 +488,7 @@ const ChannelsPage: React.FC = () => {
 			  socket.emit('joinRoom', room.id);
 			  joinedRooms.push(room.id);
 			  console.log(`Client socket joined room: ${room.id}`);
-			} 
+			}
 			// else {
 			//   console.log(`Already in room: ${room.id}`);
 			// }
@@ -708,7 +708,7 @@ const ChannelsPage: React.FC = () => {
 		  console.log('Received new message (React):', message);
 			//   console.log('Receiver id:', message.channel.channel_id);
 			console.log('Before update:', chatProps.chatRooms);
-			
+
 			// const newMessage = message;
 			const newMessage: ChatMessage = {
 				id: message.id,
@@ -722,7 +722,7 @@ const ChannelsPage: React.FC = () => {
 			  ...prevProps,
 			  chatRooms: prevProps.chatRooms.map((room) => {
 				// console.log('Checking room.id:', room.id);
-			  if (room.id === message.receiver_id) {
+			  if (room.id === message.receiver_id) {			// NB shall ChatMessage be modified to receive the receiver_id as well
 				  return {
 					...room,
 					messages: [

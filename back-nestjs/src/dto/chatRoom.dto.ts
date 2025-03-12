@@ -34,7 +34,7 @@ class UserPropsDTO {
   @IsEmail()
   email: string
 
-  // @IsString()    // NB probabily non needed
+  // @IsString()    // NB probabily not needed
   // password: string;
 }
 

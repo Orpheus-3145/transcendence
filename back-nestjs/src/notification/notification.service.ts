@@ -117,7 +117,7 @@ export class NotificationService {
 		});
 		newFriendRequest = await this.friendRequestRepository.save(newFriendRequest);
 		this.logger.log(`Sending friend request from ${sender.nameNick} to ${receiver.nameNick}`);
-		
+
 		return newFriendRequest;
 	}
 
@@ -180,7 +180,7 @@ export class NotificationService {
 		
 		this.logger.log(`${gameInvitation.receiver.nameNick} declined game invite from ${gameInvitation.sender.nameNick}`);
 	}
-	
+
 	async createMessageNotification(message: Message, receiver: ChannelMember): Promise<MessageNotification | null> {
 
 		if (this.isSenderBlocked(message.sender.user, receiver.user) == true)

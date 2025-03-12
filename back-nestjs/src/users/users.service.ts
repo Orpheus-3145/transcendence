@@ -99,7 +99,6 @@ export class UsersService {
     return user;
   }
 
-
 	async findGamesByUser(user: User) : Promise<Game[]> {
 
 		let gamesPlayedbyId: Game[] = await this.gamesRepository.find(
