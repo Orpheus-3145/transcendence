@@ -112,7 +112,7 @@ class ChatSettingsDTO {
 export class ChatRoomDTO {
 
   constructor(channel: Channel) {
-
+	console.log(JSON.stringify(channel));
     this.id = channel.channel_id;
     this.name = channel.title;
     this.messages = [];

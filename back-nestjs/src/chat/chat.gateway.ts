@@ -57,7 +57,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
 	@SubscribeMessage('createChannel')
 	async handleCreateChannel(@MessageBody() channelDTO: ChannelDTO, @ConnectedSocket() client: Socket): Promise<void> {
-		
 		// Assuming channelDTO contains channel information like title, type, users, etc.
 		let newChannel = await this.chatService.createChannel(channelDTO);
 		// Join the channel
@@ -102,10 +101,11 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	): Promise<void> {
 		const { user_id, user_name, channel_id } = data;
 		const updatedChannel = await this.chatService.removeUserFromChannel(user_id, channel_id);
-		if (updatedChannel) {
-			this.server.to(channel_id.toString()).emit('leftChannel', { user_id, user_name, channel_id, updatedChannel}); // NB replace with new owner name
+		console.log("updatedChannel:", JSON.stringify(updatedChannel));
+		// if (updatedChannel) {
+			this.server.to(channel_id.toString()).emit('leftChannel', { user_id, user_name, channel_id, updatedChannel }); // NB replace with new owner name
 			client.leave(channel_id.toString());
-		}
+		// }
 	}
 
 	@SubscribeMessage('kickUserFromChannel')

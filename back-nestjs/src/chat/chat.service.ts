@@ -102,7 +102,7 @@ export class ChatService {
 			this.changeMemberRole(channelOwner, newChannel, ChannelMemberType.owner),
 			this.changeOwnershipChannel(channelOwner, newChannel),
 		])
-
+		console.log(JSON.stringify(this.getAllChannels()));
 		return newChannel;
 	}
 
@@ -114,7 +114,7 @@ export class ChatService {
 		// because of the 'ON CASCADE' option, every message and every channel member
 		// related to chis channel will be removed as well 
 		await this.channelRepository.delete({ channel_id: channelToDelete.channel_id });
-
+		
 		this.logger.log(`Deleting channel id: ${channelToDelete.channel_id} (cleaning all related messages and members)`);
 	}
 

@@ -392,7 +392,7 @@ const ChannelsPage: React.FC = () => {
 					return channel;
 				}
                 const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.user_id);
-				const newOwner = response.new_owner;
+				const newOwner = response.updatedChannel.channel_owner.nameNick;
 				console.log('New owner (index) :', newOwner);
                 return {
                     ...channel,
