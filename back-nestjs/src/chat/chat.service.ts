@@ -380,5 +380,3 @@ export class ChatService {
 		return (await bcrypt.compare(inputPassword, channelPassword));
 	}
 }
-
-

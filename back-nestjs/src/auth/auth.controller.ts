@@ -18,8 +18,8 @@ export class AuthController {
 
 	// Token validation happens here. Part of this might make more sense as a guard middleware
 	@Get('validate')
-	async validate(@Req() req: Request, @Res() res: Response) {
-		await this.authService.validate(req, res);
+	async validateUser(@Req() req: Request, @Res() res: Response) {
+		await this.authService.validateUser(req, res);
 	}
 
 	@Get('logout')

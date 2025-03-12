@@ -287,7 +287,9 @@ const ProfilePage: React.FC = () => {
 						<Tooltip title="Win Ratio" arrow>
 						<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
 						</Tooltip>
-						<Typography>{Math.round((data.wonGames / data.totGames) * 100)}%</Typography>
+						<Typography>{
+						(data.totGames === 0) ? 0 :	Math.round((data.wonGames / data.totGames) * 100)
+						}%</Typography>
 					</Stack>
 				</Stack>
 			</Stack>

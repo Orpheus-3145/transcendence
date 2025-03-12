@@ -20,7 +20,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 					setUser(response.data.user);
 				}
-				if (response.data.user?.id === 0 && response.data.user?.auth2F) {
+				if (response.data.user?.id === 0 && response.data.user?.twoFAEnabled) {
 					navigate('/2fa');
 				}
 

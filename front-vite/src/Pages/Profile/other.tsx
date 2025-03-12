@@ -20,7 +20,8 @@ import { useUser,
 	blockFriend,
 	fetchRatios,
 	fetchOpponent,
-	fetchMatchData} from '../../Providers/UserContext/User';
+	fetchMatchData,
+	unBlockFriend} from '../../Providers/UserContext/User';
 import { addFriend, inviteToGame, sendMessage, socket } from '../../Providers/NotificationContext/Notification';
 import { PowerUpSelected } from '../../Types/Game/Enum';
 import {	User,
@@ -28,6 +29,7 @@ import {	User,
 			MatchRatio, } from '../../Types/User/Interfaces';
 import {UserStatus} from '../../Types/User/Enum';
 import { GameInviteModal } from '../Game/inviteModal';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 
 const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
@@ -37,9 +39,6 @@ const ProfilePageOther: React.FC = () => {
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
-	const [showInputMessage, setShowInputMessage] = useState<Boolean>(false);
-	const [inputMessage, setInputMessage] = useState<string>('');
-	const [showInput, setShowInput] = useState<Boolean>(false);
 	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<Number>(0);
 	const [isFriend, setIsFriend] = useState<Boolean>(false);
@@ -50,18 +49,17 @@ const ProfilePageOther: React.FC = () => {
 	const [showMessageFR, setShowMessageFR] = useState<Boolean>(false);
 	const [showMessageGR, setShowMessageGR] = useState<Boolean>(false);
 	const [showMessageMS, setShowMessageMS] = useState<Boolean>(false);
-	const [showMessageBL, setShowMessageBL] = useState<Boolean>(false);
 	const [showMessageUserBlocked, setShowMessageUserBlocked] = useState<Boolean>(false);
 	const messageFriendReqSend: string = "Friend request has been send!";
 	const messageGameReqSend: string = "Game Invite has been send!";
 	const messageMessageSend: string = "Message has been send!";
-	const messageBlockedSend: string = "User has been blocked!";
-	const messageUserBlocked: string = "This user has been blocked! Unblock him before doing the action!";
+	const messageUserBlocked: string = "You have been blocked by this user!";
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
 	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
 	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
+	const [isBlocked, setIsBlocked] = useState<Boolean>(false);
 
 
 	let redirectFriend = (id:number) =>
@@ -240,7 +238,9 @@ const ProfilePageOther: React.FC = () => {
 						<Tooltip title="Win Ratio" arrow>
 						<Cup sx={{ color: (theme) => theme.palette.secondary.main }} />
 						</Tooltip>
-						<Typography>{Math.round((data.wonGames / data.totGames) * 100)}%</Typography>
+						<Typography>{
+						(data.totGames === 0) ? 0 :	Math.round((data.wonGames / data.totGames) * 100)
+						}%</Typography>
 					</Stack>
 				</Stack>
 			</Stack>
@@ -438,22 +438,28 @@ const ProfilePageOther: React.FC = () => {
 
 	let userInfo = () => 
 	{
+		if (userProfile)
+		{
+			return (
+				<Stack
+					justifyContent={'space-between'}
+					margin={'1em'}
+					bgcolor={theme.palette.primary.dark}
+					sx={{
+						maxWidth: '1200px',
+						maxHeight: '300px',
+					}}
+				>
+					{GetProfilePic()}
+					{GetUserStatus()}
+					{GetNickName()}
+					{ButtonsProfileGrid()}
+					{OtherInfo()}
+				</Stack>
+			);
+		}
 		return (
-			<Stack
-				justifyContent={'space-between'}
-				margin={'1em'}
-				bgcolor={theme.palette.primary.dark}
-				sx={{
-					maxWidth: '1200px',
-					maxHeight: '300px',
-				}}
-			>
-				{GetProfilePic()}
-				{GetUserStatus()}
-				{GetNickName()}
-				{ButtonsProfileGrid()}
-				{OtherInfo()}
-			</Stack>
+			<Stack></Stack>
 		);
 	};
 
@@ -555,6 +561,14 @@ const ProfilePageOther: React.FC = () => {
 
 	let ButtonsProfileGrid = () =>
 	{
+		if (isBlocked)
+		{
+			return (
+				<Stack>
+					{UnblockButton()}
+				</Stack>
+			)
+		}
 		return (
 			<Stack>
 				{AddingFriendIcon()}
@@ -567,13 +581,12 @@ const ProfilePageOther: React.FC = () => {
 
 	let checkIfBlocked = () =>
 	{
-		if (user.blocked.find((blockedId:string) => blockedId === userProfile.intraId.toString())) 
+		if (userProfile.blocked.find((blockedId:string) => blockedId === user.intraId.toString())) 
 		{
 			setShowMessageUserBlocked(true);
 			setShowMessageMS(false);
 			setShowMessageFR(false);
 			setShowMessageGR(false);
-			setShowMessageBL(false);
 			return (true);
 		}
 		return (false);
@@ -588,14 +601,6 @@ const ProfilePageOther: React.FC = () => {
 		else if (which == "GR")
 		{
 			return (messageGameReqSend)
-		}
-		else if (which == "MS")
-		{
-			return (messageMessageSend);
-		}
-		else if (which == "BL")
-		{
-			return (messageBlockedSend);
 		}
 		return ("ERROR: something went wrong, try again!");
 	}
@@ -646,7 +651,7 @@ const ProfilePageOther: React.FC = () => {
 						color: 'red',
 						fontSize: '18px',
 						top: '-64px',
-						left: '310px',
+						left: '430px',
 					}}
 					>
 						{messageUserBlocked}
@@ -660,10 +665,8 @@ const ProfilePageOther: React.FC = () => {
 	{
 		if (checkIfBlocked() == true)
 			return ;
-		setShowMessageMS(false);
 		setShowMessageFR(true);
 		setShowMessageGR(false);
-		setShowMessageBL(false);
 		addFriend(user.id.toString(), userProfile.id.toString());
 	}
 
@@ -737,79 +740,33 @@ const ProfilePageOther: React.FC = () => {
 		handleModalClose();
 		if (checkIfBlocked() == true)
 			return ;
-		setShowMessageMS(false);
 		setShowMessageFR(false);
 		setShowMessageGR(true);
-		setShowMessageBL(false);
+		(false);
 
 		inviteToGame(user.id.toString(), userProfile.id.toString(), powerupValue);
 	}
 
-	const CheckChangeMessage = () => 
+	let redirectToChat = () =>
 	{
-		if (showInput)
-		{
-			setShowInput(false);
-		}
-		setShowInputMessage((prev) => !prev);
-	};
-
-	const handleKeyDownMessage = (event: React.KeyboardEvent<HTMLInputElement>) => 
-	{
-		const key = event.key;
-			if (key === 'Enter') 
-			{
-			if (inputMessage.length > 0)
-			{
-				if (checkIfBlocked() == true)
-					return ;
-				setInputMessage('');
-				setShowInputMessage(false);
-				setShowMessageMS(true);
-				setShowMessageFR(false);
-				setShowMessageGR(false);
-				setShowMessageBL(false);
-				sendMessage(user.id.toString(), userProfile.id.toString(), inputMessage);
-			}
-	 	}
-		}
+		navigate('/channels', {state: {otherId: userProfile.id.toString()}});
+	}
 	
 	let SendMessageIcon = () => 
 	{
 		var top = '-220px';
-		var topInputMessage = '-210px';
-		var topMessage = '-155px';
 		
 		if (isFriend)
 		{
 			top = '-175px';
-			topInputMessage = '-170px';
-		}
-		if (showInputMessage)
-		{
-			topMessage = '-195px'
-			if (isFriend)
-			{
-				topMessage = '-150px';
-			}
-		}
-		else
-		{
-			topMessage = '-110px';
-			if (!isFriend)
-			{
-				topMessage = '-157px';
-			}
 		}
 
 		if (showMessageGR || showMessageFR || showMessageUserBlocked)
 		{
 			top = '-247px';
-			topInputMessage = '-237px';
 			if (isFriend)
 			{
 				top = '-202px';
-				topInputMessage = '-197px';
 			}
 		}
 
@@ -818,7 +775,7 @@ const ProfilePageOther: React.FC = () => {
 				<Tooltip title="Send Message!" arrow>
 					<IconButton
 						variant="contained"
-						onClick={CheckChangeMessage}
+						onClick={() => redirectToChat()}
 						sx={{
 								fontSize: '30px',
 								top: top,
@@ -832,47 +789,14 @@ const ProfilePageOther: React.FC = () => {
 						<MessageIcon fontSize="inherit"/>
 					</IconButton>
 				</Tooltip>
-				{showInputMessage && (
-					<Input
-					value={inputMessage}
-					onChange={(e) => setInputMessage(e.target.value)}
-					onKeyDown={handleKeyDownMessage}
-					placeholder="Type a message..."
-					sx={{
-						position: 'relative',
-						top: topInputMessage,
-						left: '475px',
-						width: '200px',
-						height: '40px',
-					}}
-					/>
-				)}
-						{showMessageMS && (	
-					<Stack
-					sx={{
-						position: 'relative',
-						color: 'green',
-						fontSize: '18px',
-						top: topMessage,
-						left: '455px',
-					}}
-					>
-						{messageHandeler("MS")}
-					</Stack>
-				)}
 			</Stack>
 		);
 	}
 
 	let BlockUser = () => {
-		if (checkIfBlocked() == true)
-			return ;
-		setShowMessageMS(false);
-		setShowMessageFR(false);
-		setShowMessageGR(false);
-		setShowMessageBL(true);
-		blockFriend(user.id.toString(), userProfile.id.toString());
-		user.blocked.push(userProfile.id.toString());
+		user.blocked.push(profileIntraId.toString());
+		setIsBlocked(true);
+		blockFriend(user.id.toString(), profileIntraId.toString());
 	}
 
 	let BlockUserIcon = () =>
@@ -882,20 +806,9 @@ const ProfilePageOther: React.FC = () => {
 			return (<Stack></Stack>);
 		}
 		let top = '-268px';
-		let topShowMessageBl = '-201px';
-		if (showInputMessage)
-		{
-			top = '-308px';
-			topShowMessageBl = '-241px';
-		}
 		if ((showMessageFR) || (showMessageGR) || (showMessageMS) || (showMessageUserBlocked))
 		{
 			top = '-295px';
-			if (showInputMessage)
-			{
-				top = '-335px';
-			}
-
 		}
 	
 		return (
@@ -916,46 +829,63 @@ const ProfilePageOther: React.FC = () => {
 						<BlockIcon fontSize="inherit"/>	
 					</IconButton>
 				</Tooltip>
-				{showMessageBL && (	
-					<Stack
-					sx={{
-						position: 'relative',
-						color: 'red',
-						fontSize: '18px',
-						top: topShowMessageBl,
-						left: '470px',
-					}}
-					>
-						{messageHandeler("BL")}
-					</Stack>
-				)}
 			</Stack>
+		);
+	}
+
+	let handleUnblock = () =>
+	{
+		user.blocked.filter((item: string) => item !== profileIntraId.toString());
+		setIsBlocked(false);
+		unBlockFriend(user.id.toString(), profileIntraId.toString());
+	}
+	
+	let UnblockButton = () =>
+	{
+		return (
+			<Stack>
+				<Tooltip title="Unblock user!" arrow >
+					<IconButton
+						variant="contained"
+						onClick={() => handleUnblock()}
+						sx={{ 
+							position: 'relative',
+							top: '-100px',
+							fontSize: '30px',
+							left: '550px',
+							width: '50px',
+							'&:hover': {
+								color: '#0c31df',
+							},
+						}}
+					>
+						<LockOpenIcon fontSize="inherit"/>
+					</IconButton>
+				</Tooltip>
+			</Stack>	
 		);
 	}
 
 	let OtherInfo = () =>
 	{
 		let top = '-368px';
-		if (showInputMessage)
-			top = '-408px';
+
 		if (isFriend)
 			top = '-278px';
-		if (showInputMessage && isFriend)
-			top = '-318px';
-		if ((showMessageBL) || (showMessageFR) || (showMessageGR) || (showMessageMS) || (showMessageUserBlocked))
+	
+		if ((showMessageFR) || (showMessageGR) || (showMessageMS) || (showMessageUserBlocked))
 		{
 			top = '-395px';
-			if (showInputMessage)
-				top = '-435px';
 			if (isFriend)
 			{
 				top = '-305px';
-				if (showInputMessage)
-				{
-					top = '-345px';
-				}
 			}
 
+		}
+
+		if (isBlocked)
+		{
+			top = '-230px';
 		}
 
 		return (
@@ -1015,6 +945,10 @@ const ProfilePageOther: React.FC = () => {
 		setProfileIntraId(tmp.intraId);
 		setUserProfile(tmp);
 		setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
+		if (user.blocked.find((str: string) => str === tmp.intraId.toString()))
+			setIsBlocked(true);
+		else
+			setIsBlocked(false);
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
 		setMatchHistory(await fetchMatchData(tmp));
