@@ -53,13 +53,13 @@ const ProfilePage: React.FC = () => {
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
 	
 	let RemoveFriend = (id:string) => {
-		var newlist = friendsList.filter(friend => friend !== id);
+		var newlist: string[] = friendsList.filter((friend: String) => friend !== id);
 		setFriendsList(newlist);
 		removeFriend(userProfile.id.toString(), id);
 	}
 
 	let BlockFriend = (id:string) => {
-		var newlist = friendsList.filter(friend => friend !== id);
+		var newlist: string[] = friendsList.filter((friend: string) => friend !== id);
 		setFriendsList(newlist);
 		blockFriend(userProfile.id.toString(), id);
 	}
@@ -817,7 +817,7 @@ const ProfilePage: React.FC = () => {
 			{
 				newlist.push(newFriend);
 				setFriendsList(newlist);
-			}
+			} 
 		});
 
 	}, [lastSegment]);
