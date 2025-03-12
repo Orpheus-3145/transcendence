@@ -382,19 +382,20 @@ const ChannelsPage: React.FC = () => {
 
 
 	useEffect(() => {
-    const handleUserLeftChannel = (response: ChatRoom, user_id: number) => {
-        console.log(`User left channel (index): ${response.id}`);
-		if (!response) {
+    const handleUserLeftChannel = (response: {channel: ChatRoom, userId: number}) => {
+        console.log(`User left channel (index): ${JSON.stringify(response)}`);
+		if (!response.channel) {
 			return;
 		}
+
         setChatProps((prevState) => ({
             ...prevState,
             chatRooms: prevState.chatRooms.map((channel) => {
-                if (channel.id !== response.id) {
+                if (channel.id !== response.channel.id) {
 					return channel;
 				}
-                const updatedUsers = channel.settings.users.filter((usr) => usr.id !== user_id);
-				const newOwner = response.settings.owner;
+                const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.userId);
+				const newOwner = response.channel.settings.owner;
 				console.log('New owner (index) :', newOwner);
                 return {
                     ...channel,
@@ -464,7 +465,8 @@ const ChannelsPage: React.FC = () => {
 	
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
-			console.log('Channel privacy updated:', updatedChannel);
+			// console.log('Channel privacy updated:', updatedChannel);
+			console.log('Channel privacy updated to:', updatedChannel.settings.type);
 			setChatProps((prevState) => ({
 				...prevState,
 				chatRooms: prevState.chatRooms.map((room) =>
