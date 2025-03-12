@@ -99,13 +99,10 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@MessageBody() data: { user_id: number, user_name: string, channel_id: number },
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		const { user_id, user_name, channel_id } = data;
-		const updatedChannel = await this.chatService.removeUserFromChannel(user_id, channel_id);
-		console.log("updatedChannel:", JSON.stringify(updatedChannel));
-		// if (updatedChannel) {
-			this.server.to(channel_id.toString()).emit('leftChannel', { user_id, user_name, channel_id, updatedChannel }); // NB replace with new owner name
-			client.leave(channel_id.toString());
-		// }
+		const { user_id, channel_id } = data;
+		const ownerChannelName: string = await this.chatService.removeUserFromChannel(user_id, channel_id);
+		this.server.to(channel_id.toString()).emit('leftChannel', ownerChannelName);
+		client.leave(channel_id.toString());
 	}
 
 	@SubscribeMessage('kickUserFromChannel')
