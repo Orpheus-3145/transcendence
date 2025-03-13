@@ -61,15 +61,15 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		var websock: Websock = this.sockets.find((socket) => socket.client.id === client.id);
 
 		if (websock) {
-			this.userService.setStatus(websock.userId, UserStatus.Offline);
+			this.userService.setStatusId(websock.userId, UserStatus.Offline);
 			this.logger.log(`User id: ${websock.userId} is now offline`);
 		}
 
 		this.sockets = this.sockets.filter((s) => s.client.id !== client.id);
 	}
 
-	getUser(userId: string): Websock {
 
+	getUser(userId: string): Websock {
 		return (this.sockets.find((socket) => socket.userId === userId));
 	}
 
