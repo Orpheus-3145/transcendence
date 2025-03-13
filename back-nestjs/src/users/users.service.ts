@@ -83,12 +83,12 @@ export class UsersService {
 
 	async findOneNick(nameNick: string): Promise<User> {
 		const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
-		// if (!user)
-		// 	this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
-		// 		`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
-		// 		HttpStatus.NOT_FOUND);
+		if (!user)
+			this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
+				`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+				HttpStatus.NOT_FOUND);
 		return user;
-  }
+  	}
   
   async findOneIntraName(intraName: string): Promise<User> {
     const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
@@ -155,12 +155,19 @@ export class UsersService {
 			return (`'${newUsername}': invalid input, only letters, numbers, - and _ are allowed`);
 
 		const user = await this.getUserId(userId);
-		if (await this.findOneNick(newUsername))
-			return ("name already in use");
+		let oldUserName: string = "";
+		try
+		{
+			if (await this.findOneNick(newUsername))
+				return ("name already in use");
+		}
+		catch
+		{
+			oldUserName = user.nameNick;
+			user.nameNick = newUsername;
+			this.usersRepository.save(user);
+		}
 
-		const oldUserName: string = user.nameNick;
-		user.nameNick = newUsername;
-		this.usersRepository.save(user);
 		
 		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
 		return ("");
