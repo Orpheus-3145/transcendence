@@ -5,14 +5,12 @@ import { PowerUpSelected } from '../../Types/Game/Enum';
 
 interface SettingsModalProps {
 	open: boolean;
-	onClose: () => void;
-	setValue: (value: PowerUpSelected) => void;
+	onClose: (value: PowerUpSelected) => void;
 }
 
 export const GameInviteModal: React.FC<SettingsModalProps>  = ({ 
 	open,
 	onClose,
-	setValue,
 }) => {
 	const theme = useTheme();
 	const [speedball, setSpeedball] = useState<boolean>(false);
@@ -63,21 +61,20 @@ export const GameInviteModal: React.FC<SettingsModalProps>  = ({
 
 	let calculatePowerups = () =>
 	{
-		var value = PowerUpSelected.noPowerUp; 
+		var tmpValue = PowerUpSelected.noPowerUp; 
 		
 		if (speedball)
-			value |= PowerUpSelected.speedBall;
+			tmpValue |= PowerUpSelected.speedBall;
 		if (speedpaddle)
-			value |= PowerUpSelected.speedPaddle;
+			tmpValue |= PowerUpSelected.speedPaddle;
 		if (slowpaddle)
-			value |= PowerUpSelected.slowPaddle;
+			tmpValue |= PowerUpSelected.slowPaddle;
 		if (shrinkpaddle)
-			value |= PowerUpSelected.shrinkPaddle;
+			tmpValue |= PowerUpSelected.shrinkPaddle;
 		if (stretchpaddle)
-			value |= PowerUpSelected.stretchPaddle;
+			tmpValue |= PowerUpSelected.stretchPaddle;
 	
-		setValue(value);
-		onClose();
+		onClose(tmpValue);
 	}
 
 	return (
