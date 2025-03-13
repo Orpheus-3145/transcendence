@@ -81,7 +81,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 			user = { client: client, userId: data.id };
 			this.sockets.push(user);
-			this.userService.setStatus(user.userId, UserStatus.Online);
+			this.userService.setStatusId(user.userId, UserStatus.Online);
 			this.logger.log(`User id: ${user.userId} is now online`);
 		}
 		const allNotifications = await this.notificationService.findAllNotifications();

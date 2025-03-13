@@ -3,7 +3,7 @@ import { fetchLeaderboard } from '../../Providers/UserContext/User';
 import { Stack, Typography, Avatar, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import { LeaderboardData } from '../../Types/User/Interfaces';
+import { LeaderboardData, MatchRatio } from '../../Types/User/Interfaces';
 import { useState, useEffect } from 'react';
 import { alpha } from '@mui/material/styles';
 
@@ -66,19 +66,28 @@ export const Leaderboard: React.FC = () => {
 		);
 	}
 
-	let initLine = (item: LeaderboardData, type: string, index: number) =>
+	let calcRatio = (item: MatchRatio[], type: string) =>
 	{
 		var ratio: number = 0;
-		if (item.ratio != undefined)
+		if (item != undefined)
 		{
-			for (const a of item.ratio) 
+			for (const a of item) 
 			{
 				if (a.title === type) 
 				{
-					ratio = a.rate;
+					ratio = Math.round((a.wonGames / a.totGames) * 100);
+					if (Number.isNaN(ratio))
+						ratio = 0;
+					return (ratio);
 				}
 			}
-		}
+		}		
+	}
+
+	let initLine = (item: LeaderboardData, type: string, index: number) =>
+	{
+		var ratio: number | undefined = calcRatio(item.ratio, type);
+
 
 		var namenick: string | null = item.user.nameNick;
 		if (namenick != null && namenick?.length > 10)

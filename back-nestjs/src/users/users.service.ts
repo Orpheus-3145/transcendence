@@ -308,10 +308,15 @@ export class UsersService {
 			{
 				var tmpType = values.title;
 				var tmpRate = Math.round((values.wonGames / values.totGames) * 100);
-				if (tmpType === type && values.wonGames > 0)
+				if (Number.isNaN(tmpRate))
+					tmpRate = 0;
+				
+				if (tmpType === type && values.totGames > 0)
 				{
 					if (arr.length === 0)
+					{
 						arr.push(item);
+					}
 					else
 					{
 						const firstRate = Math.round((arr[0].ratio[ratioIndex].wonGames / arr[0].ratio[ratioIndex].totGames) * 100);
@@ -333,7 +338,8 @@ export class UsersService {
 				}
 			});
 		});
-		arr.splice(5);
+		if (arr.length > 5)
+			arr.splice(5);
 		return (arr);
 	}
 
@@ -358,7 +364,6 @@ export class UsersService {
 		var allData: LeaderboardDTO[] = [];
 
 		allData = await this.initLeaderboardArr(allUser);
-
 		// var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
 		// var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
 		// var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
