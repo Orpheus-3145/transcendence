@@ -132,14 +132,14 @@ export class UsersService {
 		return (user);
 	}
 
-	async setStatus(id: string, status: UserStatus)
+	async setStatusId(id: string, status: UserStatus)
 	{
 		const user = await this.getUserId(id);
 		user.status = status;
 		this.usersRepository.save(user);
 	}
 
-	async setUserStatus(id: number, which: UserStatus)
+	async setStatusIntra(id: number, which: UserStatus)
 	{
 		const user = await this.findOneIntra(id);
 		user.status = which;
@@ -340,15 +340,14 @@ export class UsersService {
 
 	async initLeaderboardArr(allUser: User[]): Promise<LeaderboardDTO[]>
 	{
-		var tmpratio: MatchRatioDTO[] = [];
 		var allData: LeaderboardDTO[] = [];
 
-		allUser.forEach(async (item: User) => 
+		for (const item of allUser) 
 		{
-			tmpratio = await this.calculateRatio(item);
-			var tmp: LeaderboardDTO = { user: new UserDTO(item), ratio: tmpratio };
+			const tmpratio = await this.calculateRatio(item);
+			const tmp: LeaderboardDTO = { user: new UserDTO(item), ratio: tmpratio };
 			allData.push(tmp);
-		});
+		}
 
 		return (allData);
 	}
@@ -360,7 +359,7 @@ export class UsersService {
 		var allData: LeaderboardDTO[] = [];
 
 		allData = await this.initLeaderboardArr(allUser);
-
+		
 		var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
 		var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
 		var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");

@@ -59,7 +59,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		var websock: Websock = this.sockets.find((socket) => socket.client.id === client.id);
 
 		if (websock) {
-			this.userService.setStatus(websock.userId, UserStatus.Offline);
+			this.userService.setStatusId(websock.userId, UserStatus.Offline);
 			this.logger.log(`User id: ${websock.userId} is now offline`);
 		}
 
@@ -73,7 +73,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			{
 			const newwebsock: Websock = { client: client, userId: data.id };
 			this.sockets.push(newwebsock);
-			this.userService.setStatus(data.id, UserStatus.Online);
+			this.userService.setStatusId(data.id, UserStatus.Online);
 			this.logger.log(`User id: ${data.id} is now online`);
 		}
 		var Noti = await this.notificationService.findNotificationReceiver(data.id);

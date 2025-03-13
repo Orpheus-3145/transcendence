@@ -30,7 +30,6 @@ export default class RoomManagerService {
 	}
 
 	createRoom(data: GameDataDTO): void {
-
 		this.rooms.set(data.sessionToken, this.gameRoomFactory(data));
 	}
 
@@ -38,6 +37,7 @@ export default class RoomManagerService {
 		for (const [sessionToken, simulationService] of this.rooms.entries()) {
 			try {
 				const player: PlayingPlayer = simulationService.getPlayerFromClient(client);
+				this.userService.setStatusIntra(player.intraId, UserStatus.Online);
 				simulationService.handleDisconnect(player);
 				this.deleteRoom(sessionToken);
 				break;
@@ -51,7 +51,7 @@ export default class RoomManagerService {
 	addPlayer(data: PlayerDataDTO, client: Socket): void {
 
 		const gameRoom = this.getRoom(data.sessionToken);
-		this.userService.setUserStatus(data.playerId, UserStatus.InGame);
+		this.userService.setStatusIntra(data.playerId, UserStatus.InGame);
 		gameRoom.addPlayer(data, client);
 	}
 
