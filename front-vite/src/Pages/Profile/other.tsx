@@ -713,7 +713,7 @@ const ProfilePageOther: React.FC = () => {
 			{modalOpen && 
 				<GameInviteModal 
 					open={modalOpen} 
-					onClose={(value: PowerUpSelected) => InviteToGame(value)} 
+					onClose={(value: number) => InviteToGame(value)} 
 				/>
 			}
 			{showMessageGR && (	
@@ -733,7 +733,7 @@ const ProfilePageOther: React.FC = () => {
 		);
 	}
 
-	let InviteToGame = (value: PowerUpSelected) => 
+	let InviteToGame = (value: number) => 
 	{
 		handleModalClose();
 		if (checkIfBlocked() == true)

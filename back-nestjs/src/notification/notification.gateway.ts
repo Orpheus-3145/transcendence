@@ -137,7 +137,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('sendGameInvite')
-	async sendGameInvite(@MessageBody() data: { senderId: string, receiverId: string, powerUps: PowerUpSelected }): Promise<void> 
+	async sendGameInvite(@MessageBody() data: { senderId: string, receiverId: string, powerUps: number }): Promise<void> 
 	{
 		const [user, other] = await Promise.all([
 			this.userService.getUserId(data.senderId),

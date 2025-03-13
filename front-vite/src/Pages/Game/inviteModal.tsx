@@ -59,8 +59,7 @@ export const GameInviteModal: React.FC<SettingsModalProps>  = ({
 			setStretchpaddle(false);
 	}
 
-	let calculatePowerups = () =>
-	{
+	let calculatePowerups = () => {
 		var tmpValue = PowerUpSelected.noPowerUp; 
 		
 		if (speedball)
