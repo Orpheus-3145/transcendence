@@ -52,12 +52,10 @@ const ProfilePageOther: React.FC = () => {
 	const [showMessageUserBlocked, setShowMessageUserBlocked] = useState<Boolean>(false);
 	const messageFriendReqSend: string = "Friend request has been send!";
 	const messageGameReqSend: string = "Game Invite has been send!";
-	const messageMessageSend: string = "Message has been send!";
 	const messageUserBlocked: string = "You have been blocked by this user!";
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
 	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
-	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
 	const [isBlocked, setIsBlocked] = useState<Boolean>(false);
 
@@ -715,8 +713,7 @@ const ProfilePageOther: React.FC = () => {
 			{modalOpen && 
 				<GameInviteModal 
 					open={modalOpen} 
-					onClose={() => InviteToGame()} 
-					setValue={(revalue: PowerUpSelected) => {setPowerupValue(revalue)}} 
+					onClose={(value: number) => InviteToGame(value)} 
 				/>
 			}
 			{showMessageGR && (	
@@ -736,15 +733,14 @@ const ProfilePageOther: React.FC = () => {
 		);
 	}
 
-	let InviteToGame = () => {
+	let InviteToGame = (value: number) => 
+	{
 		handleModalClose();
 		if (checkIfBlocked() == true)
 			return ;
 		setShowMessageFR(false);
 		setShowMessageGR(true);
-		(false);
-
-		inviteToGame(user.id.toString(), userProfile.id.toString(), powerupValue);
+		inviteToGame(user.id.toString(), userProfile.id.toString(), value);
 	}
 
 	let redirectToChat = () =>

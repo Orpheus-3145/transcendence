@@ -38,7 +38,7 @@ export enum PowerUpSelected {
   stretchPaddle = 1 << 4  // (10000)
 }
 
-export function fromMaskToArray(values: PowerUpSelected): Array<PowerUpType> {
+export function fromMaskToArray(values: number): Array<PowerUpType> {
 		
 	let powerUps: Array<PowerUpType> = [];
 
@@ -60,9 +60,9 @@ export function fromMaskToArray(values: PowerUpSelected): Array<PowerUpType> {
 	return powerUps;
 }
 
-export function fromArrayToMask(values: Array<PowerUpType>): PowerUpSelected {
+export function fromArrayToMask(values: Array<PowerUpType>): number {
 
-	let powerUps: PowerUpSelected = PowerUpSelected.noPowerUp;
+	let powerUps: number = PowerUpSelected.noPowerUp;
 
 	if ( values.includes(PowerUpType.speedBall) )
 		powerUps |= PowerUpSelected.speedBall;

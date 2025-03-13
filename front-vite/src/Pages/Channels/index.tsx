@@ -903,13 +903,13 @@ const ChannelsPage: React.FC = () => {
 		return (false);
 	}
 
-	const InviteGame = (otherUser: User) => {
-		
+	const InviteGame = (value: PowerUpSelected, otherUser: User) => 
+	{
 		handleModalClose();
 		if (checkIfBlocked(otherUser) == true)
 				return ;
 
-		inviteToGame(user.id.toString(), otherUser.id.toString(), powerupValue);
+		inviteToGame(user.id.toString(), otherUser.id.toString(), value);
 	}
 
 	const UserLine: React.FC<{eveuser: User}> = ({user}) => {
@@ -951,8 +951,7 @@ const ChannelsPage: React.FC = () => {
 				{modalOpen && 
 					<GameInviteModal 
 						open={modalOpen} 
-						onClose={() => InviteGame(user)} 
-						setValue={(revalue: PowerUpSelected) => {setPowerupValue(revalue)}} 
+						onClose={(Value: PowerUpSelected) => InviteGame(Value, user)} 
 					/>
 				}
 				<Tooltip title='Send a direct messsage' arrow>

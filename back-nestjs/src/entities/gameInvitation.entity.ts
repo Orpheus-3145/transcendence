@@ -43,8 +43,8 @@ export class GameInvitation {
 
   @Column({
     name: 'powerup',
-    type: 'enum',
-    enum: PowerUpSelected,
+    // type: 'number',
+    // enum: PowerUpSelected,
     default: PowerUpSelected.noPowerUp,
   })
   powerUpsSelected: PowerUpSelected;
