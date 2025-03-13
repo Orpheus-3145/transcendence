@@ -979,7 +979,7 @@ const ProfilePageOther: React.FC = () => {
 			return <Stack>Loading...</Stack>;
 		if (!userProfile)
 			return <Stack>Loading...</Stack>;
-
+ 
 		return pageWrapperOther();
 	}
 

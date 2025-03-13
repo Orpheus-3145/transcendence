@@ -18,7 +18,10 @@ export class UsersController {
 
 	@Get('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
-		return (this.UserService.getUserId(username));
+		var user = this.UserService.findOneId(Number(username));
+		if (!user)
+			throw new HttpException('Not Found', 404);
+		return (user);
 	}
 
 	@Get('/profile/fetchUser/:username')
