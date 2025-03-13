@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState } from 'react'
-import { ChatProps, ChatStatus, ChatRoom } from './InterfaceChat';
+import { ChatProps, ChatStatus, ChatRoom, ChannelType } from './InterfaceChat';
 import { Box, Drawer, Divider, Stack, IconButton, InputBase, Typography } from '@mui/material';
 import { darken, alpha, useTheme } from '@mui/material/styles';
 import { Add as AddIcon, Settings as SettingsIcon, Logout as LogoutIcon, Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
@@ -55,7 +55,7 @@ const ContentDrawer: React.FC<ContentDrawerProps> = ({ chatProps, setChatProps }
 					messages: [],
 					settings: {
 						icon: <ChatIcon />,
-						type: 'public',
+						type: ChannelType.public,
 						password: null,
 						users: [],
 						owner: 'OwnerName',

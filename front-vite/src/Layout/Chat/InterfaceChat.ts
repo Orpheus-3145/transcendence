@@ -10,21 +10,29 @@ export enum ChatStatus {
 }
 
 export enum UserRoles {
-  Admin = 'admin',
-  Member = 'member',
-  Owner = 'owner',
+  admin = 'admin',
+  member = 'member',
+  owner = 'owner',
+}
+
+export enum ChannelType {
+	public = 'public',
+	protected = 'protected',
+	private = 'private',
 }
 
 export interface ChatMessage {
-  id: number,
+  id: number;
   message: React.ReactElement<typeof Typography>;
   user: string;
+  userId: number;
   userPP: React.ReactElement;
   timestamp: React.ReactElement;
+  receiver_id: number;
 }
 
 export interface UserProps {
-  id: number,
+  id: number;
   name: string;
   role: string;
   email: string;
@@ -34,7 +42,7 @@ export interface UserProps {
 
 export interface ChatSettings {
 	icon: React.ReactElement;
-	type: 'public' | 'private' | 'password';
+	type: ChannelType;
 	password: string | null;
 	users: UserProps[];
 	owner: string;
@@ -43,7 +51,7 @@ export interface ChatSettings {
 }
 
 export interface ChatRoom {
-  id: number,
+  id: number;
   name: string;
   icon: React.ReactElement;
   messages: ChatMessage[];

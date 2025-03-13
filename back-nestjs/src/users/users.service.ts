@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpStatus, ConsoleLogger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -99,7 +99,6 @@ export class UsersService {
     return user;
   }
 
-
 	async findGamesByUser(user: User) : Promise<Game[]> {
 
 		let gamesPlayedbyId: Game[] = await this.gamesRepository.find(
@@ -172,14 +171,14 @@ export class UsersService {
 		return (this.findOneIntra(Number(code)));
 	}
 
-	async friendRequestAccepted(iduser:string, idother:string)
+	async updateNewFriendship(iduser:string, idother:string)
 	{
 		const [user, otheruser] = await Promise.all([this.getUserId(iduser), this.getUserId(idother)]);
 
-		(user).friends.push((otheruser).intraId.toString());
+		(user).friends.push((otheruser).id.toString());
 		this.usersRepository.save((user));
 
-		(otheruser).friends.push((user).intraId.toString());
+		(otheruser).friends.push((user).id.toString());
 		this.usersRepository.save((otheruser));
 
 		this.logger.log(`Created friendship between ${user.nameNick} and ${otheruser.nameNick}`);
@@ -187,11 +186,11 @@ export class UsersService {
 
 	async removeFriend(user: User, other: User)
 	{
-		let newlist = user.friends.filter(friend => friend !== other.intraId.toString());
+		let newlist = user.friends.filter(friend => friend !== other.id.toString());
 		user.friends = newlist;
 		this.usersRepository.save(user);
 		
-		newlist = other.friends.filter(afriend => afriend !== user.intraId.toString());
+		newlist = other.friends.filter(afriend => afriend !== user.id.toString());
 		other.friends = newlist;
 		this.usersRepository.save(other);
 
@@ -208,7 +207,7 @@ export class UsersService {
 		user.blocked.push(other.intraId.toString());
 		this.usersRepository.save(user);
 
-		this.logger.log(`User ${user.nameNick} blocked ${other.nameNick}`);
+		this.logger.log(`${user.nameNick} blocked ${other.nameNick}`);
 	}
   
 	async unBlockUser(user: User, other: User)
@@ -217,14 +216,14 @@ export class UsersService {
 		user.blocked = newlist;
 		this.usersRepository.save(user);
 	
-		this.logger.log(`User ${user.nameNick} unblocked ${other.nameNick}`);
+		this.logger.log(`${user.nameNick} unblocked ${other.nameNick}`);
 	}
 
 	async changeProfilePic(user: User, image:string)
 	{
 		user.image = image;
 		this.usersRepository.save(user);
-		this.logger.log(`User ${user.nameNick} updated their profile picture`);
+		this.logger.log(`${user.nameNick} updated their profile picture`);
 		return (image);
 	}
 
@@ -286,7 +285,7 @@ export class UsersService {
 			}
 		};
 
-		this.logger.debug(`Fetching matche ratios for user ${user.nameNick}`);
+		this.logger.debug(`Fetching matches ratios for user ${user.nameNick}`);
 		return [
 			{title: "Normal", wonGames: nonPowerUpMatchesWon, totGames: nonPowerUpMatches},
 			{title: "Power ups", wonGames: powerUpMatchesWon, totGames: powerUpMatches},
@@ -359,10 +358,16 @@ export class UsersService {
 		var allData: LeaderboardDTO[] = [];
 
 		allData = await this.initLeaderboardArr(allUser);
-		
-		var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
-		var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
-		var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
+
+		// var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
+		// var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
+		// var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
+
+		const [normalArr, powerArr, allArr] = await Promise.all([
+			this.fillArray(allData, "Normal"),
+			this.fillArray(allData, "Power ups"),
+			this.fillArray(allData, "All"),
+		])
 
 		var result: LeaderboardDTO[][] = [];
 		result.push(normalArr, powerArr, allArr);

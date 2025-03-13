@@ -46,7 +46,7 @@ export const Notification: React.FC = () => {
 	{
 		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);
 		
-		if (type == NotificationType.Message || type == NotificationType.groupChat)
+		if (type === NotificationType.message || type == NotificationType.groupChat)
 		{
 			setMessageArray(tmparr);
 		}
@@ -63,7 +63,7 @@ export const Notification: React.FC = () => {
 	let removeNotification = (noti: NotificationStruct) =>
 	{
 		removeNotiFromArray(noti, messageArray, noti.type);
-		removeNotificationDb(noti.id.toString());
+		removeNotificationDb(noti.id);
 	}
 
 	let whichMessage = (noti: NotificationStruct) =>
@@ -205,13 +205,13 @@ export const Notification: React.FC = () => {
 		{
 			setOpenDrawer(false);
 			removeNotiFromArray(noti, friendRequestArray, NotificationType.friendRequest);
-			acceptFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+			acceptFriendRequest(noti.id);
 		}
 		else if (noti.type == NotificationType.gameInvite)
 		{
 			setOpenDrawer(false);
 			removeNotiFromArray(noti, gameInviteArray, NotificationType.gameInvite);
-			acceptGameInvite(noti.senderId.toString(), noti.receiverId.toString());
+			acceptGameInvite(noti.id);
 		}
 	}
 
@@ -220,12 +220,12 @@ export const Notification: React.FC = () => {
 		if (noti.type == NotificationType.friendRequest)
 		{
 			removeNotiFromArray(noti, friendRequestArray, NotificationType.friendRequest);
-			declineFriendRequest(noti.senderId.toString(), noti.receiverId.toString());
+			declineFriendRequest(noti.id);
 		}
 		else if (noti.type == NotificationType.gameInvite)
 		{
 			removeNotiFromArray(noti, gameInviteArray, NotificationType.gameInvite);
-			declineGameInvite(noti.senderId.toString(), noti.receiverId.toString());
+			declineGameInvite(noti.id);
 		}
 	}
 

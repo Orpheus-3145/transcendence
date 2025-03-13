@@ -9,15 +9,14 @@ import { WebSocketGateway,
 import { Server, Socket } from 'socket.io';
 
 import { ChatService } from './chat.service';
-import UserDTO from '../dto/user.dto';
-import { ChatDTO } from '../dto/chat.dto';
-import { Channel } from '../entities/chat.entity';
+import { ChatMessageDTO, ChatRoomDTO } from '../dto/chatRoom.dto'
+import { Channel, ChannelMemberType, ChannelType } from '../entities/channel.entity';
+import AppLoggerService from 'src/log/log.service';
+import { UseFilters } from '@nestjs/common';
+import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
+import { ChannelDTO } from 'src/dto/channel.dto';
+import { MessageDTO } from 'src/dto/message.dto';
 
-// export interface ConnectedUser {
-// 	clientSocket: Socket,
-// 	intraId: number,
-// 	nameIntra: string,
-// }
 
 @WebSocketGateway( {
 	namespace: process.env.WS_NS_CHAT, 		// Defines WebSocket namespace (e.g., "/chat")
@@ -28,15 +27,19 @@ import { Channel } from '../entities/chat.entity';
 	},
 	transports: ['websocket'],				// Uses only WebSocket (no polling)
 })
-
+@UseFilters(SessionExceptionFilter)
 export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@WebSocketServer()
 	server: Server;
 
-	// private connectedUsers: Array<ConnectedUser> = new Array(); 
 	private connectedClients = new Map<string, Socket>();
 	
-	constructor(private chatService: ChatService) {};
+	constructor(
+		private readonly chatService: ChatService,
+		private readonly logger: AppLoggerService
+	) {
+		this.logger.setContext(ChatGateway.name);	
+	};
 	
 	handleConnection(client: Socket) {
 
@@ -45,55 +48,37 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	}
 
 	handleDisconnect(client: Socket) {
-		console.log(`Client disconnected to ChatGateway: ${client.id}`);
+		this.logger.debug(`Client disconnected to ChatGateway: ${client.id}`);
 		this.connectedClients.delete(client.id);
-		console.log("Connected clients after disconnect from ChatGateway:", Array.from(this.connectedClients.keys()));
+
+		this.logger.debug("Connected clients after disconnect from ChatGateway:", Array.from(this.connectedClients.keys()));
 		this.server.emit('clientsUpdated', Array.from(this.connectedClients.keys()));
 	}
 
-	// getAllConnectedClients(): string[] {
-	// 	return Array.from(this.connectedClients.keys());
-	// }
-
-  	// Handle channel creation
-  	@SubscribeMessage('createChannel')
-  	async handleCreateChannel(
-  	  @MessageBody() chatDTO: ChatDTO, 
-  	  @ConnectedSocket() client: Socket
-  	): Promise<void> {
-  	  try {
-  	    // Assuming chatDTO contains channel information like title, type, users, etc.
-  	    const newChannel = await this.chatService.createChannel(chatDTO);
+	@SubscribeMessage('createChannel')
+	async handleCreateChannel(@MessageBody() channelDTO: ChannelDTO, @ConnectedSocket() client: Socket): Promise<void> {
+		// Assuming channelDTO contains channel information like title, type, users, etc.
+		let newChannel = await this.chatService.createChannel(channelDTO);
 		// Join the channel
 		client.join(newChannel.channel_id.toString());
-  	    // Emit back the created channel to the client
-  	    this.server.emit('channelCreated', newChannel);
+		// re-doing the query because the relations are needed
+		newChannel = await this.chatService.getChannel(newChannel.channel_id);
+		// Emit back the created channel to the client
+		this.server.emit('channelCreated', new ChatRoomDTO(newChannel));
 		// Send success message to the user who created the channel
-  	    console.log(`New channel created: ${newChannel.title}`);
-  	  } catch (error) {
-  	    console.error('Error creating channel:', error);
-  	    client.emit('errorCreatingChannel', { message: 'Error creating channel' });
-  	  }
-  	}
+		client.emit('createChannelSuccess', { message: 'Channel created successfully', channel: newChannel });
+	}
 
-	// Join a specific room/channel
 	@SubscribeMessage('joinChannel')
 	async handleJoinChannel(
 		@MessageBody() data: { channel_id: number, name: string, user_id: number, email: string },
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
+		
 		const {channel_id, name, user_id, email} = data;
-		// console.log(`User ${client.id} joined channel ${channel}`);
-		try {
-			await this.chatService.addUserToChannel(user_id, name, channel_id, );
-			client.join(channel_id.toString());
-			// client.emit('joinedChannel', { user_id, channel_id, name, email });
-			this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
-			console.log(`User ${user_id} successfully joined channel ${channel_id}`);
-		} catch (error) {
-			console.error(`Error joining channel: ${error.message}`);
-			client.emit('joinChannelError', { message: 'Could not join channel' });
-		}
+		await this.chatService.addUserToChannel(channel_id, user_id);
+		client.join(channel_id.toString());
+		this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}
 
 	@SubscribeMessage('joinAvailableChannel')
@@ -101,275 +86,144 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@MessageBody() data: { channel_id: number, name: string, user_id: number, email: string },
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
+		
 		const {channel_id, name, user_id, email} = data;
-		// console.log(`User ${client.id} joined channel ${channel}`);
-		try {
-			await this.chatService.addUserToChannel(user_id, name, channel_id, );
-			client.join(channel_id.toString());
-			// client.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
-			this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { user_id, channel_id, name, email });
-			// this.server.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
-			console.log(`User ${user_id} successfully joined channel ${channel_id}`);
-		} catch (error) {
-			console.error(`Error joining channel: ${error.message}`);
-			client.emit('joinChannelError', { message: 'Could not join channel' });
-		}
+		await this.chatService.addUserToChannel(channel_id, user_id );
+		client.join(channel_id.toString());
+// 		client.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
+		this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { user_id, channel_id, name, email });
 	}
 
-	// Leave a specific room/channel
 	@SubscribeMessage('leaveChannel')
 	async handleLeaveChannel(
-		// @MessageBody('channel') channel: string,
-		@MessageBody() data: {user_id: number, user_name: string, channel_id: number, role: string},
+		@MessageBody() data: { user_id: number, user_name: string, channel_id: number },
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		try {
-			const {user_id, user_name, channel_id, role} = data;
-			const new_owner =  await this.chatService.removeUserFromChannel(user_id, channel_id, role);
-			// await this.chatService.removeUserFromChannel(user_id, channel_id, role);
-			this.server.to(channel_id.toString()).emit('leftChannel', { user_id, user_name, channel_id, new_owner });
-			// client.emit('leftChannel', { user_id, channel_id });
-			// this.server.emit('leftChannel', { user_id, user_name, channel_id });
-			client.leave(channel_id.toString());
-			console.log(`Client ${client.id} left channel ${ channel_id }`);
-			// client.emit('leftChannel', { channel_id });
-		} catch (error) {
-			console.error(`Error leaving channel: ${error.message}`);
-			client.emit('leavingChannelError', { message: 'Could not leave channel' });
-		}
+		const { user_id, channel_id } = data;
+		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
+		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
+		console.log(JSON.stringify(channelDto));
+		this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, user_id});
+		client.leave(channel_id.toString());
 	}
 
 	@SubscribeMessage('kickUserFromChannel')
 	async kickUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
 	{
-		this.chatService.removeUserFromChannel(data.userid, data.channelid, "");
+		await this.chatService.removeUserFromChannel(data.userid, data.channelid);
 		this.server.emit('userKicked', {id: data.channelid, userId: data.userid});
 	}
 
 	@SubscribeMessage('banUserFromChannel')
-	async banUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	async banUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
 	{
-		this.chatService.banUserFromChannel(data.userid, data.channelid);
-		this.server.emit('userBanned', {id: data.channelid, userId: data.userid});
+		await this.chatService.banUserFromChannel(data.userid, data.channelId);
+		this.server.emit('userBanned', {id: data.channelId, userId: data.userid});
 	}
 
 	@SubscribeMessage('unbanUserFromChannel')
-	async unbanUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	async unbanUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
 	{
-		this.chatService.unbanUserFromChannel(data.userid, data.channelid);
-		this.server.emit('userUnbanned', {id: data.channelid, userId: data.userid});
+		await this.chatService.unbanUserFromChannel(data.userid, data.channelId);
+		this.server.emit('userUnbanned', {id: data.channelId, userId: data.userid});
 	}
 
 	@SubscribeMessage('muteUserFromChannel')
-	async muteUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	async muteUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
 	{
-		this.chatService.muteUserFromChannel(data.userid, data.channelid);
-		this.server.emit('userMuted', {id: data.channelid, userId: data.userid});
-
+		await this.chatService.muteUserFromChannel(data.userid, data.channelId);
+		this.server.emit('userMuted', {id: data.channelId, userId: data.userid});
 	}
 
 	@SubscribeMessage('unmuteUserFromChannel')
-	async unmuteUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	async unmuteUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
 	{
-		this.chatService.unmuteUserFromChannel(data.userid, data.channelid);
-		this.server.emit('userUnmuted', {id: data.channelid, userId: data.userid});
+		await this.chatService.unmuteUserFromChannel(data.userid, data.channelId);
+		this.server.emit('userUnmuted', {id: data.channelId, userId: data.userid});
 	}
 
 	@SubscribeMessage('sendMessage')
 	async handleSendMessage(
-	  @MessageBody() messageData: { sender_id: number, receiver_id: number, content: string },
-	  @ConnectedSocket() client: Socket,
+	  @MessageBody() messageData: { sender_id: number, receiver_id: number, content: string }
 	): Promise<void> {
-	  try {
-		const { sender_id, receiver_id, content } = messageData;
-	
-		// Save message to DB
-		const newMessage = await this.chatService.saveMessage(sender_id, receiver_id, content);
-		// console.log('New message (gateway):', newMessage);
-		// Emit the message to the specific channel
-		this.server.to(receiver_id.toString()).emit('newMessage', newMessage);
-		// this.server.emit('newMessage', newMessage);
-	
-		console.log(`Message sent from user (id: ${sender_id}) (socket: ${client.id}) to channel (id: ${receiver_id}) : ${content}`);
-	  } catch (error) {
-		console.error('Error sending message:', error);
-		client.emit('error', { message: 'Error sending message' });
-	  }
-	}
-	
-
-
-
-	// // Handle messages sent to a specific channel
-	// @SubscribeMessage('sendMessage')
-	// async handleMessage(
-	// 	@MessageBody() data: {client_id: number, channel_id: number, message: string,}, 
-	// 	@ConnectedSocket() client: Socket,
-	// ): Promise<void> {
-	// 	const {client_id, channel_id, message,} = data; 
-
-	// 	console.log(`Message to channel_id ${channel_id} from user_id ${client_id} (socket id: ${client.id}): ${message}`);
-
-	// 	// Save the message to the database
-	// 	const savedMessage = await this.chatService.sendMessage(client_id, channel_id, message);
-	// 	console.log('New message:', savedMessage);
-
-	// 	// const updatedMessages = await this.chatService.getMessagesForChannel(channel_id);
-
-	// 	// console.log('updatedMessages: ', updatedMessages);
-
-	// 	// this.server.emit('newMessage', {
-	// 	// 	channel_id,
-	// 	// 	messages: updatedMessages, // Send the full list of messages for the channel
-	// 	// });
-
-	// 	// this.server.emit('newMessage', { channel_id, message: savedMessage });
 		
-	// 	this.server.to(channel_id.toString()).emit('newMessage', {
-	// 		channel_id,
-	// 		message: savedMessage, // Send only the new message
-	// 	});
+		const { sender_id, receiver_id, content } = messageData;
+		const newMessage = await this.chatService.createMessage(receiver_id, sender_id, content);
+		// Emit the message to the specific channel
+		this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage));
+	}
 
-	// 	// // Broadcast the updated messages to clients in the channel
-  	// 	// this.server.to(channel_id.toString()).emit('newMessage', {
-  	// 	// 	channel_id,
-  	// 	// 	messages: updatedMessages, // Send the full list of messages for the channel
-  	// 	// });
-	// }
-
-	// // Handle messages sent to a specific channel
-	// @SubscribeMessage('sendMessage')
-	// // async handleMessage(
-	// 	// @MessageBody('channel') channel: string,
-		// // @MessageBody('message') message: string,
-	// 	// @ConnectedSocket() client: Socket,
-	// // ): Promise<void> {
-	// 	// console.log(`Message to channel ${channel} from ${client.id}: ${message}`);
-
-		// Save the message to the database
-		// // await this.chatService.sendMessage(+client.id, +channel, message);
-
-		// Broadcast to other clients in the channel
-	// 	// this.server.to(channel).emit('newMessage', { message, channel, senderId: client.id });
-	// // }
-
-	// Get all channels
 	@SubscribeMessage('getChannels')
-  	async handleGetChannels(@ConnectedSocket() client: Socket): Promise<void> {
-    	try {
-    	  const channels = await this.chatService.getAllChannels();
-    	  client.emit('channelsList', channels);  // Emit back the channels to the client
-    	//   client.emit('channelsList', channels);  // Emit back the channels to the client
-    	} catch (error) {
-    	  console.error('Error fetching channels:', error);
-    	  client.emit('error', { message: 'Failed to fetch channels' });
-    	}
-  	}
+	async handleGetChannels(@ConnectedSocket() client: Socket): Promise<void> {
 
-	// Delete a channel
+		const channels: Channel[] = await this.chatService.getAllChannels();
+
+		const chatDto: ChatRoomDTO[] = [];
+		for (const chat of channels) {
+			chatDto.push(new ChatRoomDTO(chat));
+			console.log(chat.channel_id);
+		}
+		// console.log('Channels', JSON.stringify(chatDto));
+		client.emit('channelsList', chatDto);  // Emit back the channels to the client
+	}
+
 	@SubscribeMessage('deleteChannel')
 	async handleDeleteChannel(
 		@MessageBody() channel_id: number,
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		try {
-			const deletedChannel = await this.chatService.deleteChannel(channel_id);
-			// console.log('Deleted Channel', deletedChannel);
-			if (deletedChannel) {
-				console.log(`Channel deleted: ${deletedChannel.title}`);
-				this.server.emit('channelDeleted', {channel_id});
-				// this.server.emit('channelDeleted', deletedChannel);
-				// client.emit('channelDeleted', deletedChannel);
-			} else {
-				client.emit('error', { message: 'Channel not found or could not be deleted' });
-			}
-		} catch (error) {
-			console.error(error);
-			client.emit('error', { message: 'Error deleting channel' });
-		}
+
+		await this.chatService.deleteChannel(channel_id);
+		this.server.emit('channelDeleted', {channel_id});
 	}
 
-	// Change privacy
 	@SubscribeMessage('changePrivacy')
 	async handleChangePrivacy(
-		@MessageBody() data: { channel_type: string; channel_id: number; password: string },
-		@ConnectedSocket() client: Socket,
-	): Promise<{ success: boolean; updatedChannel?: Channel; message?: string }> {
+		@MessageBody() data: { channel_type: ChannelType, channel_id: number, password: string | null },
+	): Promise<void> {
+
 		const { channel_type, channel_id, password } = data;
-		try {
-			const updatedChannel = await this.chatService.changePrivacy(channel_type, channel_id, password);
-			if (updatedChannel) {
-				console.log(`Channel privacy changed (db) to: ${updatedChannel.ch_type}`);
-				// this.server.to(channel_id.toString()).emit('privacyChanged', updatedChannel);
-				this.server.emit('privacyChanged', updatedChannel);
-				return {success: true, updatedChannel};
-			} else {
-				client.emit('error', { message: 'Channel privacy could not be changed!' });
-				return { success: false, message: 'Channel privacy could not be changed!' };
-			}
-		} catch (error) {
-			console.error(error);
-			client.emit('error', { message: 'Channel privacy could not be changed!' });
-			return { success: false, message: 'Channel privacy could not be changed!' };
-		}
+		const channelToUpdate: Channel = await this.chatService.getChannel(channel_id);
+		await this.chatService.changePrivacy(channelToUpdate, channel_type, password);
+		this.server.emit('privacyChanged', new ChatRoomDTO(channelToUpdate));
 	}
 
-	// Change user role
 	@SubscribeMessage('changeUserRole')
 	async handleChangeUserRole(
-		@MessageBody() data: { user_id: number; channel_id: number; new_role: string; },
-		@ConnectedSocket() client: Socket,
-	): Promise<{ success: boolean; message?: string }> {
+		@MessageBody() data: { user_id: number; channel_id: number; new_role: ChannelMemberType; },
+	): Promise<void> {
+
 		const { user_id, channel_id, new_role } = data;
-		try {
-			const updated = await this.chatService.changeUserRole(user_id, channel_id, new_role);
-			if (updated) {
-				console.log(`User with id ${user_id} role changed (db) to ${new_role}`);
-				this.server.to(channel_id.toString()).emit('userRoleChanged', { user_id, new_role });
-				// this.server.emit('userRoleChanged', { user_id, new_role });
-				return { success: true, message: 'User role updated successfully' };
-			} else {
-				client.emit('error', { message: 'User role could not be changed' });
-				return { success: false, message: 'User role could not be changed' };
-			}
-		} catch (error) {
-			console.error(error);
-			client.emit('error', { message: 'Error changing user role' });
-			return { success: false, message: 'Error changing user role' };
-		}
+		await this.chatService.changeMemberRole(user_id, channel_id, new_role);
+		if (new_role === ChannelMemberType.owner)
+			await this.chatService.changeOwnershipChannel(user_id, channel_id);
+
+		this.server.to(channel_id.toString()).emit('userRoleChanged', { user_id, new_role });
 	}
-	
 
 	@SubscribeMessage('joinRoom')
-	handleJoinRoom(
-		@MessageBody() roomId: number,
-		@ConnectedSocket() client: Socket) {
+	handleJoinRoom(@MessageBody() roomId: number, @ConnectedSocket() client: Socket) {
 
 		client.join(roomId.toString());
-		console.log(`Socket ${client.id} joined room ${roomId}`);
+		this.logger.debug(`Socket ${client.id} joined room ${roomId}`);
 	}
 
 	@SubscribeMessage('joinRooms')
-	handleJoinRooms(
-		@MessageBody() roomIds: number[],
-		@ConnectedSocket() client: Socket) {
+	handleJoinRooms(@MessageBody() roomIds: number[], @ConnectedSocket() client: Socket) {
 
 		roomIds.forEach(roomId => {
 			client.join(roomId.toString());
-			console.log(`Socket ${client.id} joined room ${roomId}`);
+			this.logger.debug(`Socket ${client.id} joined room ${roomId}`);
 		})
 	}
 
+	@SubscribeMessage('checkPasswordChannel')
+	async checkPasswordChannel(
+		@MessageBody() data: { channelId: number, inputPassword: string },
+		@ConnectedSocket() client: Socket
+	) {
 
-	// @SubscribeMessage('changeUserRole')
-	// async handleChangeUserRole(
-	// 	@MessageBody() data: {channel_id: number, user_id: number, role: string},
-	// 	@ConnectedSocket() client: Socket,
-	// ): Promise<void> {
-	// 	const [channel_id, intraId, ]
-	// 	try {
-
-	// 	} catch (error) {}
-	// }
-
+		const status: boolean = await this.chatService.verifyPassword(data.inputPassword, data.channelId);
+		client.emit('verifyPassword', status);
+	}
 };

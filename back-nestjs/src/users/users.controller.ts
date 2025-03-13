@@ -45,10 +45,10 @@ export class UsersController {
 	@Get('/profile/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
-		return (this.UserService.getUserIntraId(id));
+		return (this.UserService.getUserId(id));
 	}
 
-	@Get('/profile/opponent/:intraName')
+	@Get('/profile/opponent/:intraName')		// NB this should never be called!
 	async fetchOpponent(@Param('intraName') intraName: string) 
 	{
 		return (this.UserService.findOneIntraName(intraName));
@@ -63,28 +63,34 @@ export class UsersController {
 	@Get('profile/:username/friend/remove/:id')
 	async removeFriend(@Param('username') username:string, @Param('id') id: string) 
 	{
-		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserIntraId(id);
-		
-		return (this.UserService.removeFriend(await user,await other));
+		const [user, other] = await Promise.all([
+			this.UserService.getUserId(username),
+			this.UserService.getUserId(id),
+		]);
+
+		return (this.UserService.removeFriend(user, other));
 	}
 
 	@Get('profile/:username/friend/block/:id')
 	async blockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserIntraId(id);
+		const [user, other] = await Promise.all([
+			this.UserService.getUserId(username),
+			this.UserService.getUserId(id),
+		]);
 
-		return (this.UserService.blockUser(await user,await other));
+		return (this.UserService.blockUser(user, other));
 	}
 
 	@Get('profile/:username/friend/unBlock/:id')
 	async unBlockUser(@Param('username') username:string, @Param('id') id: string) 
 	{
-		const user = this.UserService.getUserId(username);
-		const other = this.UserService.getUserIntraId(id);
+		const [user, other] = await Promise.all([
+			this.UserService.getUserId(username),
+			this.UserService.getUserId(id),
+		]);
 
-		return (this.UserService.unBlockUser(await user,await other));
+		return (this.UserService.unBlockUser(user, other));
 	}
 
 	@Post('profile/:username/changepfp')

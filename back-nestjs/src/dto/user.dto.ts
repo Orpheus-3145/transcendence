@@ -12,7 +12,7 @@ export default class UserDTO {
 		this.id = user.id;
 		this.intraId = user.intraId;
 		this.nameNick = user.nameNick;
-		this.nameIntra = user.nameNick;
+		this.nameIntra = user.nameIntra;
 		this.nameFirst = user.nameFirst;
 		this.nameLast = user.nameLast;
 		this.email = user.email;
@@ -30,22 +30,19 @@ export default class UserDTO {
 	intraId: number;
 
 	@IsString()
+	nameIntra: string;
+
+	@IsEmail()
+	email: string;
+
+	@IsString()
 	nameFirst: string;
 
 	@IsString()
 	nameLast: string;
 
 	@IsString()
-	image: string | null;
-
-	@IsString()
 	nameNick: string;
-
-	@IsEmail()
-	email: string;
-
-	@IsString()
-	nameIntra: string;
 
 	@IsString()
 	@Length(0, 100)
@@ -53,6 +50,9 @@ export default class UserDTO {
 
 	@IsEnum(UserStatus)
 	status: UserStatus;
+
+	@IsString()
+	image: string;
 
 	@IsString()
 	twoFactorSecret: string | null;
