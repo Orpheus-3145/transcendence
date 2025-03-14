@@ -241,23 +241,12 @@ export class UsersService {
 				{ player1 : {id: user.id} },
 				{ player2 : {id: user.id} },
 			],
-			relations: ['player1', 'player2'],
+			relations: ['player1', 'player2', 'winner'],
 		});
 
 		let matchData: MatchDataDTO[] = [];
-		for (const game of gamesDB) {
-
-			const winner: string = (game.player1Score > game.player2Score) ? game.player1.nameIntra : game.player2.nameIntra;
-			const type: string = (game.powerups === 0) ? 'No powerups' : 'With powerups';
-			matchData.push({
-				player1: game.player1.nameIntra,
-				player2: game.player2.nameIntra,
-				player1Score: game.player1Score,
-				player2Score: game.player2Score,
-				whoWon: winner,
-				type: type,
-			});
-		}
+		for (const game of gamesDB)
+			matchData.push(new MatchDataDTO(game));
 
 		this.logger.debug(`Fetching matches for user ${user.nameNick}`);
 		return (matchData);

@@ -101,10 +101,9 @@ export default class SimulationService {
 			this.powerUpSelected = fromMaskToArray(data.extras);
 			
 		this.logger.log(`session [${data.sessionToken}] - room created`);
-		this.logger.log(`session [${this.sessionToken}] - new game, mode: ${this.mode}`);
-		this.logger.log(`session [${this.sessionToken}] - new game, powerups: [${this.powerUpSelected.join(', ')}]`);
+		this.logger.log(`session [${this.sessionToken}] - new game, mode: ${this.mode}, powerups: [${this.powerUpSelected.join(', ')}]`);
 		if (this.mode === GameMode.single)
-			this.logger.log(`session [${this.sessionToken}] - new game, difficulty: ${this.difficulty}`);
+			this.logger.log(`session [${this.sessionToken}] - difficulty: ${this.difficulty}`);
 			
 			// add bot if single mode
 		if (this.mode === GameMode.single) {
@@ -182,7 +181,7 @@ export default class SimulationService {
 			this.logger.debug(`session [${this.sessionToken}] - ${data.nameNick} added to game`);
 	}
 
-	startEngine(): void {
+	startEngine(): Promise<void> {
 		if (this.engineRunning) return;
 
 		this.engineRunning = true;
@@ -394,7 +393,7 @@ export default class SimulationService {
 	}
 
 	// if the game ends gracefully
-	async endGame(winner: PlayingPlayer): Promise<void> {
+	endGame(winner: PlayingPlayer): void {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
@@ -410,24 +409,29 @@ export default class SimulationService {
 
 		this.stopEngine();
 		
-		if ( this.mode === GameMode.multi ) {
-			const [p1, p2] = await Promise.all([
-				this.userRepository.findOne({ where: {intraId : this.player1.intraId}}),
-				this.userRepository.findOne({ where: {intraId : this.player2.intraId}})
-			]);
-			const gamePlayed = this.gameRepository.create({
-				player1 : p1,
-				player2 : p2,
-				player1Score : this.player1.score,
-				player2Score : this.player2.score,
-				powerups : fromArrayToMask(this.powerUpSelected),
-				
-			});
-			this.gameRepository.save(gamePlayed);
-		}
+		if ( this.mode === GameMode.multi )
+			this.saveGameIntoDB(winner.intraId);
 
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;
+	}
+
+	async saveGameIntoDB(winnerIntraId: number, forfait=false): Promise<void> {
+		
+		const gamePlayed = this.gameRepository.create({
+			player1Score : this.player1.score,
+			player2Score : this.player2.score,
+			powerups : fromArrayToMask(this.powerUpSelected),
+			forfait : forfait,
+		});
+		const [p1, p2] = await Promise.all([
+			this.userRepository.findOne({ where: {intraId : this.player1.intraId}}),
+			this.userRepository.findOne({ where: {intraId : this.player2.intraId}})
+		]);
+		gamePlayed.player1 = p1;
+		gamePlayed.player2 = p2;
+		gamePlayed.winner = (winnerIntraId === p1.intraId) ? p1 : p2;
+		await this.gameRepository.save(gamePlayed);
 	}
 
 	// if a player disconnects unexpectedly
@@ -437,12 +441,19 @@ export default class SimulationService {
 			this.logger.log(`session [${this.sessionToken}] - game interrupted, ${leavingPlayer.nameNick} left the game`);
 			
 			if (this.mode === GameMode.multi) {
+				let winnerByForfeit: PlayingPlayer;
 				if (this.player1.clientSocket.id === leavingPlayer.clientSocket.id)
-					this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted, ${leavingPlayer.nameNick} left the game`);
+					winnerByForfeit = this.player2;
+				// this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted, ${leavingPlayer.nameNick} left the game`);
 				else if (this.player2.clientSocket.id === leavingPlayer.clientSocket.id)
-					this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted, ${leavingPlayer.nameNick} left the game`);
+					winnerByForfeit = this.player1;
+					// this.sendMsgToPlayer(this.player1.clientSocket, 'endGamePlayerLeft', this.player1.nameNick);
+				// this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted, ${leavingPlayer.nameNick} left the game`);
+				this.sendMsgToPlayer(winnerByForfeit.clientSocket, 'endGameByForfeit', winnerByForfeit.nameNick);
+				this.saveGameIntoDB(winnerByForfeit.intraId, true);
+				this.logger.log(`session [${this.sessionToken}] - ${winnerByForfeit.nameNick} wins by forfeit`);
 			}
-
+			this.stopEngine();
 		} else if (this.waitingForRematch === true) {
 			this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${leavingPlayer.nameNick} left the game`);
 			this.waitingForRematch = false;
@@ -455,8 +466,8 @@ export default class SimulationService {
 			}
 		}
 
-		if (this.engineRunning === true)
-			this.stopEngine();
+		// if (this.engineRunning === true)
+		// 	this.stopEngine();
 		this.terminateSimulation();
 	}
 
@@ -499,7 +510,7 @@ export default class SimulationService {
 			this.stopBotPaddleInterval();
 
 		if (this.powerUpSelected.length > 0)
-			this.stopPowerUpInterval()
+			this.stopPowerUpInterval();
 
 		this.engineRunning = false;
 		this.gameOver = false;

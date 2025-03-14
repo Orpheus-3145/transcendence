@@ -14,10 +14,12 @@ export interface LeaderboardData {
 export interface MatchData {
   player1: string;
   player2: string;
+  winner: string
   player1Score: number;
   player2Score: number;
   whoWon: string;
   type: string;
+  forfeit: boolean;
 }
 
 export interface User {

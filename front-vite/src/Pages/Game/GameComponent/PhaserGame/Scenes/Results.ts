@@ -8,22 +8,24 @@ export default class ResultsScene extends BaseScene {
 
 	private _winner!: string;
 	private _score!: {p1: number, p2: number};
-	private _sessionToken!: string;
+	private _sessionToken!: string | null;
+	private _winByForfeit!: boolean;
 
 	private _playAgainPopup!: Phaser.GameObjects.Container;
 	private _waitingPopup!: Phaser.GameObjects.Container;
 	private _refusePopup!: Phaser.GameObjects.Container;
-	private _socketIO!: Socket;
+	private _socketIO!: Socket | null;
 
 	constructor() {
 		super({ key: 'Results' });
 	}
 
-		init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string, socket: Socket }): void {
+		init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string | null, socket: Socket | null, winByForfeit: boolean }): void {
 		super.init();
 
 		this._winner = data.winner;
 		this._score = data.score;
+		this._winByForfeit = data.winByForfeit;
 		this._sessionToken = data.sessionToken;
 		this._socketIO = data.socket;
 
@@ -34,7 +36,7 @@ export default class ResultsScene extends BaseScene {
 		super.buildGraphicObjects();
 
 		this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.3, `${this._winner} won!`, {
+		.text(this.scale.width * 0.5, this.scale.height * 0.3, `${this._winner} won ${(this._winByForfeit) ? 'by forfait' : ''}`, {
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 30}px`,
 			align: 'center',
 			color: '#0f0',
@@ -52,23 +54,26 @@ export default class ResultsScene extends BaseScene {
 			})
 			.setOrigin(0.5, 0.5);
 	
-		const playAgainBtn = this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.4, 'Play again', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
-		.setInteractive()
-		.setName('playAgainBtn')
-		.on('pointerover', () => playAgainBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
-		.on('pointerout', () => playAgainBtn.setStyle({ fill: '#fff' }))
-		.on('pointerup', () => {
+		if (this._winByForfeit === false) {
 
-			this.sendMsgToServer('askForRematch', {sessionToken: this._sessionToken});
-			playAgainBtn.visible = false;
-			this._waitingPopup.setVisible(true);
-		});
+			const playAgainBtn = this.add
+			.text(this.scale.width * 0.5, this.scale.height * 0.4, 'Play again', {
+				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+				align: 'center',
+				color: '#fff',
+			})
+			.setOrigin(0.5, 0.5)
+			.setInteractive()
+			.setName('playAgainBtn')
+			.on('pointerover', () => playAgainBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
+			.on('pointerout', () => playAgainBtn.setStyle({ fill: '#fff' }))
+			.on('pointerup', () => {
+	
+				this.sendMsgToServer('askForRematch', {sessionToken: this._sessionToken});
+				playAgainBtn.visible = false;
+				this._waitingPopup.setVisible(true);
+			});
+		}
 
 		const goHomeButton = this.add
 		.text(this.scale.width * 0.9, this.scale.height * 0.9, 'Home', {
@@ -94,7 +99,10 @@ export default class ResultsScene extends BaseScene {
 
 	setupSocket(): void {
 
-		this._socketIO.on('acceptRematch', (data: GameData) => {
+		if (this._winByForfeit === true)		// other player left, no need for other connection with websocket
+			return;
+
+		this._socketIO!.on('acceptRematch', (data: GameData) => {
 
 			if (this._waitingPopup.visible === true)
 				this._waitingPopup.setVisible(false);
@@ -103,7 +111,7 @@ export default class ResultsScene extends BaseScene {
 			this.switchScene('Game', data);
 		});
 
-		this._socketIO.on('abortRematch', (info: string) => {
+		this._socketIO!.on('abortRematch', (info: string) => {
 
 			if (this._waitingPopup.visible === true)
 				this._waitingPopup.setVisible(false);
@@ -116,7 +124,7 @@ export default class ResultsScene extends BaseScene {
 			this._refusePopup.setVisible(true);
 		});
 
-		this._socketIO.on('askForRematch', (info: string) => {
+		this._socketIO!.on('askForRematch', (info: string) => {
 			(this.children.getByName('playAgainBtn') as Phaser.GameObjects.Text).visible = false;
 
 			(this._playAgainPopup.getByName('textTitle') as Phaser.GameObjects.Text).setText(info);
@@ -124,13 +132,13 @@ export default class ResultsScene extends BaseScene {
 		
 		});
 
-		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
+		this._socketIO!.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
 
 		this.events.on('shutdown', () => this.disconnect(), this);
 	}
 
 	sendMsgToServer(msgType: string, content?: any): void {
-		this._socketIO.emit(msgType, content);
+		this._socketIO!.emit(msgType, content);
 	}
 
 	createWaitingPopup() {
@@ -156,15 +164,6 @@ export default class ResultsScene extends BaseScene {
 
 		waitingPopup.add([background, textTitle]);
 
-		this.tweens.add({
-			targets: waitingPopup,
-			scaleX: 1,
-			scaleY: 1,
-			alpha: 1,
-			duration: 500,
-			ease: 'Back.Out',
-		});	
-
 		return waitingPopup;
 	}
 
@@ -172,11 +171,11 @@ export default class ResultsScene extends BaseScene {
 		const rematchPopup = this.add.container(this.scale.width / 4, this.scale.height / 4);
 
 		const background = this.add.rectangle(this.scale.width / 4,
-				this.scale.height / 4,
-				this.scale.width / 2,
-				this.scale.height / 2,
-				0xfff,
-				1)
+			this.scale.height / 4,
+			this.scale.width / 2,
+			this.scale.height / 2,
+			0xfff,
+			1)
 			.setStrokeStyle(2, 0xffffff)
 			.setInteractive()
 			.setOrigin(0.5, 0.5);
@@ -218,15 +217,6 @@ export default class ResultsScene extends BaseScene {
 
 		rematchPopup.add([background, textTitle, yesButton, noButton]);
 
-		this.tweens.add({
-			targets: rematchPopup,
-			scaleX: 1,
-			scaleY: 1,
-			alpha: 1,
-			duration: 500,
-			ease: 'Back.Out',
-		});	
-
 		return rematchPopup;
 	}
 
@@ -252,30 +242,23 @@ export default class ResultsScene extends BaseScene {
 		.setName('textTitle')
 		.setOrigin(0.5, 0.5);
 	
-		const closeButton = this.add.text(background.width * 0.5, background.height * 0.75, 'close', {
+		const closeButton = this.add.text(background.width * 0.5, background.height * 0.75, 'go home', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width) - 10}px`,
 				align: 'left',
 				color: '#fff',
 		})
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
-		.on('pointerdown', () => refusePopup.setVisible(false));
+		.on('pointerdown', () => this.switchScene('MainMenu'));
 
 		refusePopup.add([background, textTitle, closeButton]);
-
-		this.tweens.add({
-			targets: refusePopup,
-			scaleX: 1,
-			scaleY: 1,
-			alpha: 1,
-			duration: 500,
-			ease: 'Back.Out',
-		});	
 
 		return refusePopup;
 	}
 
 	disconnect(data?: any): void {
-		this._socketIO.disconnect();
+		if (this._winByForfeit === true)		// other player left, no need for other connection with websocket
+			return;
+		this._socketIO!.disconnect();
 	}
 }
