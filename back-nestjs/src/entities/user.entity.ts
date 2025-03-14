@@ -66,6 +66,12 @@ export default class User {
 	image: string;
 
 	@Column({
+		name: 'game_background',
+		default: 'default.jpeg'
+	})
+	game_background: string;
+
+	@Column({
 		type: 'text',
 		array: true,
 		default: '{}'

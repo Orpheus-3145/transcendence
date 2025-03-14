@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS Users (
 	first_name TEXT NOT NULL,
 	last_name TEXT NOT NULL,
 	nickname TEXT UNIQUE NOT NULL,
-	-- status ENUM ('online', 'offline', 'ingame') DEFAULT 'offline',		NB this should be used!
 	greeting TEXT DEFAULT 'Hello, I have just landed!',
 	status USER_STATUS DEFAULT 'offline',
 	profile_photo TEXT DEFAULT 'default_profile_photo.png',
+	game_background TEXT DEFAULT 'default.jpeg',
 	friends ARRAY[] DEFAULT [],
 	blocked ARRAY[] DEFAULT [],
 	token TEXT NOT NULL,

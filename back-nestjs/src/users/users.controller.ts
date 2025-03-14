@@ -126,4 +126,30 @@ export class UsersController {
 	async fetchLeaderboard() {
 		return (await this.UserService.leaderboardCalculator());
 	}
+
+	@Get('/gameBackground/:intraId')
+	async fetchBackground(@Param('intraId') intraId:string) {
+		
+		// const user: User = await this.UserService.getUserIntraId(intraId);
+		// const files = fs.readdirSync('./uploads'); // Leggi la cartella delle immagini
+		// const backgroundpath: string = 
+		// const latestFile = files.length > 0 ? files[files.length - 1] : null;
+		// return { filePath: latestFile };
+		return (await this.UserService.fetchBackgroundPath(intraId));
+	}
+
+	// @Post('/userGamebackgroundUpload')
+  // @UseInterceptors(FileInterceptor('file', {
+  //   storage: diskStorage({
+  //     destination: './uploads', // Cartella dove salvare i file
+  //     filename: (req, file, callback) => {
+  //       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+  //       const ext = extname(file.originalname); // Estensione del file
+  //       callback(null, `${uniqueSuffix}${ext}`);
+  //     }
+  //   })
+  // }))
+  // uploadFile(@UploadedFile() file: Express.Multer.File) {
+  //   return { filename: file.filename, path: `/uploads/${file.filename}` };
+  // }
 }

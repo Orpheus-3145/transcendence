@@ -1,7 +1,9 @@
+import axios from "axios";
+
 export default class BaseScene extends Phaser.Scene {
 	
 	// background image
-	protected _backgroundPath: string = import.meta.env.GAME_PATH_BACKGROUND;
+	// protected _backgroundPath: string = `${import.meta.env.URL_BACKEND_GAME_BACKGROUNS}/${import.meta.env.GAME_DEFAULT_BACKGROUND}`;//import.meta.env.URL_BACKEND_GAME_BACKGROUNS;
 	protected _background: Phaser.GameObjects.Image | null = null;
 	protected _keyEsc: Phaser.Input.Keyboard.Key | null = null;
 	
@@ -22,13 +24,35 @@ export default class BaseScene extends Phaser.Scene {
 	}
 
 	// loading graphic assets, fired after init()
-	preload(arg?: any): void {
-		this.load.image('background', this._backgroundPath);
+	async preload(arg?: any): Promise<void> {
+		
+		const backgroundPath: string = import.meta.env.URL_BACKEND_GAME_BACKGROUNS as string;
+		const backgroundName: string = await this.fetchbBackground();
+		if (!this.load)
+			return;
+		console.log(`${backgroundPath}/${backgroundName}`);
+		this.load.image('background', `${backgroundPath}/${backgroundName}`);
+	}
+
+	async fetchbBackground(): Promise<string> {
+		const url: string = `${import.meta.env.URL_BACKEND}/users/gameBackground/${this.registry.get('user42data').intraId}`;
+		try {
+			const response = await axios.get(url);
+			return response.data;
+		} catch (error) {
+			return import.meta.env.GAME_DEFAULT_BACKGROUND as string;
+		}
 	}
 
 	// run after preload(), creation of the entities of the scene
 	create(arg?: any): void {
-
+		// const backgroundPath: string = import.meta.env.URL_BACKEND_GAME_BACKGROUNS as string;
+		// const backgroundName: string = await this.fetchbBackground();
+		// if (!this.load)
+		// 	return;
+		
+		// this.load.image('background', `https://localhost:4000/${backgroundName}`);
+    // this.load.start();
 		this.buildGraphicObjects();
 	}
 

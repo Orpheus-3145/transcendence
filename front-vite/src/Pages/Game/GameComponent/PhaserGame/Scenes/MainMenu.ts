@@ -61,38 +61,65 @@ export default class MainMenuScene extends BaseScene {
 		.on("pointerdown", () => this.openFilePicker());
 	}
 
+	// old
+	// openFilePicker() {
+	// 	const input = document.createElement("input");
+	// 	input.type = "file";
+	// 	input.accept = "image/*";
+
+	// 	input.onchange = (event: Event) => {
+	// 		const target = event.target as HTMLInputElement;
+	// 		if (target.files && target.files.length > 0) {
+	// 			const file = target.files[0];
+	// 			const reader = new FileReader();
+	// 			reader.onload = (e) => {
+	// 				if (e.target?.result)
+	// 					this.loadNewBkImage(e.target.result as string);
+	// 			};
+	// 			reader.readAsDataURL(file);
+	// 		}
+	// 	};
+	// 	input.click();
+	// }
+
 	openFilePicker() {
 		const input = document.createElement("input");
 		input.type = "file";
 		input.accept = "image/*";
-
+	
 		input.onchange = (event: Event) => {
 			const target = event.target as HTMLInputElement;
 			if (target.files && target.files.length > 0) {
 				const file = target.files[0];
-				const reader = new FileReader();
-				reader.onload = (e) => {
-					if (e.target?.result)
-						this.loadNewBkImage(e.target.result as string);
-				};
-				reader.readAsDataURL(file);
+	
+				const formData = new FormData();
+				formData.append("file", file);
+	
+			// 	fetch("http://localhost:3000/upload", {
+			// 		method: "POST",
+			// 		body: formData,
+			// 	})
+			// 	.then(response => response.json())
+			// 	.then(data => console.log("File saved at:", data.filePath))
+			// 	.catch(error => console.error("Error uploading file:", error));
 			}
 		};
+	
 		input.click();
 	}
 
-	loadNewBkImage(base64: string) {
+	// loadNewBkImage(base64: string) {
 		
-		if (this.textures.exists("background"))
-			this.textures.remove("background");
+	// 	if (this.textures.exists("background"))
+	// 		this.textures.remove("background");
 
-		this.textures.once(`addtexture`, (key: string) => {
+	// 	this.textures.once(`addtexture`, (key: string) => {
 			
-			if (key === "background") {
-				this._background!.setTexture("background");
-				this._background!.setDisplaySize(this.scale.width, this.scale.height);
-			}
-		})
-		.addBase64("background", base64);
-	}
+	// 		if (key === "background") {
+	// 			this._background!.setTexture("background");
+	// 			this._background!.setDisplaySize(this.scale.width, this.scale.height);
+	// 		}
+	// 	})
+	// 	.addBase64("background", base64);
+	// }
 }

@@ -4,15 +4,17 @@ import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import fs from 'fs';
 import { checkTLSfiles, makeTLSfiles } from './create.certs';
+import { join } from 'path';
 
 import AppModule from './app.module';
 import AppLoggerService from './log/log.service';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
 	// creating TLS files if necessary
 	if (checkTLSfiles() == false) makeTLSfiles();
 
-	const app = await NestFactory.create(AppModule, {
+	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		httpsOptions: {
 			key: fs.readFileSync(process.env.SSL_KEY_PATH),
 			cert: fs.readFileSync(process.env.SSL_CERT_PATH),
@@ -28,7 +30,9 @@ async function bootstrap() {
 		methods: ['GET', 'POST'],
 		credentials: true,
 	});
-
+	
+	app.useStaticAssets(join(__dirname, '..', 'public', 'gameBackgrounds'));
+	// app.useStaticAssets(join('/app/public/gameBackgrounds'));
 	// set logging
 	const appLogger = new AppLoggerService();
 	appLogger.setContext('NestJS engine');

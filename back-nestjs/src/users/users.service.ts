@@ -13,6 +13,7 @@ import MatchDataDTO from 'src/dto/matchData.dto';
 import LeaderboardDTO from 'src/dto/leaderboard.dto';
 import MatchRatioDTO from 'src/dto/matchRatio.dto';
 import { NotificationGateway } from 'src/notification/notification.gateway';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
@@ -234,7 +235,7 @@ export class UsersService {
 	async changeProfilePic(user: User, image:string)
 	{
 		user.image = image;
-		this.usersRepository.save(user);
+		await this.usersRepository.save(user);
 		this.logger.log(`${user.nameNick} updated their profile picture`);
 		return (image);
 	}
@@ -391,6 +392,20 @@ export class UsersService {
 
 		this.logger.debug(`Creating global leaderboard`);
 		return (result);
+	}
+
+	async changeGameBackground(user: User, image:string)
+	{
+		user.image = image;
+		await this.usersRepository.save(user);
+		this.logger.log(`${user.nameNick} updated their profile picture`);
+		return (image);
+	}
+
+	async fetchBackgroundPath(intraId: string): Promise<string> {
+
+		const user: User = await this.getUserIntraId(intraId);
+		return (user.game_background);
 	}
 }
 
