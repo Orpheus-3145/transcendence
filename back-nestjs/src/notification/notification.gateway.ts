@@ -21,6 +21,7 @@ import NotificationDTO, { NotificationType } from 'src/dto/notification.dto';
 import { GameInvitation } from 'src/entities/gameInvitation.entity';
 import { FriendRequest } from 'src/entities/friendRequest.entity';
 import RoomManagerService from 'src/game/session/roomManager.service';
+import User from 'src/entities/user.entity';
 
 
 export interface Websock {
@@ -46,7 +47,8 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	constructor(
 		private readonly notificationService: NotificationService,
-		private readonly userService: UsersService,
+		@Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
+		// private readonly userService: UsersService,
 		private readonly logger: AppLoggerService,
 		private readonly roomManager: RoomManagerService,
 	) {
@@ -68,9 +70,17 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		this.sockets = this.sockets.filter((s) => s.client.id !== client.id);
 	}
 
-
 	getUser(userId: string): Websock {
 		return (this.sockets.find((socket) => socket.userId === userId));
+	}
+
+	sendStatus(user: User, status: UserStatus)
+	{
+		for (const tmp of this.sockets)
+		{
+			if (user.id.toString() !== tmp.userId)
+				tmp.client.emit('statusChanged', user, status);
+		}
 	}
 
 	@SubscribeMessage('getFromUser')

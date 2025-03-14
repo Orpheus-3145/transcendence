@@ -7,6 +7,7 @@ import { getAll } from '../../Providers/UserContext/User';
 import { User } from '../../Types/User/Interfaces';
 import { UserStatus } from '../../Types/User/Enum';
 import SearchIcon from '@mui/icons-material/Search';
+import { socket } from '../../Providers/NotificationContext/Notification';
 
 
 const AllUsersPage: React.FC = () => {
@@ -22,6 +23,75 @@ const AllUsersPage: React.FC = () => {
 	const [showOnline, setShowOnline] = useState<Boolean>(true);
 	const [showOffline, setShowOffline] = useState<Boolean>(true);
 	const [showSearch, setShowSearch] = useState<Boolean>(false);
+
+	let changeStatusUser = (user: User, status: UserStatus) =>
+	{
+		if (status === UserStatus.Offline && onlineUsers.find((item: User) => item.id === user.id))
+		{
+			let newlist: User[] = onlineUsers.filter((item: User) => item.id !== user.id);
+			setOnlineUsers(newlist);
+			if (newlist.length === 0)
+				setShowOnline(false);
+			
+			let tmp: User[] = offlineUsers;
+			tmp.push(user);
+			setOfflineUsers(tmp);
+			if (showOffline === false)
+				setShowOffline(true);
+		
+			return ;
+		}
+		else if (status === UserStatus.Online && offlineUsers.find((item: User) => item.id === user.id))
+		{
+			let newlist: User[] = offlineUsers.filter((item: User) => item.id !== user.id);
+			setOfflineUsers(newlist);
+			if (newlist.length === 0)
+				setShowOffline(false);
+			
+			let tmp: User[] = onlineUsers;
+			tmp.push(user);
+			setOnlineUsers(tmp);
+			if (showOnline === false)
+				setShowOnline(true);
+
+			return ;
+		}
+		else if (status === UserStatus.InGame && onlineUsers.find((item: User) => item.id === user.id))
+		{
+			let tmpUser: User = onlineUsers.find((item: User) => item.id === user.id);
+			tmpUser.status = status;
+			let newlist: User[] = onlineUsers.filter((item: User) => item.id !== user.id);
+			newlist.push(tmpUser);
+			setOnlineUsers(newlist);
+
+			return ;
+		}
+		else if (status === UserStatus.Online && onlineUsers.find((item: User) => item.id === user.id))
+		{
+			let tmpUser: User = onlineUsers.find((item: User) => item.id === user.id);
+			tmpUser.status = status;
+			let newlist: User[] = onlineUsers.filter((item: User) => item.id !== user.id);
+			newlist.push(tmpUser);
+			setOnlineUsers(newlist);
+		}
+
+		// if (status === UserStatus.Online || status === UserStatus.InGame)
+		// {
+		// 	var list: User[] = [];
+		// 	list.push(user);
+		// 	setOnlineUsers(list);
+		// 	setShowOnline(true);
+		// 	return ;
+		// }
+		// if (status === UserStatus.Offline)
+		// {
+		// 	var list: User[] = [];
+		// 	list.push(user);
+		// 	setOfflineUsers(list);
+		// 	setShowOffline(true);
+		// 	return ;			
+		// }
+	}
 
 	let sortUsers = (arr: User[]) =>
 	{
@@ -165,10 +235,10 @@ const AllUsersPage: React.FC = () => {
 
 	let statusToColor = (user:User) =>
 	{
-		if (user.status == UserStatus.Online)
+		if ((user.status == UserStatus.Online) || (user.status == UserStatus.InGame))
+		{
 			return ('green');
-		if (user.status == UserStatus.InGame)
-			return ('blue');
+		}
 		return ('red');
 	}
 
@@ -257,6 +327,15 @@ const AllUsersPage: React.FC = () => {
 							>
 								{item.nameNick}
 							</Link>
+							{item.status === UserStatus.InGame && (
+								<Typography
+								sx={{
+									color: 'green',
+								}}
+								>
+									(In Game)
+								</Typography>
+							)}
 						</Stack>
 				  </ImageListItem>
 				))}
@@ -339,6 +418,15 @@ const AllUsersPage: React.FC = () => {
 
 		fetchUsers();
 	}, [searchUsers]);
+
+	useEffect(() => {
+		
+		socket.on('statusChanged', (user: User, status: UserStatus) =>
+		{
+			changeStatusUser(user, status);
+		});
+
+	}, [onlineUsers, offlineUsers])
 
 	let pageWrapper = () =>
 	{

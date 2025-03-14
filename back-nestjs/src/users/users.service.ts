@@ -1,6 +1,7 @@
 import { Injectable, HttpStatus, ConsoleLogger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Inject ,forwardRef } from '@nestjs/common';
 
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
@@ -11,6 +12,7 @@ import UserDTO, { UserStatus } from 'src/dto/user.dto'
 import MatchDataDTO from 'src/dto/matchData.dto';
 import LeaderboardDTO from 'src/dto/leaderboard.dto';
 import MatchRatioDTO from 'src/dto/matchRatio.dto';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 
 @Injectable()
@@ -20,6 +22,7 @@ export class UsersService {
 		@InjectRepository(Game) private gamesRepository: Repository<Game>,
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
+		@Inject(forwardRef(() => NotificationGateway)) private readonly notificationGateway: NotificationGateway,
  	) {
 		this.logger.setContext(UsersService.name);	
 	}
@@ -136,6 +139,7 @@ export class UsersService {
 		const user = await this.getUserId(id);
 		user.status = status;
 		this.usersRepository.save(user);
+		this.notificationGateway.sendStatus(user, status);
 	}
 
 	async setStatusIntra(id: number, which: UserStatus)
@@ -143,6 +147,7 @@ export class UsersService {
 		const user = await this.findOneIntra(id);
 		user.status = which;
 		this.usersRepository.save(user);
+		this.notificationGateway.sendStatus(user, which);
 	}
 
 	async setNameNick(userId: string, newUsername: string): Promise<string>
@@ -388,3 +393,5 @@ export class UsersService {
 		return (result);
 	}
 }
+
+

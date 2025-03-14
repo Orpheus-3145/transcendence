@@ -416,7 +416,7 @@ export const Notification: React.FC = () => {
 			var tmpgameArr: NotificationStruct[]  = [];
 			arr?.map((item: NotificationStruct) =>
 			{
-				if (item.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
+				if (item.type == NotificationType.message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
 				{
 					tmpmessageArr.push(item);
 				}
@@ -450,7 +450,7 @@ export const Notification: React.FC = () => {
 		{
 			gameInviteArray.push(noti);
 		}
-		else if (noti.type == NotificationType.Message || noti.type == NotificationType.groupChat)
+		else if (noti.type == NotificationType.message || noti.type == NotificationType.groupChat)
 		{
 			var tmp = messageArray.find((n: NotificationStruct) => n.senderName === noti.senderName);
 			if (tmp != undefined)
