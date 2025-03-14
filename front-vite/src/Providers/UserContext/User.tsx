@@ -246,14 +246,12 @@ export async function fetchMatchData(user: User): Promise<MatchData[]> {
 }
 
 export async function setUserStatus(id: string): Promise<void> {
-	console.log("da bla");
-	console.log(id);
 	const request = new Request(BACKEND_URL + '/users/profile/logout', {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({ id }), // Send as JSON object
+			body: JSON.stringify({ id }),
 		});
 	
 		try
@@ -263,6 +261,6 @@ export async function setUserStatus(id: string): Promise<void> {
 		}
 		catch (error)
 		{
-			console.error("ERROR: MatchRatio[] not found!" + error);
+			console.error("ERROR: changin user status failed!" + error);
 		}
 }
