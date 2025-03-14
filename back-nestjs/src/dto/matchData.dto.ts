@@ -11,6 +11,7 @@ export default class MatchDataDTO {
     this.player1Score = game.player1Score;
     this.player2Score = game.player2Score;
     this.type = (game.powerups === 0) ? 'No powerups' : 'With powerups';
+    this.forfeit = game.forfait;
   }
   @IsString()
   player1: string;
