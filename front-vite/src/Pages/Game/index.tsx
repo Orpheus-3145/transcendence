@@ -39,6 +39,7 @@ const Game: React.FC = () => {
 						style={{
 							color: theme.palette.secondary.main,
 							textAlign: 'center',
+							fontWeight: 'bold'
 						}}
 					>
 						Pong Game
@@ -68,9 +69,9 @@ const Game: React.FC = () => {
 							textAlign: 'justify',
 							color: theme.palette.secondary.main,
 							bgcolor: theme.palette.primary.main,
-							borderBottomLeftRadius: '1em',
-							borderBottomRightRadius: '1em',
-							borderTopRightRadius: '1em',
+							borderBottomLeftRadius: '0.5em',
+							borderBottomRightRadius: '0.5em',
+							borderTopRightRadius: '0.5em',
 						}}
 					>
 						<Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>

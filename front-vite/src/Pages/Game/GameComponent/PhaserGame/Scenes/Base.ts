@@ -3,6 +3,8 @@ export default class BaseScene extends Phaser.Scene {
 	// background image
 	protected _backgroundPath: string = import.meta.env.GAME_PATH_BACKGROUND;
 	protected _background: Phaser.GameObjects.Image | null = null;
+	protected _backgroundColor: number = 0x000000; // Black
+	protected _lines: Phaser.GameObjects.Rectangle[] = [];
 	protected _keyEsc: Phaser.Input.Keyboard.Key | null = null;
 	
 	// ratio between standard size of the standard font size and the game window 
@@ -23,12 +25,18 @@ export default class BaseScene extends Phaser.Scene {
 
 	// loading graphic assets, fired after init()
 	preload(arg?: any): void {
-		this.load.image('background', this._backgroundPath);
+		// this.load.image('background', this._backgroundPath);
 	}
 
 	// run after preload(), creation of the entities of the scene
 	create(arg?: any): void {
-
+		this.cameras.main.setBackgroundColor(this._backgroundColor);
+		this.time.addEvent({
+			delay: 1000, // Spawns a line every second
+			repeat: -1,
+			callback: this.spawnCluster,
+			callbackScope: this
+		});
 		this.buildGraphicObjects();
 	}
 
@@ -38,6 +46,15 @@ export default class BaseScene extends Phaser.Scene {
 	update(time: number, delta: number): void {
 
 		if (this._keyEsc!.isDown) this.switchScene('MainMenu');
+
+		// Move the lines across the screen
+		this._lines.forEach((line) => {
+			line.x += 5;
+			if (line.x > this.scale.width) {
+				line.destroy();
+				this._lines = this._lines.filter(l => l !== line);
+			}
+		});
 	}
 
 	// method to call whenever the scene is switched
@@ -53,10 +70,24 @@ export default class BaseScene extends Phaser.Scene {
 		// if (this._background !== null)
 		// 	return ;
 
-		this._background = this.add.image(this.scale.width * 0.5, this.scale.height * 0.5, 'background');
-		this._background.setDisplaySize(this.scale.width, this.scale.height);
+		// this._background = this.add.image(this.scale.width * 0.5, this.scale.height * 0.5, 'background');
+		// this._background.setDisplaySize(this.scale.width, this.scale.height);
 	}
 
+	spawnLine(): void {
+		const line = this.add.rectangle(0, Phaser.Math.Between(0, this.scale.height), 50, 2, 0xffffff);
+		this._lines.push(line);
+	}
+
+
+	spawnCluster(): void {
+		const clusterSize = Phaser.Math.Between(3, 7);
+		for (let i = 0; i < clusterSize; i++) {
+			const offsetY = Phaser.Math.Between(-20, 20);
+			const line = this.add.rectangle(0, Phaser.Math.Between(0, this.scale.height) + offsetY, 50, 2, 0xffffff);
+			this._lines.push(line);
+		}
+	}
 	killChildren(): void {
 
 		this.children.list.forEach((gameObject) => gameObject.destroy());
