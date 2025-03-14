@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, UserContextType, MatchData, MatchRatio, LeaderboardData } from '../../Types/User/Interfaces';
+import { UserStatus } from '../../Types/User/Enum';
 
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -242,4 +243,26 @@ export async function fetchMatchData(user: User): Promise<MatchData[]> {
 	} catch (error) {
 		console.error("ERROR: fetchMatchData failed!");
 	}
+}
+
+export async function setUserStatus(id: string): Promise<void> {
+	console.log("da bla");
+	console.log(id);
+	const request = new Request(BACKEND_URL + '/users/profile/logout', {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ id }), // Send as JSON object
+		});
+	
+		try
+		{
+			await fetch(request);
+	
+		}
+		catch (error)
+		{
+			console.error("ERROR: MatchRatio[] not found!" + error);
+		}
 }
