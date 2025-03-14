@@ -440,20 +440,19 @@ export default class SimulationService {
 		if (this.engineRunning === true) {
 			this.logger.log(`session [${this.sessionToken}] - game interrupted, ${leavingPlayer.nameNick} left the game`);
 			
-			if (this.mode === GameMode.multi) {
+			if (this.mode === GameMode.multi) {		// if it happens during a match the other player wins by forfait
 				let winnerByForfeit: PlayingPlayer;
 				if (this.player1.clientSocket.id === leavingPlayer.clientSocket.id)
 					winnerByForfeit = this.player2;
-				// this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted, ${leavingPlayer.nameNick} left the game`);
 				else if (this.player2.clientSocket.id === leavingPlayer.clientSocket.id)
 					winnerByForfeit = this.player1;
-					// this.sendMsgToPlayer(this.player1.clientSocket, 'endGamePlayerLeft', this.player1.nameNick);
-				// this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted, ${leavingPlayer.nameNick} left the game`);
+
 				this.sendMsgToPlayer(winnerByForfeit.clientSocket, 'endGameByForfeit', winnerByForfeit.nameNick);
 				this.saveGameIntoDB(winnerByForfeit.intraId, true);
 				this.logger.log(`session [${this.sessionToken}] - ${winnerByForfeit.nameNick} wins by forfeit`);
 			}
 			this.stopEngine();
+
 		} else if (this.waitingForRematch === true) {
 			this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${leavingPlayer.nameNick} left the game`);
 			this.waitingForRematch = false;
@@ -466,8 +465,6 @@ export default class SimulationService {
 			}
 		}
 
-		// if (this.engineRunning === true)
-		// 	this.stopEngine();
 		this.terminateSimulation();
 	}
 
