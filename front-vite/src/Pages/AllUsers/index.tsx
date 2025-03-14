@@ -33,11 +33,14 @@ const AllUsersPage: React.FC = () => {
 			if (newlist.length === 0)
 				setShowOnline(false);
 			
-			let tmp: User[] = offlineUsers;
-			tmp.push(user);
-			setOfflineUsers(tmp);
-			if (showOffline === false)
-				setShowOffline(true);
+			if (!offlineUsers.find((item: User) => item.id === user.id))
+			{
+				let tmp: User[] = offlineUsers;
+				tmp.push(user);
+				setOfflineUsers(tmp);
+				if (showOffline === false)
+					setShowOffline(true);
+			}
 		
 			return ;
 		}
@@ -48,11 +51,14 @@ const AllUsersPage: React.FC = () => {
 			if (newlist.length === 0)
 				setShowOffline(false);
 			
-			let tmp: User[] = onlineUsers;
-			tmp.push(user);
-			setOnlineUsers(tmp);
-			if (showOnline === false)
-				setShowOnline(true);
+			if (!onlineUsers.find((item: User) => item.id === user.id))
+			{
+				let tmp: User[] = onlineUsers;
+				tmp.push(user);
+				setOnlineUsers(tmp);
+				if (showOnline === false)
+					setShowOnline(true);
+			}
 
 			return ;
 		}

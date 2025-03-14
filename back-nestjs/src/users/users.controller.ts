@@ -4,6 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import User from '../entities/user.entity';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
+import { UserStatus } from 'src/dto/user.dto';
 
 @Controller('users')
 @UseFilters(SessionExceptionFilter)
@@ -32,6 +33,11 @@ export class UsersController {
 	@Post('/profile/:username/newnick')
 	async setNewNickname(@Param('username') username: string, @Body('newname') newname:string) : Promise<string> {
 		return (this.UserService.setNameNick(username, newname));
+	}
+
+	@Post('/profile/logout')
+	async changeStatus(@Body('id') id:string) : Promise<void> {
+		this.UserService.setStatusId(id, UserStatus.Offline);
 	}
 
 // fra changed the end-point, check it in main, remove if not necessary
