@@ -17,7 +17,7 @@ export default class MainMenuScene extends BaseScene {
 		}
 	}
 
-  buildGraphicObjects(): void {
+	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
 		const singleGameBtn = this.add
