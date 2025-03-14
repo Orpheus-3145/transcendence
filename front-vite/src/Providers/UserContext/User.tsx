@@ -225,7 +225,6 @@ export async function fetchLeaderboard(): Promise<LeaderboardData[][]>
 			withCredentials: true,
 		});
 		const leaderBoard: LeaderboardData[][] = response.data;
-		console.log(response.data);
 		return leaderBoard;
 	} catch (error) {
 		console.error("ERROR: Leaderboard[] not found!" + error);
