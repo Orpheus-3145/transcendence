@@ -490,28 +490,38 @@ const ProfilePageOther: React.FC = () => {
 
 	let GetUserStatus = () =>
 	{		
-		let color;
+		let color: string = "";
+		let message: string = "";
 		if (whichStatus == UserStatus.Offline)
+		{
+			message = "Offline";
 			color = '#df310e';
+		}
 		else if (whichStatus == UserStatus.Online)
+		{
 			color = '#0fc00c';
-		else if (whichStatus == UserStatus.InGame)
-			color = '#0dddc4';
+			message = "Online";
+		}
+		if (whichStatus == UserStatus.InGame)
+		{
+			color = '#0fc00c';
+			message = "In Game";
+		}
 		
 		return (
 			<Stack>
-				<Box
-				sx={{
-					width: 40,
-					height: 40,
-					backgroundColor: color,
-					borderRadius: '50%',
-					position: 'relative',
-					top: '0px',
-					left: '190px',
-				}}
-				>
-				</Box>
+				<Tooltip title={message} arrow >
+					<Box
+					sx={{
+						width: 40,
+						height: 40,
+						backgroundColor: color,
+						borderRadius: '50%',
+						position: 'relative',
+						top: '0px',
+						left: '190px',
+					}}/>
+				</Tooltip>
 			</Stack>
 		);
 	}
@@ -965,6 +975,11 @@ const ProfilePageOther: React.FC = () => {
 				newlist.push(newFriend);
 				setFriendsList(newlist);
 			}
+		});
+
+		socket.on('statusChanged', (user: User, status: UserStatus) =>
+		{
+			setWhichStatus(status);
 		});
 		
 	}, [lastSegment]);
