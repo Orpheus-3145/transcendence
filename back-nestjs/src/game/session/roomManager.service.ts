@@ -55,7 +55,7 @@ export default class RoomManagerService {
 		gameRoom.addPlayer(data, client);
 	}
 
-	movePaddle(data: PaddleDirectionDTO, client: Socket) {
+	movePaddle(data: PaddleDirectionDTO, client: Socket): void {
 		
 		const gameRoom = this.getRoom(data.sessionToken);
 		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);

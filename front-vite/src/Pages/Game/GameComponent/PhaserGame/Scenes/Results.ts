@@ -276,6 +276,7 @@ export default class ResultsScene extends BaseScene {
 	}
 
 	disconnect(data?: any): void {
+		this.events.off('shutdown');
 		this._socketIO.disconnect();
 	}
 }
