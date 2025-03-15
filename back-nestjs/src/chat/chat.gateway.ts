@@ -77,8 +77,16 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id);
-		client.join(channel_id.toString());
-		this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
+		
+		// client.join(channel_id.toString());
+
+		const channel = await this.chatService.getChannel(channel_id);
+
+		if (channel.members.some(usr => usr.user.id === user_id)) {
+			this.server.emit('joinedChannel', { user_id, channel_id, name, email });
+		}
+
+		// this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}
 
 	@SubscribeMessage('joinAvailableChannel')
@@ -102,7 +110,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { user_id, channel_id } = data;
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
-		console.log(JSON.stringify(channelDto));
+		// console.log(JSON.stringify(channelDto));
 		this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
 		client.leave(channel_id.toString());
 	}
@@ -161,7 +169,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const chatDto: ChatRoomDTO[] = [];
 		for (const chat of channels) {
 			chatDto.push(new ChatRoomDTO(chat));
-			console.log(chat.channel_id);
+			// console.log(chat.channel_id);
 		}
 		// console.log('Channels', JSON.stringify(chatDto));
 		client.emit('channelsList', chatDto);  // Emit back the channels to the client
