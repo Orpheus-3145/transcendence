@@ -351,20 +351,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	// }, [settings]);
 
 	useEffect(() => {
-		const handleUserLeftChannel = (response: {channel: ChatRoom, userId: number}) => {
+		const handleUserLeftChannel = (response: {channelDto: ChatRoom, userId: number}) => {
 			console.log(`User left channel (settings): ${JSON.stringify(response)}`);
 			// console.log(`New owner (settings): ${ response.new_owner}`);
-			if (!response.channel) {
+			if (!response.channelDto) {
 				return;
 			}
 			setSettings({
 				...settings,
-				owner: response.channel.settings.owner || settings.owner,
+				owner: response.channelDto.settings.owner || settings.owner,
 				users: settings.users
 					.filter((usr) => usr.id !== response.userId)
 					.map(usr => ({
 						...usr,
-						role: usr.name === response.channel.settings.owner ? 'owner' : usr.role,
+						role: usr.name === response.channelDto.settings.owner ? 'owner' : usr.role,
 					})),
 			});
 		};
@@ -376,7 +376,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		};
 	}, [settings]);
 	
+	// useEffect(() => {
+	// 	const handleUserLeftChannel = (response: {channel: ChatRoom, userId: number}) => {
+	// 		console.log(`User left channel (settings): ${JSON.stringify(response)}`);
+	// 		// console.log(`New owner (settings): ${ response.new_owner}`);
+	// 		if (!response.channel) {
+	// 			return;
+	// 		}
+	// 		setSettings({
+	// 			...settings,
+	// 			owner: response.channel.settings.owner || settings.owner,
+	// 			users: settings.users
+	// 				.filter((usr) => usr.id !== response.userId)
+	// 				.map(usr => ({
+	// 					...usr,
+	// 					role: usr.name === response.channel.settings.owner ? 'owner' : usr.role,
+	// 				})),
+	// 		});
+	// 	};
 	
+	// 	socket.on('leftChannel', handleUserLeftChannel);
+	
+	// 	return () => {
+	// 		socket.off('leftChannel', handleUserLeftChannel);
+	// 	};
+	// }, [settings]);
 	
 
 	const fetchbanned = async (bannedId: string) => {

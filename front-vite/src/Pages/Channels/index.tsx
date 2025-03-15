@@ -382,21 +382,21 @@ const ChannelsPage: React.FC = () => {
 
 
 	useEffect(() => {
-    const handleUserLeftChannel = (response: {channel: ChatRoom, userId: number}) => {
-        console.log(`User left channel (index): ${JSON.stringify(response)}`);
-		if (!response.channel) {
+    const handleUserLeftChannel = (response: {channelDto: ChatRoom, userId: number}) => {
+		console.log(`User left channel (index): ${JSON.stringify(response)}`);
+		if (!response.channelDto) { 
 			return;
 		}
 
         setChatProps((prevState) => ({
             ...prevState,
             chatRooms: prevState.chatRooms.map((channel) => {
-                if (channel.id !== response.channel.id) {
+                if (channel.id !== response.channelDto.id) {
 					return channel;
 				}
                 const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.userId);
-				const newOwner = response.channel.settings.owner;
-				console.log('New owner (index) :', newOwner);
+				const newOwner = response.channelDto.settings.owner;
+				// console.log('New owner (index) :', newOwner);
                 return {
                     ...channel,
                     settings: {

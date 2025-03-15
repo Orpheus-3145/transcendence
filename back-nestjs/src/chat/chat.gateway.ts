@@ -103,7 +103,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
 		console.log(JSON.stringify(channelDto));
-		this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, user_id});
+		this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
 		client.leave(channel_id.toString());
 	}
 
