@@ -193,13 +193,11 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	async handleChangeUserRole(
 		@MessageBody() data: { user_id: number; channel_id: number; new_role: ChannelMemberType; },
 	): Promise<void> {
-
 		const { user_id, channel_id, new_role } = data;
 		await this.chatService.changeMemberRole(user_id, channel_id, new_role);
 		if (new_role === ChannelMemberType.owner)
 			await this.chatService.changeOwnershipChannel(user_id, channel_id);
-
-		this.server.to(channel_id.toString()).emit('userRoleChanged', { user_id, new_role });
+		this.server.to(channel_id.toString()).emit('userRoleChanged', { userId: user_id, new_role, channelId: channel_id });
 	}
 
 	@SubscribeMessage('joinRoom')

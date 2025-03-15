@@ -335,6 +335,40 @@ const ChannelsPage: React.FC = () => {
 
 //////////////////////////////////////////////////////////////////////
 
+
+
+	useEffect(() => {
+		const handleRoleChanged = (response) => {
+			console.log('User role changed (index) to ', response.new_role);
+
+			const selectedChannel = chatProps.chatRooms.find(channel => channel.id === response.channelId);
+
+			const updatedUsers = selectedChannel?.settings.users.map(user => user.id === response.userId ? { ...user, role: response.new_role } : user);
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: prevState.chatRooms.map(channel => 
+					channel.id === response.channelId 
+					? 	{
+							...channel,
+							settings: {
+								...channel.settings,
+								users: updatedUsers,
+							},
+						}
+					: channel)
+			}))
+		};
+
+		socket.on('userRoleChanged', handleRoleChanged);
+		
+		return () => {
+			socket.off('userRoleChanged', handleRoleChanged);
+		};
+	}, [chatProps]);
+
+
+//////////////////////////////////////////////////////////////////////
+
 	// useEffect(() => {
 	// 		socket.on('privacyChanged', (updatedChannel) => {
 	// 			console.log('Channel privacy updated:', updatedChannel);

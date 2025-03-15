@@ -224,22 +224,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleRoleChange = (userId: number, role: string) => {
 		console.log('"Change Role" clicked!');
-		console.log(userId);
+
 		const data = {
 			user_id: userId,
 			channel_id: selectedChannel.id,
 			new_role: role === UserRoles.admin ? UserRoles.member : UserRoles.admin,
 		};
-		socket.emit('changeUserRole', data, (response) => {
-			if (response.success) {
-				const updatedUsers = settings.users.map(user => user.id === userId ? { ...user, role: data.new_role } : user);
-				setSettings({ ...settings, users: updatedUsers });
-			} else {
-				alert(`Error: ${response.message}`);
-			}
+		
+		socket.emit('changeUserRole', data);
+
+		socket.once('error', (error) => {
+			console.error(error.message);
 		});
 	};
 	
+	useEffect(() => {
+		const handleRoleChanged = (response) => {
+			console.log('User role changed (settings) to ', response.new_role);
+			const updatedUsers = settings.users.map(user => user.id === response.userId ? { ...user, role: response.new_role } : user);
+			setSettings({ ...settings, users: updatedUsers });
+		};
+
+		socket.on('userRoleChanged', handleRoleChanged);
+		
+		return () => {
+			socket.off('userRoleChanged', handleRoleChanged);
+		};
+	}, [settings]);
+
 
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
@@ -533,7 +545,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						</Typography>
 						{/* {console.log(user.nameIntra)} */}
 						{(selectedChannel.settings.owner === user.nameIntra ||
-							userIsAdmin(user.nameIntra, selectedChannel)) &&
+							(userIsAdmin(user.nameIntra, selectedChannel) && _user.role === 'member')) &&
 							(user.nameIntra !== _user.name) &&
 							(_user.role !== 'owner') &&
 							(isUserMuted(_user) === false) && (
