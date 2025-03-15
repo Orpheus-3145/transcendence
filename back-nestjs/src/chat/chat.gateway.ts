@@ -80,11 +80,11 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		
 		// client.join(channel_id.toString());
 
-		const channel = await this.chatService.getChannel(channel_id);
+		// const channel = await this.chatService.getChannel(channel_id);
 
-		if (channel.members.some(usr => usr.user.id === user_id)) {
-			this.server.emit('joinedChannel', { user_id, channel_id, name, email });
-		}
+		// if (channel.members.some(usr => usr.user.id === user_id)) {
+		this.server.emit('joinedChannel', { user_id, channel_id, name, email });
+		// }
 
 		// this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}

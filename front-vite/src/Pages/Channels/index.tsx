@@ -460,31 +460,34 @@ const ChannelsPage: React.FC = () => {
 
 	useEffect(() => {
 			const handleUserJoinedChannel = (response) => {
-				console.log('User added to channel (index) ');
-				const newUser: UserProps = {
-					id: response.user_id,
-					name: response.name,
-					role: UserRoles.member,
-					email: response.email,
-					password: '',
-					// icon: <Avatar src={tmp.image}/> 
-					icon: <PersonAddIcon /> //!!
-				};
+				const chatRoom = chatProps.chatRooms.find(chat => chat.id === response.channel_id);
+				if (chatRoom && userInChannel(user.id, chatRoom)) {
+					console.log('User added to channel (index) ');
+					const newUser: UserProps = {
+						id: response.user_id,
+						name: response.name,
+						role: UserRoles.member,
+						email: response.email,
+						password: '',
+						// icon: <Avatar src={tmp.image}/> 
+						icon: <PersonAddIcon /> //!!
+					};
 
-				setChatProps((prevState) => ({
-					...prevState,
-					chatRooms: prevState.chatRooms.map((room) =>
-						room.id === response.channel_id
-						?	{
-								...room,
-								settings: {
-									...room.settings,
-									users: [...room.settings.users, newUser],
-								},
-							}
-						: room 
-					)
-				}));
+					setChatProps((prevState) => ({
+						...prevState,
+						chatRooms: prevState.chatRooms.map((room) =>
+							room.id === response.channel_id
+							?	{
+									...room,
+									settings: {
+										...room.settings,
+										users: [...room.settings.users, newUser],
+									},
+								}
+							: room 
+						)
+					}));
+				}	
 			}
 
 			socket.on('joinedChannel', handleUserJoinedChannel);

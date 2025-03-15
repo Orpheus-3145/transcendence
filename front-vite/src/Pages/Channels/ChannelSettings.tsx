@@ -93,18 +93,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	useEffect(() => {
 		const handleUserJoinedChannel = (response) => {
-			console.log('User added to channel (settings) ');
-			const newUser: UserProps = {
-				id: response.user_id,
-				name: response.name,
-				role: UserRoles.member,
-				email: response.email,
-				password: '',
-				// icon: <Avatar src={tmp.image}/> 
-				icon: <PersonAddIcon /> //!!
-			};
-			
-			setSettings({ ...settings, users: [...settings.users, newUser] });
+			if (!selectedChannel) {
+				return;
+			} 
+
+			if (userInChannel(user.id, selectedChannel)){
+				console.log('User added to channel (settings) ');
+				const newUser: UserProps = {
+					id: response.user_id,
+					name: response.name,
+					role: UserRoles.member,
+					email: response.email,
+					password: '',
+					// icon: <Avatar src={tmp.image}/> 
+					icon: <PersonAddIcon /> //!!
+				};
+				
+				setSettings({ ...settings, users: [...settings.users, newUser] });
+			}
 		}
 		socket.on('joinedChannel', handleUserJoinedChannel);
 
