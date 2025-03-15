@@ -239,10 +239,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			}
 		});
 	};
+	
 
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
-			console.log('Channel privacy updated to:', updatedChannel.settings.type);
+			console.log('Channel privacy updated to (settings):', updatedChannel.settings.type);
 			setSettings({ ...settings, type: updatedChannel.settings.type, password: updatedChannel.settings.password})
 		};
 
@@ -252,6 +253,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			socket.off('privacyChanged', handlePrivacyChanged);
 		};
 	}, [settings]);
+
 
 	const handleChangePrivacy = (type: ChannelType, password: string | null) => {
 		console.log('"Change Privacy" clicked!');

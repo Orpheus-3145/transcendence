@@ -159,7 +159,7 @@ const ChannelsPage: React.FC = () => {
 				userInChannel(user.id, channel)
 			);
 		// console.log("Available (useEffect):", available);
-		console.log("Joined (useEffect):", joined);
+		// console.log("Joined (useEffect):", joined);
 		
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
@@ -466,11 +466,13 @@ const ChannelsPage: React.FC = () => {
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
 			// console.log('Channel privacy updated:', updatedChannel);
-			console.log('Channel privacy updated to:', updatedChannel.settings.type);
+			console.log('Channel privacy updated to (index):', updatedChannel.settings.type);
+			console.log('Channel from backend (index):', updatedChannel);
+			
 			setChatProps((prevState) => ({
 				...prevState,
 				chatRooms: prevState.chatRooms.map((room) =>
-					room.id === updatedChannel.channel_id
+					room.id === updatedChannel.id
 					?	{
 							...room,
 							settings: {
