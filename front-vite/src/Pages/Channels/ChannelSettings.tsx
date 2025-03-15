@@ -357,6 +357,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			if (!response.channelDto) {
 				return;
 			}
+			
 			setSettings({
 				...settings,
 				owner: response.channelDto.settings.owner || settings.owner,
@@ -494,7 +495,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					</Box>
 					</>
 				)}
-				{(selectedChannel.settings.owner === user.nameIntra) ? (
+				{selectedChannel.settings.users.length > 1 && 
+				((selectedChannel.settings.owner === user.nameIntra) ? (
 					<Box sx={{display: 'flex'}}>
 						<Button
 							variant="contained"
@@ -513,7 +515,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							Leave Channel
                    </Button>
 					</Box>
-				)}
+				))}
 				{/* Friend List */}
 				<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
 					<Stack spacing={1} mt={2}>
