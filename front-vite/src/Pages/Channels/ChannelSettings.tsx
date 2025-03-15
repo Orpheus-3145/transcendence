@@ -534,7 +534,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						{/* {console.log(user.nameIntra)} */}
 						{(selectedChannel.settings.owner === user.nameIntra ||
 							userIsAdmin(user.nameIntra, selectedChannel)) &&
-							(user.nameIntra !== _user.name) && (isUserMuted(_user) === false) && (
+							(user.nameIntra !== _user.name) &&
+							(_user.role !== 'owner') &&
+							(isUserMuted(_user) === false) && (
 						<Stack direction="row" spacing={0.3}>
 							<Button sx={{width: '120px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(_user.id, _user.role)}>
 								{_user.role === UserRoles.admin ? 'Make Member' : 'Make Admin' }
