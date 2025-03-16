@@ -31,17 +31,6 @@ interface ChannelTypeEvent {
 	clickEvent: () => void;
 }
 
-// export const myself: UserProps =  {
-// 	id: 777,
-// 	name: 'raanghel',
-// 	role: 'Guest',
-// 	email: 'raanghel@student.codam.nl',
-// 	password: '',
-// 	icon: React.ReactElement ,
-// };
-
-// console.log('USER', )
-
 export const userIsAdmin = (userName: string, channel: ChatRoom): boolean => {
 	// 
 	const found = channel.settings.users.find((user) => user.name === userName);
@@ -58,6 +47,20 @@ export const userBanned = (userName: string, channel: ChatRoom): boolean =>
 	if (channel.settings.banned.find((user) => String(user) === String(userName))) 
 		return true;
 	return (false);
+}
+
+export const joinRoom = (roomId) => {
+	// Check if the client has already joined this room
+	if (!joinedRooms.includes(roomId)) {
+	  // Join the room and add it to the joinedRooms list
+	  socket.emit('joinRoom', roomId);
+	  joinedRooms.push(roomId);
+	  console.log(`Joined room: ${roomId}`);
+	} 
+	// else {
+	//   console.log(`Already in room: ${roomId}`);
+	// }
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -369,82 +372,36 @@ const ChannelsPage: React.FC = () => {
 
 //////////////////////////////////////////////////////////////////////
 
-	// useEffect(() => {
-	// 		socket.on('privacyChanged', (updatedChannel) => {
-	// 			console.log('Channel privacy updated:', updatedChannel);
-	// 			setSettings({ ...settings, type: updatedChannel.ch_type, password: updatedChannel.password})
-	// 	});
-	// 		return () => {
-	// 			socket.off('privacyChanged');
-	// 		};
-	// 	}, []);
-
-//////////////////////////////////////////////////////////////////////
-
-	// useEffect(() => {
-	// 	const handleUserLeftChannel = (response) => {
-	// 		console.log(`User left channel (index): ${response.user_name}`);
-		
-	// 		setChatProps((prevState) => ({
-	// 			...prevState,
-	// 			chatRooms: prevState.chatRooms.map((channel) =>
-	// 			channel.id === response.channel_id
-	// 				? {
-	// 					...channel,
-	// 					settings: {
-	// 						...channel.settings,
-	// 						owner: channel.settings.owner === response.user_name
-	// 						? channel.settings.users.length > 1
-	// 						? channel.settings.users[channel.settings.users.length - 2]?.name ?? null
-	// 						: null
-	// 						: channel.settings.owner,
-	// 						users: channel.settings.users.filter((usr) => usr.id !== response.user_id).map(usr => usr.name === channel.settings.owner ? {...usr, role: 'owner'}: usr),
-	// 					},
-	// 				}
-	// 				: channel
-	// 			),
-	// 		}));
-	// 		console.log('channel after user left (index)', selectedChannel);
-	// 	};
-	
-	// 	socket.on('leftChannel', handleUserLeftChannel);
-	
-	// 	return () => {
-	// 	socket.off('leftChannel', handleUserLeftChannel);
-	// 	};
-	// }, []);
-
-
 	useEffect(() => {
     const handleUserLeftChannel = (response: {channelDto: ChatRoom, userId: number}) => {
-		console.log(`User left channel (index): ${JSON.stringify(response)}`);
-		if (!response.channelDto) { 
-			return;
+		if (userInChannel(user.id, response.channelDto)) {
+			console.log(`User left channel (index): ${JSON.stringify(response)}`);
+			if (!response.channelDto) { 
+				return;
+			}
+			setChatProps((prevState) => ({
+				...prevState,
+				chatRooms: prevState.chatRooms.map((channel) => {
+					if (channel.id !== response.channelDto.id) {
+						return channel;
+					}
+					const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.userId);
+					const newOwner = response.channelDto.settings.owner;
+					// console.log('New owner (index) :', newOwner);
+					return {
+						...channel,
+						settings: {
+							...channel.settings,
+							owner: newOwner || channel.settings.owner,
+							users: updatedUsers.map(usr => ({
+								...usr,
+								role: usr.name === newOwner ? 'owner' : usr.role,
+							})),
+						},
+					};
+				}),
+			}));
 		}
-
-        setChatProps((prevState) => ({
-            ...prevState,
-            chatRooms: prevState.chatRooms.map((channel) => {
-                if (channel.id !== response.channelDto.id) {
-					return channel;
-				}
-                const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.userId);
-				const newOwner = response.channelDto.settings.owner;
-				// console.log('New owner (index) :', newOwner);
-                return {
-                    ...channel,
-                    settings: {
-                        ...channel.settings,
-                        owner: newOwner || channel.settings.owner,
-                        users: updatedUsers.map(usr => ({
-                            ...usr,
-                            role: usr.name === newOwner ? 'owner' : usr.role,
-                        })),
-                    },
-                };
-            }),
-        }));
-
         // console.log('channel after user left (index)', selectedChannel);
     };
 
@@ -460,8 +417,8 @@ const ChannelsPage: React.FC = () => {
 
 	useEffect(() => {
 			const handleUserJoinedChannel = (response) => {
-				const chatRoom = chatProps.chatRooms.find(chat => chat.id === response.channel_id);
-				if (chatRoom && userInChannel(user.id, chatRoom)) {
+				// console.log(response.channelDto);
+				if (userInChannel(user.id, response.channelDto)) {
 					console.log('User added to channel (index) ');
 					const newUser: UserProps = {
 						id: response.user_id,
@@ -496,7 +453,7 @@ const ChannelsPage: React.FC = () => {
 				socket.off('joinedChannel', handleUserJoinedChannel);
 			}
 
-	}, []);
+	}, [user]);
 
 //////////////////////////////////////////////////////////////////////
 	
@@ -600,27 +557,6 @@ const ChannelsPage: React.FC = () => {
 						alert(`Error creating channel: ${error.message}`);
 			});
 		}
-
-// 		if (!directMessageExists(otherUser)) {
-// 			if (otherUser.id !== user.id) {
-// 				const channelDTO = {
-// 					title: otherUser.nameIntra,
-// 					ch_type: 'private',
-// 					ch_owner: user.nameIntra,
-// 					users: [
-// 						{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
-// 						{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
-		
-// 					],
-// 					password: null,
-// 					isDirectMessage: true,
-// 				};
-// 				socket.emit('createChannel', channelDTO);
-// 				socket.once('errorCreatingChannel', (error) => {
-// 					console.error(error.message);
-// 					alert(`Error creating channel: ${error.message}`);
-// 				});
-// 			}
 		}
 	};
 

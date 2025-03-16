@@ -77,6 +77,12 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id);
 		
+		const updatedChannel = await this.chatService.getChannel(channel_id);
+		
+		const channelDto = new ChatRoomDTO(updatedChannel);
+
+		console.log(JSON.stringify(channelDto));
+
 		client.join(channel_id.toString());
 
 		// NB: schould emit to all server of just to the room?
@@ -84,8 +90,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		// if (channel.members.some(usr => usr.user.id === user_id)) {
 		// this.server.emit('joinedChannel', { user_id, channel_id, name, email });
 		// }
-
-		this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
+		
+		this.server.emit('joinedChannel', { channelDto, user_id, channel_id, name, email });
+		// this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}
 
 	@SubscribeMessage('joinAvailableChannel')
@@ -110,7 +117,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
 
-		this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
+		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
+		this.server.emit('leftChannel', {channelDto, userId: user_id});		
 		client.leave(channel_id.toString());
 	}
 

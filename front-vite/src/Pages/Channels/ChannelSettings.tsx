@@ -10,6 +10,7 @@ import { socket } from '../../Layout/Chat/ChatContext';
 import { prev } from 'cheerio/dist/commonjs/api/traversing';
 import { useNavigate } from 'react-router-dom';
 import { channel } from 'diagnostics_channel';
+import { joinRoom } from '../Channels/index';
 // User test data
 // const testUser = {
 // 	name: 'user_test',
@@ -55,8 +56,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const { user } = useUser();
 	const [banned, setbanned] = useState<Map<string, User>>(new Map());
 
-	// console.log(user);
-
 	const handleAddFriend = async () => 
 	{
 		console.log('"Add Friend" clicked!');
@@ -83,6 +82,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				email: tmp.email,
 			};
 
+			// joinRoom(selectedChannel.id);
+			
 			// Emit the user to the backend
 			socket.emit('joinChannel', data);
 			
@@ -318,74 +319,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		}
 	};
 
-	// useEffect(() => {
-	// 	const handleUserLeftChannel = (response) => {
-	// 		console.log(`User left channel (settings): ${response.user_name}`);
-		
-	// 		setSettings({
-	// 			...settings,
-	// 			owner: settings.owner === response.user_name
-	// 			? settings.users.length > 1
-	// 			? settings.users[settings.users.length - 2]?.name ?? null
-	// 			: null
-	// 			: settings.owner,
-	// 			users: settings.users.filter((usr) => usr.id !== response.user_id).map(usr => usr.name === settings.owner ? { ...usr, role: 'owner' }: usr),
-	// 		});
-
-	// 		// console.log('channel after user left (settings)', selectedChannel);
-
-		
-	// 	};
-	// 	socket.on('leftChannel', handleUserLeftChannel);
-	
-	// 	return () => {
-	// 		socket.off('leftChannel', handleUserLeftChannel);
-	// 	};
-	// }, []);
-
-
-	// useEffect(() => {
-	// 	const handleUserLeftChannel = (response: ChatRoom) => {
-	// 		console.log(`User left channel (settings): ${response.user_name}`);
-	// 		// console.log(`New owner (settings): ${ response.new_owner}`);
-	
-	// 		setSettings({
-	// 			...settings,
-	// 			owner: response.new_owner || settings.owner,
-	// 			users: settings.users
-	// 				.filter((usr) => usr.id !== response.user_id)
-	// 				.map(usr => ({
-	// 					...usr,
-	// 					role: usr.name === response.new_owner ? 'owner' : usr.role,
-	// 				})),
-	// 		});
-	// 	};
-	
-	// 	socket.on('leftChannel', handleUserLeftChannel);
-	
-	// 	return () => {
-	// 		socket.off('leftChannel', handleUserLeftChannel);
-	// 	};
-	// }, [settings]);
 
 	useEffect(() => {
 		const handleUserLeftChannel = (response: {channelDto: ChatRoom, userId: number}) => {
-			console.log(`User left channel (settings): ${JSON.stringify(response)}`);
-			// console.log(`New owner (settings): ${ response.new_owner}`);
-			if (!response.channelDto) {
-				return;
+			if (userInChannel(user.id, selectedChannel)) {
+				console.log(`User left channel (settings): ${JSON.stringify(response)}`);
+				// console.log(`New owner (settings): ${ response.new_owner}`);
+				if (!response.channelDto) {
+					return;
+				}
+				
+				setSettings({
+					...settings,
+					owner: response.channelDto.settings.owner || settings.owner,
+					users: settings.users
+						.filter((usr) => usr.id !== response.userId)
+						.map(usr => ({
+							...usr,
+							role: usr.name === response.channelDto.settings.owner ? 'owner' : usr.role,
+						})),
+				});
 			}
-			
-			setSettings({
-				...settings,
-				owner: response.channelDto.settings.owner || settings.owner,
-				users: settings.users
-					.filter((usr) => usr.id !== response.userId)
-					.map(usr => ({
-						...usr,
-						role: usr.name === response.channelDto.settings.owner ? 'owner' : usr.role,
-					})),
-			});
 		};
 	
 		socket.on('leftChannel', handleUserLeftChannel);
@@ -395,33 +349,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		};
 	}, [settings]);
 	
-	// useEffect(() => {
-	// 	const handleUserLeftChannel = (response: {channel: ChatRoom, userId: number}) => {
-	// 		console.log(`User left channel (settings): ${JSON.stringify(response)}`);
-	// 		// console.log(`New owner (settings): ${ response.new_owner}`);
-	// 		if (!response.channel) {
-	// 			return;
-	// 		}
-	// 		setSettings({
-	// 			...settings,
-	// 			owner: response.channel.settings.owner || settings.owner,
-	// 			users: settings.users
-	// 				.filter((usr) => usr.id !== response.userId)
-	// 				.map(usr => ({
-	// 					...usr,
-	// 					role: usr.name === response.channel.settings.owner ? 'owner' : usr.role,
-	// 				})),
-	// 		});
-	// 	};
 	
-	// 	socket.on('leftChannel', handleUserLeftChannel);
-	
-	// 	return () => {
-	// 		socket.off('leftChannel', handleUserLeftChannel);
-	// 	};
-	// }, [settings]);
-	
-
 	const fetchbanned = async (bannedId: string) => {
 		const banned = await fetchUserMessage(bannedId);
 		setbanned((prev) => new Map(prev).set(bannedId, banned));
