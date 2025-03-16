@@ -28,7 +28,7 @@ export default class MainMenuScene extends BaseScene {
 		})
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
-		.on('pointerover', () => singleGameBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
+		.on('pointerover', () => singleGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => singleGameBtn.setStyle({ fill: '#fff' }))
 		.on('pointerup', () =>
 			this.switchScene('Settings', { mode: GameMode.single }),
@@ -42,7 +42,7 @@ export default class MainMenuScene extends BaseScene {
 		})
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
-		.on('pointerover', () => multiGameBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
+		.on('pointerover', () => multiGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => multiGameBtn.setStyle({ fill: '#fff' }))
 		.on('pointerup', () =>
 			this.switchScene('Settings', { mode: GameMode.multi }),
@@ -56,7 +56,7 @@ export default class MainMenuScene extends BaseScene {
 		})
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
-		.on('pointerover', () => changeBkBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
+		.on('pointerover', () => changeBkBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => changeBkBtn.setStyle({ fill: '#fff' }))
 		.on("pointerdown", () => this.openFilePicker());
 	}

@@ -18,9 +18,11 @@ export default class Paddle {
 		const paddleHeightRatio = parseInt(import.meta.env.GAME_HEIGHT) / parseInt(import.meta.env.GAME_PADDLE_HEIGHT);	
 		this._width = scene.scale.width / paddleWidthRatio;
 		this._height = scene.scale.height / paddleHeightRatio;
-
+		// #33B6C1
+		// #D3D3D3
+		// 0x808080
 		// Create a graphical rectangle to represent the player bar
-		this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0x0000ff).setOrigin(0, 0.5);
+		this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0xD3D3D3).setOrigin(0, 0.5);
 	}
 
 	// Update the position of the bar based on backend data

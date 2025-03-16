@@ -69,15 +69,15 @@ export default class SettingsScene extends BaseScene {
 		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.54, PowerUpSelected.stretchPaddle);
 
 		const startBtn = this.add
-			.text(this.scale.width * 0.5, this.scale.height * 0.75, this.mode === GameMode.single ? 'START' : 'JOIN QUEUE', {
+			.text(this.scale.width * 0.5, this.scale.height * 0.75, this.mode === GameMode.single ? 'PLAY!' : 'JOIN QUEUE', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 28}px`,
 				align: 'center',
-				color: '#0f0'}
+				color: '#d7263d'}
 			)
 			.setOrigin(0.5, 0.5)
 			.setInteractive()
-			.on('pointerover', () => startBtn.setStyle({ fill: '#ff0' }))
-			.on('pointerout', () => startBtn.setStyle({ fill: '#0f0' }))
+			.on('pointerover', () => startBtn.setStyle({ fill: '#f00' }))
+			.on('pointerout', () => startBtn.setStyle({ fill: '#d7263d' }))
 			.on('pointerup', () => this.startGame());
 
 		if (this.mode === GameMode.single) {
@@ -100,7 +100,7 @@ export default class SettingsScene extends BaseScene {
 				.setInteractive()
 				.on('pointerup', () => {
 					this.difficulty = GameDifficulty.easy;
-					easyModeToggle.setStyle({ fill: '#0f0' });
+					easyModeToggle.setStyle({ fill: '#d7263d' });
 					mediumModeToggle.setStyle({ fill: '#fff' });
 					hardModeToggle.setStyle({ fill: '#fff' });
 				});
@@ -109,14 +109,14 @@ export default class SettingsScene extends BaseScene {
 				.text(this.scale.width * 0.675, this.scale.height * 0.63, 'MEDIUM', {
 					fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
 					align: 'center',
-					color: '#0f0'}
+					color: '#d7263d'}
 				)
 				.setOrigin(0.5, 0.5)
 				.setInteractive()
 				.on('pointerup', () => {
 					this.difficulty = GameDifficulty.medium;
 					easyModeToggle.setStyle({ fill: '#fff' });
-					mediumModeToggle.setStyle({ fill: '#0f0' });
+					mediumModeToggle.setStyle({ fill: '#d7263d' });
 					hardModeToggle.setStyle({ fill: '#fff' });
 				});
 
@@ -132,7 +132,7 @@ export default class SettingsScene extends BaseScene {
 					this.difficulty = GameDifficulty.hard;
 					easyModeToggle.setStyle({ fill: '#fff' });
 					mediumModeToggle.setStyle({ fill: '#fff' });
-					hardModeToggle.setStyle({ fill: '#0f0' });
+					hardModeToggle.setStyle({ fill: '#d7263d' });
 				});
 		}
 
@@ -144,32 +144,80 @@ export default class SettingsScene extends BaseScene {
 			)
 			.setOrigin(0.5, 0.5)
 			.setInteractive()
-			.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) // Change color on hover
+			.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
 			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
 			.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 	}
 
+	// createTogglePowerUp(x: number, y: number, value: PowerUpSelected): void {
+	// 	const toggle = this.add
+	// 		.text(x + this.scale.width * 0.3, y, 'INACTIVE', {
+	// 			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+	// 			align: 'center',
+	// 			color: '#ff0'}
+	// 		)
+	// 		.setOrigin(0, 0.5)
+	// 		.setInteractive()
+	// 		.on('pointerup', () => {
+	// 			if ( this.powerUpSelection & value ) {
+	// 				this.powerUpSelection &= ~value;
+	// 				toggle.setText('INACTIVE');
+	// 				toggle.setStyle({ fill: '#ff0' }); // Green for ON, White for OFF
+	// 			} else {
+	// 				this.powerUpSelection |= value;
+	// 				toggle.setText('ACTIVE');
+	// 				toggle.setStyle({ fill: '#0f0' }); // Green for ON, White for OFF
+	// 			}}
+	// 		);
+	// }
+
 	createTogglePowerUp(x: number, y: number, value: PowerUpSelected): void {
-		const toggle = this.add
-			.text(x + this.scale.width * 0.3, y, 'INACTIVE', {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#ff0'}
-			)
-			.setOrigin(0, 0.5)
-			.setInteractive()
-			.on('pointerup', () => {
-				if ( this.powerUpSelection & value ) {
-					this.powerUpSelection &= ~value;
-					toggle.setText('INACTIVE');
-					toggle.setStyle({ fill: '#ff0' }); // Green for ON, White for OFF
-				} else {
-					this.powerUpSelection |= value;
-					toggle.setText('ACTIVE');
-					toggle.setStyle({ fill: '#0f0' }); // Green for ON, White for OFF
-				}}
-			);
+    const toggleWidth = this.scale.width * 0.07; // Toggle width
+    const toggleHeight = this.scale.height * 0.03; // Toggle height
+    const borderRadius = toggleHeight / 2; // Half height for full rounding
+    const knobRadius = toggleHeight * 0.8; // Slightly smaller for a better fit
+
+    const toggleX = x + this.scale.width * 0.3; // Toggle's center X position
+    const leftX = toggleX - (toggleWidth / 2) + borderRadius; // Leftmost knob position
+    const rightX = toggleX + (toggleWidth / 2) - borderRadius; // Rightmost knob position
+
+    // Draw the toggle background (rounded rectangle)
+    const toggleGraphics = this.add.graphics();
+    const drawToggle = (isActive: boolean) => {
+        toggleGraphics.clear();
+        toggleGraphics.fillStyle(isActive ? 0x3bb273 : 0xd2d2cf, 1); // Green if active, Red if inactive
+        toggleGraphics.fillRoundedRect(toggleX - toggleWidth / 2, y - toggleHeight / 2, toggleWidth, toggleHeight, borderRadius);
+    };
+
+    drawToggle(false); // Default to inactive state
+
+    // Create the circular knob
+    const knob = this.add.circle(leftX, y, knobRadius, 0xffffff)
+        .setOrigin(0.5, 0.5)
+        .setInteractive();
+
+    // Function to update toggle state
+    const updateToggle = () => {
+        const isActive = !(this.powerUpSelection & value);
+        this.powerUpSelection = isActive ? (this.powerUpSelection | value) : (this.powerUpSelection & ~value);
+        
+        this.tweens.add({
+            targets: knob,
+            x: isActive ? rightX : leftX, // Move knob left or right
+            duration: 200,
+            ease: 'Power2'
+        });
+
+        drawToggle(isActive); // Redraw background with correct color
+    };
+
+    // Make it interactive
+    knob.on('pointerup', updateToggle);
+    toggleGraphics.setInteractive(new Phaser.Geom.Rectangle(toggleX - toggleWidth / 2, y - toggleHeight / 2, toggleWidth, toggleHeight), Phaser.Geom.Rectangle.Contains)
+        .on('pointerup', updateToggle);
 	}
+
+
 
 	startGame(): void {
 		if (this.mode === GameMode.single)

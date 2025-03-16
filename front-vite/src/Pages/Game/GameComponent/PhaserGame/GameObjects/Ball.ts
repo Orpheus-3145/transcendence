@@ -10,8 +10,11 @@ export default class Ball {
 
 		this.radiusRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_BALL_RADIUS);
 		this.radius = scene.scale.width / this.radiusRatio;
-		
-		this._graphic = scene.add.circle(x, y, this.radius, 0x0000ff);
+
+		// 0x0000ff
+		// #808080
+		// 0xD3D3D3
+		this._graphic = scene.add.circle(x, y, this.radius, 0xffffff);
 	}
 
 	updatePosition(x: number, y: number): void {

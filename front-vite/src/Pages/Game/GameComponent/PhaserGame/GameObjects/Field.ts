@@ -21,7 +21,7 @@ class Field {
 			.text(this._scene.scale.width * 0.5, this._scene.scale.height * 0.1, `${this._leftScore} : ${this._rightScore}`, {
 				fontSize: `${Math.round(this._textFontRatio * this._scene.scale.width)}px`,
 				align: 'center',
-				color: '#0f0',
+				color: '#FFA500',
 			})
 			.setOrigin(0.5, 0.5);
 	}

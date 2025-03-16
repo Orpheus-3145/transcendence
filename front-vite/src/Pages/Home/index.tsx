@@ -6,7 +6,7 @@ import { useCookies } from 'react-cookie';
 
 const ContentBox = styled(Box)(({ theme }) => ({
 	backgroundColor: theme.palette.primary.dark,
-	borderRadius: '1em',
+	// borderRadius: '1em',
 	color: theme.palette.text.primary,
 	padding: theme.spacing(2),
 	marginTop: theme.spacing(2),
@@ -26,9 +26,11 @@ const SectionTitle: React.FC<SectionTitleProps> = ({ children, width }) => {
 				textAlign: 'center',
 				width,
 				color: theme.palette.secondary.main,
-				bgcolor: theme.palette.primary.main,
+				// bgcolor: theme.palette.primary.main,
 				borderTopLeftRadius: '0.5em',
 				borderTopRightRadius: '0.5em',
+				borderBottomLeftRadius: '0.5em',
+				borderBottomRightRadius: '0.5em',
 			}}
 		>
 			{children}
@@ -51,10 +53,12 @@ const SectionContent: React.FC<SectionContentProps> = ({ children }) => {
 				padding: '0.5em',
 				textAlign: 'justify',
 				color: theme.palette.secondary.main,
-				bgcolor: theme.palette.primary.main,
-				borderBottomLeftRadius: '1em',
-				borderBottomRightRadius: '1em',
-				borderTopRightRadius: '1em',
+				// bgcolor: theme.palette.primary.main,
+				borderBottomLeftRadius: '0.5em',
+				borderBottomRightRadius: '0.5em',
+				borderTopRightRadius: '0.5em',
+				borderTopLeftRadius: '0.5em',
+
 			}}
 		>
 			<Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
@@ -125,9 +129,20 @@ const Home: React.FC = () => {
 	return (
 		<Container>
 			<ContentBox>
-				<SectionTitle width='16ch'>ft_transcendence</SectionTitle>
+				<Typography
+					variant='h3'
+					component='div'
+					style={{
+						color: theme.palette.secondary.main,
+						textAlign: 'center',
+						fontWeight: 'bold',
+						padding: theme.spacing(2),
+					}}
+				>
+					ft_transcendence
+				</Typography>
 				<SectionContent>
-					<Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
+					<Box bgcolor={theme.palette.background.default} borderRadius={'0.5em'} padding={'0.5em'}>
 						A modern web application to play Pong online with real-time multiplayer capabilities.
 					</Box>
 				</SectionContent>
@@ -149,7 +164,7 @@ const Home: React.FC = () => {
 					<ListContent items={objectives} />
 				</SectionContent>
 
-				<SectionTitle width='13ch'>Technical Requirements</SectionTitle>
+				<SectionTitle width='22ch'>Technical Requirements</SectionTitle>
 				<SectionContent>
 					<ListContent items={requirements} />
 				</SectionContent>
@@ -165,10 +180,10 @@ const Home: React.FC = () => {
 						padding: '0.5em',
 						textAlign: 'justify',
 						color: 'secondary.main',
-						bgcolor: 'primary.main',
-						borderBottomLeftRadius: '1em',
-						borderBottomRightRadius: '1em',
-						borderTopRightRadius: '1em',
+						// bgcolor: 'primary.main',
+						borderBottomLeftRadius: '0.5em',
+						borderBottomRightRadius: '0.5em',
+						borderTopRightRadius: '0.5em',
 					}}
 				>
 					<Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
@@ -241,7 +256,7 @@ const Home: React.FC = () => {
 					</Stack>
 				</Stack>
 
-				<SectionTitle width='13ch'>Security Considerations</SectionTitle>
+				<SectionTitle width='23ch'>Security Considerations</SectionTitle>
 				<SectionContent>
 					<ListContent items={security} />
 				</SectionContent>

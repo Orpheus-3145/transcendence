@@ -78,7 +78,7 @@ export default class ResultsScene extends BaseScene {
 		})
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
-		.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) 	// Change color on hover
+		.on('pointerover', () => goHomeButton.setStyle({ fill: '#d7263d' })) 	// Change color on hover
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 	// Change color back when not hovered
 		.on('pointerup', () => this.switchScene('MainMenu')); 				// Start the main game
 

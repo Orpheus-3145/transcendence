@@ -4,7 +4,7 @@ import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base'
 import { GameDifficulty, GameMode, PaddleDirection, PowerUpSelected, PowerUpType } from '/app/src/Types/Game/Enum';
 import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '/app/src/Types/Game/Interfaces';
 import Ball from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Ball';
-import PowerUpBall from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/PowerUpBall';
+import PowerUp from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/PowerUp';
 import Paddle from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Paddle';
 import Field from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Field';
 
@@ -38,7 +38,7 @@ export default class GameScene extends BaseScene {
 	private _leftPaddle!: Paddle;
 	private _rightPaddle!: Paddle;
 	private _field!: Field;
-	private _powerUp!: PowerUpBall | null;
+	private _powerUp!: PowerUp | null;
 
 	// Key listeners
 	private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -160,7 +160,7 @@ export default class GameScene extends BaseScene {
 		this._field = new Field(this);
 
 		if (this._powerUpState)
-			this._powerUp = new PowerUpBall(this, this._powerUpState.x, this._powerUpState.y);
+			this._powerUp = new PowerUp(this, this._powerUpState.x, this._powerUpState.y);
 	}
 
 	setupSocket(): void {
@@ -201,7 +201,7 @@ export default class GameScene extends BaseScene {
 			
 			this._powerUpState = state;
 			if (!this._powerUp)	// Create the powerUp object if it doesn't already exist
-				this._powerUp = new PowerUpBall(this, this._powerUpState.x, this._powerUpState.y);
+				this._powerUp = new PowerUp(this, this._powerUpState.x, this._powerUpState.y);
 			else	// update position
 				this._powerUp.updatePosition(this._powerUpState.x, this._powerUpState.y);
 		});
@@ -232,16 +232,21 @@ export default class GameScene extends BaseScene {
 		this._socketIO.emit(msgType, content);
 	}
 
+	// Change the colour of the paddke
 	getColour(): number {
-		let colour: number = 0;
+		let colour: number = 0xD3D3D3;
 		if (this._powerUpType === PowerUpType.speedBall)
-			colour = 0xff6600;  // Bright orange for speedBall
+			// colour = 0xff6600;  // Bright orange for speedBall
+			colour = 0xe4ff1a;
 		else if (this._powerUpType === PowerUpType.speedPaddle)
-			colour = 0x66ff33;  // Vibrant green for speedPaddle
+			// colour = 0x66ff33;  // Vibrant green for speedPaddle
+			colour = 0xff5714;
 		else if (this._powerUpType === PowerUpType.slowPaddle)
-			colour = 0x9900cc;  // Calming purple for slowPaddle
+			// colour = 0x9900cc;  // Calming purple for slowPaddle
+			colour = 0xdc0073;
 		else if (this._powerUpType === PowerUpType.shrinkPaddle)
-			colour = 0xff66cc;  // Light pink for shrinkPaddle
+			// colour = 0xff66cc;  // Light pink for shrinkPaddle
+			colour = 0x1be7ff;
 		else if (this._powerUpType === PowerUpType.stretchPaddle)
 			colour = 0xcc0000;  // Deep red for stretchPaddle
 		else
@@ -258,7 +263,7 @@ export default class GameScene extends BaseScene {
 				paddle.resizeStretch();
 		}	
 		else if (paddle.getColor() != 0xffff00 && active === false) {
-			paddle.changeColor(0x0000ff);
+			paddle.changeColor(0xD3D3D3);
 			if (this._powerUpType === PowerUpType.shrinkPaddle || this._powerUpType === PowerUpType.stretchPaddle)
 				paddle.resizeOriginal();
 		}

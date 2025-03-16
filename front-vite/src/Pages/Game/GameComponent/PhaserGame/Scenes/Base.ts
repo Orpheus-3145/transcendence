@@ -4,8 +4,9 @@ export default class BaseScene extends Phaser.Scene {
 	protected _backgroundPath: string = import.meta.env.GAME_PATH_BACKGROUND;
 	protected _background: Phaser.GameObjects.Image | null = null;
 	protected _backgroundColor: number = 0x000000; // Black
-	protected _lines: Phaser.GameObjects.Rectangle[] = [];
+	// protected _lines: Phaser.GameObjects.Rectangle[] = [];
 	protected _keyEsc: Phaser.Input.Keyboard.Key | null = null;
+	protected _lines: Phaser.GameObjects.Group | null = null;
 	
 	// ratio between standard size of the standard font size and the game window 
 	// if the windows is resized, the font size is derivated from new_size_wdth * ratio
@@ -13,6 +14,7 @@ export default class BaseScene extends Phaser.Scene {
 
 	constructor(arg?: any) {
 		super(arg);
+
 	}
 
 	// method called when scene.start(nameScene, args) is run
@@ -26,18 +28,22 @@ export default class BaseScene extends Phaser.Scene {
 	// loading graphic assets, fired after init()
 	preload(arg?: any): void {
 		// this.load.image('background', this._backgroundPath);
+		// this.load.glsl('ditherShader', 'assets/texture/ditherShader.glsl');
 	}
 
 	// run after preload(), creation of the entities of the scene
 	create(arg?: any): void {
 		this.cameras.main.setBackgroundColor(this._backgroundColor);
+		this._lines = this.add.group();
 		this.time.addEvent({
-			delay: 1000, // Spawns a line every second
+			delay: 400, // Spawns a line every second
 			repeat: -1,
 			callback: this.spawnCluster,
 			callbackScope: this
 		});
 		this.buildGraphicObjects();
+        // const shader = this.add.shader('ditherShader', this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height);
+        // this.cameras.main.setRenderToTexture(shader);
 	}
 
 	// function called by Phaser engine once every frame
@@ -48,11 +54,19 @@ export default class BaseScene extends Phaser.Scene {
 		if (this._keyEsc!.isDown) this.switchScene('MainMenu');
 
 		// Move the lines across the screen
-		this._lines.forEach((line) => {
-			line.x += 5;
-			if (line.x > this.scale.width) {
-				line.destroy();
-				this._lines = this._lines.filter(l => l !== line);
+		// this._lines.forEach((line) => {
+		// 	line.x += 5;
+		// 	if (line.x > this.scale.width) {
+		// 		line.destroy();
+		// 		this._lines = this._lines.filter(l => l !== line);
+		// 	}
+		// });
+
+		this._lines!.getChildren().forEach((line: Phaser.GameObjects.Rectangle) => {
+			// line.x += 2;
+			(line as any).x += (line as any).speed; // Use stored speed
+			if ((line as any).x  > this.scale.width) {
+				this._lines!.remove(line, true, true);
 			}
 		});
 	}
@@ -80,14 +94,37 @@ export default class BaseScene extends Phaser.Scene {
 	}
 
 
+	// spawnCluster(): void {
+
+	// 	const clusterSize = Phaser.Math.Between(3, 7);
+	// 	for (let i = 0; i < clusterSize; i++) {
+	// 		const offsetY = Phaser.Math.Between(-20, 20);
+	// 		const line = this.add.rectangle(0, Phaser.Math.Between(0, this.scale.height) + offsetY, 50, 2, 0xffffff);
+	// 		this._lines.push(line);
+	// 	}
+	// }
+
 	spawnCluster(): void {
-		const clusterSize = Phaser.Math.Between(3, 7);
+		const clusterSize = Phaser.Math.Between(0.5, 3);
+		const randomY = Phaser.Math.Between(30, this.scale.height - 30);
+		const speed = Phaser.Math.Between(2, 5); // Random speed for each line
 		for (let i = 0; i < clusterSize; i++) {
-			const offsetY = Phaser.Math.Between(-20, 20);
-			const line = this.add.rectangle(0, Phaser.Math.Between(0, this.scale.height) + offsetY, 50, 2, 0xffffff);
-			this._lines.push(line);
+			this.time.delayedCall(Phaser.Math.Between(0, 500), () => {
+				const width = Phaser.Math.Between(3, 30);
+				const height = 3;
+				const sign = Phaser.Math.Between(0, 1)
+				let offsetY;
+				if (sign)
+					offsetY = Phaser.Math.Between(5, 30);
+				else
+					offsetY = Phaser.Math.Between(-5, -30);
+				const line = this.add.rectangle(0, randomY + offsetY, width, height, 0xD3D3D3);
+				(line as any).speed = speed; // Store speed in the object
+				this._lines!.add(line);
+			});
 		}
 	}
+
 	killChildren(): void {
 
 		this.children.list.forEach((gameObject) => gameObject.destroy());
