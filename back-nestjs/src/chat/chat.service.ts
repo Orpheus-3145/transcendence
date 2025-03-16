@@ -178,7 +178,7 @@ export class ChatService {
 		return channel;
 	}
 
-	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message> {
+	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message | null> {
 
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
@@ -186,8 +186,10 @@ export class ChatService {
 		if (typeof sender === 'number')
 			sender = await this.getUser(sender);
 		
+		if (channel.muted.find((user) => user === sender.id.toString()))
+			return null;
 		// fetching member from user
-		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id);
+		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id)
 		let newMessage: Message = this.messageRepository.create({
 			channel: channel,
 			sender: memberSender,

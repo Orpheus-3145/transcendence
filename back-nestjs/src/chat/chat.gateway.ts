@@ -81,8 +81,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		
 		const channelDto = new ChatRoomDTO(updatedChannel);
 
-		console.log(JSON.stringify(channelDto));
-
 		client.join(channel_id.toString());
 
 		// NB: schould emit to all server of just to the room?
@@ -123,38 +121,38 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	}
 
 	@SubscribeMessage('kickUserFromChannel')
-	async kickUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	async kickUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.removeUserFromChannel(data.userid, data.channelid);
-		this.server.emit('userKicked', {id: data.channelid, userId: data.userid});
+		await this.chatService.removeUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userKicked', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('banUserFromChannel')
-	async banUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
+	async banUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.banUserFromChannel(data.userid, data.channelId);
-		this.server.emit('userBanned', {id: data.channelId, userId: data.userid});
+		await this.chatService.banUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userBanned', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('unbanUserFromChannel')
-	async unbanUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
+	async unbanUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.unbanUserFromChannel(data.userid, data.channelId);
-		this.server.emit('userUnbanned', {id: data.channelId, userId: data.userid});
+		await this.chatService.unbanUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userUnbanned', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('muteUserFromChannel')
-	async muteUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
+	async muteUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.muteUserFromChannel(data.userid, data.channelId);
-		this.server.emit('userMuted', {id: data.channelId, userId: data.userid});
+		await this.chatService.muteUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userMuted', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('unmuteUserFromChannel')
-	async unmuteUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
+	async unmuteUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.unmuteUserFromChannel(data.userid, data.channelId);
-		this.server.emit('userUnmuted', {id: data.channelId, userId: data.userid});
+		await this.chatService.unmuteUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userUnmuted', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('sendMessage')
@@ -165,7 +163,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { sender_id, receiver_id, content } = messageData;
 		const newMessage = await this.chatService.createMessage(receiver_id, sender_id, content);
 		// Emit the message to the specific channel
-		this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
+		if (newMessage)			// if newMessage === null if user is muted
+			this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
 	}
 
 	@SubscribeMessage('getChannels')

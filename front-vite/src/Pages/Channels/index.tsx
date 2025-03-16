@@ -1012,12 +1012,12 @@ const ChannelsPage: React.FC = () => {
 
 	const showMessages =  (msg: ChatMessage, index: number) =>
 	{
-		if (selectedChannel.settings.muted.find((item) => String(item) === String(msg.user)))
-		{
-			return (
-				<Stack></Stack>
-			);
-		}
+		// if (selectedChannel.settings.muted.find((item) => String(item) === String(msg.userId)))
+		// {
+		// 	return (
+		// 		<Stack></Stack>
+		// 	);
+		// }
 
 		var user = userMessage.get(msg.userId.toString());
 		if (!user) {

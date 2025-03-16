@@ -144,7 +144,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleKickFriend = (user: UserProps) => 
 	{
-		socket.emit('kickUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
+		socket.emit('kickUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 		
 		const updateSettings = (data) =>
 		{
@@ -160,7 +160,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleBanFriend = (user: UserProps) => 
 	{
-		socket.emit('banUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
+		socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
 		const updateSettings = (data) =>
 		{
@@ -179,7 +179,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleUnbanFriend = (user: User) => 
 	{
-		socket.emit('unbanUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
+		socket.emit('unbanUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
 		const updateSettings = (data) =>
 		{
@@ -195,7 +195,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleMuteFriend = (user: UserProps) => 
 	{
-		socket.emit('muteUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
+		socket.emit('muteUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
 		const updateSettings = (data) =>
 		{
@@ -215,13 +215,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleUnmuteFriend = (user: UserProps) => 
 	{
-		socket.emit('unmuteUserFromChannel', {userid: user.id, channelid: selectedChannel.id});
+		socket.emit('unmuteUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
 		const updateSettings = (data) =>
 		{
 			if (selectedChannel.id === data.id)
 			{
 				const tmp: string[] = settings.muted.filter((item: string) => item !== data.userId);
+				console.log(`data from unmuting: ${JSON.stringify(tmp)}`);
 				setSettings({ ...settings, muted: tmp });
 			}
 		}
