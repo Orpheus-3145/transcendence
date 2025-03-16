@@ -286,12 +286,14 @@ export class ChatService {
 	}
 	
 	async muteUserFromChannel(userToMute: number | User, channel: number | Channel): Promise<void> {
-	
+		
+		console.log(JSON.stringify(channel));
 		if (typeof userToMute === 'number')
 			userToMute = await this.getUser(userToMute);
-
+			
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
+
 
 		channel.muted.push(userToMute.id.toString());
 		await this.channelRepository.save(channel);
