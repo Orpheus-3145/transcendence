@@ -9,13 +9,12 @@ import { WebSocketGateway,
 import { Server, Socket } from 'socket.io';
 
 import { ChatService } from './chat.service';
-import { ChatMessageDTO, ChatRoomDTO } from '../dto/chatRoom.dto'
+import { MessageDTO, ChatRoomDTO } from '../dto/chatRoom.dto'
 import { Channel, ChannelMemberType, ChannelType } from '../entities/channel.entity';
 import AppLoggerService from 'src/log/log.service';
 import { UseFilters } from '@nestjs/common';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import { ChannelDTO } from 'src/dto/channel.dto';
-import { MessageDTO } from 'src/dto/message.dto';
 
 
 @WebSocketGateway( {
@@ -78,15 +77,15 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id);
 		
-		// client.join(channel_id.toString());
+		client.join(channel_id.toString());
 
+		// NB: schould emit to all server of just to the room?
 		// const channel = await this.chatService.getChannel(channel_id);
-
 		// if (channel.members.some(usr => usr.user.id === user_id)) {
-		this.server.emit('joinedChannel', { user_id, channel_id, name, email });
+		// this.server.emit('joinedChannel', { user_id, channel_id, name, email });
 		// }
 
-		// this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
+		this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}
 
 	@SubscribeMessage('joinAvailableChannel')
@@ -110,7 +109,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { user_id, channel_id } = data;
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
-		// console.log(JSON.stringify(channelDto));
+
 		this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
 		client.leave(channel_id.toString());
 	}
@@ -158,7 +157,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { sender_id, receiver_id, content } = messageData;
 		const newMessage = await this.chatService.createMessage(receiver_id, sender_id, content);
 		// Emit the message to the specific channel
-		this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage));
+		this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
 	}
 
 	@SubscribeMessage('getChannels')
@@ -167,11 +166,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const channels: Channel[] = await this.chatService.getAllChannels();
 
 		const chatDto: ChatRoomDTO[] = [];
-		for (const chat of channels) {
+		for (const chat of channels)
 			chatDto.push(new ChatRoomDTO(chat));
-			// console.log(chat.channel_id);
-		}
-		// console.log('Channels', JSON.stringify(chatDto));
+
 		client.emit('channelsList', chatDto);  // Emit back the channels to the client
 	}
 
@@ -193,7 +190,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { channel_type, channel_id, password } = data;
 		const channelToUpdate: Channel = await this.chatService.getChannel(channel_id);
 		await this.chatService.changePrivacy(channelToUpdate, channel_type, password);
-		// console.log('After privacy change: ', new ChatRoomDTO(channelToUpdate));
+
 		this.server.emit('privacyChanged', new ChatRoomDTO(channelToUpdate));
 	}
 

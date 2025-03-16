@@ -95,7 +95,6 @@ export const ChatProvider: React.FC = ({ children }) => {
 	// }, [user]);
 	
 	useEffect(() => {
-		console.log('Channels (frontend):', chatProps.chatRooms);
 	}, [chatProps.chatRooms]);
 	
     return (

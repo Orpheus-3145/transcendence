@@ -102,7 +102,7 @@ export class ChatService {
 			this.changeMemberRole(channelOwner, newChannel, ChannelMemberType.owner),
 			this.changeOwnershipChannel(channelOwner, newChannel),
 		])
-		// console.log(JSON.stringify(this.getAllChannels()));
+
 		return newChannel;
 	}
 
@@ -236,18 +236,18 @@ export class ChatService {
 	async getAllChannels(): Promise<Channel[]> {
 
 		const channels: Channel[] = await this.channelRepository.find({
-			select: [
-				'channel_id',
-				'channel_type',
-				'title',
-				'channel_owner',
-				'password',
-				'isDirectMessage',
-				'banned',
-				'muted'
-			],
-			relations: ['members', 'messages'], // Ensure members and messages are included
-		});
+				select: [
+					'channel_id',
+					'channel_type',
+					'title',
+					'channel_owner',
+					'password',
+					'isDirectMessage',
+					'banned',
+					'muted'
+				],
+				relations: ['channel_owner', 'members', 'members.user', 'messages', 'messages.sender', 'messages.sender.user'], // Ensure members and messages are included
+			});
 
 		this.logger.log(`Fetching all chats`);
 		return channels;
