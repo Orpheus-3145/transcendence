@@ -2,8 +2,6 @@ import React from 'react';
 import Typography from '@mui/material';
 
 export enum ChatStatus {
-  Bubble = 'bubble',
-  Drawer = 'drawer',
   Chatbox = 'chatbox',
   Settings = 'settings',
   ChannelsPage = 'channelsPage',
