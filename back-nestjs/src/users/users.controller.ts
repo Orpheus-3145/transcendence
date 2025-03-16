@@ -19,7 +19,10 @@ export class UsersController {
 
 	@Get('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
-		var user = this.UserService.findOneId(Number(username));
+		const userId = Number(username);
+		if (isNaN(userId))
+			throw new HttpException('Not Found', 400);
+		var user = this.UserService.findOneId(userId);
 		if (!user)
 			throw new HttpException('Not Found', 404);
 		return (user);

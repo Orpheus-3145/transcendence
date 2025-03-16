@@ -535,7 +535,7 @@ const ProfilePageOther: React.FC = () => {
 			size = '2rem';
 		if (userProfile.nameNick.length > 25)
 			size = '1rem';
-		
+
 		return (
 			<Stack
 				sx={{
@@ -559,7 +559,7 @@ const ProfilePageOther: React.FC = () => {
 						overflow: 'hidden',
 						whiteSpace: 'nowrap',
 						transition: 'font-size 0.3s ease',
-					}}    
+					}}
 				>
 					{userProfile.nameNick}
 				</Typography>
@@ -947,18 +947,25 @@ const ProfilePageOther: React.FC = () => {
 
 	let getUserProfile = async () : Promise<void> =>
 	{
-		const tmp = await getUserFromDatabase(lastSegment, navigate);
-		setProfileIntraId(tmp.intraId);
-		setUserProfile(tmp);
-		setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
-		if (user.blocked.find((str: string) => str === tmp.intraId.toString()))
-			setIsBlocked(true);
-		else
-			setIsBlocked(false);
-		setFriendsList(tmp.friends);
-		setWhichStatus(tmp.status);
-		setMatchHistory(await fetchMatchData(tmp));
-		setRatioArr(await fetchRatios(tmp));
+		try {
+			const tmp = await getUserFromDatabase(lastSegment, navigate);
+			if (!tmp) {
+				return
+			}
+			setProfileIntraId(tmp.intraId);
+			setUserProfile(tmp);
+			setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
+			if (user.blocked.find((str: string) => str === tmp.intraId.toString()))
+				setIsBlocked(true);
+			else
+				setIsBlocked(false);
+			setFriendsList(tmp.friends);
+			setWhichStatus(tmp.status);
+			setMatchHistory(await fetchMatchData(tmp));
+			setRatioArr(await fetchRatios(tmp));
+		} catch {
+			navigate('/404')
+		}
 	}
 	
 	useEffect(() => 
