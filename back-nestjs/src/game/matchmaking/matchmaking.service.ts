@@ -36,6 +36,12 @@ export default class MatchmakingService {
 		this.logger.debug(`client ${client.id} joined the queue for matchmaking, power ups: [${powerUpsList}]`);
 	}
 
+	removePlayerFromQueue(client: Socket): void {
+
+		this._waitingPlayers = this._waitingPlayers.filter((player) => player.clientSocket.id !== client.id);
+		this.logger.debug(`client ${client.id} left the queue for matchmaking`);
+	}
+
 	_checkNewGame(): void {
 		for (let i = 0; i < this._waitingPlayers.length - 1; i++) {
 			for (let j = i + 1; j < this._waitingPlayers.length; j++) {

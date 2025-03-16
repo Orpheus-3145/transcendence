@@ -1,6 +1,7 @@
 import { Injectable, HttpStatus, ConsoleLogger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Inject ,forwardRef } from '@nestjs/common';
 
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
@@ -11,6 +12,7 @@ import UserDTO, { UserStatus } from 'src/dto/user.dto'
 import MatchDataDTO from 'src/dto/matchData.dto';
 import LeaderboardDTO from 'src/dto/leaderboard.dto';
 import MatchRatioDTO from 'src/dto/matchRatio.dto';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 
 @Injectable()
@@ -20,6 +22,7 @@ export class UsersService {
 		@InjectRepository(Game) private gamesRepository: Repository<Game>,
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
+		@Inject(forwardRef(() => NotificationGateway)) private readonly notificationGateway: NotificationGateway,
  	) {
 		this.logger.setContext(UsersService.name);	
 	}
@@ -83,12 +86,12 @@ export class UsersService {
 
 	async findOneNick(nameNick: string): Promise<User> {
 		const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
-		// if (!user)
-		// 	this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
-		// 		`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
-		// 		HttpStatus.NOT_FOUND);
+		if (!user)
+			this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
+				`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+				HttpStatus.NOT_FOUND);
 		return user;
-  }
+  	}
   
   async findOneIntraName(intraName: string): Promise<User> {
     const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
@@ -131,18 +134,20 @@ export class UsersService {
 		return (user);
 	}
 
-	async setStatus(id: string, status: UserStatus)
+	async setStatusId(id: string, status: UserStatus)
 	{
 		const user = await this.getUserId(id);
 		user.status = status;
 		this.usersRepository.save(user);
+		this.notificationGateway.sendStatus(user, status);
 	}
 
-	async setUserStatus(id: number, which: UserStatus)
+	async setStatusIntra(id: number, which: UserStatus)
 	{
 		const user = await this.findOneIntra(id);
 		user.status = which;
 		this.usersRepository.save(user);
+		this.notificationGateway.sendStatus(user, which);
 	}
 
 	async setNameNick(userId: string, newUsername: string): Promise<string>
@@ -155,12 +160,19 @@ export class UsersService {
 			return (`'${newUsername}': invalid input, only letters, numbers, - and _ are allowed`);
 
 		const user = await this.getUserId(userId);
-		if (await this.findOneNick(newUsername))
-			return ("name already in use");
+		let oldUserName: string = "";
+		try
+		{
+			if (await this.findOneNick(newUsername))
+				return ("name already in use");
+		}
+		catch
+		{
+			oldUserName = user.nameNick;
+			user.nameNick = newUsername;
+			this.usersRepository.save(user);
+		}
 
-		const oldUserName: string = user.nameNick;
-		user.nameNick = newUsername;
-		this.usersRepository.save(user);
 		
 		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
 		return ("");
@@ -308,10 +320,15 @@ export class UsersService {
 			{
 				var tmpType = values.title;
 				var tmpRate = Math.round((values.wonGames / values.totGames) * 100);
-				if (tmpType === type && values.wonGames > 0)
+				if (Number.isNaN(tmpRate))
+					tmpRate = 0;
+				
+				if (tmpType === type && values.totGames > 0)
 				{
 					if (arr.length === 0)
+					{
 						arr.push(item);
+					}
 					else
 					{
 						const firstRate = Math.round((arr[0].ratio[ratioIndex].wonGames / arr[0].ratio[ratioIndex].totGames) * 100);
@@ -333,21 +350,21 @@ export class UsersService {
 				}
 			});
 		});
-		arr.splice(5);
+		if (arr.length > 5)
+			arr.splice(5);
 		return (arr);
 	}
 
 	async initLeaderboardArr(allUser: User[]): Promise<LeaderboardDTO[]>
 	{
-		var tmpratio: MatchRatioDTO[] = [];
 		var allData: LeaderboardDTO[] = [];
 
-		allUser.forEach(async (item: User) => 
+		for (const item of allUser) 
 		{
-			tmpratio = await this.calculateRatio(item);
-			var tmp: LeaderboardDTO = { user: new UserDTO(item), ratio: tmpratio };
+			const tmpratio = await this.calculateRatio(item);
+			const tmp: LeaderboardDTO = { user: new UserDTO(item), ratio: tmpratio };
 			allData.push(tmp);
-		});
+		}
 
 		return (allData);
 	}
@@ -359,7 +376,6 @@ export class UsersService {
 		var allData: LeaderboardDTO[] = [];
 
 		allData = await this.initLeaderboardArr(allUser);
-
 		// var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
 		// var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
 		// var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
@@ -377,3 +393,5 @@ export class UsersService {
 		return (result);
 	}
 }
+
+

@@ -277,7 +277,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const handleChangePrivacy = (type: ChannelType, password: string | null) => {
 		console.log('"Change Privacy" clicked!');
 
-		socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password });
+		// socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password });
 
 		socket.once('error', (error) => {
 			console.error(error.message);

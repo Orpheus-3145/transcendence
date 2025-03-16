@@ -21,6 +21,7 @@ import NotificationDTO, { NotificationType } from 'src/dto/notification.dto';
 import { GameInvitation } from 'src/entities/gameInvitation.entity';
 import { FriendRequest } from 'src/entities/friendRequest.entity';
 import RoomManagerService from 'src/game/session/roomManager.service';
+import User from 'src/entities/user.entity';
 
 
 export interface Websock {
@@ -46,7 +47,8 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	constructor(
 		private readonly notificationService: NotificationService,
-		private readonly userService: UsersService,
+		@Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
+		// private readonly userService: UsersService,
 		private readonly logger: AppLoggerService,
 		private readonly roomManager: RoomManagerService,
 	) {
@@ -61,7 +63,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		var websock: Websock = this.sockets.find((socket) => socket.client.id === client.id);
 
 		if (websock) {
-			this.userService.setStatus(websock.userId, UserStatus.Offline);
+			this.userService.setStatusId(websock.userId, UserStatus.Offline);
 			this.logger.log(`User id: ${websock.userId} is now offline`);
 		}
 
@@ -69,8 +71,16 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	getUser(userId: string): Websock {
-
 		return (this.sockets.find((socket) => socket.userId === userId));
+	}
+
+	sendStatus(user: User, status: UserStatus)
+	{
+		for (const tmp of this.sockets)
+		{
+			if (user.id.toString() !== tmp.userId)
+				tmp.client.emit('statusChanged', user, status);
+		}
 	}
 
 	@SubscribeMessage('getFromUser')
@@ -81,7 +91,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 			user = { client: client, userId: data.id };
 			this.sockets.push(user);
-			this.userService.setStatus(user.userId, UserStatus.Online);
+			this.userService.setStatusId(user.userId, UserStatus.Online);
 			this.logger.log(`User id: ${user.userId} is now online`);
 		}
 		const allNotifications = await this.notificationService.findAllNotifications();
@@ -137,7 +147,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('sendGameInvite')
-	async sendGameInvite(@MessageBody() data: { senderId: string, receiverId: string, powerUps: PowerUpSelected }): Promise<void> 
+	async sendGameInvite(@MessageBody() data: { senderId: string, receiverId: string, powerUps: number }): Promise<void> 
 	{
 		const [user, other] = await Promise.all([
 			this.userService.getUserId(data.senderId),

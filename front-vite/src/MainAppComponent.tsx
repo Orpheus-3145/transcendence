@@ -1,6 +1,5 @@
 import React from 'react';
 import { Bar as Header } from './Layout/Header/HeaderBar';
-import { Bar as Footer } from './Layout/Footer/FooterBar';
 import Main from './Layout/Main/index';
 import { Box, Container, CssBaseline, Divider } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -27,7 +26,6 @@ const MainAppComponent: React.FC = () => {
     </Box>
     </Container>
     <Divider orientation="horizontal" sx={{ backgroundColor: theme.palette.background.default, width: '0.01em', minWidth: '100%' }} />
-    <Footer />
   </ThemeProvider>
   );
 }

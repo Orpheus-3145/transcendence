@@ -35,7 +35,7 @@ const Game: React.FC = () => {
 				>
 					<Typography
 						variant='h4'
-						component='div'
+						// component='div'
 						style={{
 							color: theme.palette.secondary.main,
 							textAlign: 'center',
@@ -61,6 +61,7 @@ const Game: React.FC = () => {
 						Pong (1972)
 					</Typography>
 					<Typography
+						component="div"
 						variant='body2'
 						sx={{
 							marginBottom: '1em',
@@ -97,6 +98,7 @@ const Game: React.FC = () => {
 						Gameplay
 					</Typography>
 					<Typography
+						component="div"
 						variant='body2'
 						sx={{
 							marginBottom: '1em',
@@ -149,6 +151,7 @@ const Game: React.FC = () => {
 						Development
 					</Typography>
 					<Typography
+						component="div"
 						variant='body2'
 						sx={{
 							marginBottom: '1em',

@@ -137,7 +137,7 @@ export class NotificationService {
 		this.logger.log(`${friendRequest.receiver.nameNick} declined friend request from ${friendRequest.sender.nameNick}`);
 	}
 	
-	async createGameInvitation(sender: User, receiver: User, powerUps: PowerUpSelected): Promise<GameInvitation | null> {
+	async createGameInvitation(sender: User, receiver: User, powerUps: number): Promise<GameInvitation | null> {
 
 		if (this.isSenderBlocked(sender, receiver) == true) {
 			this.logger.debug(`${receiver.nameNick} has blocked ${sender.nameNick}, game invite not sent`);
