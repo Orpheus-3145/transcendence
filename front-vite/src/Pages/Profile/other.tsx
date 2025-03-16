@@ -52,12 +52,10 @@ const ProfilePageOther: React.FC = () => {
 	const [showMessageUserBlocked, setShowMessageUserBlocked] = useState<Boolean>(false);
 	const messageFriendReqSend: string = "Friend request has been send!";
 	const messageGameReqSend: string = "Game Invite has been send!";
-	const messageMessageSend: string = "Message has been send!";
 	const messageUserBlocked: string = "You have been blocked by this user!";
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
 	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
-	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
 	const [isBlocked, setIsBlocked] = useState<Boolean>(false);
 
@@ -492,28 +490,38 @@ const ProfilePageOther: React.FC = () => {
 
 	let GetUserStatus = () =>
 	{		
-		let color;
+		let color: string = "";
+		let message: string = "";
 		if (whichStatus == UserStatus.Offline)
+		{
+			message = "Offline";
 			color = '#df310e';
+		}
 		else if (whichStatus == UserStatus.Online)
+		{
 			color = '#0fc00c';
-		else if (whichStatus == UserStatus.InGame)
-			color = '#0dddc4';
+			message = "Online";
+		}
+		if (whichStatus == UserStatus.InGame)
+		{
+			color = '#0fc00c';
+			message = "In Game";
+		}
 		
 		return (
 			<Stack>
-				<Box
-				sx={{
-					width: 40,
-					height: 40,
-					backgroundColor: color,
-					borderRadius: '50%',
-					position: 'relative',
-					top: '0px',
-					left: '190px',
-				}}
-				>
-				</Box>
+				<Tooltip title={message} arrow >
+					<Box
+					sx={{
+						width: 40,
+						height: 40,
+						backgroundColor: color,
+						borderRadius: '50%',
+						position: 'relative',
+						top: '0px',
+						left: '190px',
+					}}/>
+				</Tooltip>
 			</Stack>
 		);
 	}
@@ -527,7 +535,7 @@ const ProfilePageOther: React.FC = () => {
 			size = '2rem';
 		if (userProfile.nameNick.length > 25)
 			size = '1rem';
-		
+
 		return (
 			<Stack
 				sx={{
@@ -551,7 +559,7 @@ const ProfilePageOther: React.FC = () => {
 						overflow: 'hidden',
 						whiteSpace: 'nowrap',
 						transition: 'font-size 0.3s ease',
-					}}    
+					}}
 				>
 					{userProfile.nameNick}
 				</Typography>
@@ -715,8 +723,7 @@ const ProfilePageOther: React.FC = () => {
 			{modalOpen && 
 				<GameInviteModal 
 					open={modalOpen} 
-					onClose={() => InviteToGame()} 
-					setValue={(revalue: PowerUpSelected) => {setPowerupValue(revalue)}} 
+					onClose={(value: number) => InviteToGame(value)} 
 				/>
 			}
 			{showMessageGR && (	
@@ -736,15 +743,14 @@ const ProfilePageOther: React.FC = () => {
 		);
 	}
 
-	let InviteToGame = () => {
+	let InviteToGame = (value: number) => 
+	{
 		handleModalClose();
 		if (checkIfBlocked() == true)
 			return ;
 		setShowMessageFR(false);
 		setShowMessageGR(true);
-		(false);
-
-		inviteToGame(user.id.toString(), userProfile.id.toString(), powerupValue);
+		inviteToGame(user.id.toString(), userProfile.id.toString(), value);
 	}
 
 	let redirectToChat = () =>
@@ -941,18 +947,25 @@ const ProfilePageOther: React.FC = () => {
 
 	let getUserProfile = async () : Promise<void> =>
 	{
-		const tmp = await getUserFromDatabase(lastSegment, navigate);
-		setProfileIntraId(tmp.intraId);
-		setUserProfile(tmp);
-		setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
-		if (user.blocked.find((str: string) => str === tmp.intraId.toString()))
-			setIsBlocked(true);
-		else
-			setIsBlocked(false);
-		setFriendsList(tmp.friends);
-		setWhichStatus(tmp.status);
-		setMatchHistory(await fetchMatchData(tmp));
-		setRatioArr(await fetchRatios(tmp));
+		try {
+			const tmp = await getUserFromDatabase(lastSegment, navigate);
+			if (!tmp) {
+				return
+			}
+			setProfileIntraId(tmp.intraId);
+			setUserProfile(tmp);
+			setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
+			if (user.blocked.find((str: string) => str === tmp.intraId.toString()))
+				setIsBlocked(true);
+			else
+				setIsBlocked(false);
+			setFriendsList(tmp.friends);
+			setWhichStatus(tmp.status);
+			setMatchHistory(await fetchMatchData(tmp));
+			setRatioArr(await fetchRatios(tmp));
+		} catch {
+			navigate('/404')
+		}
 	}
 	
 	useEffect(() => 
@@ -970,6 +983,11 @@ const ProfilePageOther: React.FC = () => {
 				setFriendsList(newlist);
 			}
 		});
+
+		socket.on('statusChanged', (user: User, status: UserStatus) =>
+		{
+			setWhichStatus(status);
+		});
 		
 	}, [lastSegment]);
 
@@ -979,7 +997,7 @@ const ProfilePageOther: React.FC = () => {
 			return <Stack>Loading...</Stack>;
 		if (!userProfile)
 			return <Stack>Loading...</Stack>;
-
+ 
 		return pageWrapperOther();
 	}
 

@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { Channel, ChannelMember } from 'src/entities/channel.entity';
-import { NotificationModule } from 'src/notification/notification.module';
+import NotificationModule from 'src/notification/notification.module';
 import { Message } from 'src/entities/message.entity';
 import User from 'src/entities/user.entity';
 import ExceptionModule from 'src/errors/exception.module';

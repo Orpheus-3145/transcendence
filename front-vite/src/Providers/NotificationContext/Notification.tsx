@@ -45,7 +45,7 @@ export async function addFriend(senderId:string, receiverId:string): Promise<voi
 }
 
 // NB change string into number
-export async function inviteToGame(senderId:string, receiverId:string, powerups: PowerUpSelected): Promise<void> 
+export async function inviteToGame(senderId:string, receiverId:string, powerups: number): Promise<void> 
 {
 	socket.emit('sendGameInvite', {senderId: senderId, receiverId: receiverId, powerUps: powerups});
 }

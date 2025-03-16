@@ -118,6 +118,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
 		this.server.emit('leftChannel', {channelDto, userId: user_id});		
 		client.leave(channel_id.toString());
+		// console.log(JSON.stringify(channelDto));
+		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, user_id});
 	}
 
 	@SubscribeMessage('kickUserFromChannel')
@@ -175,7 +177,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const chatDto: ChatRoomDTO[] = [];
 		for (const chat of channels)
 			chatDto.push(new ChatRoomDTO(chat));
-
 		client.emit('channelsList', chatDto);  // Emit back the channels to the client
 	}
 
