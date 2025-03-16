@@ -65,7 +65,7 @@ export async function getAll(): Promise<User[]> {
 	}
 }
 
-export async function getUserFromDatabase(username: string, navigate: (path: string) => void): Promise<User>
+export async function getUserFromDatabase(username: string, navigate: (path: string) => void): Promise<User|void>
 {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username, {
 		method: "GET",
