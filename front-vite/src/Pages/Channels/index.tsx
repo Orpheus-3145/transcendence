@@ -792,10 +792,12 @@ const ChannelsPage: React.FC = () => {
 		>
 		  <GroupIcon sx={{ width: '10%' }} />
 		  <Typography noWrap sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-			{channel?.name}
-			{/* {user.nameNick === channel.settings?.users[0].name
+			{/* {channel?.name} */}
+			{channel.isDirectMessage
+				? (user.nameNick === channel.settings?.users[0].name
 				? channel.settings.users[1].name 
-				: channel.settings.users[0].name} */}
+				: channel.settings.users[0].name)
+				: (channel?.name)}
 		  </Typography>
 		  <IconButton
 			onClick={(event: React.MouseEvent) => handleSettingsClick(event, channel)}
