@@ -47,7 +47,7 @@ export const Notification: React.FC = () => {
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
-	const navToChat = () => {navigate('/channels')};
+	const navToChat = (id:string) => {navigate('/channels', {state: {channelId: id}})};
 	const navToGame = (gameInfo: GameData) => {
 		setGameData(gameInfo);
 		navigate('/game');
@@ -85,7 +85,7 @@ export const Notification: React.FC = () => {
 		{
 			notiMessage = noti.message?.slice(0, 23) + "...";
 		}
-
+		
 		if (noti.type === NotificationType.groupChat)
 		{
 			return (
@@ -93,10 +93,10 @@ export const Notification: React.FC = () => {
 					sx={{
 						position: 'relative',
 						left: '0px',
-						fontSize: '0.9rem',
+						fontSize: '0.8rem',
 					}}    
 				>
-					The message: "{notiMessage}" has been sent in <a href="" onClick={() => navToChat()} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
+					Message: "{notiMessage}" has been sent in <a href="" onClick={() => navToChat(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
 				</Typography>
 			);
 		}
@@ -137,13 +137,11 @@ export const Notification: React.FC = () => {
 				>
 					<Tooltip title="Clear Notification" arrow>
 						<IconButton 
-							variant="contained" 
 							component="label"
 							onClick={() => removeNotification(noti)}
 							sx={{
 								position: 'absolute',
-								left: '230px',
-								top: '5px',
+								left: '220px',
 								width: '20px',
 								height: '20px',
 								fontSize: '20px',

@@ -102,13 +102,23 @@ const ChannelsPage: React.FC = () => {
 	}, []);
 
 
-	let checkLocation = (dms: ChatRoom[]) =>
+	let checkLocation = () =>
 	{
-		if (location.state && Object.keys(location.state).length > 0)
+		if (location.state != null && Object.keys(location.state).length > 0)
 		{
-			if (directMessages)
+			if (location.state.channelId && joinedChannels)
 			{
-				const channel = dms.find((room: ChatRoom) => 
+				const channel = joinedChannels.find((room: ChatRoom) => room.id.toString() === location.state.channelId.toString());
+				console.log(JSON.stringify(channel));
+				if (channel !== undefined)
+				{
+					setSelectedChannel(channel);
+					navigate(location.pathname, { replace: true, state: null });
+				}
+			}
+			else if (location.state.otherId && directMessages)
+			{
+				const channel = directMessages.find((room: ChatRoom) => 
 					((room.settings.users[0].id.toString() === user.id.toString()) || (room.settings.users[0].id.toString() === location.state.otherId.toString())) &&
 					((room.settings.users[1].id.toString() === user.id.toString()) || (room.settings.users[1].id.toString() === location.state.otherId.toString())));
 				
@@ -126,7 +136,7 @@ const ChannelsPage: React.FC = () => {
 							const channelDTO = {
 								title: otherUser.nameNick,
 								ch_type: 'private',
-								ch_owner: user.nameNick,
+								ch_owner: user.id,
 								users: [
 									{ id: user.id, nameNick: user.nameNick, role: 'owner', email: user.email },
 									{ id: otherUser.id, nameNick: otherUser.nameNick, role: 'member', email: otherUser.email },
@@ -167,7 +177,7 @@ const ChannelsPage: React.FC = () => {
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
 		setDirectMessages(dms);
-		checkLocation(dms);
+		checkLocation();
 		// }
 	}, [chatProps.chatRooms, users]);
 
@@ -999,13 +1009,6 @@ const ChannelsPage: React.FC = () => {
 
 	const showMessages =  (msg: ChatMessage, index: number) =>
 	{
-		// if (selectedChannel.settings.muted.find((item) => String(item) === String(msg.userId)))
-		// {
-		// 	return (
-		// 		<Stack></Stack>
-		// 	);
-		// }
-
 		var user = userMessage.get(msg.userId.toString());
 		if (!user) {
 			fetchUser(msg.userId.toString());

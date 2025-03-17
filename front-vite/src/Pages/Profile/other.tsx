@@ -705,7 +705,6 @@ const ProfilePageOther: React.FC = () => {
 			<Stack>
 			<Tooltip title="Invite to Game!" arrow>
 				<IconButton
-					variant="contained"
 					onClick={handleModalOpen}
 					sx={{
 						fontSize: '30px',

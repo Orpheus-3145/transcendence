@@ -22,6 +22,7 @@ import { GameInvitation } from 'src/entities/gameInvitation.entity';
 import { FriendRequest } from 'src/entities/friendRequest.entity';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import User from 'src/entities/user.entity';
+import { MessageNotification } from 'src/entities/messageNotification.entity';
 
 
 export interface Websock {
@@ -72,6 +73,15 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	getUser(userId: string): Websock {
 		return (this.sockets.find((socket) => socket.userId === userId));
+	}
+
+	sendMessageNoti(noti: MessageNotification, receiverId: string)
+	{
+		console.log('a');
+		console.log(receiverId);
+		console.log(JSON.stringify(noti.receiver));
+		var websock: Websock = this.getUser(receiverId);
+		websock.client.emit('sendNoti', new NotificationDTO(noti));
 	}
 
 	sendStatus(user: User, status: UserStatus)
