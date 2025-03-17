@@ -408,6 +408,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						sx={{ mt: 2 }}
 					/>
 					)}
+				</>
+				)}
+
+				{(selectedChannel.settings.owner === user.nameNick
+					|| userIsAdmin(user.nameNick, selectedChannel)) && (
+				<>
+
 					{/* Add Friend */}
 						<TextField
 						label={label}
@@ -424,6 +431,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					>
 						Add Friend
 					</Button>
+					{selectedChannel.settings.owner === user.nameNick &&
 					<Button
 						variant="contained"
 						onClick={() => handleDeleteChannel(selectedChannel.id)}
@@ -431,8 +439,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						>
 						Delete Channel
 					</Button>
+					}
 					</Box>
-					</>
+				</>
 				)}
 				{selectedChannel.settings.users.length > 1 && 
 				((selectedChannel.settings.owner === user.nameNick) ? (
