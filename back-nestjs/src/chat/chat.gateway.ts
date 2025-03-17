@@ -9,7 +9,7 @@ import { WebSocketGateway,
 import { Server, Socket } from 'socket.io';
 
 import { ChatService } from './chat.service';
-import { MessageDTO, ChatRoomDTO, UserPropsDTO } from '../dto/chatRoom.dto'
+import { MessageDTO, ChatRoomDTO } from '../dto/chatRoom.dto'
 import { Channel, ChannelMember, ChannelMemberType, ChannelType } from '../entities/channel.entity';
 import AppLoggerService from 'src/log/log.service';
 import { UseFilters } from '@nestjs/common';
@@ -109,7 +109,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 			name: name,
 			email: email
 		});
-}
+	}
 
 	@SubscribeMessage('leaveChannel')
 	async handleLeaveChannel(
@@ -119,7 +119,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { user_id, channel_id } = data;
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
-
 		this.server.emit('leftChannel', {channelDto: channelDto, userId: user_id});		
 		client.leave(channel_id.toString());
 	}

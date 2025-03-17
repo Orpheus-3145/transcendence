@@ -43,28 +43,17 @@ export class UsersController {
 		this.UserService.setStatusId(id, UserStatus.Offline);
 	}
 
-// fra changed the end-point, check it in main, remove if not necessary
-// 	@Get('/profile/:username/friend/:id')
-// 	async fetchFriend(@Param('id') id: string) {
-// 		return (this.UserService.getUserIntraId(id));
-// 	}
-
-// 	@Get('/profile/:username/opponent/:id')
-// 	async fetchOpponent(@Param('id') id: string) {
-// 		return (this.UserService.getUserIntraId(id));
-// 	}
-    
 	@Get('/profile/friend/:id')
 	async fetchFriend(@Param('id') id: string) 
 	{
 		return (this.UserService.getUserId(id));
 	}
 
-	@Get('/profile/opponent/:intraName')		// NB this should never be called!
-	async fetchOpponent(@Param('intraName') intraName: string) 
-	{
-		return (this.UserService.findOneIntraName(intraName));
-	}
+	// @Get('/profile/opponent/:intraName')		// NB this should never be called!
+	// async fetchOpponent(@Param('intraName') intraName: string) 
+	// {
+	// 	return (this.UserService.findOneIntraName(intraName));
+	// }
 
 	@Get('/profile/message/:id')
 	async fetchUserMessage(@Param('id') id: string) 

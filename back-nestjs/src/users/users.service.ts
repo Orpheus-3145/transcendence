@@ -73,34 +73,34 @@ export class UsersService {
 	}
 
 	async findAll(): Promise<User[]> {
-		return this.usersRepository.find();
+		return await this.usersRepository.find();
 	}
 	
 	async findOneIntra(intraId: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { intraId: intraId } });
+		return await this.usersRepository.findOne({ where: { intraId: intraId } });
 	}
 
 	async findOneId(id: number): Promise<User | null> {
-		return this.usersRepository.findOne({ where: { id: id } });
+		return await this.usersRepository.findOne({ where: { id: id } });
 	}
 
 	async findOneNick(nameNick: string): Promise<User> {
-		const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
-		if (!user)
-			this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
-				`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
-				HttpStatus.NOT_FOUND);
-		return user;
+		// const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
+		// if (!user)
+		// 	this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
+		// 		`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+		// 		HttpStatus.NOT_FOUND);
+		return await this.usersRepository.findOne({ where: { nameNick: nameNick } });
   	}
   
-  async findOneIntraName(intraName: string): Promise<User> {
-    const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
-    if (!user)
-      this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
-        `${UsersService.name}.${this.constructor.prototype.findOneIntraName.name}()`,
-        HttpStatus.NOT_FOUND);
-    return user;
-  }
+  // async findOneIntraName(intraName: string): Promise<User> {
+  //   const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
+  //   if (!user)
+  //     this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
+  //       `${UsersService.name}.${this.constructor.prototype.findOneIntraName.name}()`,
+  //       HttpStatus.NOT_FOUND);
+  //   return user;
+  // }
 
 	async findGamesByUser(user: User) : Promise<Game[]> {
 

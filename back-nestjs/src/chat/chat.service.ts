@@ -11,7 +11,6 @@ import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import AppLoggerService from 'src/log/log.service';
 import { ConfigService } from '@nestjs/config';
 import { ChannelDTO } from 'src/dto/channel.dto';
-import { UserPropsDTO } from 'src/dto/chatRoom.dto';
 
 
 @Injectable()
@@ -52,7 +51,7 @@ export class ChatService {
 
 		const channel: Channel = await this.channelRepository.findOne({
 			where: { channel_id: channelId },
-			relations: ['members', 'messages']
+			relations: ['channel_owner', 'members', 'members.user', 'messages', 'messages.sender', 'messages.sender.user'],
 		});
 		if (!channel && throwExcept === true)
 			this.thrower.throwChatExcp(`No channel found with id: ${channelId}`,
