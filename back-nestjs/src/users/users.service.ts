@@ -75,7 +75,7 @@ export class UsersService {
 	async findAll(): Promise<User[]> {
 		return this.usersRepository.find();
 	}
-
+	
 	async findOneIntra(intraId: number): Promise<User | null> {
 		return this.usersRepository.findOne({ where: { intraId: intraId } });
 	}
@@ -97,7 +97,7 @@ export class UsersService {
     const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
     if (!user)
       this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
-        `${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+        `${UsersService.name}.${this.constructor.prototype.findOneIntraName.name}()`,
         HttpStatus.NOT_FOUND);
     return user;
   }

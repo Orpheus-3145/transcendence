@@ -9,8 +9,8 @@ import { WebSocketGateway,
 import { Server, Socket } from 'socket.io';
 
 import { ChatService } from './chat.service';
-import { MessageDTO, ChatRoomDTO } from '../dto/chatRoom.dto'
-import { Channel, ChannelMemberType, ChannelType } from '../entities/channel.entity';
+import { MessageDTO, ChatRoomDTO, UserPropsDTO } from '../dto/chatRoom.dto'
+import { Channel, ChannelMember, ChannelMemberType, ChannelType } from '../entities/channel.entity';
 import AppLoggerService from 'src/log/log.service';
 import { UseFilters } from '@nestjs/common';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
@@ -65,7 +65,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		// Emit back the created channel to the client
 		this.server.emit('channelCreated', new ChatRoomDTO(newChannel));
 		// Send success message to the user who created the channel
-		client.emit('createChannelSuccess', { message: 'Channel created successfully', channel: newChannel });
+		// client.emit('createChannelSuccess', { message: 'Channel created successfully', channel: newChannel });
 	}
 
 	@SubscribeMessage('joinChannel')
@@ -73,7 +73,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		@MessageBody() data: { channel_id: number, name: string, user_id: number, email: string },
 		@ConnectedSocket() client: Socket,
 	): Promise<void> {
-		
+
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id);
 		
@@ -83,13 +83,13 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
 		client.join(channel_id.toString());
 
-		// NB: schould emit to all server of just to the room?
-		// const channel = await this.chatService.getChannel(channel_id);
-		// if (channel.members.some(usr => usr.user.id === user_id)) {
-		// this.server.emit('joinedChannel', { user_id, channel_id, name, email });
-		// }
-		
-		this.server.emit('joinedChannel', { channelDto, user_id, channel_id, name, email });
+		this.server.emit('joinedChannel', { 
+			channelDto: channelDto,
+			user_id: user_id,
+			channel_id: channel_id,
+			name: name,
+			email: email
+		});
 		// this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}
 
@@ -103,8 +103,13 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		await this.chatService.addUserToChannel(channel_id, user_id );
 		client.join(channel_id.toString());
 // 		client.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
-		this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { user_id, channel_id, name, email });
-	}
+		this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { 
+			user_id: user_id,
+			channel_id: channel_id,
+			name: name,
+			email: email
+		});
+}
 
 	@SubscribeMessage('leaveChannel')
 	async handleLeaveChannel(
@@ -115,11 +120,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
 
-		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
-		this.server.emit('leftChannel', {channelDto, userId: user_id});		
+		this.server.emit('leftChannel', {channelDto: channelDto, userId: user_id});		
 		client.leave(channel_id.toString());
-		// console.log(JSON.stringify(channelDto));
-		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, user_id});
 	}
 
 	@SubscribeMessage('kickUserFromChannel')
@@ -165,7 +167,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { sender_id, receiver_id, content } = messageData;
 		const newMessage = await this.chatService.createMessage(receiver_id, sender_id, content);
 		// Emit the message to the specific channel
-		if (newMessage)			// if newMessage === null if user is muted
+		if (newMessage)			// if newMessage === null if user is muted or channel is empty
 			this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
 	}
 

@@ -11,6 +11,7 @@ import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import AppLoggerService from 'src/log/log.service';
 import { ConfigService } from '@nestjs/config';
 import { ChannelDTO } from 'src/dto/channel.dto';
+import { UserPropsDTO } from 'src/dto/chatRoom.dto';
 
 
 @Injectable()
@@ -186,10 +187,24 @@ export class ChatService {
 		if (typeof sender === 'number')
 			sender = await this.getUser(sender);
 		
+		// sender is muted, do not send the message
 		if (channel.muted.find((user) => user === sender.id.toString()))
 			return null;
-		// fetching member from user
-		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id)
+
+		// fetching sender and receivers
+		const [memberSender, receivers] = await Promise.all([
+			this.getMember(channel.channel_id, sender.id),
+			this.channelMemberRepository.find({
+				where: {
+					channel: { channel_id: channel.channel_id },
+					user: { id: Not(sender.id)}
+				}
+			})
+		])
+
+		if (receivers.length === 0)		// no members beside the sender, don't send the message
+			return null
+
 		let newMessage: Message = this.messageRepository.create({
 			channel: channel,
 			sender: memberSender,
@@ -199,16 +214,9 @@ export class ChatService {
 
 		this.logger.log(`New message from ${sender.nameNick} in channel id: ${channel.channel_id}, content: '${content}'`);
 
-		const receivers: ChannelMember[] = await this.channelMemberRepository.find({
-			where: {
-				channel: { channel_id: channel.channel_id },
-				channelMemberId: Not(memberSender.channelMemberId)
-			}
-		});
-		if (receivers.length === 0)
-			this.thrower.throwChatExcp(`Channel id: ${channel.channel_id} has only one member`,
-				`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
-				HttpStatus.INTERNAL_SERVER_ERROR);
+			// this.thrower.throwChatExcp(`Channel id: ${channel.channel_id} has only one member`,
+			// 	`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
+			// 	HttpStatus.INTERNAL_SERVER_ERROR);
 				
 		// sending notification of the new message to all the channel members
 		for (const receiver of receivers)
