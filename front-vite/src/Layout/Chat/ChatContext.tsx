@@ -75,8 +75,13 @@ export const ChatProvider: React.FC = ({ children }) => {
 				socket.on('channelsList', (channels: ChatRoom[]) => {
 					setChatProps((prevState) => {
 						// console.log("Inside useEffect:", JSON.stringify(channels));
-						return {...prevState,
-						chatRooms: channels,}
+						return {
+							...prevState,
+						chatRooms: channels.map(channel => ({
+							...channel,
+							messages: [ ...(channel.messages || []) ].reverse(),
+						})),
+					}
 					})
 				});
 
