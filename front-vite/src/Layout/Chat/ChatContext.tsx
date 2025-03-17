@@ -67,7 +67,7 @@ export const ChatProvider: React.FC = ({ children }) => {
     });
 
     useEffect(() => {
-			if (!user || !user.nameIntra) {
+			if (!user || !user.nameNick) {
 				return ;
 			}
 			const fetchAllChannels = () => {

@@ -124,12 +124,12 @@ const ChannelsPage: React.FC = () => {
 					{
 						if (otherUser.id !== user.id) {
 							const channelDTO = {
-								title: otherUser.nameIntra,
+								title: otherUser.nameNick,
 								ch_type: 'private',
-								ch_owner: user.nameIntra,
+								ch_owner: user.nameNick,
 								users: [
-									{ id: user.id, nameIntra: user.nameIntra, role: 'owner', email: user.email },
-									{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: 'member', email: otherUser.email },
+									{ id: user.id, nameNick: user.nameNick, role: 'owner', email: user.email },
+									{ id: otherUser.id, nameNick: otherUser.nameNick, role: 'member', email: otherUser.email },
 					
 								],
 								password: null,
@@ -478,7 +478,7 @@ const ChannelsPage: React.FC = () => {
 				ch_type: ChannelType.public,
 				ch_owner: user.id.toString(),
 				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email }
+					{ id: user.id, nameNick: user.nameNick, role: UserRoles.owner, email: user.email }
 				],
 				password: null,
 				isDirectMessage: false,
@@ -527,8 +527,8 @@ const ChannelsPage: React.FC = () => {
 					ch_type: ChannelType.private,
 					ch_owner: user.id.toString(),
 					users: [
-						{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email },
-						{ id: otherUser.id, nameIntra: otherUser.nameIntra, role: UserRoles.member, email: otherUser.email },
+						{ id: user.id, nameNick: user.nameNick, role: UserRoles.owner, email: user.email },
+						{ id: otherUser.id, nameNick: otherUser.nameNick, role: UserRoles.member, email: otherUser.email },
 		
 					],
 					password: null,
@@ -662,7 +662,7 @@ const ChannelsPage: React.FC = () => {
 			const data = {
 				channel_id: channel.id,
 				user_id: user.id,
-				name: user.nameIntra,
+				name: user.nameNick,
 			};
 	
 			// socket.emit('joinChannel', data);
@@ -902,7 +902,7 @@ const ChannelsPage: React.FC = () => {
 			>
 				<AccountCircleIcon sx={{ marginRight: 1}}/>
 				<Typography noWrap onClick={() => {(navigate(`/profile/` + user.id.toString()))}} sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-					{user.nameIntra}
+					{user.nameNick}
 		 		 </Typography>
 				<Box sx={{ flexGrow: 1 }} /> 
 				<Tooltip title='Send game invite' arrow>

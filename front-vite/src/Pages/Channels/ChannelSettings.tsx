@@ -11,13 +11,6 @@ import { prev } from 'cheerio/dist/commonjs/api/traversing';
 import { useNavigate } from 'react-router-dom';
 import { channel } from 'diagnostics_channel';
 import { joinRoom } from '../Channels/index';
-// User test data
-// const testUser = {
-// 	name: 'user_test',
-
-// };
-let testUserId = 20;
-
 
 interface SettingsModalProps {
     open: boolean;
@@ -395,7 +388,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				)}
 				{/* {console.log(user)} */}
 				{/* {console.log(selectedChannel.settings.owner, user.nameIntra)} */}
-				{selectedChannel.settings.owner === user.nameIntra && (
+				{selectedChannel.settings.owner === user.nameNick && (
 				<>
 					{/* Privacy Options */}
 					<Stack direction="row" spacing={2}>
@@ -442,7 +435,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					</>
 				)}
 				{selectedChannel.settings.users.length > 1 && 
-				((selectedChannel.settings.owner === user.nameIntra) ? (
+				((selectedChannel.settings.owner === user.nameNick) ? (
 					<Box sx={{display: 'flex'}}>
 						<Button
 							variant="contained"
@@ -478,9 +471,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 								{`\n(${_user.role})`}
 						</Typography>
 						{/* {console.log(user.nameIntra)} */}
-						{(selectedChannel.settings.owner === user.nameIntra ||
-							(userIsAdmin(user.nameIntra, selectedChannel) && _user.role === 'member')) &&
-							(user.nameIntra !== _user.name) &&
+						{(selectedChannel.settings.owner === user.nameNick ||
+							(userIsAdmin(user.nameNick, selectedChannel) && _user.role === 'member')) &&
+							(user.nameNick !== _user.name) &&
 							(_user.role !== 'owner') &&
 							(isUserMuted(_user) === false) && (
 						<Stack direction="row" spacing={0.3}>
@@ -492,8 +485,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							<Button variant="outlined" color="error" size="small" onClick={() => handleMuteFriend(_user)}>Mute</Button>
 						</Stack>
 						)}
-						{(selectedChannel.settings.owner === user.nameIntra ||
-							userIsAdmin(user.nameIntra, selectedChannel)) && isUserMuted(_user) === true && (
+						{(selectedChannel.settings.owner === user.nameNick ||
+							userIsAdmin(user.nameNick, selectedChannel)) && isUserMuted(_user) === true && (
 							<Stack direction="row" spacing={0.3}>
 								<Button variant="contained" color="error" size="small" onClick={() => handleUnmuteFriend(_user)}>Unmute</Button>
 							</Stack>	
@@ -502,7 +495,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					))}
 					</Stack>
 				</Box>
-				{(selectedChannel.settings.owner === user.nameIntra ||
+				{(selectedChannel.settings.owner === user.nameNick ||
 							userIsAdmin(user.nameNick, selectedChannel)) && (settings.banned.length > 0) && (
 					<Stack>
 						<Box sx={{ maxHeight: 250, overflow: 'auto', mt: 2}}>
