@@ -47,8 +47,6 @@ export const Notification: React.FC = () => {
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
-	const navToChatChannel = (id:string) => {navigate('/channels', {state: {channelId: id}})};
-	const navToChatDM = (id:string) => {navigate('/channels', {state: {otherId: id}})};
 	const navToGame = (gameInfo: GameData) => {
 		setGameData(gameInfo);
 		navigate('/game');
@@ -77,7 +75,15 @@ export const Notification: React.FC = () => {
 		removeNotiFromArray(noti, messageArray, noti.type);
 		removeNotificationDb(noti.id);
 	}
-
+	const navToChatChannel = (noti: NotificationStruct) => {
+		removeNotification(noti);
+		navigate('/channels', {state: {channelId: noti.senderId.toString()}})
+	};
+	
+	const navToChatDM = (noti: NotificationStruct) => {
+		removeNotification(noti);
+		navigate('/channels', {state: {otherId: noti.senderId.toString()}})
+	};
 	let whichMessage = (noti: NotificationStruct) =>
 	{
 		if (noti.message == null)
@@ -111,7 +117,7 @@ export const Notification: React.FC = () => {
 						Message: " {notiMessage} " has been sent in
 					</Typography>
 					<IconButton 		
-						onClick={() => navToChatChannel(noti.senderId.toString())}
+						onClick={() => navToChatChannel(noti)}
 						sx={{
 							fontSize: '14px',
 							color: theme.palette.secondary.main,
@@ -132,7 +138,7 @@ export const Notification: React.FC = () => {
 				}}
 			>
 				<IconButton 		
-					onClick={() => navToChatDM(noti.senderId.toString())}
+					onClick={() => navToChatDM(noti)}
 					sx={{
 						fontSize: '14px',
 						color: theme.palette.secondary.main,
