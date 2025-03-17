@@ -150,7 +150,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		{
 			if (selectedChannel.id === data.id)
 			{
-				const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userid);
+				const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
 				setSettings({ ...settings, users: updatedUsers });
 			}
 		}
@@ -166,10 +166,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		{
 			if (selectedChannel.id === data.id)
 			{
-				const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userid);
+				const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
 				const tmp: string[] = settings.banned;
-				if (!settings.banned.find((item: string) => item === data.userid))
-					tmp.push(data.userid);
+				if (!settings.banned.find((item: string) => item === data.userId))
+					tmp.push(data.userId);
 				setSettings({...settings, users: updatedUsers, banned: tmp});
 			}
 		}
@@ -185,7 +185,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		{
 			if (selectedChannel.id === data.id)
 			{
-				const updatedUsers = settings.banned.filter((item: string) => item !== data.userid);
+				const updatedUsers = settings.banned.filter((item: string) => item !== data.userId);
 				setSettings({...settings, banned: updatedUsers});
 			}
 		}
@@ -202,9 +202,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			if (selectedChannel.id === data.id)
 			{
 				const tmp: string[] = settings.muted;
-				if (!settings.muted.find((item: string) => item === data.userid))
+				if (!settings.muted.find((item: string) => item === data.userId))
 				{
-					tmp.push(data.userid);
+					tmp.push(data.userId);
 				}
 				setSettings({ ...settings, muted: tmp });
 			}

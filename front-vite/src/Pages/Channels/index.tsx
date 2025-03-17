@@ -298,24 +298,6 @@ const ChannelsPage: React.FC = () => {
 			socket.off('userUnmuted', handleUserUnmutedChannel);
 		}
 	}, []);
-	
-
-
-	const handleCreateDirectMessage = () => {
-		if (channelName.trim()) {
-			const channelDTO = {
-				title: channelName,
-				ch_type: ChannelType.private,
-				ch_owner: user.id.toString(),
-				users: [
-					{ id: user.id, nameIntra: user.nameIntra, role: UserRoles.owner, email: user.email }
-				],
-				password: null,
-				isDirectMessage: true,
-			};
-			socket.emit('createChannel', channelDTO);
-		}
-	};	
 
 //////////////////////////////////////////////////////////////////////
 
@@ -540,7 +522,8 @@ const ChannelsPage: React.FC = () => {
 		if (!directMessageExists(otherUser)) {
 			if (otherUser.id !== user.id) {
 				const channelDTO = {
-					title: otherUser.nameIntra,
+					// title:  otherUser.nameIntra,
+					title: '',
 					ch_type: ChannelType.private,
 					ch_owner: user.id.toString(),
 					users: [
@@ -782,7 +765,7 @@ const ChannelsPage: React.FC = () => {
 
 	// Channel line component to render each channel in the list
 	const ChannelLine: React.FC<{ channel: ChatRoom}> = ({ channel }) => {
-	  return (
+		return (
 		<Stack
 		  direction={'row'}
 		  gap={2}
@@ -810,6 +793,9 @@ const ChannelsPage: React.FC = () => {
 		  <GroupIcon sx={{ width: '10%' }} />
 		  <Typography noWrap sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
 			{channel?.name}
+			{/* {user.nameNick === channel.settings?.users[0].name
+				? channel.settings.users[1].name 
+				: channel.settings.users[0].name} */}
 		  </Typography>
 		  <IconButton
 			onClick={(event: React.MouseEvent) => handleSettingsClick(event, channel)}
