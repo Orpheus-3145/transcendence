@@ -128,6 +128,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	{
 		await this.chatService.removeUserFromChannel(data.userId, data.channelId);
 		this.server.emit('userKicked', {id: data.channelId, userId: data.userId});
+		// NB emit the kicked user as well
 	}
 
 	@SubscribeMessage('banUserFromChannel')
@@ -135,6 +136,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	{
 		await this.chatService.banUserFromChannel(data.userId, data.channelId);
 		this.server.emit('userBanned', {id: data.channelId, userId: data.userId});
+		// NB emit the banned user as well
 	}
 
 	@SubscribeMessage('unbanUserFromChannel')
@@ -165,8 +167,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		
 		const { sender_id, receiver_id, content } = messageData;
 		const newMessage = await this.chatService.createMessage(receiver_id, sender_id, content);
-		// Emit the message to the specific channel
-		if (newMessage)			// if newMessage === null if user is muted or channel is empty
+
+		if (newMessage)			// if newMessage === null if user is muted or channel is empty, no need for emit
 			this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
 	}
 

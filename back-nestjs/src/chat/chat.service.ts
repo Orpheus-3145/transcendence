@@ -143,7 +143,7 @@ export class ChatService {
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
 
-		// fetching user to remove and al the other users of the channl
+		// fetching user to remove and al the other users of the channel
 		const [memberToRemove, otherMembers] = await Promise.all([
 			this.getMember(channel.channel_id, userToRemove.id),
 			this.channelMemberRepository.find({
@@ -191,37 +191,36 @@ export class ChatService {
 			return null;
 
 		// fetching sender and receivers
-		const [memberSender, receivers] = await Promise.all([
-			this.getMember(channel.channel_id, sender.id),
-			this.channelMemberRepository.find({
-				where: {
-					channel: { channel_id: channel.channel_id },
-					user: { id: Not(sender.id)}
-				}
-			})
-		])
-
-		if (receivers.length === 0)		// no members beside the sender, don't send the message
-			return null
-
-		let newMessage: Message = this.messageRepository.create({
-			channel: channel,
-			sender: memberSender,
-			content: content,
-		});
-		newMessage = await this.messageRepository.save(newMessage);
-
-		this.logger.log(`New message from ${sender.nameNick} in channel id: ${channel.channel_id}, content: '${content}'`);
-
-			// this.thrower.throwChatExcp(`Channel id: ${channel.channel_id} has only one member`,
-			// 	`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
-			// 	HttpStatus.INTERNAL_SERVER_ERROR);
-				
-		// sending notification of the new message to all the channel members
-		for (const receiver of receivers)
-			await this.notificationService.createMessageNotification(newMessage, receiver);
-
-		return newMessage;
+		try {
+			const [memberSender, receivers] = await Promise.all([
+				this.getMember(channel.channel_id, sender.id),
+				this.channelMemberRepository.find({
+					where: {
+						channel: { channel_id: channel.channel_id },
+						user: { id: Not(sender.id)}
+					}
+				})
+			])
+			if (receivers.length === 0)		// no members beside the sender, don't send the message
+				return null;
+	
+			let newMessage: Message = this.messageRepository.create({
+				channel: channel,
+				sender: memberSender,
+				content: content,
+			});
+			newMessage = await this.messageRepository.save(newMessage);
+	
+			this.logger.log(`New message from ${sender.nameNick} in channel id: ${channel.channel_id}, content: '${content}'`);
+	
+			for (const receiver of receivers)
+				await this.notificationService.createMessageNotification(newMessage, receiver);
+	
+			return newMessage;
+		} catch {
+			console.log('here try-catch!');
+			return null;
+		}
 	}
 
 	async getMembersFromChannel(channel: number | Channel): Promise<ChannelMember[]> {
