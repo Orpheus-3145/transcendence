@@ -1190,7 +1190,13 @@ const ChannelsPage: React.FC = () => {
 					sx={{display: 'flex', flexDirection: 'column',  height: '100%'}}
 				>
 				  {/* <Typography variant="h6">{selectedChannel.name}</Typography> */}
-				  <Typography variant="h6" sx={{ textAlign: 'center'}}>{selectedChannel.name}</Typography>
+				  {selectedChannel?.isDirectMessage
+				  	? (<Typography variant="h6" sx={{ textAlign: 'center'}}>
+						{user.nameNick === selectedChannel.settings?.users[0].name
+							? selectedChannel.settings.users[1].name 
+							: selectedChannel.settings.users[0].name}
+						</Typography>)
+					:( <Typography variant="h6" sx={{ textAlign: 'center'}}>{selectedChannel.name}</Typography>)}
 				  <Stack 
 				  	mt={2}
 				  	sx={{
