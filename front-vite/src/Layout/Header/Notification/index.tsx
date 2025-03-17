@@ -47,11 +47,13 @@ export const Notification: React.FC = () => {
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
-	const navToChat = (id:string) => {navigate('/channels', {state: {channelId: id}})};
+	const navToChatChannel = (id:string) => {navigate('/channels', {state: {channelId: id}})};
+	const navToChatDM = (id:string) => {navigate('/channels', {state: {otherId: id}})};
 	const navToGame = (gameInfo: GameData) => {
 		setGameData(gameInfo);
 		navigate('/game');
 	}
+
 	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
 	{
 		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);
@@ -80,39 +82,73 @@ export const Notification: React.FC = () => {
 	{
 		if (noti.message == null)
 			return ;
-		var notiMessage = noti.message;
+		var notiMessage: string = noti.message;
+		var notiSenderName: string = noti.senderName;
 		if (noti.message?.length > 23)
 		{
 			notiMessage = noti.message?.slice(0, 23) + "...";
+		}
+
+		if (noti.senderName?.length > 10)
+		{
+			notiSenderName = noti.senderName?.slice(0, 10) + "...";
 		}
 		
 		if (noti.type === NotificationType.groupChat)
 		{
 			return (
-				<Typography variant={'h1'}
+				<Stack
 					sx={{
-						position: 'relative',
-						left: '0px',
-						fontSize: '0.8rem',
-					}}    
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
 				>
-					Message: "{notiMessage}" has been sent in <a href="" onClick={() => navToChat(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-				</Typography>
+					<Typography variant={'h1'}
+						sx={{
+							fontSize: '0.8rem',
+						}}    
+					>
+						Message: " {notiMessage} " has been sent in
+					</Typography>
+					<IconButton 		
+						onClick={() => navToChatChannel(noti.senderId.toString())}
+						sx={{
+							fontSize: '14px',
+							color: theme.palette.secondary.main,
+							width: '50px',
+						}}
+					>
+						{notiSenderName}					
+					</IconButton>	
+				</Stack>
 			);
 		}
 		return (
-			<Typography variant={'h1'}
+			<Stack
+				direction="row"
 				sx={{
-					position: 'relative',
-					left: '0px',
-					fontSize: '0.9rem',
-				}}    
+				justifyContent: 'center',
+				alignItems: 'center',
+				}}
 			>
-				<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-				sent a message:
-				<br />
-				{notiMessage}
-			</Typography>
+				<IconButton 		
+					onClick={() => navToChatDM(noti.senderId.toString())}
+					sx={{
+						fontSize: '14px',
+						color: theme.palette.secondary.main,
+						width: '50px',
+					}}
+				>
+					{notiSenderName}					
+				</IconButton>	
+				<Typography variant={'h1'}
+					sx={{
+						fontSize: '0.9rem',
+					}}    
+				>
+					sent a message: {notiMessage}
+				</Typography>
+			</Stack>
 		);
 	}
 

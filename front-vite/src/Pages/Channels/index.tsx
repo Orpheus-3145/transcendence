@@ -91,6 +91,7 @@ const ChannelsPage: React.FC = () => {
 	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
 	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
+	const [waiting, setWaiting] = useState<Boolean>(false);
 
 	useEffect(() => {
 		const fetchUsers = async () => {
@@ -102,50 +103,56 @@ const ChannelsPage: React.FC = () => {
 	}, []);
 
 
-	let checkLocation = () =>
+	let checkLocation = (dms: ChatRoom[], joined: ChatRoom[]) =>
 	{
+		console.log("a");
+		console.log(JSON.stringify(location.state));
 		if (location.state != null && Object.keys(location.state).length > 0)
 		{
-			if (location.state.channelId && joinedChannels)
+			if (location.state.channelId && joined)
 			{
-				const channel = joinedChannels.find((room: ChatRoom) => room.id.toString() === location.state.channelId.toString());
-				console.log(JSON.stringify(channel));
+				const channel = joined.find((room: ChatRoom) => room.id.toString() === location.state.channelId.toString());
 				if (channel !== undefined)
 				{
 					setSelectedChannel(channel);
 					navigate(location.pathname, { replace: true, state: null });
 				}
 			}
-			else if (location.state.otherId && directMessages)
+			else if (location.state.otherId && dms)
 			{
-				const channel = directMessages.find((room: ChatRoom) => 
+				const channel = dms.find((room: ChatRoom) => 
 					((room.settings.users[0].id.toString() === user.id.toString()) || (room.settings.users[0].id.toString() === location.state.otherId.toString())) &&
 					((room.settings.users[1].id.toString() === user.id.toString()) || (room.settings.users[1].id.toString() === location.state.otherId.toString())));
 				
 				if (channel != undefined)
 				{
+					setWaiting(false);
 					setSelectedChannel(channel);
 					navigate(location.pathname, { replace: true, state: null });
 				}
 				else
 				{
-					var otherUser = users.find((item: UserProps) => item.id.toString() === location.state.otherId.toString());
-					if (otherUser)
+					if (!waiting)
 					{
-						if (otherUser.id !== user.id) {
-							const channelDTO = {
-								title: otherUser.nameNick,
-								ch_type: 'private',
-								ch_owner: user.id,
-								users: [
-									{ id: user.id, nameNick: user.nameNick, role: 'owner', email: user.email },
-									{ id: otherUser.id, nameNick: otherUser.nameNick, role: 'member', email: otherUser.email },
-					
-								],
-								password: null,
-								isDirectMessage: true,
-							};
-							socket.emit('createChannel', channelDTO);
+						var otherUser = users.find((item: UserProps) => item.id.toString() === location.state.otherId.toString());
+						if (otherUser)
+						{
+							if (otherUser.id !== user.id) {
+								const channelDTO = {
+									title: otherUser.nameNick,
+									ch_type: 'private',
+									ch_owner: user.id,
+									users: [
+										{ id: user.id, nameNick: user.nameNick, role: 'owner', email: user.email },
+										{ id: otherUser.id, nameNick: otherUser.nameNick, role: 'member', email: otherUser.email },
+						
+									],
+									password: null,
+									isDirectMessage: true,
+								};
+								setWaiting(true);
+								socket.emit('createChannel', channelDTO);
+							}
 						}
 					}
 				}
@@ -177,7 +184,7 @@ const ChannelsPage: React.FC = () => {
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
 		setDirectMessages(dms);
-		checkLocation();
+		checkLocation(dms, joined);
 		// }
 	}, [chatProps.chatRooms, users]);
 
@@ -499,7 +506,6 @@ const ChannelsPage: React.FC = () => {
 			
 	useEffect(() => {
 		const handleChannelCreated = (newChannel: ChatRoom) => {
-			console.log(`channel created: ${JSON.stringify(newChannel)}`);
 			// Update the state with the new channel data received from the server
 			setChatProps((prevState) => ({
 				...prevState,
