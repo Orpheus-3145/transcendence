@@ -178,7 +178,7 @@ export class ChatService {
 		return channel;
 	}
 
-	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message> {
+	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message | null> {
 
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
@@ -186,8 +186,10 @@ export class ChatService {
 		if (typeof sender === 'number')
 			sender = await this.getUser(sender);
 		
+		if (channel.muted.find((user) => user === sender.id.toString()))
+			return null;
 		// fetching member from user
-		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id);
+		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id)
 		let newMessage: Message = this.messageRepository.create({
 			channel: channel,
 			sender: memberSender,
@@ -236,18 +238,18 @@ export class ChatService {
 	async getAllChannels(): Promise<Channel[]> {
 
 		const channels: Channel[] = await this.channelRepository.find({
-			select: [
-				'channel_id',
-				'channel_type',
-				'title',
-				'channel_owner',
-				'password',
-				'isDirectMessage',
-				'banned',
-				'muted'
-			],
-			relations: ['members', 'messages'], // Ensure members and messages are included
-		});
+				select: [
+					'channel_id',
+					'channel_type',
+					'title',
+					'channel_owner',
+					'password',
+					'isDirectMessage',
+					'banned',
+					'muted'
+				],
+				relations: ['channel_owner', 'members', 'members.user', 'messages', 'messages.sender', 'messages.sender.user'], // Ensure members and messages are included
+			});
 
 		this.logger.log(`Fetching all chats`);
 		return channels;
@@ -286,12 +288,14 @@ export class ChatService {
 	}
 	
 	async muteUserFromChannel(userToMute: number | User, channel: number | Channel): Promise<void> {
-	
+		
+		console.log(JSON.stringify(channel));
 		if (typeof userToMute === 'number')
 			userToMute = await this.getUser(userToMute);
-
+			
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
+
 
 		channel.muted.push(userToMute.id.toString());
 		await this.channelRepository.save(channel);

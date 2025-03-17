@@ -8,30 +8,12 @@ import { IsArray,
   IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import UserDTO from './user.dto';
-import { MessageDTO } from './message.dto';
-import { Channel, ChannelType } from 'src/entities/channel.entity';
+import { ChannelType } from 'src/entities/channel.entity';
+import { MessageDTO } from './chatRoom.dto';
 
+
+// Nb this is used only for receiving channel creation from the front-end
 export class ChannelDTO {
-
-	
-  constructor(channel: Channel) {
-
-    this.channel_id = channel.channel_id;
-    this.ch_type = channel.channel_type;
-    this.ch_owner = channel.channel_owner.nameNick;
-    this.isActive = channel.isActive;
-    this.isDirectMessage = channel.isDirectMessage;
-    this.password = channel.password;
-    this.title = channel.title;
-    this.banned = channel.banned;
-    this.muted = channel.muted;
-    this.users = [];
-    for (const member of channel.members)
-      this.users.push(new UserDTO(member.user));
-    this.messages = [];
-    for (const message of channel.messages)
-      this.messages.push(new MessageDTO(message));
-  }
 
   @IsOptional() // Only required for updates
   @IsInt()

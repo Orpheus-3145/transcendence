@@ -9,13 +9,12 @@ import { WebSocketGateway,
 import { Server, Socket } from 'socket.io';
 
 import { ChatService } from './chat.service';
-import { ChatMessageDTO, ChatRoomDTO } from '../dto/chatRoom.dto'
+import { MessageDTO, ChatRoomDTO } from '../dto/chatRoom.dto'
 import { Channel, ChannelMemberType, ChannelType } from '../entities/channel.entity';
 import AppLoggerService from 'src/log/log.service';
 import { UseFilters } from '@nestjs/common';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import { ChannelDTO } from 'src/dto/channel.dto';
-import { MessageDTO } from 'src/dto/message.dto';
 
 
 @WebSocketGateway( {
@@ -77,8 +76,21 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id);
+		
+		const updatedChannel = await this.chatService.getChannel(channel_id);
+		
+		const channelDto = new ChatRoomDTO(updatedChannel);
+
 		client.join(channel_id.toString());
-		this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
+
+		// NB: schould emit to all server of just to the room?
+		// const channel = await this.chatService.getChannel(channel_id);
+		// if (channel.members.some(usr => usr.user.id === user_id)) {
+		// this.server.emit('joinedChannel', { user_id, channel_id, name, email });
+		// }
+		
+		this.server.emit('joinedChannel', { channelDto, user_id, channel_id, name, email });
+		// this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}
 
 	@SubscribeMessage('joinAvailableChannel')
@@ -102,44 +114,47 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { user_id, channel_id } = data;
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
-		console.log(JSON.stringify(channelDto));
-		this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, user_id});
+
+		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
+		this.server.emit('leftChannel', {channelDto, userId: user_id});		
 		client.leave(channel_id.toString());
+		// console.log(JSON.stringify(channelDto));
+		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, user_id});
 	}
 
 	@SubscribeMessage('kickUserFromChannel')
-	async kickUserFromChannel(@MessageBody() data: {userid: number, channelid: number}): Promise<void> 
+	async kickUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.removeUserFromChannel(data.userid, data.channelid);
-		this.server.emit('userKicked', {id: data.channelid, userId: data.userid});
+		await this.chatService.removeUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userKicked', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('banUserFromChannel')
-	async banUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
+	async banUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.banUserFromChannel(data.userid, data.channelId);
-		this.server.emit('userBanned', {id: data.channelId, userId: data.userid});
+		await this.chatService.banUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userBanned', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('unbanUserFromChannel')
-	async unbanUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
+	async unbanUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.unbanUserFromChannel(data.userid, data.channelId);
-		this.server.emit('userUnbanned', {id: data.channelId, userId: data.userid});
+		await this.chatService.unbanUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userUnbanned', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('muteUserFromChannel')
-	async muteUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
+	async muteUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.muteUserFromChannel(data.userid, data.channelId);
-		this.server.emit('userMuted', {id: data.channelId, userId: data.userid});
+		await this.chatService.muteUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userMuted', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('unmuteUserFromChannel')
-	async unmuteUserFromChannel(@MessageBody() data: {userid: number, channelId: number}): Promise<void> 
+	async unmuteUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
-		await this.chatService.unmuteUserFromChannel(data.userid, data.channelId);
-		this.server.emit('userUnmuted', {id: data.channelId, userId: data.userid});
+		await this.chatService.unmuteUserFromChannel(data.userId, data.channelId);
+		this.server.emit('userUnmuted', {id: data.channelId, userId: data.userId});
 	}
 
 	@SubscribeMessage('sendMessage')
@@ -150,7 +165,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { sender_id, receiver_id, content } = messageData;
 		const newMessage = await this.chatService.createMessage(receiver_id, sender_id, content);
 		// Emit the message to the specific channel
-		this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage));
+		if (newMessage)			// if newMessage === null if user is muted
+			this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
 	}
 
 	@SubscribeMessage('getChannels')
@@ -159,11 +175,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const channels: Channel[] = await this.chatService.getAllChannels();
 
 		const chatDto: ChatRoomDTO[] = [];
-		for (const chat of channels) {
+		for (const chat of channels)
 			chatDto.push(new ChatRoomDTO(chat));
-			console.log(chat.channel_id);
-		}
-		// console.log('Channels', JSON.stringify(chatDto));
 		client.emit('channelsList', chatDto);  // Emit back the channels to the client
 	}
 
@@ -185,6 +198,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { channel_type, channel_id, password } = data;
 		const channelToUpdate: Channel = await this.chatService.getChannel(channel_id);
 		await this.chatService.changePrivacy(channelToUpdate, channel_type, password);
+
 		this.server.emit('privacyChanged', new ChatRoomDTO(channelToUpdate));
 	}
 
@@ -192,13 +206,11 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	async handleChangeUserRole(
 		@MessageBody() data: { user_id: number; channel_id: number; new_role: ChannelMemberType; },
 	): Promise<void> {
-
 		const { user_id, channel_id, new_role } = data;
 		await this.chatService.changeMemberRole(user_id, channel_id, new_role);
 		if (new_role === ChannelMemberType.owner)
 			await this.chatService.changeOwnershipChannel(user_id, channel_id);
-
-		this.server.to(channel_id.toString()).emit('userRoleChanged', { user_id, new_role });
+		this.server.to(channel_id.toString()).emit('userRoleChanged', { userId: user_id, new_role, channelId: channel_id });
 	}
 
 	@SubscribeMessage('joinRoom')
