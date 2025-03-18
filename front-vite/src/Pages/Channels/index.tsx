@@ -105,8 +105,6 @@ const ChannelsPage: React.FC = () => {
 
 	let checkLocation = (dms: ChatRoom[], joined: ChatRoom[]) =>
 	{
-		console.log("a");
-		console.log(JSON.stringify(location.state));
 		if (location.state != null && Object.keys(location.state).length > 0)
 		{
 			if (location.state.channelId && joined)
@@ -1044,28 +1042,6 @@ const ChannelsPage: React.FC = () => {
 				</Box>
 		);
 	}
-
-	// useEffect(() => 
-	// {
-	// 	if (location.state)
-	// 	{
-	// 		if (directMessages)
-	// 		{
-	// 			console.log(location.state.otherId);
-	// 			console.log(directMessages);
-	// 			console.log(user.id.toString());
-	// 			const channel = directMessages.find((room: ChatRoom) => 
-	// 				((room.settings.users[0].id.toString() === user.id.toString()) || (room.settings.users[0].id.toString() === location.state.otherId.toString())) &&
-	// 				((room.settings.users[1].id.toString() === user.id.toString()) || (room.settings.users[1].id.toString() === location.state.otherId.toString())));
-				  
-	// 			console.log("a");
-	// 			console.log(channel);
-	// 		}
-	// 	}
-	// 	return () => {
-		
-	// 	};
-	// }, []);
 
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
