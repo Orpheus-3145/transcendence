@@ -47,11 +47,11 @@ export const Notification: React.FC = () => {
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
-	const navToChat = () => {navigate('/channels')};
 	const navToGame = (gameInfo: GameData) => {
 		setGameData(gameInfo);
 		navigate('/game');
 	}
+
 	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
 	{
 		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);
@@ -75,44 +75,86 @@ export const Notification: React.FC = () => {
 		removeNotiFromArray(noti, messageArray, noti.type);
 		removeNotificationDb(noti.id);
 	}
-
+	const navToChatChannel = (noti: NotificationStruct) => {
+		removeNotification(noti);
+		navigate('/channels', {state: {channelId: noti.senderId.toString()}})
+	};
+	
+	const navToChatDM = (noti: NotificationStruct) => {
+		removeNotification(noti);
+		navigate('/channels', {state: {otherId: noti.senderId.toString()}})
+	};
 	let whichMessage = (noti: NotificationStruct) =>
 	{
 		if (noti.message == null)
 			return ;
-		var notiMessage = noti.message;
+		var notiMessage: string = noti.message;
+		var notiSenderName: string = noti.senderName;
 		if (noti.message?.length > 23)
 		{
 			notiMessage = noti.message?.slice(0, 23) + "...";
 		}
 
+		if (noti.senderName?.length > 10)
+		{
+			notiSenderName = noti.senderName?.slice(0, 10) + "...";
+		}
+		
 		if (noti.type === NotificationType.groupChat)
 		{
 			return (
-				<Typography variant={'h1'}
+				<Stack
 					sx={{
-						position: 'relative',
-						left: '0px',
-						fontSize: '0.9rem',
-					}}    
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
 				>
-					The message: "{notiMessage}" has been sent in <a href="" onClick={() => navToChat()} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-				</Typography>
+					<Typography variant={'h1'}
+						sx={{
+							fontSize: '0.8rem',
+						}}    
+					>
+						Message: " {notiMessage} " has been sent in
+					</Typography>
+					<IconButton 		
+						onClick={() => navToChatChannel(noti)}
+						sx={{
+							fontSize: '14px',
+							color: theme.palette.secondary.main,
+							width: '50px',
+						}}
+					>
+						{notiSenderName}					
+					</IconButton>	
+				</Stack>
 			);
 		}
 		return (
-			<Typography variant={'h1'}
+			<Stack
+				direction="row"
 				sx={{
-					position: 'relative',
-					left: '0px',
-					fontSize: '0.9rem',
-				}}    
+				justifyContent: 'center',
+				alignItems: 'center',
+				}}
 			>
-				<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-				sent a message:
-				<br />
-				{notiMessage}
-			</Typography>
+				<IconButton 		
+					onClick={() => navToChatDM(noti)}
+					sx={{
+						fontSize: '14px',
+						color: theme.palette.secondary.main,
+						width: '50px',
+					}}
+				>
+					{notiSenderName}					
+				</IconButton>	
+				<Typography variant={'h1'}
+					sx={{
+						fontSize: '0.9rem',
+					}}    
+				>
+					sent a message: {notiMessage}
+				</Typography>
+			</Stack>
 		);
 	}
 
@@ -137,13 +179,11 @@ export const Notification: React.FC = () => {
 				>
 					<Tooltip title="Clear Notification" arrow>
 						<IconButton 
-							variant="contained" 
 							component="label"
 							onClick={() => removeNotification(noti)}
 							sx={{
 								position: 'absolute',
-								left: '230px',
-								top: '5px',
+								left: '220px',
 								width: '20px',
 								height: '20px',
 								fontSize: '20px',

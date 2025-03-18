@@ -2,6 +2,7 @@ import { ConsoleLogger, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import {  Socket } from 'socket.io';
 
 import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/channel.entity';
 import { NotificationService } from 'src/notification/notification.service';
@@ -11,6 +12,7 @@ import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import AppLoggerService from 'src/log/log.service';
 import { ConfigService } from '@nestjs/config';
 import { ChannelDTO } from 'src/dto/channel.dto';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 
 @Injectable()
@@ -29,6 +31,7 @@ export class ChatService {
 		private readonly userRepository: Repository<User>,
 
 		private readonly notificationService: NotificationService,
+		private readonly notificationGateway: NotificationGateway,
 		private readonly thrower: ExceptionFactory,
 		private readonly logger: AppLoggerService,
 		private readonly config: ConfigService,
@@ -212,7 +215,7 @@ export class ChatService {
 				
 		// sending notification of the new message to all the channel members
 		for (const receiver of receivers)
-			await this.notificationService.createMessageNotification(newMessage, receiver);
+			this.notificationGateway.sendMessageNoti(await this.notificationService.createMessageNotification(newMessage, receiver), receiver.user.id.toString());
 
 		return newMessage;
 	}

@@ -91,6 +91,7 @@ const ChannelsPage: React.FC = () => {
 	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
 	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
+	const [waiting, setWaiting] = useState<Boolean>(false);
 
 	useEffect(() => {
 		const fetchUsers = async () => {
@@ -102,11 +103,20 @@ const ChannelsPage: React.FC = () => {
 	}, []);
 
 
-	let checkLocation = (dms: ChatRoom[]) =>
+	let checkLocation = (dms: ChatRoom[], joined: ChatRoom[]) =>
 	{
-		if (location.state && Object.keys(location.state).length > 0)
+		if (location.state != null && Object.keys(location.state).length > 0)
 		{
-			if (directMessages)
+			if (location.state.channelId && joined)
+			{
+				const channel = joined.find((room: ChatRoom) => room.id.toString() === location.state.channelId.toString());
+				if (channel !== undefined)
+				{
+					setSelectedChannel(channel);
+					navigate(location.pathname, { replace: true, state: null });
+				}
+			}
+			else if (location.state.otherId && dms)
 			{
 				const channel = dms.find((room: ChatRoom) => 
 					((room.settings.users[0].id.toString() === user.id.toString()) || (room.settings.users[0].id.toString() === location.state.otherId.toString())) &&
@@ -114,28 +124,33 @@ const ChannelsPage: React.FC = () => {
 				
 				if (channel != undefined)
 				{
+					setWaiting(false);
 					setSelectedChannel(channel);
 					navigate(location.pathname, { replace: true, state: null });
 				}
 				else
 				{
-					var otherUser = users.find((item: UserProps) => item.id.toString() === location.state.otherId.toString());
-					if (otherUser)
+					if (!waiting)
 					{
-						if (otherUser.id !== user.id) {
-							const channelDTO = {
-								title: otherUser.nameNick,
-								ch_type: 'private',
-								ch_owner: user.nameNick,
-								users: [
-									{ id: user.id, nameNick: user.nameNick, role: 'owner', email: user.email },
-									{ id: otherUser.id, nameNick: otherUser.nameNick, role: 'member', email: otherUser.email },
-					
-								],
-								password: null,
-								isDirectMessage: true,
-							};
-							socket.emit('createChannel', channelDTO);
+						var otherUser = users.find((item: UserProps) => item.id.toString() === location.state.otherId.toString());
+						if (otherUser)
+						{
+							if (otherUser.id !== user.id) {
+								const channelDTO = {
+									title: otherUser.nameNick,
+									ch_type: 'private',
+									ch_owner: user.id,
+									users: [
+										{ id: user.id, nameNick: user.nameNick, role: 'owner', email: user.email },
+										{ id: otherUser.id, nameNick: otherUser.nameNick, role: 'member', email: otherUser.email },
+						
+									],
+									password: null,
+									isDirectMessage: true,
+								};
+								setWaiting(true);
+								socket.emit('createChannel', channelDTO);
+							}
 						}
 					}
 				}
@@ -167,7 +182,7 @@ const ChannelsPage: React.FC = () => {
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
 		setDirectMessages(dms);
-		checkLocation(dms);
+		checkLocation(dms, joined);
 		// }
 	}, [chatProps.chatRooms, users]);
 
@@ -489,7 +504,6 @@ const ChannelsPage: React.FC = () => {
 			
 	useEffect(() => {
 		const handleChannelCreated = (newChannel: ChatRoom) => {
-			console.log(`channel created: ${JSON.stringify(newChannel)}`);
 			// Update the state with the new channel data received from the server
 			setChatProps((prevState) => ({
 				...prevState,
@@ -999,13 +1013,6 @@ const ChannelsPage: React.FC = () => {
 
 	const showMessages =  (msg: ChatMessage, index: number) =>
 	{
-		// if (selectedChannel.settings.muted.find((item) => String(item) === String(msg.userId)))
-		// {
-		// 	return (
-		// 		<Stack></Stack>
-		// 	);
-		// }
-
 		var user = userMessage.get(msg.userId.toString());
 		if (!user) {
 			fetchUser(msg.userId.toString());
@@ -1035,28 +1042,6 @@ const ChannelsPage: React.FC = () => {
 				</Box>
 		);
 	}
-
-	// useEffect(() => 
-	// {
-	// 	if (location.state)
-	// 	{
-	// 		if (directMessages)
-	// 		{
-	// 			console.log(location.state.otherId);
-	// 			console.log(directMessages);
-	// 			console.log(user.id.toString());
-	// 			const channel = directMessages.find((room: ChatRoom) => 
-	// 				((room.settings.users[0].id.toString() === user.id.toString()) || (room.settings.users[0].id.toString() === location.state.otherId.toString())) &&
-	// 				((room.settings.users[1].id.toString() === user.id.toString()) || (room.settings.users[1].id.toString() === location.state.otherId.toString())));
-				  
-	// 			console.log("a");
-	// 			console.log(channel);
-	// 		}
-	// 	}
-	// 	return () => {
-		
-	// 	};
-	// }, []);
 
 	return (
 	  <Container sx={{ padding: theme.spacing(3) }}>
