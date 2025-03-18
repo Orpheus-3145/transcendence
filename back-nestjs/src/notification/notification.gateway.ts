@@ -77,9 +77,6 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	sendMessageNoti(noti: MessageNotification, receiverId: string)
 	{
-		console.log('a');
-		console.log(receiverId);
-		console.log(JSON.stringify(noti.receiver));
 		var websock: Websock = this.getUser(receiverId);
 		websock.client.emit('sendNoti', new NotificationDTO(noti));
 	}
