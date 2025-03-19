@@ -522,7 +522,7 @@ const ChannelsPage: React.FC = () => {
 //////////////////////////////////////////////////////////////////////
 
 	const directMessageExists = (otherUser: User): boolean => {
-		const messageExists = directMessages.find(room => users.some(usr => usr.id === otherUser.id));
+		const messageExists = directMessages.find(room => room.settings.users.some(usr => usr.id === otherUser.id));
 		if (messageExists) {
 			alert("A direct message with this user already exists.");
 			return true;
