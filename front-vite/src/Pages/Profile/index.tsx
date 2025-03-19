@@ -123,7 +123,7 @@ const ProfilePage: React.FC = () => {
 	let friendLine = (intraid:string) => 
 	{
 		const friend = friendDetails.get(intraid);
-
+		
 		if (!friend) {
 			fetchFriendDetails(intraid);
 			return <Stack></Stack>;
@@ -818,7 +818,7 @@ const ProfilePage: React.FC = () => {
 		else 
 			showOwnPage(false);
 	}
-	
+
 	useEffect(() => 
 	{
 		getUserProfile().then((number) => 
@@ -826,13 +826,12 @@ const ProfilePage: React.FC = () => {
 			setUserProfileNumber(number);
 		});
 
-		socket.on('friendAdded', (newFriend: string) => {
-			var newlist = friendsList;
-			if (!friendsList.includes(newFriend, 0))
-			{
-				newlist.push(newFriend);
-				setFriendsList(newlist);
-			} 
+		socket.on('friendAddedIndex', (newList: string[]) => {
+			setFriendsList(newList);
+		});
+
+		socket.on('friendRemoved', (newlist: string[]) => {
+			setFriendsList(newlist);
 		});
 
 	}, [lastSegment]);

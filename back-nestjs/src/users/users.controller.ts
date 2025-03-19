@@ -80,7 +80,7 @@ export class UsersController {
 			this.UserService.getUserId(id),
 		]);
 
-		return (this.UserService.removeFriend(user, other));
+		this.UserService.removeFriend(user, other);
 	}
 
 	@Get('profile/:username/friend/block/:id')
@@ -107,12 +107,12 @@ export class UsersController {
 
 	@Post('profile/:username/changepfp')
 	@UseInterceptors(FileInterceptor('file')) //instead of any the file should be Express.Multer.File,
-	async changePFP(@Param('username') username:string,  @UploadedFile() file: any) 
+	async changePFP(@Param('username') username:string,  @UploadedFile() file: any): Promise<string>
 	{
 		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 		const user = await this.UserService.getUserId(username);
-
-    return (this.UserService.changeProfilePic(user, image));
+		await this.UserService.changeProfilePic(user, image)
+    	return (image);
 	}
 
 	@Get('profile/:intraId/matches')

@@ -89,7 +89,7 @@ export class NotificationService {
 	{
 		for (const item of receiver.blocked) 
 		{
-			if (item === sender.intraId.toString()) 
+			if (item === sender.id.toString()) 
 				return (true);
 		}
 		return (false);
