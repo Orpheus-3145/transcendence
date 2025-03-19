@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Stack, Box, Typography, useTheme, useMediaQuery } from '@mui/material';
-import { styled } from '@mui/system';
+import { margin, styled } from '@mui/system';
 
 import GameComponent from '/app/src/Pages/Game/GameComponent';
 import { List, ListItem, ListItemText } from '@mui/material';
@@ -160,33 +160,33 @@ const Game: React.FC = () => {
 							color: theme.palette.secondary.main,
 						}}
 					>
-						Controls
+						How to Play
 					</Typography>
 					<Box bgcolor={theme.palette.background.default} borderRadius="1em" padding="1em">
-						<Typography variant="h5" sx={{ fontWeight: 'bold', marginTop: '0.5em' }}>
+						<Typography variant="h5" sx={{ fontWeight: 'bold', marginTop: '0.5em', marginBottom: '0.5em' }}>
 							Move your paddle
 						</Typography>
-						<Typography variant="body">
+						<Typography variant="body1" sx={{margin: '1em'}}>
 							⬆ / ⬇ keys <strong>OR</strong> W / S keys
 						</Typography>
 						<Typography variant="h5" sx={{ fontWeight: 'bold', marginTop: '1em' }}>
-							Power Ups
+							Choose Power Ups
 						</Typography>
-						<List sx={{ listStyleType: 'none', pl: 0 }}>
+						<List sx={{ listStyleType: 'none', pl:0 }}>
 							<ListItem sx={{ display: 'list-item' }}>
-								<ListItemText primary="speedBall – Hit the ball harder" />
+								<ListItemText primary={<><strong>speedBall:</strong> Hit the ball harder </>} />
 							</ListItem>
 							<ListItem sx={{ display: 'list-item' }}>
-								<ListItemText primary="speedPaddle – Your paddle moves faster" />
+								<ListItemText  primary={<><strong>speedPaddle:</strong> Your paddle moves faster</>} />
 							</ListItem>
 							<ListItem sx={{ display: 'list-item' }}>
-								<ListItemText primary="slowPaddle – Your opponent's paddle moves slower" />
+								<ListItemText primary={<><strong>slowPaddle:</strong> Your opponent's paddle moves slower</>} />
 							</ListItem>
 							<ListItem sx={{ display: 'list-item' }}>
-								<ListItemText primary="shrinkPaddle – Shrink your opponent's paddle" />
+								<ListItemText primary={<><strong>shrinkPaddle:</strong> Shrink your opponent's paddle</>} />
 							</ListItem>
 							<ListItem sx={{ display: 'list-item' }}>
-								<ListItemText primary="stretchPaddle – Stretch your paddle" />
+								<ListItemText primary={<><strong>stretchPaddle:</strong> Stretch your paddle</>} />
 							</ListItem>
 						</List>
 					</Box>

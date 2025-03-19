@@ -5,10 +5,13 @@ export const themeOptions: ThemeOptions = {
 		mode: 'dark',
 		primary: {
 			// main: '#3f51b5',
-			main: '#006B75',
+			// Nice teal colour
+			// main: '#006B75',
 			// light: '#33B6C1',		
-			// main: '#008080'
-			// main: '#0074A2'
+			main: '#036666'
+			// main: '#264653'
+			// main: '#0b525b',
+
 		},
 		secondary: {
 			main: '#FFA500',
