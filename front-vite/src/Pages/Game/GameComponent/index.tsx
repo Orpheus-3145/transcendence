@@ -37,16 +37,19 @@ const GameComponent: React.FC = () => {
 
 			// resize game window keeping same ratio (16/9)
 			const { width, height } = containerRef.current.getBoundingClientRect();
+			const old_width = gameInstance.scale.width;
+			const old_height = gameInstance.scale.height;
 			gameInstance.scale.resize(width, width * 9 / 16);
 
 			gameInstance.scene.getScenes(true).forEach( (scene: Phaser.Scene) => {
 				// resize all the objects inside of every scene
 				if (scene instanceof BaseScene) {
-					scene.killChildren();
+					scene.resetObects(old_width, old_height);
+					// scene.killChildren();
 					if (scene instanceof GameScene)
-						scene.resetWindowRatio()
+						scene.resetWindowRatio();
 
-					scene.buildGraphicObjects();
+					// scene.buildGraphicObjects();
 				}
 			});
 		}

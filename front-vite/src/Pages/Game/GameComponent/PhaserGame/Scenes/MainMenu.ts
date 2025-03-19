@@ -1,3 +1,4 @@
+import TextButton from '../GameObjects/Text';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameMode } from '/app/src/Types/Game/Enum';
 
@@ -20,12 +21,30 @@ export default class MainMenuScene extends BaseScene {
   buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		const singleGameBtn = this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.2, 'Play [single player]', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
+		// const singleGameBtn = this.add
+		// .text(this.scale.width * 0.5, this.scale.height * 0.2, 'Play [single player]', {
+		// 	fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 	align: 'center',
+		// 	color: '#fff',
+		// })
+		// .setOrigin(0.5, 0.5)
+		// .setInteractive()
+		// .on('pointerover', () => singleGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
+		// .on('pointerout', () => singleGameBtn.setStyle({ fill: '#fff' }))
+		// .on('pointerup', () =>
+		// 	this.switchScene('Settings', { mode: GameMode.single }),
+		// );
+
+		const singleGameBtn = new TextButton(
+			this,
+			this.scale.width * 0.5, this.scale.height * 0.2,
+			'Play [single player]',
+			{
+				fontSize: 0,
+				align: 'center',
+				color: '#fff',
+			}
+		)
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
 		.on('pointerover', () => singleGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
@@ -34,12 +53,31 @@ export default class MainMenuScene extends BaseScene {
 			this.switchScene('Settings', { mode: GameMode.single }),
 		);
 
-		const multiGameBtn = this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.3, 'Play [multi player]', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
+
+		// const multiGameBtn = this.add
+		// .text(this.scale.width * 0.5, this.scale.height * 0.3, 'Play [multi player]', {
+		// 	fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 	align: 'center',
+		// 	color: '#fff',
+		// })
+		// .setOrigin(0.5, 0.5)
+		// .setInteractive()
+		// .on('pointerover', () => multiGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
+		// .on('pointerout', () => multiGameBtn.setStyle({ fill: '#fff' }))
+		// .on('pointerup', () =>
+		// 	this.switchScene('Settings', { mode: GameMode.multi }),
+		// );
+
+		const multiGameBtn = new TextButton(
+			this,
+			this.scale.width * 0.5, this.scale.height * 0.3,
+			'Play [multi player]',
+			{
+				fontSize: 0,
+				align: 'center',
+				color: '#fff',
+			}
+		)
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
 		.on('pointerover', () => multiGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
@@ -48,12 +86,28 @@ export default class MainMenuScene extends BaseScene {
 			this.switchScene('Settings', { mode: GameMode.multi }),
 		);
 
-		const changeBkBtn = this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.4, 'Change background', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
+		// const changeBkBtn = this.add
+		// .text(this.scale.width * 0.5, this.scale.height * 0.4, 'Change background', {
+		// 	fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 	align: 'center',
+		// 	color: '#fff',
+		// })
+		// .setOrigin(0.5, 0.5)
+		// .setInteractive()
+		// .on('pointerover', () => changeBkBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
+		// .on('pointerout', () => changeBkBtn.setStyle({ fill: '#fff' }))
+		// .on("pointerdown", () => this.openFilePicker());
+
+		const changeBkBtn = new TextButton(
+			this,
+			this.scale.width * 0.5, this.scale.height * 0.4,
+			'Change background',
+			{
+				fontSize: 0,
+				align: 'center',
+				color: '#fff',
+			}
+		)
 		.setOrigin(0.5, 0.5)
 		.setInteractive()
 		.on('pointerover', () => changeBkBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover

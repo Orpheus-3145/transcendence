@@ -33,7 +33,7 @@ export default class BaseScene extends Phaser.Scene {
 
 	// run after preload(), creation of the entities of the scene
 	create(arg?: any): void {
-		this.cameras.main.setBackgroundColor(this._backgroundColor);
+		// this.cameras.main.setBackgroundColor(this._backgroundColor);
 		// this._lines = this.add.group();
 
 		// this.time.addEvent({
@@ -42,7 +42,7 @@ export default class BaseScene extends Phaser.Scene {
 		// 	callback: this.spawnCluster,
 		// 	callbackScope: this
 		// });
-		// this.buildGraphicObjects();
+		this.buildGraphicObjects();
         // const shader = this.add.shader('ditherShader', this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height);
         // this.cameras.main.setRenderToTexture(shader);
 	}
@@ -106,7 +106,29 @@ export default class BaseScene extends Phaser.Scene {
 
 	killChildren(): void {
 
-		this.children.list.forEach((gameObject) => gameObject.destroy());
+		// this.children.list.forEach((gameObject) => {
+		// 	console.log(`object: ${JSON.stringify(gameObject)}`);
+		// 	gameObject.destroy(true);
+		// });
+	}
+
+	resetObects(old_width: number, old_height: number): void {
+		this.children.list.forEach((gameObject: Phaser.GameObjects.GameObject) => {
+			const w_ratio = this.scale.width / old_width;
+			const h_ratio = this.scale.height / old_height;
+			if (gameObject instanceof Phaser.GameObjects.Text) {
+				gameObject.x *= w_ratio;
+				gameObject.y *= h_ratio;
+				gameObject.setDisplaySize(gameObject.width * w_ratio, gameObject.height * h_ratio);
+				const oldFontSize = gameObject.font
+				gameObject.setFontSize(this._textFontRatio * this.scale.width);
+			} else if (gameObject instanceof Phaser.GameObjects.Graphics) {
+				gameObject.x *= w_ratio;
+				gameObject.y *= h_ratio;
+				gameObject.setScale(gameObject.width * w_ratio, gameObject.height * h_ratio);
+			}
+		});
+
 	}
 
 	disconnect(): void {}
