@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameMode, GameDifficulty, PowerUpType, PowerUpSelected } from '/app/src/Types/Game/Enum';
+import TextWidget from '../GameObjects/TextWidget';
 
 
 export default class SettingsScene extends BaseScene {
@@ -25,128 +26,257 @@ export default class SettingsScene extends BaseScene {
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		this.add.text(this.scale.width * 0.5, this.scale.height * 0.17, 'SETTINGS', { 
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 38}px`,
-			align: 'center',
-			color: '#fff' 
-		})
-		.setOrigin(0.5, 0.5);
+		// this.add.text(this.scale.width * 0.5, this.scale.height * 0.17, 'SETTINGS', { 
+		// 	fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 38}px`,
+		// 	align: 'center',
+		// 	color: '#fff' 
+		// })
+		// .setOrigin(0.5, 0.5);
 
-		this.add.text(this.scale.width * 0.25, this.scale.height * 0.3, `${PowerUpType.speedBall}`,
-			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
-		)
-		.setOrigin(0, 0.5);
+		// this.add.text(this.scale.width * 0.25, this.scale.height * 0.3, `${PowerUpType.speedBall}`,
+		// 	{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 		align: 'center',
+		// 		color: '#fff'}
+		// )
+		// .setOrigin(0, 0.5);
+		// this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.3, PowerUpSelected.speedBall);
+		// this.add.text(this.scale.width * 0.25, this.scale.height * 0.36, `${PowerUpType.speedPaddle}`,
+		// 	{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 		align: 'center',
+		// 		color: '#fff'}
+		// )
+		// .setOrigin(0, 0.5);
+		// this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.36, PowerUpSelected.speedPaddle);
+		// this.add.text(this.scale.width * 0.25, this.scale.height * 0.42, `${PowerUpType.slowPaddle}`,
+		// 	{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 		align: 'center',
+		// 		color: '#fff'}
+		// )
+		// .setOrigin(0, 0.5);
+		// this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.42, PowerUpSelected.slowPaddle);
+		// this.add.text(this.scale.width * 0.25, this.scale.height * 0.48, `${PowerUpType.shrinkPaddle}`,
+		// 	{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 		align: 'center',
+		// 		color: '#fff'}
+		// )
+		// .setOrigin(0, 0.5);
+		// this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.48, PowerUpSelected.shrinkPaddle);
+		// this.add.text(this.scale.width * 0.25, this.scale.height * 0.54, `${PowerUpType.stretchPaddle}`,
+		// 	{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 		align: 'center',
+		// 		color: '#fff'}
+		// )
+		// .setOrigin(0, 0.5);
+		// this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.54, PowerUpSelected.stretchPaddle);
+
+		// const startBtn = this.add
+		// 	.text(this.scale.width * 0.5, this.scale.height * 0.75, this.mode === GameMode.single ? 'PLAY!' : 'JOIN QUEUE', {
+		// 		fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 28}px`,
+		// 		align: 'center',
+		// 		color: '#d7263d'}
+		// 	)
+		// 	.setOrigin(0.5, 0.5)
+		// 	.setInteractive()
+		// 	.on('pointerover', () => startBtn.setStyle({ fill: '#f00' }))
+		// 	.on('pointerout', () => startBtn.setStyle({ fill: '#d7263d' }))
+		// 	.on('pointerup', () => this.startGame());
+
+		// if (this.mode === GameMode.single) {
+		// 	this.difficulty = GameDifficulty.medium;
+
+		// 	this.add.text(this.scale.width * 0.25, this.scale.height * 0.63, 'difficulty', {
+		// 		fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 		align: 'center',
+		// 		color: '#fff'}
+		// 	)
+		// 	.setOrigin(0, 0.5);
+
+		// 	const easyModeToggle = this.add
+		// 		.text(this.scale.width * 0.55, this.scale.height * 0.63, 'EASY', {
+		// 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
+		// 			align: 'center',
+		// 			color: '#fff'}
+		// 		)
+		// 		.setOrigin(0.5, 0.5)
+		// 		.setInteractive()
+		// 		.on('pointerup', () => {
+		// 			this.difficulty = GameDifficulty.easy;
+		// 			easyModeToggle.setStyle({ fill: '#d7263d' });
+		// 			mediumModeToggle.setStyle({ fill: '#fff' });
+		// 			hardModeToggle.setStyle({ fill: '#fff' });
+		// 		});
+
+		// 	const mediumModeToggle = this.add
+		// 		.text(this.scale.width * 0.675, this.scale.height * 0.63, 'MEDIUM', {
+		// 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
+		// 			align: 'center',
+		// 			color: '#d7263d'}
+		// 		)
+		// 		.setOrigin(0.5, 0.5)
+		// 		.setInteractive()
+		// 		.on('pointerup', () => {
+		// 			this.difficulty = GameDifficulty.medium;
+		// 			easyModeToggle.setStyle({ fill: '#fff' });
+		// 			mediumModeToggle.setStyle({ fill: '#d7263d' });
+		// 			hardModeToggle.setStyle({ fill: '#fff' });
+		// 		});
+
+		// 	const hardModeToggle = this.add
+		// 		.text(this.scale.width * 0.8, this.scale.height * 0.63, 'HARD', {
+		// 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
+		// 			align: 'center',
+		// 			color: '#fff'}
+		// 		)
+		// 		.setOrigin(0.5, 0.5)
+		// 		.setInteractive()
+		// 		.on('pointerup', () => {
+		// 			this.difficulty = GameDifficulty.hard;
+		// 			easyModeToggle.setStyle({ fill: '#fff' });
+		// 			mediumModeToggle.setStyle({ fill: '#fff' });
+		// 			hardModeToggle.setStyle({ fill: '#d7263d' });
+		// 		});
+		// }
+
+		// const goHomeButton = this.add
+		// 	.text(this.scale.width * 0.9, this.scale.height * 0.9, 'Home', {
+		// 		fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
+		// 		align: 'center',
+		// 		color: '#fff'}
+		// 	)
+		// 	.setOrigin(0.5, 0.5)
+		// 	.setInteractive()
+		// 	.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
+		// 	.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
+		// 	.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+
+
+
+		new TextWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.17,
+			'SETTINGS'
+		);
+
+		new TextWidget(
+			this,
+			this.scale.width * 0.25,
+			this.scale.height * 0.3,
+			`${PowerUpType.speedBall}`
+		);
 		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.3, PowerUpSelected.speedBall);
-		this.add.text(this.scale.width * 0.25, this.scale.height * 0.36, `${PowerUpType.speedPaddle}`,
-			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
-		)
-		.setOrigin(0, 0.5);
+		
+		new TextWidget(
+			this,
+			this.scale.width * 0.25,
+			this.scale.height * 0.36,
+			`${PowerUpType.speedPaddle}`
+		);
 		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.36, PowerUpSelected.speedPaddle);
-		this.add.text(this.scale.width * 0.25, this.scale.height * 0.42, `${PowerUpType.slowPaddle}`,
-			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
-		)
-		.setOrigin(0, 0.5);
+		
+		new TextWidget(
+			this,
+			this.scale.width * 0.25,
+			this.scale.height * 0.42,
+			`${PowerUpType.slowPaddle}`
+		);
 		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.42, PowerUpSelected.slowPaddle);
-		this.add.text(this.scale.width * 0.25, this.scale.height * 0.48, `${PowerUpType.shrinkPaddle}`,
-			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
+		
+		new TextWidget(this,
+			this.scale.width * 0.25,
+			this.scale.height * 0.48,
+			`${PowerUpType.shrinkPaddle}`
 		)
-		.setOrigin(0, 0.5);
 		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.48, PowerUpSelected.shrinkPaddle);
-		this.add.text(this.scale.width * 0.25, this.scale.height * 0.54, `${PowerUpType.stretchPaddle}`,
-			{ fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
+		
+		new TextWidget(this,
+			this.scale.width * 0.25,
+			this.scale.height * 0.54,
+			`${PowerUpType.stretchPaddle}`
 		)
-		.setOrigin(0, 0.5);
 		this.createTogglePowerUp(this.scale.width * 0.25, this.scale.height * 0.54, PowerUpSelected.stretchPaddle);
 
-		const startBtn = this.add
-			.text(this.scale.width * 0.5, this.scale.height * 0.75, this.mode === GameMode.single ? 'PLAY!' : 'JOIN QUEUE', {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 28}px`,
-				align: 'center',
-				color: '#d7263d'}
-			)
-			.setOrigin(0.5, 0.5)
-			.setInteractive()
-			.on('pointerover', () => startBtn.setStyle({ fill: '#f00' }))
-			.on('pointerout', () => startBtn.setStyle({ fill: '#d7263d' }))
-			.on('pointerup', () => this.startGame());
+		const startBtn = new TextWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.75,
+			this.mode === GameMode.single ? 'PLAY!' : 'JOIN QUEUE',
+			0,
+			'#d7263d'
+		)
+		.setInteractive()
+		.on('pointerover', () => startBtn.setStyle({ fill: '#f00' }))
+		.on('pointerout', () => startBtn.setStyle({ fill: '#d7263d' }))
+		.on('pointerup', () => this.startGame());
 
 		if (this.mode === GameMode.single) {
 			this.difficulty = GameDifficulty.medium;
 
-			this.add.text(this.scale.width * 0.25, this.scale.height * 0.63, 'difficulty', {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
+			new TextWidget(
+				this,
+				this.scale.width * 0.25,
+				this.scale.height * 0.63,
+				'difficulty'
 			)
-			.setOrigin(0, 0.5);
 
-			const easyModeToggle = this.add
-				.text(this.scale.width * 0.55, this.scale.height * 0.63, 'EASY', {
-					fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
-					align: 'center',
-					color: '#fff'}
-				)
-				.setOrigin(0.5, 0.5)
-				.setInteractive()
-				.on('pointerup', () => {
-					this.difficulty = GameDifficulty.easy;
-					easyModeToggle.setStyle({ fill: '#d7263d' });
-					mediumModeToggle.setStyle({ fill: '#fff' });
-					hardModeToggle.setStyle({ fill: '#fff' });
-				});
+			const easyModeToggle = new TextWidget(
+				this,
+				this.scale.width * 0.55,
+				this.scale.height * 0.63,
+				'EASY',
+				8
+			)
+			.setInteractive()
+			.on('pointerup', () => {
+				this.difficulty = GameDifficulty.easy;
+				easyModeToggle.setStyle({ fill: '#d7263d' });
+				mediumModeToggle.setStyle({ fill: '#fff' });
+				hardModeToggle.setStyle({ fill: '#fff' });
+			});
 
-			const mediumModeToggle = this.add
-				.text(this.scale.width * 0.675, this.scale.height * 0.63, 'MEDIUM', {
-					fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
-					align: 'center',
-					color: '#d7263d'}
-				)
-				.setOrigin(0.5, 0.5)
-				.setInteractive()
-				.on('pointerup', () => {
-					this.difficulty = GameDifficulty.medium;
-					easyModeToggle.setStyle({ fill: '#fff' });
-					mediumModeToggle.setStyle({ fill: '#d7263d' });
-					hardModeToggle.setStyle({ fill: '#fff' });
-				});
+			const mediumModeToggle = new TextWidget(
+				this,
+				this.scale.width * 0.675,
+				this.scale.height * 0.63,
+				'MEDIUM',
+				8,
+				'#d7263d'
+			)
+			.setInteractive()
+			.on('pointerup', () => {
+				this.difficulty = GameDifficulty.medium;
+				easyModeToggle.setStyle({ fill: '#fff' });
+				mediumModeToggle.setStyle({ fill: '#d7263d' });
+				hardModeToggle.setStyle({ fill: '#fff' });
+			});
 
-			const hardModeToggle = this.add
-				.text(this.scale.width * 0.8, this.scale.height * 0.63, 'HARD', {
-					fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 8}px`,
-					align: 'center',
-					color: '#fff'}
-				)
-				.setOrigin(0.5, 0.5)
-				.setInteractive()
-				.on('pointerup', () => {
-					this.difficulty = GameDifficulty.hard;
-					easyModeToggle.setStyle({ fill: '#fff' });
-					mediumModeToggle.setStyle({ fill: '#fff' });
-					hardModeToggle.setStyle({ fill: '#d7263d' });
-				});
+			const hardModeToggle = new TextWidget(
+				this,
+				this.scale.width * 0.8,
+				this.scale.height * 0.63,
+				'HARD',
+				8
+			)
+			.setInteractive()
+			.on('pointerup', () => {
+				this.difficulty = GameDifficulty.hard;
+				easyModeToggle.setStyle({ fill: '#fff' });
+				mediumModeToggle.setStyle({ fill: '#fff' });
+				hardModeToggle.setStyle({ fill: '#d7263d' });
+			});
 		}
 
-		const goHomeButton = this.add
-			.text(this.scale.width * 0.9, this.scale.height * 0.9, 'Home', {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
-			)
-			.setOrigin(0.5, 0.5)
-			.setInteractive()
-			.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
-			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
-			.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+		const goHomeButton = new TextWidget(
+			this,
+			this.scale.width * 0.9,
+			this.scale.height * 0.9,
+			'Home'
+		)
+		.setInteractive()
+		.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
+		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
+		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+
 	}
 
 	// createTogglePowerUp(x: number, y: number, value: PowerUpSelected): void {

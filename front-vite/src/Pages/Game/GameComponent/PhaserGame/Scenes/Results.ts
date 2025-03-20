@@ -2,6 +2,7 @@ import { Socket } from 'socket.io-client';
 
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameData } from '/app/src/Types/Game/Interfaces';
+import TextWidget from '../GameObjects/TextWidget';
 
 
 export default class ResultsScene extends BaseScene {
@@ -33,32 +34,28 @@ export default class ResultsScene extends BaseScene {
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.3, `${this._winner} won!`, {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 30}px`,
-			align: 'center',
-			color: '#0f0',
-			wordWrap: { 
-				width: this.scale.width * 0.5,
-			},
-		})
-		.setOrigin(0.5, 0.5);
+		new TextWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.3,
+			`${this._winner} won!`,
+			30
+		);
 
-		this.add
-			.text(this.scale.width * 0.5, this.scale.height * 0.1, `${this._score.p1} : ${this._score.p2}`, {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 40}px`,
-				align: 'center',
-				color: '#0f0',
-			})
-			.setOrigin(0.5, 0.5);
+		new TextWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.1,
+			`${this._score.p1} : ${this._score.p2}`,
+			40
+		);
 	
-		const playAgainBtn = this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.4, 'Play again', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
+		const playAgainBtn = new TextWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.4,
+			'Play again'
+		)
 		.setInteractive()
 		.setName('playAgainBtn')
 		.on('pointerover', () => playAgainBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
@@ -70,17 +67,16 @@ export default class ResultsScene extends BaseScene {
 			this._waitingPopup.setVisible(true);
 		});
 
-		const goHomeButton = this.add
-		.text(this.scale.width * 0.9, this.scale.height * 0.9, 'Home', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
+		const goHomeButton = new TextWidget(
+			this,
+			this.scale.width * 0.9,
+			this.scale.height * 0.9,
+			'Home'
+		)
 		.setInteractive()
-		.on('pointerover', () => goHomeButton.setStyle({ fill: '#d7263d' })) 	// Change color on hover
-		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 	// Change color back when not hovered
-		.on('pointerup', () => this.switchScene('MainMenu')); 				// Start the main game
+		.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
+		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
+		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 
 		this._waitingPopup = this.createWaitingPopup();
 		this._waitingPopup.setVisible(false);
@@ -147,23 +143,14 @@ export default class ResultsScene extends BaseScene {
 			.setInteractive()
 			.setOrigin(0.5, 0.5);
 
-		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, 'waiting for confirmation', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5);
+		const textTitle = new TextWidget(
+			this,
+			background.width * 0.5,
+			background.height * 0.1,
+			'waiting for confirmation'
+		);
 
 		waitingPopup.add([background, textTitle]);
-
-		this.tweens.add({
-			targets: waitingPopup,
-			scaleX: 1,
-			scaleY: 1,
-			alpha: 1,
-			duration: 500,
-			ease: 'Back.Out',
-		});	
 
 		return waitingPopup;
 	}
@@ -172,29 +159,31 @@ export default class ResultsScene extends BaseScene {
 		const rematchPopup = this.add.container(this.scale.width / 4, this.scale.height / 4);
 
 		const background = this.add.rectangle(this.scale.width / 4,
-				this.scale.height / 4,
-				this.scale.width / 2,
-				this.scale.height / 2,
-				0xfff,
-				1)
-			.setStrokeStyle(2, 0xffffff)
-			.setInteractive()
-			.setOrigin(0.5, 0.5);
-
-		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, '/', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setName('textTitle')
+			this.scale.height / 4,
+			this.scale.width / 2,
+			this.scale.height / 2,
+			0xfff,
+			1)
+		.setStrokeStyle(2, 0xffffff)
+		.setInteractive()
 		.setOrigin(0.5, 0.5);
 
-		const yesButton = this.add.text(background.width * 0.2, background.height * 0.75, 'yes', {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width) - 10}px`,
-				align: 'left',
-				color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
+		const textTitle = new TextWidget(
+			this,
+			background.width * 0.5,
+			background.height * 0.1,
+			'/'
+		);
+
+		const yesButton = new TextWidget(
+			this,
+			background.width * 0.2,
+			background.height * 0.75,
+			'yes',
+			-10,
+			'#fff',
+			'left'
+		)
 		.setInteractive()
 		.on('pointerdown', () => {
 			
@@ -202,12 +191,15 @@ export default class ResultsScene extends BaseScene {
 			this._playAgainPopup.setVisible(false);
 		});
 
-		const noButton = this.add.text(background.width * 0.8, background.height * 0.75, 'no', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width) - 10}px`,
-			align: 'right',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
+		const noButton = new TextWidget(
+			this,
+			background.width * 0.8,
+			background.height * 0.75,
+			'no',
+			-10,
+			'#fff',
+			'right'
+		)
 		.setInteractive()
 		.on('pointerdown', () => {
 
@@ -218,15 +210,6 @@ export default class ResultsScene extends BaseScene {
 
 		rematchPopup.add([background, textTitle, yesButton, noButton]);
 
-		this.tweens.add({
-			targets: rematchPopup,
-			scaleX: 1,
-			scaleY: 1,
-			alpha: 1,
-			duration: 500,
-			ease: 'Back.Out',
-		});	
-
 		return rematchPopup;
 	}
 
@@ -235,42 +218,33 @@ export default class ResultsScene extends BaseScene {
 		const refusePopup = this.add.container(this.scale.width / 4, this.scale.height / 4);
 
 		const background = this.add.rectangle(this.scale.width / 4,
-				this.scale.height / 4,
-				this.scale.width / 2,
-				this.scale.height / 2,
-				0xfff,
-				1)
-			.setStrokeStyle(2, 0xffffff)
-			.setInteractive()
-			.setOrigin(0.5, 0.5);
-
-		const textTitle = this.add.text(background.width * 0.5, background.height * 0.1, '/', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setName('textTitle')
+			this.scale.height / 4,
+			this.scale.width / 2,
+			this.scale.height / 2,
+			0xfff,
+			1)
+		.setStrokeStyle(2, 0xffffff)
+		.setInteractive()
 		.setOrigin(0.5, 0.5);
+
+		const textTitle = new TextWidget(
+			this,
+			background.width * 0.5,
+			background.height * 0.1,
+			'/'
+		)
+		.setName('textTitle')
 	
-		const closeButton = this.add.text(background.width * 0.5, background.height * 0.75, 'close', {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width) - 10}px`,
-				align: 'left',
-				color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
+		const closeButton = new TextWidget(
+			this,
+			background.width * 0.5,
+			background.height * 0.75,
+			'close',
+			-10)
 		.setInteractive()
 		.on('pointerdown', () => refusePopup.setVisible(false));
 
 		refusePopup.add([background, textTitle, closeButton]);
-
-		this.tweens.add({
-			targets: refusePopup,
-			scaleX: 1,
-			scaleY: 1,
-			alpha: 1,
-			duration: 500,
-			ease: 'Back.Out',
-		});	
 
 		return refusePopup;
 	}

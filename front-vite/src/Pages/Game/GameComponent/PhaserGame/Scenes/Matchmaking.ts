@@ -2,6 +2,7 @@ import { io, Socket } from 'socket.io-client';
 
 import { GameData } from '/app/src/Types/Game/Interfaces';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import TextWidget from '../GameObjects/TextWidget';
 
 
 export default class MatchmakingScene extends BaseScene {
@@ -24,24 +25,24 @@ export default class MatchmakingScene extends BaseScene {
   buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		this.add.text(this.scale.width * 0.5, this.scale.height * 0.3, 'Waiting for playerz ...', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 10}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5);
+		new TextWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.3,
+			'Waiting for playerz ...',
+			10
+		)
 
-		const goHomeButton = this.add
-			.text(this.scale.width * 0.9, this.scale.height * 0.9, 'Home', {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff',
-			})
-			.setOrigin(0.5, 0.5)
-			.setInteractive()
-			.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) // Change color on hover
-			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
-			.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+		const goHomeButton = new TextWidget(
+			this,
+			this.scale.width * 0.9,
+			this.scale.height * 0.9,
+			'Home'
+		)
+		.setInteractive()
+		.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
+		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
+		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 	}
 
 	setupSocket(): void {

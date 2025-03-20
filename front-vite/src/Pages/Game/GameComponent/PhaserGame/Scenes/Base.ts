@@ -120,7 +120,7 @@ export default class BaseScene extends Phaser.Scene {
 				gameObject.x *= w_ratio;
 				gameObject.y *= h_ratio;
 				gameObject.setDisplaySize(gameObject.width * w_ratio, gameObject.height * h_ratio);
-				const oldFontSize = gameObject.font
+				// const oldFontSize = gameObject.font
 				gameObject.setFontSize(this._textFontRatio * this.scale.width);
 			} else if (gameObject instanceof Phaser.GameObjects.Graphics) {
 				gameObject.x *= w_ratio;

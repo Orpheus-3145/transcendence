@@ -1,4 +1,4 @@
-import TextButton from '../GameObjects/Text';
+import TextWidget from '../GameObjects/TextWidget';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameMode } from '/app/src/Types/Game/Enum';
 
@@ -35,17 +35,13 @@ export default class MainMenuScene extends BaseScene {
 		// 	this.switchScene('Settings', { mode: GameMode.single }),
 		// );
 
-		const singleGameBtn = new TextButton(
+		const singleGameBtn = new TextWidget(
 			this,
-			this.scale.width * 0.5, this.scale.height * 0.2,
+			this.scale.width * 0.5,
+			this.scale.height * 0.2,
 			'Play [single player]',
-			{
-				fontSize: 0,
-				align: 'center',
-				color: '#fff',
-			}
 		)
-		.setOrigin(0.5, 0.5)
+		// .setOrigin(0.5, 0.5)
 		.setInteractive()
 		.on('pointerover', () => singleGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => singleGameBtn.setStyle({ fill: '#fff' }))
@@ -68,17 +64,13 @@ export default class MainMenuScene extends BaseScene {
 		// 	this.switchScene('Settings', { mode: GameMode.multi }),
 		// );
 
-		const multiGameBtn = new TextButton(
+		const multiGameBtn = new TextWidget(
 			this,
-			this.scale.width * 0.5, this.scale.height * 0.3,
-			'Play [multi player]',
-			{
-				fontSize: 0,
-				align: 'center',
-				color: '#fff',
-			}
+			this.scale.width * 0.5,
+			this.scale.height * 0.3,
+			'Play [multi player]'
 		)
-		.setOrigin(0.5, 0.5)
+		// .setOrigin(0.5, 0.5)
 		.setInteractive()
 		.on('pointerover', () => multiGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => multiGameBtn.setStyle({ fill: '#fff' }))
@@ -98,17 +90,13 @@ export default class MainMenuScene extends BaseScene {
 		// .on('pointerout', () => changeBkBtn.setStyle({ fill: '#fff' }))
 		// .on("pointerdown", () => this.openFilePicker());
 
-		const changeBkBtn = new TextButton(
+		const changeBkBtn = new TextWidget(
 			this,
-			this.scale.width * 0.5, this.scale.height * 0.4,
+			this.scale.width * 0.5,
+			this.scale.height * 0.4,
 			'Change background',
-			{
-				fontSize: 0,
-				align: 'center',
-				color: '#fff',
-			}
 		)
-		.setOrigin(0.5, 0.5)
+		// .setOrigin(0.5, 0.5)
 		.setInteractive()
 		.on('pointerover', () => changeBkBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => changeBkBtn.setStyle({ fill: '#fff' }))
