@@ -1,3 +1,4 @@
+import ToggleWidget from "../GameObjects/Slider";
 import TextWidget from "../GameObjects/TextWidget";
 
 export default class BaseScene extends Phaser.Scene {
@@ -8,6 +9,7 @@ export default class BaseScene extends Phaser.Scene {
 	protected _backgroundColor: number = 0x000000; // Black
 	// protected _lines: Phaser.GameObjects.Rectangle[] = [];
 	protected _keyEsc: Phaser.Input.Keyboard.Key | null = null;
+	protected _widgets: Array<TextWidget | ToggleWidget> = [];
 	// protected _lines: Phaser.GameObjects.Group | null = null;
 	
 	// ratio between standard size of the standard font size and the game window 
@@ -115,25 +117,9 @@ export default class BaseScene extends Phaser.Scene {
 	}
 
 	resetObects(old_width: number, old_height: number): void {
-		this.children.list.forEach((gameObject: Phaser.GameObjects.GameObject) => {
-			if (gameObject instanceof TextWidget)
-				gameObject.resize(old_width, old_height);
-				// {
-			// const w_ratio = this.scale.width / old_width;
-			// const h_ratio = this.scale.height / old_height;
-			// 	gameObject.x *= w_ratio;
-			// 	gameObject.y *= h_ratio;
-			// 	gameObject.setDisplaySize(gameObject.width * w_ratio, gameObject.height * h_ratio);
-			// 	// const oldFontSize = gameObject.font
-			// 	gameObject.setFontSize(this._textFontRatio * this.scale.width);
-			// } else if (gameObject instanceof Phaser.GameObjects.Graphics) {
-			// 	gameObject.x *= w_ratio;
-			// 	gameObject.y *= h_ratio;
-			// 	gameObject.setScale(gameObject.width * w_ratio, gameObject.height * h_ratio);
-			// }
-		}
-	);
-
+		
+		for (const widget of this._widgets)
+			widget.resize(old_width, old_height);
 	}
 
 	disconnect(): void {}

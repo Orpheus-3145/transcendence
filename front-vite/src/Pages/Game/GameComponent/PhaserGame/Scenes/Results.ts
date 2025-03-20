@@ -34,21 +34,24 @@ export default class ResultsScene extends BaseScene {
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		new TextWidget(
-			this,
-			this.scale.width * 0.5,
-			this.scale.height * 0.3,
-			`${this._winner} won!`,
-			30
-		);
+		this._widgets.push(
+			new TextWidget(
+				this,
+				this.scale.width * 0.5,
+				this.scale.height * 0.3,
+				`${this._winner} won!`,
+				30,
+				'#0f0'
+		));
 
-		new TextWidget(
-			this,
-			this.scale.width * 0.5,
-			this.scale.height * 0.1,
-			`${this._score.p1} : ${this._score.p2}`,
-			40
-		);
+		this._widgets.push(
+			new TextWidget(
+				this,
+				this.scale.width * 0.5,
+				this.scale.height * 0.1,
+				`${this._score.p1} : ${this._score.p2}`,
+				40
+		));
 	
 		const playAgainBtn = new TextWidget(
 			this,
@@ -66,7 +69,8 @@ export default class ResultsScene extends BaseScene {
 			playAgainBtn.visible = false;
 			this._waitingPopup.setVisible(true);
 		});
-
+		this._widgets.push(playAgainBtn);
+		
 		const goHomeButton = new TextWidget(
 			this,
 			this.scale.width * 0.9,
@@ -77,6 +81,7 @@ export default class ResultsScene extends BaseScene {
 		.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
 		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+		this._widgets.push(goHomeButton);
 
 		this._waitingPopup = this.createWaitingPopup();
 		this._waitingPopup.setVisible(false);

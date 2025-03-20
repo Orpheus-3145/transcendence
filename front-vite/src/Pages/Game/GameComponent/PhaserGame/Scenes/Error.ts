@@ -17,13 +17,14 @@ export default class ErrorScene extends BaseScene {
   buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		new TextWidget(
-			this,
-			this.scale.width * 0.5,
-			this.scale.height * 0.4,
-			this._errorTrace,
-			18,
-			)
+		this._widgets.push(
+			new TextWidget(
+				this,
+				this.scale.width * 0.5,
+				this.scale.height * 0.4,
+				this._errorTrace,
+				18,
+		));
 
 		// button for going home
 		const goHomeButton = new TextWidget(
@@ -36,5 +37,6 @@ export default class ErrorScene extends BaseScene {
 		.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
 		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+		this._widgets.push(goHomeButton);
 	}
 }

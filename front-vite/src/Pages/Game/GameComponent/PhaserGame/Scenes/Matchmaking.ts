@@ -25,13 +25,14 @@ export default class MatchmakingScene extends BaseScene {
   buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		new TextWidget(
-			this,
-			this.scale.width * 0.5,
-			this.scale.height * 0.3,
-			'Waiting for playerz ...',
-			10
-		)
+		this._widgets.push(
+			new TextWidget(
+				this,
+				this.scale.width * 0.5,
+				this.scale.height * 0.3,
+				'Waiting for playerz ...',
+				10
+		));
 
 		const goHomeButton = new TextWidget(
 			this,
@@ -43,6 +44,7 @@ export default class MatchmakingScene extends BaseScene {
 		.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
 		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+		this._widgets.push(goHomeButton);
 	}
 
 	setupSocket(): void {
