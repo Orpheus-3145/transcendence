@@ -48,6 +48,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const theme = useTheme();
 	const { user } = useUser();
 	const [banned, setbanned] = useState<Map<string, User>>(new Map());
+	const [passwordInput, setPasswordInput] = useState('');
 
 	const handleAddFriend = async () => 
 	{
@@ -394,19 +395,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					<Stack direction="row" spacing={2}>
 					<Button variant={settings?.type === ChannelType.public ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.public, null)}>Public</Button>
 					<Button variant={settings?.type === ChannelType.private ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.private, null)}>Private</Button>
-					<Button variant={settings?.type === ChannelType.protected ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.protected, settings.password)}>Password Protected</Button>
+					<Button variant={settings?.type === ChannelType.protected ? 'contained' : 'outlined'} onClick={() => setSettings({ ...settings, type: ChannelType.protected, password: ''})}>Password Protected</Button>
 					</Stack>
 					
 
 					{/* Password field for password protected */}
 					{settings?.type === ChannelType.protected && (
+					<>
 					<TextField
 						label="Password"
-						value={settings.password || ''}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangePrivacy(ChannelType.protected, e.target.value)}
+						value={passwordInput}
+						// onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangePrivacy(ChannelType.protected, e.target.value)}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPasswordInput(e.target.value)}
 						fullWidth
 						sx={{ mt: 2 }}
 					/>
+					<Button 
+					    variant="contained" 
+						sx= {{ mt: 1 }} 
+					    onClick={() => passwordInput && handleChangePrivacy(ChannelType.protected, passwordInput)}
+					>
+					    Set Password
+					</Button>
+					</>
 					)}
 				</>
 				)}

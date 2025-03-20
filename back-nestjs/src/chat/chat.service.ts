@@ -337,7 +337,7 @@ export class ChatService {
 		}
 		await this.channelRepository.save(channelToChange);
 
-		this.logger.log(`Changing privacy of channel id: ${channelToChange.channel_id}, new policy: ${newChannelPolicy}`);
+		this.logger.log(`Changing privacy of channel id: ${channelToChange.channel_id}, new policy: ${newChannelPolicy}, pass: ${password}`);
 	}
 
 	async changeOwnershipChannel(newOwner: number | User, channel: number | Channel): Promise<void> {

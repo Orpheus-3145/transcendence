@@ -198,7 +198,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { channel_type, channel_id, password } = data;
 		const channelToUpdate: Channel = await this.chatService.getChannel(channel_id);
 		await this.chatService.changePrivacy(channelToUpdate, channel_type, password);
-
+		
 		this.server.emit('privacyChanged', new ChatRoomDTO(channelToUpdate));
 	}
 
