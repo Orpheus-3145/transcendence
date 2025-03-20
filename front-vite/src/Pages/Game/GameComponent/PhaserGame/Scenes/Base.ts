@@ -1,3 +1,5 @@
+import TextWidget from "../GameObjects/TextWidget";
+
 export default class BaseScene extends Phaser.Scene {
 	
 	// background image
@@ -114,20 +116,23 @@ export default class BaseScene extends Phaser.Scene {
 
 	resetObects(old_width: number, old_height: number): void {
 		this.children.list.forEach((gameObject: Phaser.GameObjects.GameObject) => {
-			const w_ratio = this.scale.width / old_width;
-			const h_ratio = this.scale.height / old_height;
-			if (gameObject instanceof Phaser.GameObjects.Text) {
-				gameObject.x *= w_ratio;
-				gameObject.y *= h_ratio;
-				gameObject.setDisplaySize(gameObject.width * w_ratio, gameObject.height * h_ratio);
-				// const oldFontSize = gameObject.font
-				gameObject.setFontSize(this._textFontRatio * this.scale.width);
-			} else if (gameObject instanceof Phaser.GameObjects.Graphics) {
-				gameObject.x *= w_ratio;
-				gameObject.y *= h_ratio;
-				gameObject.setScale(gameObject.width * w_ratio, gameObject.height * h_ratio);
-			}
-		});
+			if (gameObject instanceof TextWidget)
+				gameObject.resize(old_width, old_height);
+				// {
+			// const w_ratio = this.scale.width / old_width;
+			// const h_ratio = this.scale.height / old_height;
+			// 	gameObject.x *= w_ratio;
+			// 	gameObject.y *= h_ratio;
+			// 	gameObject.setDisplaySize(gameObject.width * w_ratio, gameObject.height * h_ratio);
+			// 	// const oldFontSize = gameObject.font
+			// 	gameObject.setFontSize(this._textFontRatio * this.scale.width);
+			// } else if (gameObject instanceof Phaser.GameObjects.Graphics) {
+			// 	gameObject.x *= w_ratio;
+			// 	gameObject.y *= h_ratio;
+			// 	gameObject.setScale(gameObject.width * w_ratio, gameObject.height * h_ratio);
+			// }
+		}
+	);
 
 	}
 
