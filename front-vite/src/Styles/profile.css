@@ -1,0 +1,110 @@
+.base {
+	justify-content: space-between;
+	margin: 1em;
+	max-width: 1200px;
+	max-height: 300px;
+}
+
+.imageBase {
+	position: relative;
+	top: 40px;
+	left: 50px;
+}
+
+.imageSize {
+	width: 200px !important;
+	height: 200px !important;
+}
+
+.pfpButton {
+    left: 60px;
+    top: -10px;
+    width: 60px;
+    height: 60px;
+    font-size: 40px !important;
+}
+
+.pfpButton:hover svg {
+    fill: #09af07;
+}
+
+.userStatus {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: relative;
+    top: -60px;
+    left: 190px;
+}
+
+.userStatus.offline {
+    background-color: #df310e;
+}
+
+.userStatus.online {
+    background-color: #0fc00c;
+}
+
+.userStatus.inGame {
+    background-color: #0dddc4;
+}
+
+.nicknameBase {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+	top: -210px;	
+}
+
+.nicknameStyle {
+	font-family: Georgia, serif !important;
+	font-weight: bold;
+	font-style: italic;
+	line-height: 5rem;
+	height: 5rem;
+	overflow: hidden;
+	white-space: nowrap;
+	transition: font-size 0.3s ease;
+}
+
+.nicknameStyle.small {
+	font-size: 4rem;
+}
+.nicknameStyle.medium {
+	font-size: 3rem;
+}
+.nicknameStyle.big {
+	font-size: 2rem;
+}
+.nicknameStyle.large {
+	font-size: 1rem;
+}
+
+.editNickname {
+	top: -190px;
+	left: 535px;
+	width: 50px;
+}
+
+.editNickname:hover svg {
+	color: #09af07;
+}
+
+.otherInfo {
+	width: 100%;
+	height: 10px;
+	position: relative;
+	left: 860px;
+}
+
+.otherInfo.normal {
+	top: -290px;
+}
+.otherInfo.showInput {
+	top: -330px;
+}
+.otherInfo.showMessage {
+	top: -357px;
+}

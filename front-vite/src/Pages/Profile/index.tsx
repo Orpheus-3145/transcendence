@@ -27,6 +27,7 @@ import { useUser,
 import { socket } from '../../Providers/NotificationContext/Notification';
 import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
 import { UserStatus } from '../../Types/User/Enum';
+import '../../Styles/profile.css'
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
@@ -502,17 +503,13 @@ const ProfilePage: React.FC = () => {
 	}
 
 	let userInfo = () => 
-	{	if (userProfile)
+	{	
+		if (userProfile)
 		{
 			return (
 				<Stack
-					justifyContent={'space-between'}
-					margin={'1em'}
+					className="base"
 					bgcolor={theme.palette.primary.dark}
-					sx={{
-						maxWidth: '1200px',
-						maxHeight: '300px',
-					}}
 				>
 					{GetProfilePic()}
 					{SetChangePfpButton()}
@@ -529,19 +526,9 @@ const ProfilePage: React.FC = () => {
 	let GetProfilePic = () => 
 	{
 		return (
-			<Stack
-				sx={{
-					position: 'relative',
-					top: '40px',
-					left: '50px',
-				}}
-			>
+			<Stack className="imageBase">
 				<Avatar
-					sx={{
-						width: '200px',
-						height: '200px',
-						bgcolor: theme.palette.primary.light,
-					}}
+					className="imageSize"
 					src={profileImage}
 				>
 				</Avatar>
@@ -569,16 +556,7 @@ const ProfilePage: React.FC = () => {
 				<IconButton 
 					variant="contained" 
 					component="label"
-					sx={{
-						left: '60px',
-						top: '-10px',
-						width: '60px',
-						height: '60px',
-						fontSize: '40px',
-						'&:hover': {
-							color: '#09af07',
-						},
-					}}				
+					className="pfpButton"				
 				>
 					<AddToPhotosIcon fontSize="inherit" />
 					<input type="file" hidden accept="image/*" onChange={handleFileChange}/>
@@ -589,65 +567,37 @@ const ProfilePage: React.FC = () => {
 
 	let GetUserStatus = () =>
 	{		
-		let color;
+		let status;
 		if (whichStatus == UserStatus.Offline)
-			color = '#df310e';
+			status = 'offline';
 		else if (whichStatus ==  UserStatus.Online)
-			color = '#0fc00c';
+			status = 'online';
 		else if (whichStatus ==  UserStatus.InGame)
-			color = '#0dddc4';
+			status = 'inGame';
 		
 		return (
 			<Stack>
-				<Box
-					sx={{
-						width: 40,
-						height: 40,
-						backgroundColor: color,
-						borderRadius: '50%',
-						position: 'relative',
-						top: '-60px',
-						left: '190px',
-					}}
-				>
-				</Box>
+				<Box className={`userStatus ${status}`} />
 			</Stack>
 		);
 	}
 
 	let putNickName = () => 
 	{
-		let size = '4rem';
+		let size = 'small';
 		if (userProfile.nameNick.length > 10)
-			size = '3rem';
+			size = 'medium';
 		if (userProfile.nameNick.length > 18)
-			size = '2rem';
+			size = 'big';
 		if (userProfile.nameNick.length > 25)
-			size = '1rem';
+			size = 'large';
 		
 		return (
 			<Stack
-				sx={{
-					width: '100%',
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center',
-					position: 'relative',
-					top: '-210px',
-				}}
+				className="nicknameBase"
 			>
 				<Typography variant={'h2'}
-					sx={{
-						fontFamily: 'Georgia, serif',
-						fontWeight: 'bold',
-						fontStyle: 'italic',
-						fontSize: size,
-						lineHeight: '5rem',
-						height: '5rem',
-						overflow: 'hidden',
-						whiteSpace: 'nowrap',
-						transition: 'font-size 0.3s ease',
-					}}    
+					className={`nicknameStyle ${size}`}  
 				>
 					{userProfile.nameNick}
 				</Typography>
@@ -698,13 +648,8 @@ const ProfilePage: React.FC = () => {
 						onClick={CheckChange}
 						sx={{
 								fontSize: '30px',
-								top: '-190px',
-								left: '535px',
-								width: '50px',
-								'&:hover': {
-									color: '#09af07',
-								},
 						}}
+						className="editNickname"
 					>
 						<EditIcon fontSize="inherit"/>
 					</IconButton>
@@ -742,12 +687,12 @@ const ProfilePage: React.FC = () => {
 
 	let OtherInfo = () =>
 	{
-		let top = '-290px';
+		let top = 'normal';
 		if (showInput)
 		{
-			top = '-330px';
+			top = 'showInput';
 			if (showMessage)
-				top = '-357px';
+				top = 'showMessage';
 		}
 
 		return (
@@ -755,13 +700,7 @@ const ProfilePage: React.FC = () => {
 				direction={'column'}
 				justifyContent={'center'}
 				padding={'1em'}
-				sx={{
-					width: '100%',
-					height: '10px',
-					position: 'relative',
-					top: top,
-					left: '860px',
-				}}
+				className={`otherInfo ${top}`}
 			>
 				<Typography>
 					<b>Intra name: </b>
@@ -783,8 +722,8 @@ const ProfilePage: React.FC = () => {
 		return (
 			<Container sx={{ padding: theme.spacing(3) }}>
 				<Stack
-						width={'100%'}
-						overflow={'hidden'}
+					width={'100%'}
+					overflow={'hidden'}
 				>
 					{userInfo()}
 					<Stack
