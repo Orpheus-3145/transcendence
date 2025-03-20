@@ -164,13 +164,17 @@ export const ChatProvider: React.FC = ({ children }) => {
 
 useEffect(() => {
 		const handleUserKickedChannel = (data) => {
+			console.log("DATA RECEIVED");
+			console.log(JSON.stringify(data));
 			setChatProps((prevState: ChatProps) => 
 			{
 				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
 				if (!channel)
 					return (prevState);
 	
-				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== user.id);
+				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
+				console.log("UPDATED USERS");
+				console.log(JSON.stringify(updatedUsers));
 				if (selectedChannel != null && selectedChannel.id === channel.id)
 				{
 					setSelectedChannel(null);
