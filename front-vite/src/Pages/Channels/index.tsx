@@ -65,7 +65,7 @@ export const joinRoom = (roomId) => {
 
 //////////////////////////////////////////////////////////////////////
 
-let joinedRooms: number[] = [];
+export let joinedRooms: number[] = [];
 
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
@@ -75,23 +75,30 @@ const ChannelsPage: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const [channelName, setChannelName] = useState('');
-	const [isAddingChannel, setIsAddingChannel] = useState(false);
+	// const [channelName, setChannelName] = useState('');
+	// const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
 	const [isPasswordModal, setIsPasswordModal] = useState(false);
 	const [enteredChannelPass, setEnteredChannelPass] = useState('');
 	const [users, setUsers] = useState<UserProps>([]);
 	const [newMessage, setNewMessage] = useState('');
-	const {chatProps, setChatProps} = useChatContext();
+	// const {chatProps, setChatProps} = useChatContext();
 	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([]);
 	const [directMessages, setDirectMessages] = useState<ChatRoom[]>([]);
 	const [joinedChannels, setJoinedChannels] = useState<ChatRoom[]>([]);
-	const [selectedChannel, setSelectedChannel] = useState<ChatRoom | null>(null);
+	// const [selectedChannel, setSelectedChannel] = useState<ChatRoom | null>(null);
 	const [selectedAvailableChannel, setSelectedAvailableChannel] = useState<ChatRoom | null>(null);
 	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
 	const [userMessage, setUserMessage] = useState<Map<string, User>>(new Map());
 	const [waiting, setWaiting] = useState<Boolean>(false);
+
+	const {
+		chatProps, setChatProps,
+		channelName, setChannelName,
+		isAddingChannel, setIsAddingChannel,
+		selectedChannel, setSelectedChannel,
+	} = useChatContext();
 
 	useEffect(() => {
 		const fetchUsers = async () => {
@@ -186,304 +193,6 @@ const ChannelsPage: React.FC = () => {
 		// }
 	}, [chatProps.chatRooms, users]);
 
-
-	useEffect(() => {
-		const handleUserKickedChannel = (data) => {
-			setChatProps((prevState: ChatProps) => 
-			{
-				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
-				if (!channel)
-					return (prevState);
-	
-				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== user.id);
-				if (selectedChannel != null && selectedChannel.id === channel.id)
-				{
-					setSelectedChannel(null);
-				}
-				return {
-					...prevState,
-					chatRooms: prevState.chatRooms.map((room) =>
-						room.id === channel.id ? { ...room, settings: { ...room.settings, users: updatedUsers } } : room
-					),
-				};
-			});
-			
-		};
-	
-		socket.on("userKicked", handleUserKickedChannel);
-		return () => {
-			socket.off("userKicked", handleUserKickedChannel);
-		};
-	}, []);
-	
-
-	useEffect(() => 
-	{
-		const handleUserBannedChannel = (data) => 
-		{
-			setChatProps((prevState: ChatProps) => {
-				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
-				if (!channel)
-					return (prevState);
-				
-				const updatedUsers: UserProps[] = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
-				const updatedBanned: string[] = channel.settings.banned;
-				updatedBanned.push(data.userId);
-				if (selectedChannel != null && selectedChannel.id === channel.id)
-				{
-					setSelectedChannel(null);
-				}
-				return {
-					...prevState,
-					chatRooms: prevState.chatRooms.map((room) =>
-						room.id === channel.id ? { ...room, settings: { ...room.settings, users: updatedUsers, banned: updatedBanned }} : room
-					),
-				};
-			});
-		};
-		
-		const handleUserUnbannedChannel = (data) => 
-		{
-			setChatProps((prevState: ChatProps) => {
-				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
-				if (!channel)
-					return (prevState);
-				
-				const updatedBanned = channel.settings.banned.filter((item: string) => item !== data.userId);
-
-				return {
-					...prevState,
-					chatRooms: prevState.chatRooms.map((room) =>
-						room.id === channel.id ? { ...room, settings: { ...room.settings, banned: updatedBanned }} : room
-					),
-				};
-			});
-		}
-
-		socket.on('userBanned', handleUserBannedChannel);
-		socket.on('userUnbanned', handleUserUnbannedChannel);
-		return () => {
-			socket.off('userBanned', handleUserBannedChannel);
-			socket.off('userUnbanned', handleUserUnbannedChannel);
-		}
-	}, []);
-
-
-	useEffect(() => 
-	{
-		const handleUserMutedChannel = (data) => 
-		{
-			setChatProps((prevState: ChatProps) => {
-				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
-				if (!channel)
-					return (prevState);
-				
-				const updatedMuted: string[] = channel.settings.muted;
-				updatedMuted.push(data.userId);
-				return {
-					...prevState,
-					chatRooms: prevState.chatRooms.map((room) =>
-						room.id === channel.id ? { ...room, settings: { ...room.settings, muted: updatedMuted }} : room
-					),
-				};
-			});
-		}
-
-		const handleUserUnmutedChannel = (data) => 
-		{
-			setChatProps((prevState: ChatProps) => {
-				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
-				if (!channel)
-					return (prevState);
-				
-				const updatedMuted: string[] = channel.settings.muted.filter((item: string) => item !== data.userId);
-				return {
-					...prevState,
-					chatRooms: prevState.chatRooms.map((room) =>
-						room.id === channel.id ? { ...room, settings: { ...room.settings, muted: updatedMuted }} : room
-					),
-				};
-			});
-		}
-
-		socket.on('userMuted', handleUserMutedChannel);
-		socket.on('userUnmuted', handleUserUnmutedChannel);
-		return () => {
-			socket.off('userMuted', handleUserMutedChannel);
-			socket.off('userUnmuted', handleUserUnmutedChannel);
-		}
-	}, []);
-
-//////////////////////////////////////////////////////////////////////
-
-	useEffect(() => {
-			const handleChannelDeleted = (response) => {
-				console.log('Channel deleted', response.channel_id);
-				setChatProps((prevState) => ({
-					...prevState,
-					chatRooms: prevState.chatRooms.filter(chat => chat.id !== response.channel_id),
-				}));
-				setSelectedChannel(null);
-			};
-		
-			socket.on('channelDeleted', handleChannelDeleted);
-			
-			return () => {
-				socket.off('channelDeleted', handleChannelDeleted);
-			};
-		}, []);
-
-//////////////////////////////////////////////////////////////////////
-
-
-
-	useEffect(() => {
-		const handleRoleChanged = (response) => {
-			console.log('User role changed (index) to ', response.new_role);
-
-			const selectedChannel = chatProps.chatRooms.find(channel => channel.id === response.channelId);
-
-			const updatedUsers = selectedChannel?.settings.users.map(user => user.id === response.userId ? { ...user, role: response.new_role } : user);
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: prevState.chatRooms.map(channel => 
-					channel.id === response.channelId 
-					? 	{
-							...channel,
-							settings: {
-								...channel.settings,
-								users: updatedUsers,
-							},
-						}
-					: channel)
-			}))
-		};
-
-		socket.on('userRoleChanged', handleRoleChanged);
-		
-		return () => {
-			socket.off('userRoleChanged', handleRoleChanged);
-		};
-	}, [chatProps]);
-
-
-//////////////////////////////////////////////////////////////////////
-
-	useEffect(() => {
-    const handleUserLeftChannel = (response: {channelDto: ChatRoom, userId: number}) => {
-		if (userInChannel(user.id, response.channelDto)) {
-			console.log(`User left channel (index): ${JSON.stringify(response)}`);
-			if (!response.channelDto) { 
-				return;
-			}
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: prevState.chatRooms.map((channel) => {
-					if (channel.id !== response.channelDto.id) {
-						return channel;
-					}
-					const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.userId);
-					const newOwner = response.channelDto.settings.owner;
-					// console.log('New owner (index) :', newOwner);
-					return {
-						...channel,
-						settings: {
-							...channel.settings,
-							owner: newOwner || channel.settings.owner,
-							users: updatedUsers.map(usr => ({
-								...usr,
-								role: usr.name === newOwner ? 'owner' : usr.role,
-							})),
-						},
-					};
-				}),
-			}));
-		}
-        // console.log('channel after user left (index)', selectedChannel);
-    };
-
-    socket.on('leftChannel', handleUserLeftChannel);
-
-    return () => {
-        socket.off('leftChannel', handleUserLeftChannel);
-    };
-}, []);
-
-  
-//////////////////////////////////////////////////////////////////////
-
-	useEffect(() => {
-			const handleUserJoinedChannel = (response) => {
-				// console.log(response.channelDto);
-				if (userInChannel(user.id, response.channelDto)) {
-					console.log('User added to channel (index) ');
-					const newUser: UserProps = {
-						id: response.user_id,
-						name: response.name,
-						role: UserRoles.member,
-						email: response.email,
-						password: '',
-						// icon: <Avatar src={tmp.image}/> 
-						icon: <PersonAddIcon /> //!!
-					};
-
-					setChatProps((prevState) => ({
-						...prevState,
-						chatRooms: prevState.chatRooms.map((room) =>
-							room.id === response.channel_id
-							?	{
-									...room,
-									settings: {
-										...room.settings,
-										users: [...room.settings.users, newUser],
-									},
-								}
-							: room 
-						)
-					}));
-				}	
-			}
-
-			socket.on('joinedChannel', handleUserJoinedChannel);
-
-			return () => {
-				socket.off('joinedChannel', handleUserJoinedChannel);
-			}
-
-	}, [user]);
-
-//////////////////////////////////////////////////////////////////////
-	
-	useEffect(() => {
-		const handlePrivacyChanged = (updatedChannel) => {
-			// console.log('Channel privacy updated:', updatedChannel);
-			console.log('Channel privacy updated to (index):', updatedChannel.settings.type);
-			// console.log('Channel from backend (index):', updatedChannel);
-			
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: prevState.chatRooms.map((room) =>
-					room.id === updatedChannel.id
-					?	{
-							...room,
-							settings: {
-								...room.settings,
-								type: updatedChannel.settings.type,
-								password: updatedChannel.settings.password,
-							},
-						}
-					: room 
-				)
-			}));
-		};
-
-		socket.on('privacyChanged', handlePrivacyChanged);
-
-		return () => {
-			socket.off('privacyChanged', handlePrivacyChanged);
-		};
-	}, []);
-
 //////////////////////////////////////////////////////////////////////
 
 	const handleCreateChannel = () => {
@@ -502,27 +211,10 @@ const ChannelsPage: React.FC = () => {
 		}
 	};	
 			
-	useEffect(() => {
-		const handleChannelCreated = (newChannel: ChatRoom) => {
-			// Update the state with the new channel data received from the server
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: [...prevState.chatRooms, newChannel],
-			}));
-			setChannelName('');
-			setIsAddingChannel(false);
-		};
-		socket.on('channelCreated', handleChannelCreated);
-		return () => {
-			socket.off('channelCreated', handleChannelCreated);
-		};
-	}, []);
-
-
 //////////////////////////////////////////////////////////////////////
 
 	const directMessageExists = (otherUser: User): boolean => {
-		const messageExists = directMessages.find(room => users.some(usr => usr.id === otherUser.id));
+		const messageExists = directMessages.find(room => room.settings.users.some(usr => usr.id === otherUser.id));
 		if (messageExists) {
 			alert("A direct message with this user already exists.");
 			return true;
@@ -582,7 +274,7 @@ const ChannelsPage: React.FC = () => {
 	// }, [])
 
 	// User socket joins the channels 
-	joinRooms();
+	// joinRooms();
 
 	const joinRoom = (roomId) => {
 		// Check if the client has already joined this room
@@ -592,10 +284,6 @@ const ChannelsPage: React.FC = () => {
 		  joinedRooms.push(roomId);
 		  console.log(`Joined room: ${roomId}`);
 		} 
-		// else {
-		//   console.log(`Already in room: ${roomId}`);
-		// }
-	
 	}
 
 	const handleChannelClick = (channel: ChatRoom) => {
@@ -620,44 +308,6 @@ const ChannelsPage: React.FC = () => {
 			handleAvailableChannelClick(event, selectedChannel);
 		}
 	};
-
-//////////////////////////////////////////////////////////////////////
-
-	useEffect(() => {
-		const handleUserJoinedAvailableChannel = (response) => {
-			console.log('User joined available channel (index)');
-			const newUser: UserProps = {
-				id: response.user_id,
-				name: response.name,
-				role: UserRoles.member,
-				email: '',
-				password: '',
-				icon: <PersonAddIcon />
-			};
-
-			setChatProps((prevState) => ({
-				...prevState,
-				chatRooms: prevState.chatRooms.map((room) =>
-					room.id === response.channel_id
-					?	{
-							...room,
-							settings: {
-								...room.settings,
-								users: [...room.settings.users, newUser],
-							},
-						}
-					: room 
-				)
-			}));
-		}
-
-		socket.on('joinedAvailableChannel', handleUserJoinedAvailableChannel);
-
-		return () => {
-			socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
-		}
-
-	}, []);
 
 //////////////////////////////////////////////////////////////////////
 
@@ -718,54 +368,7 @@ const ChannelsPage: React.FC = () => {
 		
 			setNewMessage('');
 		}
-	};
-
-	useEffect(() => {
-		socket.on('newMessage', (message: ChatMessage) => {
-		  console.log('Received new message (React):', message);
-			//   console.log('Receiver id:', message.channel.channel_id);
-			console.log('Before update:', chatProps.chatRooms);
-
-			const newMessage: ChatMessage = {
-				id: message.id,
-				userId: message.userId, 
-				message: message.message,
-				user: message.user,
-				userPP: <Avatar />,
-				timestamp: message.timestamp,
-				receiver_id: message.receiver_id,
-			}
-
-			setChatProps((prevProps) => ({
-			  ...prevProps,
-			  chatRooms: prevProps.chatRooms.map((room) => {
-				// console.log('Checking room.id:', room.id);
-			  if (room.id === message.receiver_id) {			// NB shall ChatMessage be modified to receive the receiver_id as well
-				  return {
-						...room,
-						messages: [
-						  ...room.messages,
-						  newMessage,
-						],
-					};
-				}
-				return room;
-		  	}),
-		  }));
-
-		  if (selectedChannel && ( selectedChannel.id === message.receiver_id)) {
-			setSelectedChannel((prevState) => ({
-				...prevState,
-				messages: [...prevState.messages, newMessage]
-			}));
-		  }
-
-		});
-		return () => {
-		  socket.off('newMessage');
-		};
-	}, [selectedChannel]);
-	  
+	};  
 
 //////////////////////////////////////////////////////////////////////
 
@@ -1194,7 +797,7 @@ const ChannelsPage: React.FC = () => {
 					}     
 				  >
 					{/* {console.log(selectedChannel.messages)}; */}
-					{selectedChannel.messages.map((msg: ChatMessage, index: number) => (showMessages(msg, index)))}
+					{selectedChannel?.messages?.map((msg: ChatMessage, index: number) => (showMessages(msg, index)))}
 				  </Stack>
 				
 				  {/*---Render Input Box---*/}
