@@ -171,8 +171,6 @@ useEffect(() => {
 					return (prevState);
 	
 				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
-				console.log("UPDATED USERS");
-				console.log(JSON.stringify(updatedUsers));
 				if (selectedChannel != null && selectedChannel.id === channel.id)
 				{
 					setSelectedChannel(null);
