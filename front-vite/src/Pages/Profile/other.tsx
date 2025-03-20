@@ -491,7 +491,7 @@ const ProfilePageOther: React.FC = () => {
 						display: 'flex',
 						width: '200px',
 						height: '200px',
-						bgcolor: theme.palette.success.main,
+						bgcolor: theme.palette.primary.light,
 					}}
 					src={profileImage}
 				>

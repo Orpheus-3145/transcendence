@@ -272,17 +272,11 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		{
 			if (user.id.toString() !== tmp.userId)
 				tmp.client.emit('updateImage', image);
-		}	
+		}
 	}
 
 	async sendUpdatedNickname(user: User, name: string)
 	{
-		for (const item of user.friends)
-		{
-			var websock = this.getUser(item);
-			if (websock != undefined)
-				websock.client.emit('friendModifiedDetails', user.id.toString(), name);
-		}
 		for (const tmp of this.sockets)
 		{
 			if (user.id.toString() !== tmp.userId)
