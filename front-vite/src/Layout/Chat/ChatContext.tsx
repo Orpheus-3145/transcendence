@@ -170,7 +170,7 @@ useEffect(() => {
 				if (!channel)
 					return (prevState);
 	
-				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== userId);
+				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
 				if (selectedChannel != null && selectedChannel.id === channel.id)
 				{
 					setSelectedChannel(null);
