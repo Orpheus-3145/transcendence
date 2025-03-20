@@ -171,7 +171,7 @@ export async function blockFriend(username:string, friend:string): Promise<void>
 		method: "GET",
 	});
 
-	const response = await fetch(request)
+	const response = await fetch(request);
 	if (response.status == 404)
 		console.log("ERROR: FAILED TO BLOCK USER!");
 }
@@ -181,7 +181,7 @@ export async function unBlockFriend(username:string, friend:string): Promise<voi
 		method: "GET",
 	});
 
-	const response = await fetch(request)
+	const response = await fetch(request);
 	if (response.status == 404)
 		console.log("ERROR: FAILED TO BLOCK USER!");
 }

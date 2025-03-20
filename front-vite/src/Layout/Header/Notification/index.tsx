@@ -75,6 +75,7 @@ export const Notification: React.FC = () => {
 		removeNotiFromArray(noti, messageArray, noti.type);
 		removeNotificationDb(noti.id);
 	}
+
 	const navToChatChannel = (noti: NotificationStruct) => {
 		removeNotification(noti);
 		navigate('/channels', {state: {channelId: noti.senderId.toString()}})
@@ -84,6 +85,7 @@ export const Notification: React.FC = () => {
 		removeNotification(noti);
 		navigate('/channels', {state: {otherId: noti.senderId.toString()}})
 	};
+
 	let whichMessage = (noti: NotificationStruct) =>
 	{
 		if (noti.message == null)
@@ -224,7 +226,11 @@ export const Notification: React.FC = () => {
 		
 		return (
 			<Stack>
-				{messageArray.slice().reverse().map((item: NotificationStruct) => initMessage(item))}
+				{messageArray.slice().reverse().map((item: NotificationStruct, index: number) => (
+					<React.Fragment key={index}>
+						{initMessage(item)}
+					</React.Fragment>
+				))}
 				<Divider />
 			</Stack>
 		);
@@ -350,7 +356,11 @@ export const Notification: React.FC = () => {
 	
 		return (
 			<Stack>
-				{friendRequestArray.slice().reverse().map((item: NotificationStruct) => initRequest(item))}
+				{friendRequestArray.slice().reverse().map((item: NotificationStruct, index: number) => (
+					<React.Fragment key={index}>
+						{initRequest(item)}
+					</React.Fragment>
+				))}
 				<Divider />
 			</Stack>
 		);
@@ -378,7 +388,11 @@ export const Notification: React.FC = () => {
 
 		return (
 			<Stack>
-				{gameInviteArray.slice().reverse().map((item: NotificationStruct) => initRequest(item))}
+				{gameInviteArray.slice().reverse().map((item: NotificationStruct, index: number) => (
+					<React.Fragment key={index}>
+						{initRequest(item)}
+					</React.Fragment>
+				))}
 				<Divider />
 			</Stack>
 		);		
@@ -519,6 +533,18 @@ export const Notification: React.FC = () => {
 				addNotification(noti);
 			}
 		});
+
+		socket.on('removeNotis', (idOther: string) =>
+		{
+			let msg: NotificationStruct[] = messageArray.filter((noti: NotificationStruct) => noti.senderId.toString() !== idOther);
+			let frq: NotificationStruct[] = friendRequestArray.filter((noti: NotificationStruct) => noti.senderId.toString() !== idOther);
+			let gmi: NotificationStruct[] = gameInviteArray.filter((noti: NotificationStruct) => noti.senderId.toString() !== idOther);
+
+			setMessageArray(msg);
+			setFriendRequestArray(frq);
+			setGameInviteArray(gmi);
+		})
+
 	}, [messageArray, friendRequestArray, gameInviteArray]);
 
 	let notificationWrapper = () =>

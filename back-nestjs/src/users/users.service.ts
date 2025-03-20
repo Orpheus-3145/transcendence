@@ -173,7 +173,7 @@ export class UsersService {
 			this.usersRepository.save(user);
 		}
 
-		
+		this.notificationGateway.sendUpdatedNickname(user, newUsername);
 		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
 		return ("");
 	}
@@ -183,51 +183,61 @@ export class UsersService {
 		return (this.findOneIntra(Number(code)));
 	}
 
+	async getFriendslistFromUser(id: string): Promise<string[]>
+	{
+		var user = await this.findOneId(Number(id));
+		return (user.friends);
+	}
+
 	async updateNewFriendship(iduser:string, idother:string)
 	{
 		const [user, otheruser] = await Promise.all([this.getUserId(iduser), this.getUserId(idother)]);
 
 		(user).friends.push((otheruser).id.toString());
-		this.usersRepository.save((user));
+		await this.usersRepository.save((user));
 
 		(otheruser).friends.push((user).id.toString());
-		this.usersRepository.save((otheruser));
+		await this.usersRepository.save((otheruser));
 
 		this.logger.log(`Created friendship between ${user.nameNick} and ${otheruser.nameNick}`);
 	}
 
 	async removeFriend(user: User, other: User)
 	{
-		let newlist = user.friends.filter(friend => friend !== other.id.toString());
-		user.friends = newlist;
+		let newlistUser: string[] = user.friends.filter((friend: string) => friend !== other.id.toString());
+		user.friends = newlistUser;
 		this.usersRepository.save(user);
 		
-		newlist = other.friends.filter(afriend => afriend !== user.id.toString());
-		other.friends = newlist;
+		let newlistOther: string[] = other.friends.filter((afriend: string) => afriend !== user.id.toString());
+		other.friends = newlistOther;
 		this.usersRepository.save(other);
 
 		this.logger.log(`Removed friendship between ${user.nameNick} and ${other.nameNick}`);
+		this.notificationGateway.removeFriend(user, newlistUser, other, newlistOther);
 	}
 
 	async blockUser(user: User, other: User)
 	{
 		// if it's already blocked ignore
-		if (user.blocked.find((blockedId) => blockedId === other.intraId.toString()))
+		if (user.blocked.find((blockedId) => blockedId === other.id.toString()))
 			return ;
 
 		this.removeFriend(user, other);
-		user.blocked.push(other.intraId.toString());
+		user.blocked.push(other.id.toString());
 		this.usersRepository.save(user);
-
+		
+		this.notificationGateway.sendBlocked(other);
+		this.notificationGateway.removeExistingNoti(user, other);
 		this.logger.log(`${user.nameNick} blocked ${other.nameNick}`);
 	}
   
 	async unBlockUser(user: User, other: User)
 	{
-		const newlist = user.blocked.filter(blocked => blocked !== other.intraId.toString());
+		const newlist = user.blocked.filter(blocked => blocked !== other.id.toString());
 		user.blocked = newlist;
 		this.usersRepository.save(user);
-	
+		
+		this.notificationGateway.sendUnBlocked(other);
 		this.logger.log(`${user.nameNick} unblocked ${other.nameNick}`);
 	}
 
@@ -236,6 +246,7 @@ export class UsersService {
 		user.image = image;
 		this.usersRepository.save(user);
 		this.logger.log(`${user.nameNick} updated their profile picture`);
+		this.notificationGateway.sendUpdatedImage(user, image);
 		return (image);
 	}
 
