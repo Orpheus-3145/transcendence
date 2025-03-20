@@ -297,15 +297,26 @@ const ChannelsPage: React.FC = () => {
 
 	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
 		event.preventDefault();
-		console.log(enteredChannelPass, selectedChannel.settings.password);
-		if (enteredChannelPass !== selectedChannel.settings.password) {
-			alert("Incorrect password!");
-			setEnteredChannelPass('');
-		} 
-		else {
-			passwordOk = true;
-			setIsPasswordModal(false);
-			handleAvailableChannelClick(event, selectedChannel);
+		if (selectedChannel) {
+			console.log(enteredChannelPass, selectedChannel.settings.password);
+
+			const data = {
+				channelId: selectedChannel.id,
+				inputPassword: enteredChannelPass,
+			};
+			socket.emit('checkPasswordChannel', data);
+
+			socket.once('verifyPassword', (status: boolean) => {
+				console.log(status);
+				if (!status) {
+					alert("Incorrect password!");
+					setEnteredChannelPass('');
+					return ;
+				}
+				passwordOk = true;
+				setIsPasswordModal(false);
+				handleAvailableChannelClick(event, selectedChannel);
+			})
 		}
 	};
 
@@ -314,7 +325,7 @@ const ChannelsPage: React.FC = () => {
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
 		console.log('Available channel clicked!');
-		if (!passwordOk && channel.settings.type === ChannelType.private ) {
+		if (!passwordOk && channel.settings.type === ChannelType.protected ) {
 			setSelectedChannel(channel);
 			setIsPasswordModal(true);
 		} 
