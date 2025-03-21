@@ -9,6 +9,7 @@ export enum NotificationType {
 	gameInvite = 'Game Invite',
 	friendRequest = 'Friend Request',
 	message = 'message',
+	groupChat = 'groupChat',
 }
 
 export default class NotificationDTO {
@@ -41,14 +42,20 @@ export default class NotificationDTO {
 
 		} else if (notification instanceof MessageNotification) {
 			this.id = notification.id;
-			this.senderId = notification.message.sender.user.id;
+			this.senderId = notification.message.channel.channel_id;
 			this.receiverId = notification.receiver.user.id;
-			this.senderName = notification.message.sender.user.nameNick;
+			this.senderName = notification.message.channel.title;
 			this.receiverName = notification.receiver.user.nameNick;
-			this.type = NotificationType.message;
+			this.type = NotificationType.groupChat;
 			this.status = notification.status;
 			this.message = notification.message.content;
 			this.powerUpsSelected = PowerUpSelected.noPowerUp;
+			if (notification.message.channel.isDirectMessage)
+			{
+				this.type = NotificationType.message;
+				this.senderId = notification.message.sender.user.id;
+				this.senderName = notification.message.sender.user.nameNick;
+			}
 		}
 	}
 

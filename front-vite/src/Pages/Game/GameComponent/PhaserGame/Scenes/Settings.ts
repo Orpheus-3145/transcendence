@@ -179,7 +179,7 @@ export default class SettingsScene extends BaseScene {
 				difficulty: this.difficulty,
 				extras: this.powerUpSelection,
 			});
-		else
+		else if (this.mode === GameMode.multi)
 			this.switchScene('Matchmaking', {
 				sessionToken: '',
 				mode: this.mode,

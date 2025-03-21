@@ -65,7 +65,7 @@ export default class MatchmakingScene extends BaseScene {
 	}
 
 	disconnect(): void {
-		console.log('disconnecting');
+		this.events.off('shutdown');
 		this._socketIO.disconnect();
 	}
 }

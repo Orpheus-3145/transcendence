@@ -21,6 +21,8 @@ import NotificationDTO, { NotificationType } from 'src/dto/notification.dto';
 import { GameInvitation } from 'src/entities/gameInvitation.entity';
 import { FriendRequest } from 'src/entities/friendRequest.entity';
 import RoomManagerService from 'src/game/session/roomManager.service';
+import User from 'src/entities/user.entity';
+import { MessageNotification } from 'src/entities/messageNotification.entity';
 
 
 export interface Websock {
@@ -46,7 +48,8 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 
 	constructor(
 		private readonly notificationService: NotificationService,
-		private readonly userService: UsersService,
+		@Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
+		// private readonly userService: UsersService,
 		private readonly logger: AppLoggerService,
 		private readonly roomManager: RoomManagerService,
 	) {
@@ -68,9 +71,14 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		this.sockets = this.sockets.filter((s) => s.client.id !== client.id);
 	}
 
-
 	getUser(userId: string): Websock {
 		return (this.sockets.find((socket) => socket.userId === userId));
+	}
+
+	sendMessageNoti(noti: MessageNotification, receiverId: string)
+	{
+		var websock: Websock = this.getUser(receiverId);
+		websock.client.emit('sendNoti', new NotificationDTO(noti));
 	}
 
 	@SubscribeMessage('getFromUser')
@@ -113,7 +121,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	}
 
 	@SubscribeMessage('acceptNotiFr')
-	async acceptNotiFr(@MessageBody() data: { notificationId: number })
+	async acceptNotiFr(@MessageBody() data: { notificationId: number }): Promise<void>
 	{
 		const acceptedFriendRequest: FriendRequest = await this.notificationService.getFriendRequest(data.notificationId);
 		const senderId: string = acceptedFriendRequest.sender.id.toString();
@@ -123,9 +131,21 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.updateNewFriendship(senderId, receiverId),
 			this.notificationService.acceptFriendRequest(acceptedFriendRequest),
 		]);
-
-		this.getUser(senderId).client.emit('friendAdded', senderId);
-		this.getUser(receiverId).client.emit('friendAdded', receiverId);
+		var websockSender = this.getUser(senderId);
+		var WebsockReceiver = this.getUser(receiverId);
+		var frienlistSender = await this.userService.getFriendslistFromUser(senderId);
+		var frienlistReceiver = await this.userService.getFriendslistFromUser(receiverId);
+		
+		if (websockSender !== undefined)
+		{
+			websockSender.client.emit('friendAddedIndex', frienlistSender);
+			websockSender.client.emit('friendAddedOther', frienlistReceiver);
+		}
+		if (WebsockReceiver !== undefined)
+		{
+			WebsockReceiver.client.emit('friendAddedIndex', frienlistReceiver);
+			WebsockReceiver.client.emit('friendAddedOther', frienlistSender);
+		}
 	}
 
 	@SubscribeMessage('declineNotiFr')
@@ -134,6 +154,21 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		const refusedFriendRequest: FriendRequest = await this.notificationService.getFriendRequest(data.notificationId);
 	
 		this.notificationService.refuseFriendRequest(refusedFriendRequest);
+	}
+
+	async removeFriend(user: User, newlistUser: string[], other: User, newlistOther: string[]): Promise<void>
+	{
+		var websockUser = this.getUser(user.id.toString());
+		var websockOther = this.getUser(other.id.toString());
+		
+		if (websockUser != undefined)
+		{
+			websockUser.client.emit('friendRemoved', newlistUser);
+		}
+		if (websockOther != undefined)
+		{
+			websockOther.client.emit('friendRemoved', newlistOther);
+		}
 	}
 
 	@SubscribeMessage('sendGameInvite')
@@ -185,5 +220,67 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	async removeNotification(@MessageBody() data: { notificationId: number, type: NotificationType })
 	{
 		this.notificationService.removeNotification(data.notificationId, data.type);		
+	}
+
+	async removeExistingNoti(user: User, other: User): Promise<void>
+	{
+		var websockUser = this.getUser(other.id.toString());
+
+		if (websockUser === undefined)
+			return ;
+
+		websockUser.client.emit('removeNotis', user.id.toString());
+	}
+
+	async sendBlocked(other: User)
+	{
+		var websockUser = this.getUser(other.id.toString());
+
+		if (websockUser === undefined)
+			return ;
+
+		websockUser.client.emit('updateBlocked', other.id.toString());
+	}
+
+	async sendUnBlocked(other: User)
+	{
+		var websockUser = this.getUser(other.id.toString());
+
+		if (websockUser === undefined)
+			return ;
+
+		websockUser.client.emit('updateUnBlocked', other.id.toString());
+	}
+
+	async sendStatus(user: User, status: UserStatus)
+	{
+		for (const tmp of this.sockets)
+		{
+			if (user.id.toString() !== tmp.userId)
+				tmp.client.emit('statusChanged', user, status);
+		}
+	}
+
+	async sendUpdatedImage(user: User, image: string)
+	{
+		var websockUser: Websock = this.getUser(user.id.toString());
+		if (websockUser !== undefined)
+		{
+			websockUser.client.emit('updateHeaderImage', image);
+		}
+		for (const tmp of this.sockets)
+		{
+			if (user.id.toString() !== tmp.userId)
+				tmp.client.emit('updateImage', image);
+		}
+	}
+
+	async sendUpdatedNickname(user: User, name: string)
+	{
+		for (const tmp of this.sockets)
+		{
+			if (user.id.toString() !== tmp.userId)
+				tmp.client.emit('updateNickname', name);
+		}			
 	}
 };

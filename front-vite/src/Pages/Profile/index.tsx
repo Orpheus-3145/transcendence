@@ -123,7 +123,7 @@ const ProfilePage: React.FC = () => {
 	let friendLine = (intraid:string) => 
 	{
 		const friend = friendDetails.get(intraid);
-
+		
 		if (!friend) {
 			fetchFriendDetails(intraid);
 			return <Stack></Stack>;
@@ -135,7 +135,8 @@ const ProfilePage: React.FC = () => {
 		}
 
 		return (
-			<Stack direction={'row'}
+			<Stack key={intraid} 
+				direction={'row'}
 				sx={{
 					cursor: 'pointer',
 					justifyContent: 'space-between',
@@ -181,7 +182,7 @@ const ProfilePage: React.FC = () => {
 	let friendCategory = () => 
 	{
 		return (
-			<Stack
+			<Stack 
 				direction='column'
 				bgcolor={theme.palette.primary.main}
 				spacing={'0.3em'}
@@ -209,7 +210,13 @@ const ProfilePage: React.FC = () => {
 					},
 				}}
 			>
-				{friendsList.map((friendId: string) => friendLine(friendId))}
+				{friendsList.map((friend: string, index: number) => (
+					<React.Fragment key={index}>
+						{friendLine(friend)}
+					</React.Fragment>
+				))}
+
+
 			</Stack>
 		);
 	};
@@ -315,7 +322,11 @@ const ProfilePage: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: MatchRatio, index: number) => (
+						<React.Fragment key={index}>
+							{gameStatsBox(group)}
+						</React.Fragment>
+					))}
 				</Stack>
 			</Box>
 		);
@@ -484,7 +495,11 @@ const ProfilePage: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.slice().reverse().map((item: MatchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: MatchData, index: number) => (
+						<React.Fragment key={index}>
+							{gameLine(item)}
+						</React.Fragment>
+					))}
 				</Stack>
 			</Box>
 		);
@@ -819,7 +834,7 @@ const ProfilePage: React.FC = () => {
 		else 
 			showOwnPage(false);
 	}
-	
+
 	useEffect(() => 
 	{
 		getUserProfile().then((number) => 
@@ -827,13 +842,12 @@ const ProfilePage: React.FC = () => {
 			setUserProfileNumber(number);
 		});
 
-		socket.on('friendAdded', (newFriend: string) => {
-			var newlist = friendsList;
-			if (!friendsList.includes(newFriend, 0))
-			{
-				newlist.push(newFriend);
-				setFriendsList(newlist);
-			} 
+		socket.on('friendAddedIndex', (newList: string[]) => {
+			setFriendsList(newList);
+		});
+
+		socket.on('friendRemoved', (newlist: string[]) => {
+			setFriendsList(newlist);
 		});
 
 	}, [lastSegment]);

@@ -268,5 +268,6 @@ export default class ResultsScene extends BaseScene {
 		if (this._winByForfeit === true)		// other player left, no need for other connection with websocket
 			return;
 		this._socketIO!.disconnect();
+		this.events.off('shutdown');
 	}
 }

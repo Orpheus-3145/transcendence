@@ -293,6 +293,7 @@ export default class GameScene extends BaseScene {
 	}
 
 	disconnect(): void {
+		this.events.off('shutdown');
 		if (this._keepConnectionOpen === false)
 			this._socketIO.disconnect();
 	}

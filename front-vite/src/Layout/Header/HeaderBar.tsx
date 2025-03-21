@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MenuDrawer } from './Navigation/Menu/MenuDrawer';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { useUser } from '../../Providers/UserContext/User';
@@ -6,11 +6,13 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { Notification } from './Notification/index'
+import { socket } from '../../Providers/NotificationContext/Notification';
 
 export const Bar: React.FC = () => {
 	const { user } = useUser();
 	const navigate = useNavigate();
 	const theme = useTheme();
+	const [image, setImage] = useState<string>("");
 
 	const navToProfile = () => { user && user.id && navigate(`/profile/${user.id}`) }
 
@@ -40,9 +42,8 @@ export const Bar: React.FC = () => {
 					},
 				}}
 			>
-			{user && user.image ? (
 				<img
-					src={user.image}
+					src={image}
 					alt="User"
 					style={{
 						display: 'block',
@@ -50,9 +51,6 @@ export const Bar: React.FC = () => {
 						height: '50px',
 					}}
 				/>
-				) : (
-					<AccountBoxIcon sx={{ color: theme.palette.secondary.main }} />
-				)}
 			</IconButton>
 		);
 	}
@@ -86,6 +84,18 @@ export const Bar: React.FC = () => {
 		);
 	}
 	
+	useEffect(() =>
+	{
+		if (user && user.image)
+			setImage(user.image)
+
+		socket.on('updateHeaderImage', (image: string) =>
+		{
+			setImage(image);
+		});
+
+	}, [])
+
 	let pageWrapper = () =>
 	{
 		return (headerBar());
