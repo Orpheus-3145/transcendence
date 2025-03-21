@@ -54,7 +54,7 @@ export class ChatService {
 
 		const channel: Channel = await this.channelRepository.findOne({
 			where: { channel_id: channelId },
-			relations: ['members', 'messages']
+			relations: ['channel_owner', 'members', 'members.user', 'messages', 'messages.sender', 'messages.sender.user']
 		});
 		if (!channel && throwExcept === true)
 			this.thrower.throwChatExcp(`No channel found with id: ${channelId}`,
@@ -105,7 +105,6 @@ export class ChatService {
 			this.changeMemberRole(channelOwner, newChannel, ChannelMemberType.owner),
 			this.changeOwnershipChannel(channelOwner, newChannel),
 		])
-		// console.log(JSON.stringify(this.getAllChannels()));
 		return newChannel;
 	}
 
@@ -289,10 +288,9 @@ export class ChatService {
 		]);
 		this.logger.log(`Unbanning ${userToUnban.nameNick} from channel id: ${channel.channel_id}`);
 	}
-	
+
 	async muteUserFromChannel(userToMute: number | User, channel: number | Channel): Promise<void> {
 		
-		console.log(JSON.stringify(channel));
 		if (typeof userToMute === 'number')
 			userToMute = await this.getUser(userToMute);
 			

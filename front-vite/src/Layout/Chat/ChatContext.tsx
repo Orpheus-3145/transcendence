@@ -143,7 +143,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 			fetchAllChannels();
     }, [user]);
 
-	//-------------------------EVENT LSTENERS-------------------------//
+	//-------------------------EVENT LISTENERS-------------------------//
 
 	useEffect(() => {
 		const handleChannelCreated = (newChannel: ChatRoom) => {
@@ -217,29 +217,29 @@ useEffect(() => {
 			});
 		};
 		
-		const handleUserUnbannedChannel = (data) => 
-		{
-			setChatProps((prevState: ChatProps) => {
-				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
-				if (!channel)
-					return (prevState);
+		// const handleUserUnbannedChannel = (data) => 
+		// {
+		// 	setChatProps((prevState: ChatProps) => {
+		// 		let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
+		// 		if (!channel)
+		// 			return (prevState);
 				
-				const updatedBanned = channel.settings.banned.filter((item: string) => item !== data.userId);
+		// 		const updatedBanned = channel.settings.banned.filter((item: string) => item !== data.userId);
 
-				return {
-					...prevState,
-					chatRooms: prevState.chatRooms.map((room) =>
-						room.id === channel.id ? { ...room, settings: { ...room.settings, banned: updatedBanned }} : room
-					),
-				};
-			});
-		}
+		// 		return {
+		// 			...prevState,
+		// 			chatRooms: prevState.chatRooms.map((room) =>
+		// 				room.id === channel.id ? { ...room, settings: { ...room.settings, banned: updatedBanned }} : room
+		// 			),
+		// 		};
+		// 	});
+		// }
 
 		socket.on('userBanned', handleUserBannedChannel);
-		socket.on('userUnbanned', handleUserUnbannedChannel);
+		// socket.on('userUnbanned', handleUserUnbannedChannel);
 		return () => {
 			socket.off('userBanned', handleUserBannedChannel);
-			socket.off('userUnbanned', handleUserUnbannedChannel);
+			// socket.off('userUnbanned', handleUserUnbannedChannel);
 		}
 	}, [chatProps]);
 

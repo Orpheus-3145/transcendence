@@ -808,7 +808,11 @@ const ChannelsPage: React.FC = () => {
 					}     
 				  >
 					{/* {console.log(selectedChannel.messages)}; */}
-					{selectedChannel?.messages?.map((msg: ChatMessage, index: number) => (showMessages(msg, index)))}
+					{selectedChannel?.messages?.map((msg: ChatMessage, index: number) => (
+						<React.Fragment key={index}>
+							{showMessages(msg, index)}
+						</React.Fragment>
+						))}
 				  </Stack>
 				
 				  {/*---Render Input Box---*/}

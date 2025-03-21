@@ -192,7 +192,7 @@ export class NotificationService {
 		});
 		newMessageNotification = await this.messageNotificationRepository.save(newMessageNotification);
 		this.logger.log(`Sending message notification from ${message.sender.user.nameNick} to ${receiver.user.nameNick}`);
-		
+
 		return newMessageNotification;
 	}
 

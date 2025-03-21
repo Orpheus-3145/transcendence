@@ -83,14 +83,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
 		client.join(channel_id.toString());
 
-		// NB: schould emit to all server of just to the room?
-		// const channel = await this.chatService.getChannel(channel_id);
-		// if (channel.members.some(usr => usr.user.id === user_id)) {
-		// this.server.emit('joinedChannel', { user_id, channel_id, name, email });
-		// }
-		
 		this.server.emit('joinedChannel', { channelDto, user_id, channel_id, name, email });
-		// this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}
 
 	@SubscribeMessage('joinAvailableChannel')
@@ -102,7 +95,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id );
 		client.join(channel_id.toString());
-// 		client.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
 		this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { user_id, channel_id, name, email });
 	}
 
@@ -115,11 +107,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
 
-		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
 		this.server.emit('leftChannel', {channelDto, userId: user_id});		
 		client.leave(channel_id.toString());
-		// console.log(JSON.stringify(channelDto));
-		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, user_id});
 	}
 
 	@SubscribeMessage('kickUserFromChannel')
@@ -196,10 +185,10 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	): Promise<void> {
 
 		const { channel_type, channel_id, password } = data;
-		const channelToUpdate: Channel = await this.chatService.getChannel(channel_id);
-		await this.chatService.changePrivacy(channelToUpdate, channel_type, password);
+		await this.chatService.changePrivacy(channel_id, channel_type, password);
+		const channelUpdated: Channel = await this.chatService.getChannel(channel_id);
 		
-		this.server.emit('privacyChanged', new ChatRoomDTO(channelToUpdate));
+		this.server.emit('privacyChanged', new ChatRoomDTO(channelUpdated));
 	}
 
 	@SubscribeMessage('changeUserRole')

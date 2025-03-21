@@ -154,6 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleBanFriend = (user: UserProps) => 
 	{
+		console.log(`channel id check: ${selectedChannel.id} - ${JSON.stringify(selectedChannel)}`)
 		socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
 		const updateSettings = (data) =>
@@ -167,7 +168,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				setSettings({...settings, users: updatedUsers, banned: tmp});
 			}
 		}
-	
+
 		socket.on('userBanned', updateSettings)
 	};
 
@@ -522,7 +523,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							<Stack spacing={1} mt={2}>
 								<Typography variant="h6" sx={{textAlign: 'center'}}>Banned</Typography>
 								<Divider />
-								{settings.banned.map((item: string) => (showBanned(item)))}
+								{settings.banned.map((item: string, index: number) => (
+									<React.Fragment key={index}>
+										{showBanned(item)}
+									</React.Fragment>
+									))}
 							</Stack>
 						</Box>
 					</Stack>
