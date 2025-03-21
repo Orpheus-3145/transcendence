@@ -171,7 +171,7 @@ useEffect(() => {
 					return (prevState);
 	
 				const updatedUsers = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
-				if (selectedChannel != null && selectedChannel.id === channel.id)
+				if (user.id === data.userId && selectedChannel != null && selectedChannel.id === channel.id)
 				{
 					setSelectedChannel(null);
 				}
@@ -189,7 +189,7 @@ useEffect(() => {
 		return () => {
 			socket.off("userKicked", handleUserKickedChannel);
 		};
-	}, [chatProps]);
+	}, [chatProps, user]);
 	
 
 	useEffect(() => 
@@ -204,7 +204,7 @@ useEffect(() => {
 				const updatedUsers: UserProps[] = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
 				const updatedBanned: string[] = channel.settings.banned;
 				updatedBanned.push(data.userId);
-				if (selectedChannel != null && selectedChannel.id === channel.id)
+				if (user.id == data.userId && selectedChannel != null && selectedChannel.id === channel.id)
 				{
 					setSelectedChannel(null);
 				}
@@ -217,31 +217,31 @@ useEffect(() => {
 			});
 		};
 		
-		// const handleUserUnbannedChannel = (data) => 
-		// {
-		// 	setChatProps((prevState: ChatProps) => {
-		// 		let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
-		// 		if (!channel)
-		// 			return (prevState);
+		const handleUserUnbannedChannel = (data) => 
+		{
+			setChatProps((prevState: ChatProps) => {
+				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
+				if (!channel)
+					return (prevState);
 				
-		// 		const updatedBanned = channel.settings.banned.filter((item: string) => item !== data.userId);
+				const updatedBanned = channel.settings.banned.filter((item: string) => item !== data.userId);
 
-		// 		return {
-		// 			...prevState,
-		// 			chatRooms: prevState.chatRooms.map((room) =>
-		// 				room.id === channel.id ? { ...room, settings: { ...room.settings, banned: updatedBanned }} : room
-		// 			),
-		// 		};
-		// 	});
-		// }
+				return {
+					...prevState,
+					chatRooms: prevState.chatRooms.map((room) =>
+						room.id === channel.id ? { ...room, settings: { ...room.settings, banned: updatedBanned }} : room
+					),
+				};
+			});
+		}
 
 		socket.on('userBanned', handleUserBannedChannel);
-		// socket.on('userUnbanned', handleUserUnbannedChannel);
+		socket.on('userUnbanned', handleUserUnbannedChannel);
 		return () => {
 			socket.off('userBanned', handleUserBannedChannel);
-			// socket.off('userUnbanned', handleUserUnbannedChannel);
+			socket.off('userUnbanned', handleUserUnbannedChannel);
 		}
-	}, [chatProps]);
+	}, [chatProps, user]);
 
 
 	useEffect(() => 
