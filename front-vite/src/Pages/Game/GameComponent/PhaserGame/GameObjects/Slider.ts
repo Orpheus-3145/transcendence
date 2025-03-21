@@ -102,11 +102,11 @@ export default class ToggleWidget {
 		this.drawToggle();
 
 		if (this.isActive)
-			this.knob.setPosition(this.rightX, this.toggleY)
+			this.knob.setPosition(this.rightX, this.toggleY);
 		else
-			this.knob.setPosition(this.leftX, this.toggleY)
-		.setDisplaySize(this.knob.width * w_ratio, this.knob.height * h_ratio)
-		.setRadius(this.knobRadius)
-		.setDepth(1);
+			this.knob.setPosition(this.leftX, this.toggleY);
+		this.knob.setDisplaySize(this.knob.width * w_ratio, this.knob.height * h_ratio)
+		this.knob.setRadius(this.knobRadius)
+		this.knob.setDepth(1);
 	}
 }

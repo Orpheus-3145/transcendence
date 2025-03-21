@@ -69,7 +69,7 @@ export default class BaseScene extends Phaser.Scene {
 	// method to call whenever the scene is switched
 	switchScene(sceneName: string, initSceneData?: any): void {
 
-		this.scene.start(sceneName, initSceneData);
+		this.scene.switch(sceneName, initSceneData);
 	}
 
 	// the phaser objects will have to be definied

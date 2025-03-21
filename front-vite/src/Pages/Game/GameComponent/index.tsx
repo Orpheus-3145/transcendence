@@ -48,8 +48,6 @@ const GameComponent: React.FC = () => {
 					// scene.killChildren();
 					if (scene instanceof GameScene)
 						scene.resetWindowRatio();
-
-					// scene.buildGraphicObjects();
 				}
 			});
 		}
