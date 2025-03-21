@@ -32,15 +32,18 @@ CREATE TABLE IF NOT EXISTS Users (
 
 CREATE TABLE IF NOT EXISTS Games (
 	game_id SERIAL PRIMARY KEY,
-	player1_id INTEGER NOT NULL CHECK (player1_id > 0),
-	player2_id INTEGER NOT NULL CHECK (player2_id > 0),
-	player1_score INTEGER NOT NULL DEFAULT 0 CHECK (player1_score >= 0),
-	player2_score INTEGER NOT NULL DEFAULT 0 CHECK (player2_score >= 0),
+	player1_id INTEGER NOT NULL,
+	player2_id INTEGER NOT NULL,
+	winner_id INTEGER NOT NULL,
+	player1_score INTEGER NOT NULL DEFAULT 0,
+	player2_score INTEGER NOT NULL DEFAULT 0,
 	date_match DATE DEFAULT CURRENT_DATE,
 	powerups_used INTEGER DEFAULT 0,
+	FORFAIT BOOLEAN DEFAULT FALSE,
 
 	FOREIGN KEY (player1_id) REFERENCES Users (user_id),
 	FOREIGN KEY (player2_id) REFERENCES Users (user_id)
+	FOREIGN KEY (winner_id) REFERENCES Users (user_id)
 );
 
 CREATE TYPE CHANNEL_TYPE AS ENUM ('public', 'protected', 'private');
@@ -62,8 +65,8 @@ CREATE TABLE IF NOT EXISTS Channels (
 CREATE TYPE CHANNEL_ROLE AS ENUM ('owner', 'admin', 'member');
 CREATE TABLE IF NOT EXISTS Channel_Members (
 	channel_member_id SERIAL PRIMARY KEY,
-	channel_id INTEGER NOT NULL CHECK (channel_id > 0),
-	user_id INTEGER NOT NULL CHECK (user_id > 0),
+	channel_id INTEGER NOT NULL,
+	user_id INTEGER NOT NULL,
 	member_role CHANNEL_ROLE DEFAULT 'member',
 
 	FOREIGN KEY (channel_id) REFERENCES Channels (channel_id),

@@ -292,7 +292,7 @@ const ProfilePageOther: React.FC = () => {
 		var scoreOther: number;
 		var color: string;
 		var idOther: number;
-
+		var ttMessage: string;
 		if (data.player1 === userProfile?.nameNick)
 		{
 			scoreUser = data.player1Score;
@@ -323,65 +323,86 @@ const ProfilePageOther: React.FC = () => {
 			return <Stack>Loading...</Stack>;
 		}
 
-		if (data.whoWon === userProfile?.nameNick)
+		if (data.winner === userProfile?.nameNick)
+		{
 			color = '#1da517'
+			ttMessage = "Won";
+			if (data.forfeit)
+			{
+				color = '#889000';
+				ttMessage = "Won by Forfeit";
+			}
+		}
 		else
+		{
 			color = '#b01515';
+			ttMessage = "Lost";
+			if (data.forfeit)
+			{
+				color = '#ff7500';
+				ttMessage = "Lost by Forfeit";
+			}
+		}
+
+
+
 		return (
-			<Stack
-				direction="row"
-				justifyContent="space-around"
-				alignItems="center"
-				bgcolor={color}
-				borderRadius="2em"
-				padding="0.3em"
-			>
-				<Typography 
-					style={{ 
-						width: '150px', 
-						textAlign: 'center' 
-					}}
+			<Tooltip title={ttMessage} arrow>
+				<Stack
+					direction="row"
+					justifyContent="space-around"
+					alignItems="center"
+					bgcolor={color}
+					borderRadius="2em"
+					padding="0.3em"
 				>
-					Game Type: {data.type}
-				</Typography>
-				<Typography 
-					style={{ 
-						width: '100px', 
-						textAlign: 'center' 
-					}}
-				>
-					Score: {scoreUser} | {scoreOther}
-				</Typography>
-				<Typography 
-					sx={{
-						'& a': {
-							textDecoration: 'none',
-							color: 'blue',
-							'&:hover': { 
-								color: 'black'
-							}
-						},
-					}}
-					style={{ 
-						width: '0px',
-						position: 'relative', 
-						left: '10px',
-						textAlign: 'center' 
-					}}
-				>
-					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
-				</Typography>
-				<Avatar
-					sx={{
-						width: '40px',
-						height: '40px',
-						left: '-5px',
-						bgcolor: theme.palette.primary.light,
-					}}
-					src={opponent.image}
-				>
-				</Avatar>
-			</Stack>
+					<Typography 
+						style={{ 
+							width: '150px', 
+							textAlign: 'center' 
+						}}
+					>
+						{data.type}
+					</Typography>
+					<Typography 
+						style={{ 
+							width: '100px', 
+							textAlign: 'center' 
+						}}
+					>
+						{scoreUser} | {scoreOther}
+					</Typography>
+					<Typography 
+						sx={{
+							'& a': {
+								textDecoration: 'none',
+								color: 'blue',
+								'&:hover': { 
+									color: 'black'
+								}
+							},
+						}}
+						style={{ 
+							width: '0px',
+							position: 'relative', 
+							left: '10px',
+							textAlign: 'center' 
+						}}
+					>
+						<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
+					</Typography>
+					<Avatar
+						sx={{
+							width: '40px',
+							height: '40px',
+							left: '-5px',
+							bgcolor: theme.palette.primary.light,
+						}}
+						src={opponent.image}
+					>
+					</Avatar>
+				</Stack>
+			</Tooltip>
 		);
 	};
 
@@ -564,8 +585,6 @@ const ProfilePageOther: React.FC = () => {
 				<Typography variant={'h2'}
 					sx={{
 						fontFamily: 'Georgia, serif',
-						fontWeight: 'bold',
-						fontStyle: 'italic',
 						fontSize: size,
 						lineHeight: '5rem',
 						height: '5rem',
@@ -574,7 +593,7 @@ const ProfilePageOther: React.FC = () => {
 						transition: 'font-size 0.3s ease',
 					}}
 				>
-					{profileNickname}
+					{profileNickname.charAt(0).toUpperCase() + profileNickname.slice(1)}
 				</Typography>
 			</Stack>
 		);
