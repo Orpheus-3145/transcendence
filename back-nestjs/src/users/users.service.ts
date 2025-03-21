@@ -85,12 +85,12 @@ export class UsersService {
 	}
 
 	async findOneNick(nameNick: string): Promise<User> {
-		const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
-		if (!user)
-			this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
-				`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
-				HttpStatus.NOT_FOUND);
-		return user;
+		// const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
+		// if (!user)
+		// 	this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
+		// 		`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+		// 		HttpStatus.NOT_FOUND);
+		return (await this.usersRepository.findOne({ where: { nameNick: nameNick } }));
   	}
   
   async findOneIntraName(intraName: string): Promise<User> {
