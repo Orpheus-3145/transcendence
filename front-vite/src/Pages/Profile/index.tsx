@@ -371,7 +371,7 @@ const ProfilePage: React.FC = () => {
 			ttMessage = "Won";
 			if (data.forfeit)
 			{
-				color = 'orange';
+				color = '#889000';
 				ttMessage = "Won by Forfeit";
 			}
 		}
@@ -381,12 +381,10 @@ const ProfilePage: React.FC = () => {
 			ttMessage = "Lost";
 			if (data.forfeit)
 			{
-				color = 'orange';
+				color = '#ff7500';
 				ttMessage = "Lost by Forfeit";
 			}
 		}
-
-
 
 		return (
 			<Tooltip title={ttMessage} arrow>
@@ -404,7 +402,7 @@ const ProfilePage: React.FC = () => {
 							textAlign: 'center' 
 						}}
 					>
-						Game Type: {data.type}
+						{data.type}
 					</Typography>
 					<Typography 
 						style={{ 
@@ -412,7 +410,7 @@ const ProfilePage: React.FC = () => {
 							textAlign: 'center' 
 						}}
 					>
-						Score: {scoreUser} | {scoreOther}
+						{scoreUser} | {scoreOther}
 					</Typography>
 					<Typography 
 						sx={{
@@ -644,8 +642,6 @@ const ProfilePage: React.FC = () => {
 				<Typography variant={'h2'}
 					sx={{
 						fontFamily: 'Georgia, serif',
-						fontWeight: 'bold',
-						fontStyle: 'italic',
 						fontSize: size,
 						lineHeight: '5rem',
 						height: '5rem',
@@ -654,7 +650,7 @@ const ProfilePage: React.FC = () => {
 						transition: 'font-size 0.3s ease',
 					}}    
 				>
-					{userProfile.nameNick}
+					{userProfile.nameNick.charAt(0).toUpperCase() + userProfile.nameNick.slice(1)}
 				</Typography>
 			</Stack>
 		);

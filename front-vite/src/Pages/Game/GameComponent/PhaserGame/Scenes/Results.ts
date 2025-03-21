@@ -35,8 +35,16 @@ export default class ResultsScene extends BaseScene {
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
+		let winText: string = '';
+		if (this._winner === this.registry.get('user42data').nameNick) {
+			winText = `You won!`;
+			if (this._winByForfeit)
+				winText += ' [opponent left the game]';
+		}
+		else
+			winText = `You lose!`;
 		this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.3, `${this._winner} won ${(this._winByForfeit) ? 'by forfeit' : ''}`, {
+		.text(this.scale.width * 0.5, this.scale.height * 0.3, winText, {
 			fontSize: `${Math.round(this._textFontRatio * this.scale.width) + 30}px`,
 			align: 'center',
 			color: '#0f0',
@@ -57,7 +65,7 @@ export default class ResultsScene extends BaseScene {
 		if (this._winByForfeit === false) {
 
 			const playAgainBtn = this.add
-			.text(this.scale.width * 0.5, this.scale.height * 0.4, 'Play again', {
+			.text(this.scale.width * 0.5, this.scale.height * 0.45, 'Play again', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
 				align: 'center',
 				color: '#fff',
