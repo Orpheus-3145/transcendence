@@ -232,52 +232,6 @@ export default class SettingsScene extends BaseScene {
 		this._widgets.push(goHomeButton);
 	}
 
-	// createTogglePowerUp(x: number, y: number, value: PowerUpSelected): void {
-  //   const toggleWidth = this.scale.width * 0.07; // Toggle width
-  //   const toggleHeight = this.scale.height * 0.03; // Toggle height
-  //   const borderRadius = toggleHeight / 2; // Half height for full rounding
-  //   const knobRadius = toggleHeight * 0.8; // Slightly smaller for a better fit
-
-  //   const toggleX = x + this.scale.width * 0.3; // Toggle's center X position
-  //   const leftX = toggleX - (toggleWidth / 2) + borderRadius; // Leftmost knob position
-  //   const rightX = toggleX + (toggleWidth / 2) - borderRadius; // Rightmost knob position
-
-  //   // Draw the toggle background (rounded rectangle)
-  //   const toggleGraphics = this.add.graphics();
-  //   const drawToggle = (isActive: boolean) => {
-  //       toggleGraphics.clear();
-  //       toggleGraphics.fillStyle(isActive ? 0x3bb273 : 0xd2d2cf, 1); // Green if active, Red if inactive
-  //       toggleGraphics.fillRoundedRect(toggleX - toggleWidth / 2, y - toggleHeight / 2, toggleWidth, toggleHeight, borderRadius);
-  //   };
-
-  //   drawToggle(false); // Default to inactive state
-
-  //   // Create the circular knob
-  //   const knob = this.add.circle(leftX, y, knobRadius, 0xffffff)
-  //       .setOrigin(0.5, 0.5)
-  //       .setInteractive();
-
-  //   // Function to update toggle state
-  //   const updateToggle = () => {
-  //       const isActive = !(this.powerUpSelection & value);
-  //       this.powerUpSelection = isActive ? (this.powerUpSelection | value) : (this.powerUpSelection & ~value);
-        
-  //       this.tweens.add({
-  //           targets: knob,
-  //           x: isActive ? rightX : leftX, // Move knob left or right
-  //           duration: 200,
-  //           ease: 'Power2'
-  //       });
-
-  //       drawToggle(isActive); // Redraw background with correct color
-  //   };
-
-  //   // Make it interactive
-  //   knob.on('pointerup', updateToggle);
-  //   toggleGraphics.setInteractive(new Phaser.Geom.Rectangle(toggleX - toggleWidth / 2, y - toggleHeight / 2, toggleWidth, toggleHeight), Phaser.Geom.Rectangle.Contains)
-  //       .on('pointerup', updateToggle);
-	// }
-
 	startGame(): void {
 		if (this.mode === GameMode.single)
 			this.switchScene('Game', {
