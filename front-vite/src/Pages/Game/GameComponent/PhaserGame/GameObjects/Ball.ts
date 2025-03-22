@@ -1,20 +1,19 @@
-import GameScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Game';
+import Resizable from './Resizable';
 
 
-export default class Ball {
+export default class Ball implements Resizable{
   private readonly radiusRatio: number;
-	private readonly radius: number;
-	private _graphic: Phaser.GameObjects.Circle;
+	private readonly scene: Phaser.Scene;
+	private radius: number;
+	private _graphic: Phaser.GameObjects.Arc;
 
-	constructor(scene: GameScene, x: number, y: number) {
+	constructor(scene: Phaser.Scene, x: number, y: number) {
 
+		this.scene = scene;
 		this.radiusRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_BALL_RADIUS);
-		this.radius = scene.scale.width / this.radiusRatio;
+		this.radius = this.scene.scale.width / this.radiusRatio;
 
-		// 0x0000ff
-		// #808080
-		// 0xD3D3D3
-		this._graphic = scene.add.circle(x, y, this.radius, 0xffffff);
+		this._graphic = this.scene.add.circle(x, y, this.radius, 0xffffff);
 	}
 
 	updatePosition(x: number, y: number): void {
@@ -25,4 +24,14 @@ export default class Ball {
 	setColor(color: number): void {
 		this._graphic.setFillStyle(color, 1); // Update the fill style
 	}
+
+  resize(old_width: number, old_height: number): void {
+    
+    const w_ratio = this.scene.scale.width / old_width;
+    const h_ratio = this.scene.scale.height / old_height;
+		
+		this.radius = this.scene.scale.width / this.radiusRatio;
+    this._graphic.setPosition(this._graphic.x * w_ratio, this._graphic.y * h_ratio);
+		this._graphic.setRadius(this.radius);
+  }
 }

@@ -33,7 +33,6 @@ export default class MainMenuScene extends BaseScene {
 		.on('pointerup', () =>
 			this.switchScene('Settings', { mode: GameMode.single }),
 		);
-		this._widgets.push(singleGameBtn);
 
 		const multiGameBtn = new TextWidget(
 			this,
@@ -47,7 +46,6 @@ export default class MainMenuScene extends BaseScene {
 		.on('pointerup', () =>
 			this.switchScene('Settings', { mode: GameMode.multi }),
 		);
-		this._widgets.push(multiGameBtn);
 
 		const changeBkBtn = new TextWidget(
 			this,
@@ -59,6 +57,9 @@ export default class MainMenuScene extends BaseScene {
 		.on('pointerover', () => changeBkBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => changeBkBtn.setStyle({ fill: '#fff' }))
 		.on("pointerdown", () => this.openFilePicker());
+		
+		this._widgets.push(singleGameBtn);
+		this._widgets.push(multiGameBtn);
 		this._widgets.push(changeBkBtn);
 	}
 

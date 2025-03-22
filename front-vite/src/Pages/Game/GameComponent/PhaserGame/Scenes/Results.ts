@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameData } from '/app/src/Types/Game/Interfaces';
 import TextWidget from '../GameObjects/TextWidget';
+import PopupWidget from '../GameObjects/Popup';
 
 
 export default class ResultsScene extends BaseScene {
@@ -11,16 +12,16 @@ export default class ResultsScene extends BaseScene {
 	private _score!: {p1: number, p2: number};
 	private _sessionToken!: string;
 
-	private _playAgainPopup!: Phaser.GameObjects.Container;
-	private _waitingPopup!: Phaser.GameObjects.Container;
-	private _refusePopup!: Phaser.GameObjects.Container;
+	private _playAgainPopup!: PopupWidget;
+	private _waitingPopup!: PopupWidget;
+	private _refusePopup!: PopupWidget;
 	private _socketIO!: Socket;
 
 	constructor() {
 		super({ key: 'Results' });
 	}
 
-		init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string, socket: Socket }): void {
+	init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string, socket: Socket }): void {
 		super.init();
 
 		this._winner = data.winner;
@@ -60,14 +61,13 @@ export default class ResultsScene extends BaseScene {
 			'Play again'
 		)
 		.setInteractive()
-		.setName('playAgainBtn')
 		.on('pointerover', () => playAgainBtn.setStyle({ fill: '#ff0' }))	// Change color on hover
 		.on('pointerout', () => playAgainBtn.setStyle({ fill: '#fff' }))
 		.on('pointerup', () => {
 
 			this.sendMsgToServer('askForRematch', {sessionToken: this._sessionToken});
-			playAgainBtn.visible = false;
-			this._waitingPopup.setVisible(true);
+			// playAgainBtn.visible = false;
+			this._waitingPopup.show();
 		});
 		this._widgets.push(playAgainBtn);
 		
@@ -82,15 +82,10 @@ export default class ResultsScene extends BaseScene {
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
 		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 		this._widgets.push(goHomeButton);
-
-		this._waitingPopup = this.createWaitingPopup();
-		this._waitingPopup.setVisible(false);
-	
-		this._playAgainPopup = this.createPlayAgainPopup();
-		this._playAgainPopup.setVisible(false);
-
-		this._refusePopup = this.createRefusePopup();
-		this._refusePopup.setVisible(false);
+		
+		this.createWaitingPopup();
+		this.createPlayAgainPopup();
+		this.createRefusePopup();
 	}
 
 	setupSocket(): void {
@@ -98,30 +93,27 @@ export default class ResultsScene extends BaseScene {
 		this._socketIO.on('acceptRematch', (data: GameData) => {
 
 			if (this._waitingPopup.visible === true)
-				this._waitingPopup.setVisible(false);
+				this._waitingPopup.hide();
 			if (this._playAgainPopup.visible === true)
-				this._playAgainPopup.setVisible(false);
+				this._playAgainPopup.hide();
 			this.switchScene('Game', data);
 		});
 
 		this._socketIO.on('abortRematch', (info: string) => {
 
 			if (this._waitingPopup.visible === true)
-				this._waitingPopup.setVisible(false);
+				this._waitingPopup.hide();
 			if (this._playAgainPopup.visible === true)
-				this._playAgainPopup.setVisible(false);
+				this._playAgainPopup.hide();
 
-			(this.children.getByName('playAgainBtn') as Phaser.GameObjects.Text).visible = false;
-
-			(this._refusePopup.getByName('textTitle') as Phaser.GameObjects.Text).setText(info);
-			this._refusePopup.setVisible(true);
+			this._refusePopup.setTitle(info);
+			this._refusePopup.show();
 		});
 
 		this._socketIO.on('askForRematch', (info: string) => {
-			(this.children.getByName('playAgainBtn') as Phaser.GameObjects.Text).visible = false;
 
-			(this._playAgainPopup.getByName('textTitle') as Phaser.GameObjects.Text).setText(info);
-			this._playAgainPopup.setVisible(true);
+			this._playAgainPopup.setTitle(info);
+			this._playAgainPopup.show();
 		
 		});
 
@@ -134,56 +126,27 @@ export default class ResultsScene extends BaseScene {
 		this._socketIO.emit(msgType, content);
 	}
 
-	createWaitingPopup() {
+	createWaitingPopup(): void {
 
-		const waitingPopup = this.add.container(this.scale.width / 4, this.scale.height / 4);
-
-		const background = this.add.rectangle(this.scale.width / 4,
-				this.scale.height / 4,
-				this.scale.width / 2,
-				this.scale.height / 2,
-				0xfff,
-				1)
-			.setStrokeStyle(2, 0xffffff)
-			.setInteractive()
-			.setOrigin(0.5, 0.5);
-
-		const textTitle = new TextWidget(
+		this._waitingPopup = new PopupWidget(
 			this,
-			background.width * 0.5,
-			background.height * 0.1,
 			'waiting for confirmation'
 		);
-
-		waitingPopup.add([background, textTitle]);
-
-		return waitingPopup;
+		this._widgets.push(this._waitingPopup);
 	}
 
-	createPlayAgainPopup() {
-		const rematchPopup = this.add.container(this.scale.width / 4, this.scale.height / 4);
+	createPlayAgainPopup(): void {
 
-		const background = this.add.rectangle(this.scale.width / 4,
-			this.scale.height / 4,
-			this.scale.width / 2,
-			this.scale.height / 2,
-			0xfff,
-			1)
-		.setStrokeStyle(2, 0xffffff)
-		.setInteractive()
-		.setOrigin(0.5, 0.5);
-
-		const textTitle = new TextWidget(
+		this._playAgainPopup = new PopupWidget(
 			this,
-			background.width * 0.5,
-			background.height * 0.1,
-			'/'
+			''
 		);
+		this._widgets.push(this._playAgainPopup);
 
-		const yesButton = new TextWidget(
+		this._playAgainPopup.add(new TextWidget(
 			this,
-			background.width * 0.2,
-			background.height * 0.75,
+			this.scale.width / 2 * 0.2,
+			this.scale.height / 2 * 0.75,
 			'yes',
 			-10,
 			'#fff',
@@ -193,13 +156,13 @@ export default class ResultsScene extends BaseScene {
 		.on('pointerdown', () => {
 			
 			this.sendMsgToServer('acceptRematch', {sessionToken: this._sessionToken});
-			this._playAgainPopup.setVisible(false);
-		});
+			this._playAgainPopup.hide();
+		}));
 
-		const noButton = new TextWidget(
+		this._playAgainPopup.add(new TextWidget(
 			this,
-			background.width * 0.8,
-			background.height * 0.75,
+			this.scale.width / 2 * 0.8,
+			this.scale.height / 2 * 0.75,
 			'no',
 			-10,
 			'#fff',
@@ -209,49 +172,26 @@ export default class ResultsScene extends BaseScene {
 		.on('pointerdown', () => {
 
 			this.sendMsgToServer('abortRematch', {sessionToken: this._sessionToken});
-			this._playAgainPopup.setVisible(false);
+			this._playAgainPopup.hide();
 			this.switchScene('MainMenu');
-		});
-
-		rematchPopup.add([background, textTitle, yesButton, noButton]);
-
-		return rematchPopup;
+		}));
 	}
 
-	createRefusePopup() {
-
-		const refusePopup = this.add.container(this.scale.width / 4, this.scale.height / 4);
-
-		const background = this.add.rectangle(this.scale.width / 4,
-			this.scale.height / 4,
-			this.scale.width / 2,
-			this.scale.height / 2,
-			0xfff,
-			1)
-		.setStrokeStyle(2, 0xffffff)
-		.setInteractive()
-		.setOrigin(0.5, 0.5);
-
-		const textTitle = new TextWidget(
+	createRefusePopup(): void {
+		this._refusePopup = new PopupWidget(
 			this,
-			background.width * 0.5,
-			background.height * 0.1,
-			'/'
-		)
-		.setName('textTitle')
+			''
+		);
+		this._widgets.push(this._refusePopup);
 	
-		const closeButton = new TextWidget(
+		this._refusePopup.add(new TextWidget(
 			this,
-			background.width * 0.5,
-			background.height * 0.75,
+			this.scale.width / 2 * 0.5,
+			this.scale.height / 2 * 0.75,
 			'close',
 			-10)
 		.setInteractive()
-		.on('pointerdown', () => refusePopup.setVisible(false));
-
-		refusePopup.add([background, textTitle, closeButton]);
-
-		return refusePopup;
+		.on('pointerdown', () => this.switchScene('MainMenu')));
 	}
 
 	disconnect(data?: any): void {

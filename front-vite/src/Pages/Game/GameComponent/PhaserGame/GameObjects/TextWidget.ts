@@ -1,4 +1,6 @@
-export default class TextWidget extends Phaser.GameObjects.Text{
+import Resizable from "./Resizable";
+
+export default class TextWidget extends Phaser.GameObjects.Text implements Resizable{
   
 	protected readonly _textFontRatio: number = Number(import.meta.env.GAME_FONT_SIZE_RATIO);
   private readonly baseFontSize: number;

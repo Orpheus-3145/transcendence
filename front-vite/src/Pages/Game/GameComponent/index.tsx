@@ -44,7 +44,7 @@ const GameComponent: React.FC = () => {
 			gameInstance.scene.getScenes(true).forEach( (scene: Phaser.Scene) => {
 				// resize all the objects inside of every scene
 				if (scene instanceof BaseScene) {
-					scene.resetObects(old_width, old_height);
+					scene.resizeObects(old_width, old_height);
 					// scene.killChildren();
 					if (scene instanceof GameScene)
 						scene.resetWindowRatio();

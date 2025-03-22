@@ -1,4 +1,6 @@
-export default class ToggleWidget {
+import Resizable from "./Resizable";
+
+export default class ToggleWidget implements Resizable{
 
 	private readonly scene: Phaser.Scene;
 	private toggleWidth: number;

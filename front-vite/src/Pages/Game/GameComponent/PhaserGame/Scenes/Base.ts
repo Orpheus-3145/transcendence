@@ -1,25 +1,23 @@
-import ToggleWidget from "../GameObjects/Slider";
-import TextWidget from "../GameObjects/TextWidget";
+import Resizable from "../GameObjects/Resizable";
 
 export default class BaseScene extends Phaser.Scene {
 	
 	// background image
-	protected _backgroundPath: string = import.meta.env.GAME_PATH_BACKGROUND;
-	protected _background: Phaser.GameObjects.Image | null = null;
-	protected _backgroundColor: number = 0x000000; // Black
+	// protected _backgroundPath: string = import.meta.env.GAME_PATH_BACKGROUND;
+	// protected _background: Phaser.GameObjects.Image | null = null;
+	// protected _backgroundColor: number = 0x000000; // Black
 	// protected _lines: Phaser.GameObjects.Rectangle[] = [];
 	protected _keyEsc: Phaser.Input.Keyboard.Key | null = null;
-	protected _widgets: Array<TextWidget | ToggleWidget> = [];
+	protected _widgets: Array<Resizable> = [];
 	// protected _lines: Phaser.GameObjects.Group | null = null;
 	
 	// ratio between standard size of the standard font size and the game window 
 	// if the windows is resized, the font size is derivated from new_size_wdth * ratio
 	protected readonly _textFontRatio: number = Number(import.meta.env.GAME_FONT_SIZE_RATIO);
 
-	constructor(arg?: any) {
-		super(arg);
-
-	}
+	// constructor(arg?: any) {
+	// 	super(arg);
+	// }
 
 	// method called when scene.start(nameScene, args) is run
 	init(arg?: any): void {
@@ -31,7 +29,7 @@ export default class BaseScene extends Phaser.Scene {
 
 	// loading graphic assets, fired after init()
 	preload(arg?: any): void {
-		this.load.image('background', this._backgroundPath);
+		// this.load.image('background', this._backgroundPath);
 		// this.load.glsl('ditherShader', 'assets/texture/ditherShader.glsl');
 	}
 
@@ -69,7 +67,9 @@ export default class BaseScene extends Phaser.Scene {
 	// method to call whenever the scene is switched
 	switchScene(sceneName: string, initSceneData?: any): void {
 
-		this.scene.switch(sceneName, initSceneData);
+		this._widgets = [];
+		// this.scene.switch(sceneName, initSceneData);
+		this.scene.start(sceneName, initSceneData);
 	}
 
 	// the phaser objects will have to be definied
@@ -108,16 +108,16 @@ export default class BaseScene extends Phaser.Scene {
 	// 	}
 	// }
 
-	killChildren(): void {
+	// killChildren(): void {
 
 		// this.children.list.forEach((gameObject) => {
 		// 	console.log(`object: ${JSON.stringify(gameObject)}`);
 		// 	gameObject.destroy(true);
 		// });
-	}
+	// }
 
-	resetObects(old_width: number, old_height: number): void {
-		
+	resizeObects(old_width: number, old_height: number): void {
+
 		for (const widget of this._widgets)
 			widget.resize(old_width, old_height);
 	}

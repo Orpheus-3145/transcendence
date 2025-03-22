@@ -158,9 +158,16 @@ export default class GameScene extends BaseScene {
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
-
-		if (this._powerUpState)
+		
+		this._widgets.push(this._ball);
+		this._widgets.push(this._leftPaddle);
+		this._widgets.push(this._rightPaddle);
+		this._widgets.push(this._field);
+		if (this._powerUpState) {
 			this._powerUp = new PowerUp(this, this._powerUpState.x, this._powerUpState.y);
+			this._widgets.push(this._powerUp);
+		}
+
 	}
 
 	setupSocket(): void {
