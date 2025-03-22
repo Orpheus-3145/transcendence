@@ -3,6 +3,8 @@ import BaseAnimation from "./BaseAnimation";
 export default class MovingLines extends BaseAnimation {
     private _lines: Phaser.GameObjects.Group | null = null;
 	private _timer: Phaser.Time.TimerEvent | null = null;
+    private readonly _spawningTime: number = 500;
+    
     constructor(scene: Phaser.Scene) {
         super(scene);
     }
@@ -11,7 +13,7 @@ export default class MovingLines extends BaseAnimation {
         this._lines = this.scene.add.group();
 		console.log("Moving Lines animation is created");
         this._timer = this.scene.time.addEvent({
-            delay: 500,
+            delay: this._spawningTime,
             loop: true,
             callback: this.spawnCluster,
             callbackScope: this
@@ -26,7 +28,7 @@ export default class MovingLines extends BaseAnimation {
         const speed = Phaser.Math.Between(2, 5);
 
         for (let i = 0; i < clusterSize; i++) {
-            this.scene.time.delayedCall(Phaser.Math.Between(0, 500), () => {
+            this.scene.time.delayedCall(Phaser.Math.Between(0, this._spawningTime), () => {
                 if (!this._lines) return;
 
                 const width = Phaser.Math.Between(1, 20);
@@ -53,10 +55,15 @@ export default class MovingLines extends BaseAnimation {
 
     destroy(): void {
         if (this._lines) {
-            // this._lines.clear(true, true);
-			this._lines.destroy();
+            this._lines.clear(true, true);
         }
 		if (this._timer)
 			this.scene.time.removeEvent(this._timer);
+        // this is because the timer could still spawn
+        // particles between now and now + 500 ms after this method is run
+        setTimeout(() => {
+            if (this._lines)
+                this._lines.clear(true, true);
+        }, this._spawningTime);
     }
 }

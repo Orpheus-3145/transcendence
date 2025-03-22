@@ -2,6 +2,9 @@ import BaseAnimation from "./BaseAnimation";
 
 export default class ParticleSystem extends BaseAnimation {
 
+	private particles: Array<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody> = [];
+	private readonly _textureName: string = 'circleParticle';
+
 	constructor(scene: Phaser.Scene) {
 		super(scene);
 	}
@@ -10,6 +13,9 @@ export default class ParticleSystem extends BaseAnimation {
 		const n_particles = this.scene.scale.width / 3;
 		// const n_particles = 0;
 		console.log("Particles System animation created");
+		const radius = this.scene.scale.width / this.scene.scale.height * 2;
+		this.createCircleTexture(this._textureName, radius);
+		// const 
 		for (let i = 0; i < n_particles; i++) {
 			this.createBouncingParticle();
 		}
@@ -18,16 +24,18 @@ export default class ParticleSystem extends BaseAnimation {
 	createBouncingParticle(): void {
 		const x = Phaser.Math.Between(0, this.scene.scale.width);
 		const y = Phaser.Math.Between(0, this.scene.scale.height);
-		        // Create a small circle texture dynamically
-		const radius = this.scene.scale.width / this.scene.scale.height * 2;
-        const circleTexture = this.createCircleTexture("circleParticle", radius);
+		
+		// Create a small circle texture dynamically
+		// const radius = this.scene.scale.width / this.scene.scale.height * 2;
+		// const circleTexture = this.createCircleTexture("", radius);
 
-		const particle = this.scene.physics.add.sprite(x, y, circleTexture);
+		const particle = this.scene.physics.add.sprite(x, y, this._textureName);
 		particle.setVelocity(Phaser.Math.Between(-20, 20), Phaser.Math.Between(-20, 20));
 		particle.setBounce(1); // Full bounce effect
 		particle.setCollideWorldBounds(true); // Bounce off walls
 		particle.setScale(Phaser.Math.FloatBetween(0.5, 1));
 
+		this.particles.push(particle);
 		// // Optional: Fade out over time
 		// this.scene.tweens.add({
 		// 	targets: particle,
@@ -42,7 +50,6 @@ export default class ParticleSystem extends BaseAnimation {
 	update(): void {
 		this.updateParticleInteractions();
 	}
-
 
 	updateParticleInteractions(): void {
 	
@@ -87,11 +94,14 @@ export default class ParticleSystem extends BaseAnimation {
 	}
 
 	destroy(): void {
-		this.scene.children.list.forEach((gameObject) => {
-			if (gameObject instanceof Phaser.GameObjects.Sprite) {
-				gameObject.destroy(); // Remove all particles
-			}
-		});
+		// this.scene.children.list.forEach((gameObject) => {
+		// 	if (gameObject instanceof Phaser.GameObjects.Sprite) {
+		// 		gameObject.destroy(true); // Remove all particles
+		// 	}
+		// });
+		this.particles.forEach(
+			(particle: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => particle.destroy()
+		);
 	}
 
 

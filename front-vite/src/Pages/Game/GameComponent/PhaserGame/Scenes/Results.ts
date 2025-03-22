@@ -19,7 +19,7 @@ export default class ResultsScene extends BaseScene {
 		super({ key: 'Results' });
 	}
 
-		init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string, socket: Socket }): void {
+	init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string, socket: Socket }): void {
 		super.init();
 
 		this._winner = data.winner;

@@ -24,9 +24,9 @@ export default class SettingsScene extends BaseScene {
 
 	}
 
-	create(): void {
-		super.create();
-	}
+	// create(): void {
+	// 	super.create();
+	// }
 
 	update(): void {
 		if (this._animation) {

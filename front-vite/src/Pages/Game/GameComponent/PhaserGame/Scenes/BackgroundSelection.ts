@@ -11,25 +11,24 @@ export default class BackgroundSelectionScene extends BaseScene {
 	
 	constructor() {
 		super({ key: 'BackgroundSelection' });
-
 	}
 
-	init(): void {
-		super.init();
-	}
+	// init(): void {
+	// 	super.init();
+	// }
 
-	create(): void {
-		super.create();
-		if (!this._animation) {
-			this.createAnimation();
-		}
-	}
+	// create(): void {
+	// 	super.create();
+	// 	if (!this._animation) {
+	// 		this.createAnimation();
+	// 	}
+	// }
 
-	update(): void {
-		if (this._animation) {
-			this._animation.update();
-		}
-	}
+	// update(): void {
+	// 	if (this._animation) {
+	// 		this._animation.update();
+	// 	}
+	// }
 
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
@@ -76,7 +75,6 @@ export default class BackgroundSelectionScene extends BaseScene {
 			this.handleChange(AnimationSelected.particleSystem)
 		);
 
-
 		const goHomeButton = this.add
 			.text(this.scale.width * 0.9, this.scale.height * 0.9, 'Home', {
 				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
@@ -90,7 +88,6 @@ export default class BackgroundSelectionScene extends BaseScene {
 			.on('pointerup', () => this.switchScene('MainMenu')); 
 	}
 
-
 	handleChange(animationSelected: AnimationSelected): void {
 		if (animationSelected === this._animationSelected){
 			return ;
@@ -99,5 +96,6 @@ export default class BackgroundSelectionScene extends BaseScene {
 		console.log(`Handling change to: ${animationSelected}`);
 		console.log(`from ${this._animationSelected}`);
 		this.changeAnimation(animationSelected);
+		this.createAnimation();
 	}
 }
