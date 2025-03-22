@@ -11,11 +11,9 @@ export default class ParticleSystem extends BaseAnimation {
 
 	create(): void {
 		const n_particles = this.scene.scale.width / 3;
-		// const n_particles = 0;
 		console.log("Particles System animation created");
 		const radius = this.scene.scale.width / this.scene.scale.height * 2;
 		this.createCircleTexture(this._textureName, radius);
-		// const 
 		for (let i = 0; i < n_particles; i++) {
 			this.createBouncingParticle();
 		}
@@ -94,11 +92,6 @@ export default class ParticleSystem extends BaseAnimation {
 	}
 
 	destroy(): void {
-		// this.scene.children.list.forEach((gameObject) => {
-		// 	if (gameObject instanceof Phaser.GameObjects.Sprite) {
-		// 		gameObject.destroy(true); // Remove all particles
-		// 	}
-		// });
 		this.particles.forEach(
 			(particle: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => particle.destroy()
 		);

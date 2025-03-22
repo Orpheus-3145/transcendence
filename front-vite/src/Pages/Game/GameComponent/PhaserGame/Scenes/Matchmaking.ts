@@ -21,7 +21,14 @@ export default class MatchmakingScene extends BaseScene {
 		this._socketIO.emit('waiting', this._gameInitData);
 	}
 
-  buildGraphicObjects(): void {
+
+	create(): void {
+		super.create();
+		this.createListener();
+	}
+  	
+
+	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
 		this.add.text(this.scale.width * 0.5, this.scale.height * 0.3, 'Waiting for playerz ...', {
@@ -66,5 +73,10 @@ export default class MatchmakingScene extends BaseScene {
 
 	disconnect(): void {
 		this._socketIO.disconnect();
+	}
+
+	destroy(): void {
+		super.destroy();
+		this.destroyListener();
 	}
 }

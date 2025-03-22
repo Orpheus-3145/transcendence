@@ -24,14 +24,9 @@ export default class SettingsScene extends BaseScene {
 
 	}
 
-	// create(): void {
-	// 	super.create();
-	// }
-
-	update(): void {
-		if (this._animation) {
-			this._animation.update();
-		}
+	create(): void {
+		super.create();
+		this.createListener();
 	}
 
 	buildGraphicObjects(): void {
@@ -202,13 +197,11 @@ export default class SettingsScene extends BaseScene {
         drawToggle(isActive); // Redraw background with correct color
     };
 
-    // Make it interactive
-    knob.on('pointerup', updateToggle);
-    toggleGraphics.setInteractive(new Phaser.Geom.Rectangle(toggleX - toggleWidth / 2, y - toggleHeight / 2, toggleWidth, toggleHeight), Phaser.Geom.Rectangle.Contains)
-        .on('pointerup', updateToggle);
+		// Make it interactive
+		knob.on('pointerup', updateToggle);
+		toggleGraphics.setInteractive(new Phaser.Geom.Rectangle(toggleX - toggleWidth / 2, y - toggleHeight / 2, toggleWidth, toggleHeight), Phaser.Geom.Rectangle.Contains)
+			.on('pointerup', updateToggle);
 	}
-
-
 
 	startGame(): void {
 		if (this.mode === GameMode.single)
@@ -225,5 +218,10 @@ export default class SettingsScene extends BaseScene {
 				difficulty: GameDifficulty.unset,
 				extras: this.powerUpSelection,
 			});
+	}
+
+	destroy(): void {
+		super.destroy();
+		this.destroyListener();
 	}
 }

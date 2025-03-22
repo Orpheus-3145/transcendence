@@ -19,7 +19,8 @@ export default class BaseScene extends Phaser.Scene {
 	protected _animation: BaseAnimation | null = null;
 	protected _animationSelected: number = AnimationSelected.movingLines; // Should retrieve this value from the BE based on saved preferences
 	// protected _animationSelected: number = AnimationSelected.particleSystem; 
-
+	protected _switchAnimation: boolean = false;
+	
 	// ratio between standard size of the standard font size and the game window 
 	// if the windows is resized, the font size is derivated from new_size_wdth * ratio
 	protected readonly _textFontRatio: number = Number(import.meta.env.GAME_FONT_SIZE_RATIO);
@@ -27,11 +28,7 @@ export default class BaseScene extends Phaser.Scene {
 	constructor(arg?: any) {
 		super(arg);
 		// Listen for animation updates from other scenes
-		GlobalEvents.on('animationChanged', (data: any) => {
-			this.changeAnimation(data);
-			// console.log('got event!', JSON.stringify(data));
 
-		}, this);
 	}
 
 	// method called when scene.start(nameScene, args) is run
@@ -52,11 +49,10 @@ export default class BaseScene extends Phaser.Scene {
 	create(arg?: any): void {
 
 		this.buildGraphicObjects();
-		// if (!this._animation) {
-		this.createAnimation();
-		// }
-		// const shader = this.add.shader('ditherShader', this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height);
-		// this.cameras.main.setRenderToTexture(shader);
+		if (this._animation === null) {
+			this.createAnimation();
+		}
+
 	}
 
 	// function called by Phaser engine once every frame
@@ -65,7 +61,10 @@ export default class BaseScene extends Phaser.Scene {
 	update(time: number, delta: number): void {
 		if (this._keyEsc!.isDown)
 			this.switchScene('MainMenu');
-		
+		if (this._switchAnimation === true) {
+			this._switchAnimation = false;
+			this.createAnimation();
+		}
 		this.updateAnimation();
 	}
 
@@ -87,10 +86,10 @@ export default class BaseScene extends Phaser.Scene {
 	protected getAnimation(): BaseAnimation | null {
 		return this._animation;
 	}
-
+	
 	changeAnimation(animationType: AnimationSelected): void {
 		this._animationSelected = animationType;
-		// this.createAnimation(); // Call createAnimation to apply the change
+		this._switchAnimation = true;
 	}
 
 	createAnimation(): void {
@@ -107,14 +106,14 @@ export default class BaseScene extends Phaser.Scene {
 		else if (this._animationSelected === AnimationSelected.particleSystem)
 			this._animation = new ParticleSystem(this);
 		this._animation?.create();
-		// this.updateAnimation();
 	}
 
 	updateAnimation(): void {
-
-		// if (this._animation) {
+		if (this._switchAnimation === true) {
+			this._switchAnimation = false;
+			this.createAnimation();
+		}
 		this._animation!.update();
-		// }
 	}
 
 	killChildren(): void {
@@ -123,7 +122,18 @@ export default class BaseScene extends Phaser.Scene {
 
 	disconnect(): void {}
 
-	destroy(): void {
+	createListener(): void {
+		GlobalEvents.on('animationChanged', (data: any) => {
+			this.changeAnimation(data);
+		}, this);
+	}
+
+	destroyListener(): void {
 		GlobalEvents.off('animationChanged', this.changeAnimation, this);
 	}
+
+	destroy(): void {
+		this.killChildren();
+	}
+
 };

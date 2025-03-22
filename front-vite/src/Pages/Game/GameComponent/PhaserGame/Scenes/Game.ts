@@ -92,9 +92,11 @@ export default class GameScene extends BaseScene {
 		this.setupSocket();
 	}
 
+
 	// Create game objects and establish WebSocket connection
 	create(): void {
 		super.create()
+		this.createListener();
 
 		if (this._mode === GameMode.single) {
 			const initData: GameData = {
@@ -118,9 +120,6 @@ export default class GameScene extends BaseScene {
 	update(time: number, delta: number): void {
 		super.update(time, delta);
 
-		if (this._animation) {
-			this._animation.update();
-		}
 		if (this._gameStarted == false) return;
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
@@ -303,5 +302,10 @@ export default class GameScene extends BaseScene {
 	disconnect(): void {
 		if (this._keepConnectionOpen === false)
 			this._socketIO.disconnect();
+	}
+
+	destory():  void {
+		super.destroy();
+		this.destoryListerner();
 	}
 }

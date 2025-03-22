@@ -9,11 +9,19 @@ export default class ErrorScene extends BaseScene {
 
 	init(data: { trace: string }): void {
 		super.init()
-		
 		this._errorTrace = data.trace;
 	}
 
-  buildGraphicObjects(): void {
+	create(): void {
+		super.create()
+		this.createListener();
+	}
+
+	update(): void {
+		this.updateAnimation();
+	}
+
+  	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
 		this.add
@@ -39,5 +47,10 @@ export default class ErrorScene extends BaseScene {
 			.on('pointerover', () => goHomeButton.setStyle({ fill: '#ff0' })) // Change color on hover
 			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
 			.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
+	}
+
+	destory():  void {
+		super.destroy();
+		this.destoryListerner();
 	}
 }

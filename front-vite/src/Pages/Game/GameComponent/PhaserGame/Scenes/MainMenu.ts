@@ -12,25 +12,20 @@ export default class MainMenuScene extends BaseScene {
 		super({ key: 'MainMenu' });
 	}
 
-    // init(): void {
-		// super.init()
-		
-    // }
+    init(): void {
+		super.init()
+		console.log("Init is called!");
+    }
 
 	create(): void {
 		super.create()
-
+		this.createListener();
+		console.log("create function of mainmenu");
 		if (this.registry.get('gameInvitationData')) {
 			this.switchScene('Game', this.registry.get('gameInvitationData'));
 			this.registry.remove('gameInvitationData');
 		}
 	}
-
-	// update(): void {
-	// 	if (this._animation) {
-	// 		this._animation.update();
-	// 	}
-	// }
 
   	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
@@ -124,5 +119,10 @@ export default class MainMenuScene extends BaseScene {
 			}
 		})
 		.addBase64("background", base64);
+	}
+
+	destroy(): void {
+		super.destroy();
+		this.destroyListener();
 	}
 }

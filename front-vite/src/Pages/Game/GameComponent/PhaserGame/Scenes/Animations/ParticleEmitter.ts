@@ -80,13 +80,6 @@ export default class ParticleEmitter extends BaseAnimation {
 		});
 	}
 
-
-	// changePosition(): void {
-	// 	const x_pos = Phaser.Math.Between(0, this.scene.scale.width);
-	// 	const y_pos = Phaser.Math.Between(0, this.scene.scale.height);
-	// 	this.emitter1!.setPosition(x_pos, y_pos);
-	// }
-
     update(): void {
         // No need for update logic unless particles need to change dynamically
     }

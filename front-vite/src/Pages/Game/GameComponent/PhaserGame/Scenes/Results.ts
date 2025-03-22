@@ -30,6 +30,12 @@ export default class ResultsScene extends BaseScene {
 		this.setupSocket();
 	}
 
+	create(): void {
+		super.create();
+		this.createListener();
+	}
+
+
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
@@ -277,5 +283,10 @@ export default class ResultsScene extends BaseScene {
 
 	disconnect(data?: any): void {
 		this._socketIO.disconnect();
+	}
+
+	destroy(): void {
+		super.destroy();
+		this.destroyListener();
 	}
 }

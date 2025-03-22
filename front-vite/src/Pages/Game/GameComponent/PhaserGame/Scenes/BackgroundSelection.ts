@@ -8,27 +8,10 @@ import ParticleSystem from './Animations/ParticleSystem';
 
 
 export default class BackgroundSelectionScene extends BaseScene {
-	
+
 	constructor() {
 		super({ key: 'BackgroundSelection' });
 	}
-
-	// init(): void {
-	// 	super.init();
-	// }
-
-	// create(): void {
-	// 	super.create();
-	// 	if (!this._animation) {
-	// 		this.createAnimation();
-	// 	}
-	// }
-
-	// update(): void {
-	// 	if (this._animation) {
-	// 		this._animation.update();
-	// 	}
-	// }
 
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
@@ -92,10 +75,12 @@ export default class BackgroundSelectionScene extends BaseScene {
 		if (animationSelected === this._animationSelected){
 			return ;
 		}
-		GlobalEvents.emit('animationChanged', animationSelected);
 		console.log(`Handling change to: ${animationSelected}`);
 		console.log(`from ${this._animationSelected}`);
-		this.changeAnimation(animationSelected);
+		this._animationSelected = animationSelected;
 		this.createAnimation();
+		GlobalEvents.emit('animationChanged', this._animationSelected);
 	}
+
+
 }
