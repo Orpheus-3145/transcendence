@@ -16,7 +16,7 @@ export default class MatchmakingScene extends BaseScene {
 		super.init()
 
 		this._gameInitData = data;
-		
+
 		this.setupSocket();
 		this._socketIO.emit('waiting', this._gameInitData);
 	}

@@ -190,7 +190,6 @@ const Game: React.FC = () => {
 							</ListItem>
 						</List>
 					</Box>
-
 				</ContentBox>
 				<GameComponent />
 			</Stack>

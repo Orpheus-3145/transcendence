@@ -47,14 +47,13 @@ export default class GameScene extends BaseScene {
 
 	constructor() {
 		super({ key: 'Game' });
-		
+
 		this._urlWebsocket = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION;
 	}
 
 	// Initialize players and key bindings
 	init(data: GameData): void {
 		super.init();
-
 		this._id = this.registry.get('user42data').intraId;
 		this._nameNick = this.registry.get('user42data').nameNick;
 
@@ -119,6 +118,9 @@ export default class GameScene extends BaseScene {
 	update(time: number, delta: number): void {
 		super.update(time, delta);
 
+		if (this._animation) {
+			this._animation.update();
+		}
 		if (this._gameStarted == false) return;
 
 		if (this._keyW.isDown || this._cursors.up.isDown)
@@ -151,6 +153,9 @@ export default class GameScene extends BaseScene {
 
 		this._ball = new Ball(this, this._gameState.ball.x, this._gameState.ball.y); // Initialize ball with no movement initially
 
+		if (this._animation) {
+			this._animation.setBall(this._ball); // Pass the ball to the animation
+		}
 		// Create bars
 		const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
 		this._leftPaddle = new Paddle(this, 0, this._gameState.p1.y);

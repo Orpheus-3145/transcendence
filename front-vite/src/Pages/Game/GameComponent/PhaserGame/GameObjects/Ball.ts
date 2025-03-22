@@ -2,7 +2,7 @@ import GameScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Game'
 
 
 export default class Ball {
-  private readonly radiusRatio: number;
+	private readonly radiusRatio: number;
 	private readonly radius: number;
 	private _graphic: Phaser.GameObjects.Circle;
 
@@ -25,4 +25,9 @@ export default class Ball {
 	setColor(color: number): void {
 		this._graphic.setFillStyle(color, 1); // Update the fill style
 	}
+
+	getPos(): {x: number, y: number} {
+		return {x: this._graphic.x, y: this._graphic.y};
+	}
+
 }

@@ -13,6 +13,7 @@ export default class SettingsScene extends BaseScene {
 
 	constructor() {
 		super({ key: 'Settings' });
+	
 	}
 
 	init(data: { mode: GameMode }): void {
@@ -20,6 +21,17 @@ export default class SettingsScene extends BaseScene {
 
 		this.powerUpSelection = PowerUpSelected.noPowerUp;
 		this.mode = data.mode;
+
+	}
+
+	create(): void {
+		super.create();
+	}
+
+	update(): void {
+		if (this._animation) {
+			this._animation.update();
+		}
 	}
 
 	buildGraphicObjects(): void {
@@ -149,27 +161,6 @@ export default class SettingsScene extends BaseScene {
 			.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 	}
 
-	// createTogglePowerUp(x: number, y: number, value: PowerUpSelected): void {
-	// 	const toggle = this.add
-	// 		.text(x + this.scale.width * 0.3, y, 'INACTIVE', {
-	// 			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-	// 			align: 'center',
-	// 			color: '#ff0'}
-	// 		)
-	// 		.setOrigin(0, 0.5)
-	// 		.setInteractive()
-	// 		.on('pointerup', () => {
-	// 			if ( this.powerUpSelection & value ) {
-	// 				this.powerUpSelection &= ~value;
-	// 				toggle.setText('INACTIVE');
-	// 				toggle.setStyle({ fill: '#ff0' }); // Green for ON, White for OFF
-	// 			} else {
-	// 				this.powerUpSelection |= value;
-	// 				toggle.setText('ACTIVE');
-	// 				toggle.setStyle({ fill: '#0f0' }); // Green for ON, White for OFF
-	// 			}}
-	// 		);
-	// }
 
 	createTogglePowerUp(x: number, y: number, value: PowerUpSelected): void {
     const toggleWidth = this.scale.width * 0.07; // Toggle width

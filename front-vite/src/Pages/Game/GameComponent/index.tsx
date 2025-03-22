@@ -13,6 +13,7 @@ import MatchmakingScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scene
 import ResultsScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Results';
 import SettingsScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Settings';
 import ErrorScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Error';
+import BackgroundSelectionScene from './PhaserGame/Scenes/BackgroundSelection';
 
 
 const GameBox = styled(Box)(({ theme }) => ({
@@ -64,8 +65,9 @@ const GameComponent: React.FC = () => {
 					width: width,
 					height: width * 9 / 16,
 					parent: containerRef.current,
-					backgroundColor: 0xe0e0e0,
-					scene: [MainMenuScene, GameScene, MatchmakingScene, SettingsScene, ResultsScene, ErrorScene],
+					// backgroundColor: 0xe0e0e0,
+					backgroundColor: 0x000000,
+					scene: [MainMenuScene, GameScene, MatchmakingScene, SettingsScene, ResultsScene, ErrorScene, BackgroundSelectionScene],
 					physics: {
 						default: 'arcade',
 					},
