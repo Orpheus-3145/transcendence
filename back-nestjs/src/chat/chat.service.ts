@@ -105,6 +105,9 @@ export class ChatService {
 			this.changeMemberRole(channelOwner, newChannel, ChannelMemberType.owner),
 			this.changeOwnershipChannel(channelOwner, newChannel),
 		])
+		// re-doing the query because the relations are needed
+		newChannel = await this.getChannel(newChannel.channel_id);
+		// console.log(JSON.stringify(this.getAllChannels()));
 		return newChannel;
 	}
 
@@ -154,8 +157,8 @@ export class ChatService {
 					user: { id: Not(userToRemove.id) }},
 				order: { memberRole: 'ASC' },
 			})
-		])
-		
+		]);
+
 		if (otherMembers.length === 0) {
 			// no other members, remove channel
 			this.logger.log(`${userToRemove.nameNick} was the last in the channel, removing it`);
@@ -167,7 +170,7 @@ export class ChatService {
 		if (memberToRemove.memberRole === ChannelMemberType.owner) {
 			const newOwner: ChannelMember = otherMembers[0];
 			this.logger.log(`${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership to ${newOwner.user.nameNick}`);
-			
+
 			await Promise.all([
 					this.changeMemberRole(newOwner.user, newOwner.channel, ChannelMemberType.owner),
 					this.changeOwnershipChannel(newOwner.user, channel),
@@ -191,7 +194,7 @@ export class ChatService {
 		if (channel.muted.find((user) => user === sender.id.toString()))
 			return null;
 		// fetching member from user
-		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id)
+		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id);
 		let newMessage: Message = this.messageRepository.create({
 			channel: channel,
 			sender: memberSender,

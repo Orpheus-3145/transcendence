@@ -241,10 +241,11 @@ const ChannelsPage: React.FC = () => {
 					isDirectMessage: true,
 				};
 				socket.emit('createChannel', channelDTO);
-				socket.once('errorCreatingChannel', (error) => {
-						console.error(error.message);
-						alert(`Error creating channel: ${error.message}`);
-			});
+				
+			// 	socket.once('errorCreatingChannel', (error) => {
+			// 			console.error(error.message);
+			// 			alert(`Error creating channel: ${error.message}`);
+			// });
 		}
 		}
 	};

@@ -57,11 +57,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('createChannel')
 	async handleCreateChannel(@MessageBody() channelDTO: ChannelDTO, @ConnectedSocket() client: Socket): Promise<void> {
 		// Assuming channelDTO contains channel information like title, type, users, etc.
-		let newChannel = await this.chatService.createChannel(channelDTO);
+		const newChannel = await this.chatService.createChannel(channelDTO);
 		// Join the channel
 		client.join(newChannel.channel_id.toString());
-		// re-doing the query because the relations are needed
-		newChannel = await this.chatService.getChannel(newChannel.channel_id);
 		// Emit back the created channel to the client
 		this.server.emit('channelCreated', new ChatRoomDTO(newChannel));
 		// Send success message to the user who created the channel
@@ -76,9 +74,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id);
-		
+
 		const updatedChannel = await this.chatService.getChannel(channel_id);
-		
+
 		const channelDto = new ChatRoomDTO(updatedChannel);
 
 		client.join(channel_id.toString());
@@ -156,6 +154,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		// Emit the message to the specific channel
 		if (newMessage)			// if newMessage === null if user is muted
 			this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
+		// else
+		// 	this.server.to(receiver_id.toString()).emit('memberMuted');
+
 	}
 
 	@SubscribeMessage('getChannels')
@@ -170,10 +171,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	}
 
 	@SubscribeMessage('deleteChannel')
-	async handleDeleteChannel(
-		@MessageBody() channel_id: number,
-		@ConnectedSocket() client: Socket,
-	): Promise<void> {
+	async handleDeleteChannel(@MessageBody() channel_id: number): Promise<void> {
 
 		await this.chatService.deleteChannel(channel_id);
 		this.server.emit('channelDeleted', {channel_id});

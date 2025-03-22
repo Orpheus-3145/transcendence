@@ -500,6 +500,9 @@ useEffect(() => {
 
 
 		useEffect(() => {
+			// socket.on('errorMessage', (message: string) => {
+
+			// })
 				socket.on('newMessage', (message: ChatMessage) => {
 				  console.log('Received new message (React):', message);
 					//   console.log('Receiver id:', message.channel.channel_id);
@@ -519,7 +522,7 @@ useEffect(() => {
 					  ...prevProps,
 					  chatRooms: prevProps.chatRooms.map((room) => {
 						// console.log('Checking room.id:', room.id);
-					  if (room.id === message.receiver_id) {			// NB shall ChatMessage be modified to receive the receiver_id as well
+					  if (room.id === message.receiver_id) {
 						  return {
 								...room,
 								messages: [
@@ -542,6 +545,7 @@ useEffect(() => {
 				});
 				return () => {
 				  socket.off('newMessage');
+				  // socket.off('errorMessage');
 				};
 			}, [selectedChannel]);
 
