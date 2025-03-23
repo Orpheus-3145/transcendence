@@ -1,3 +1,4 @@
+import ButtonWidget from '../GameObjects/Button';
 import TextWidget from '../GameObjects/TextWidget';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameMode } from '/app/src/Types/Game/Enum';
@@ -21,45 +22,37 @@ export default class MainMenuScene extends BaseScene {
   buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		const singleGameBtn = new TextWidget(
+		const singleGameBtn = new ButtonWidget(
 			this,
 			this.scale.width * 0.5,
-			this.scale.height * 0.2,
+			this.scale.height * 0.25,
 			'Play [single player]',
-		)
-		.setInteractive()
-		.on('pointerover', () => singleGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
-		.on('pointerout', () => singleGameBtn.setStyle({ fill: '#fff' }))
-		.on('pointerup', () =>
-			this.switchScene('Settings', { mode: GameMode.single }),
+			() => this.switchScene('Settings', { mode: GameMode.single }),
+			10,
+			"#00ff00"
 		);
-
-		const multiGameBtn = new TextWidget(
-			this,
-			this.scale.width * 0.5,
-			this.scale.height * 0.3,
-			'Play [multi player]'
-		)
-		.setInteractive()
-		.on('pointerover', () => multiGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
-		.on('pointerout', () => multiGameBtn.setStyle({ fill: '#fff' }))
-		.on('pointerup', () =>
-			this.switchScene('Settings', { mode: GameMode.multi }),
-		);
-
-		const changeBkBtn = new TextWidget(
-			this,
-			this.scale.width * 0.5,
-			this.scale.height * 0.4,
-			'Change background',
-		)
-		.setInteractive()
-		.on('pointerover', () => changeBkBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
-		.on('pointerout', () => changeBkBtn.setStyle({ fill: '#fff' }))
-		.on("pointerdown", () => this.openFilePicker());
-		
 		this._widgets.push(singleGameBtn);
+			
+		const multiGameBtn = new ButtonWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.45,
+			'Play [multi player]',
+			() => this.switchScene('Settings', { mode: GameMode.multi }),
+			10,
+			"#00ff00"
+		)
 		this._widgets.push(multiGameBtn);
+
+		const changeBkBtn = new ButtonWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.65,
+			'Change background',
+			() => this.openFilePicker(),
+			10,
+			"#00ff00"
+		)
 		this._widgets.push(changeBkBtn);
 	}
 

@@ -11,14 +11,14 @@ export default class TextWidget extends Phaser.GameObjects.Text implements Resiz
     y: number,
     text: string | string[],
     fontSize: number = 10,
-    color: string = '#fff',
+    fontColor: string = '#fff',
     align: string = 'center',
   ) {
     super(
       scene, x, y, text, {
         fontSize: 0,
         align: 'center',
-        color: color,
+        color: fontColor,
       }
     );
     this.baseFontSize = fontSize;
@@ -40,5 +40,13 @@ export default class TextWidget extends Phaser.GameObjects.Text implements Resiz
     this.setPosition(this.x * w_ratio, this.y * h_ratio);
     this.setDisplaySize(this.width * w_ratio, this.height * h_ratio);
     this.setFontSize(Math.round(this.scene.scale.width * this._textFontRatio) + this.baseFontSize);
+  }
+
+  show(): void {
+    this.setVisible(true);
+  }
+
+  hide(): void {
+    this.setVisible(false);
   }
 }

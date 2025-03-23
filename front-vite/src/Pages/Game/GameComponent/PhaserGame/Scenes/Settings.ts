@@ -4,12 +4,13 @@ import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base'
 import { GameMode, GameDifficulty, PowerUpType, PowerUpSelected } from '/app/src/Types/Game/Enum';
 import TextWidget from '../GameObjects/TextWidget';
 import ToggleWidget from '../GameObjects/Slider';
+import ButtonWidget from '../GameObjects/Button';
 
 
 export default class SettingsScene extends BaseScene {
 
 	private mode: GameMode = GameMode.unset;
-	private difficulty: GameDifficulty = GameDifficulty.unset;
+	private difficulty: GameDifficulty = GameDifficulty.medium;
 
 	private powerUpSelection: PowerUpSelected = PowerUpSelected.noPowerUp;
 
@@ -33,14 +34,13 @@ export default class SettingsScene extends BaseScene {
 				this.scale.width * 0.5,
 				this.scale.height * 0.17,
 				'SETTINGS',
-				20,
+				50,
 		));
 		
-		this._widgets.push(
-			new TextWidget(
+		this._widgets.push(new TextWidget(
 				this,
-				this.scale.width * 0.25,
-				this.scale.height * 0.3,
+				this.scale.width * 0.3,
+				this.scale.height * 0.29,
 				`${PowerUpType.speedBall}`,
 				2,
 				'#fff',
@@ -49,8 +49,8 @@ export default class SettingsScene extends BaseScene {
 		this._widgets.push(
 			new ToggleWidget(
 				this,
-				this.scale.width * 0.65,
-				this.scale.height * 0.3,
+				this.scale.width * 0.6,
+				this.scale.height * 0.29,
 				(value: boolean) => {
 					this.powerUpSelection = value ? 
 						(this.powerUpSelection | PowerUpSelected.speedBall) : 
@@ -58,10 +58,9 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 
-		this._widgets.push(
-			new TextWidget(
+		this._widgets.push(new TextWidget(
 				this,
-				this.scale.width * 0.25,
+				this.scale.width * 0.3,
 				this.scale.height * 0.36,
 				`${PowerUpType.speedPaddle}`,
 				2,
@@ -71,7 +70,7 @@ export default class SettingsScene extends BaseScene {
 		this._widgets.push(
 			new ToggleWidget(
 				this,
-				this.scale.width * 0.65,
+				this.scale.width * 0.6,
 				this.scale.height * 0.36,
 				(value: boolean) => {
 					this.powerUpSelection = value ? 
@@ -80,21 +79,20 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 
-		this._widgets.push(
-			new TextWidget(
-				this,
-				this.scale.width * 0.25,
-				this.scale.height * 0.42,
-				`${PowerUpType.slowPaddle}`,
-				2,
-				'#fff',
-				'left'
+		this._widgets.push(new TextWidget(
+			this,
+			this.scale.width * 0.3,
+			this.scale.height * 0.43,
+			`${PowerUpType.slowPaddle}`,
+			2,
+			'#fff',
+			'left'
 		));
 		this._widgets.push(
 			new ToggleWidget(
 				this,
-				this.scale.width * 0.65,
-				this.scale.height * 0.42,
+				this.scale.width * 0.6,
+				this.scale.height * 0.43,
 				(value: boolean) => {
 					this.powerUpSelection = value ? 
 						(this.powerUpSelection | PowerUpSelected.slowPaddle) : 
@@ -102,20 +100,19 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 		
-		this._widgets.push(
-			new TextWidget(this,
-				this.scale.width * 0.25,
-				this.scale.height * 0.48,
-				`${PowerUpType.shrinkPaddle}`,
-				2,
-				'#fff',
-				'left'
+		this._widgets.push(new TextWidget(this,
+			this.scale.width * 0.3,
+			this.scale.height * 0.50,
+			`${PowerUpType.shrinkPaddle}`,
+			2,
+			'#fff',
+			'left'
 		));
 		this._widgets.push(
 			new ToggleWidget(
 				this,
-				this.scale.width * 0.65,
-				this.scale.height * 0.48,
+				this.scale.width * 0.6,
+				this.scale.height * 0.50,
 				(value: boolean) => {
 					this.powerUpSelection = value ? 
 						(this.powerUpSelection | PowerUpSelected.shrinkPaddle) : 
@@ -123,20 +120,19 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 
-		this._widgets.push(
-			new TextWidget(this,
-				this.scale.width * 0.25,
-				this.scale.height * 0.54,
-				`${PowerUpType.stretchPaddle}`,
-				2,
-				'#fff',
-				'left'
+		this._widgets.push(new TextWidget(this,
+			this.scale.width * 0.3,
+			this.scale.height * 0.57,
+			`${PowerUpType.stretchPaddle}`,
+			2,
+			'#fff',
+			'left'
 		));
 		this._widgets.push(
 			new ToggleWidget(
 				this,
-				this.scale.width * 0.65,
-				this.scale.height * 0.54,
+				this.scale.width * 0.6,
+				this.scale.height * 0.57,
 				(value: boolean) => {
 					this.powerUpSelection = value ? 
 						(this.powerUpSelection | PowerUpSelected.stretchPaddle) : 
@@ -144,42 +140,31 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 
-		const startBtn = new TextWidget(
+		const startBtn = new ButtonWidget(
 			this,
 			this.scale.width * 0.5,
-			this.scale.height * 0.75,
+			this.scale.height * 0.85,
 			this.mode === GameMode.single ? 'PLAY!' : 'JOIN QUEUE',
-			25,
-			'#fff'
-		).setStroke("#0f0", 2)		// NB save it for TextButton
-		.setInteractive()
-		.on('pointerover', () => startBtn.setStyle({ fill: '#0f0' }))
-		.on('pointerout', () => startBtn.setStyle({ fill: '#fff' }))
-		.on('pointerup', () => this.startGame());
+			() => this.startGame(),
+			45,
+			'#00ff00'
+		)
 		this._widgets.push(startBtn);
 	
 		if (this.mode === GameMode.single) {
 			this.difficulty = GameDifficulty.medium;
-
-			this._widgets.push(
-				new TextWidget(
-					this,
-					this.scale.width * 0.25,
-					this.scale.height * 0.63,
-					'difficulty'
-			));
 			
 			const easyModeToggle = new TextWidget(
 				this,
-				this.scale.width * 0.55,
-				this.scale.height * 0.63,
+				this.scale.width * 0.3,
+				this.scale.height * 0.7,
 				'EASY',
-				8
-			).setStroke("#f00", 2)
+				20
+			).setStroke("#ffff00", 2)
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.easy;
-				easyModeToggle.setStyle({ fill: '#d7263d' });
+				easyModeToggle.setStyle({ fill: '#ffff00' });
 				mediumModeToggle.setStyle({ fill: '#fff' });
 				hardModeToggle.setStyle({ fill: '#fff' });
 			});
@@ -187,48 +172,47 @@ export default class SettingsScene extends BaseScene {
 
 			const mediumModeToggle = new TextWidget(
 				this,
-				this.scale.width * 0.675,
-				this.scale.height * 0.63,
+				this.scale.width * 0.5 ,
+				this.scale.height * 0.7,
 				'MEDIUM',
-				8,
-				'#d7263d'
-			).setStroke("#f00", 2)
+				20,
+				"#ffa500"
+			).setStroke("#ffa500", 2)
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.medium;
 				easyModeToggle.setStyle({ fill: '#fff' });
-				mediumModeToggle.setStyle({ fill: '#d7263d' });
+				mediumModeToggle.setStyle({ fill: '#ffa500' });
 				hardModeToggle.setStyle({ fill: '#fff' });
 			});
 			this._widgets.push(mediumModeToggle);
 
 			const hardModeToggle = new TextWidget(
 				this,
-				this.scale.width * 0.8,
-				this.scale.height * 0.63,
+				this.scale.width * 0.7,
+				this.scale.height * 0.7,
 				'HARD',
-				8
-			).setStroke("#f00", 2)
+				20,
+			).setStroke("#ff0000", 2)
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.hard;
 				easyModeToggle.setStyle({ fill: '#fff' });
 				mediumModeToggle.setStyle({ fill: '#fff' });
-				hardModeToggle.setStyle({ fill: '#d7263d' });
+				hardModeToggle.setStyle({ fill: '#ff0000' });
 			});
 			this._widgets.push(hardModeToggle);
 		}
 
-		const goHomeButton = new TextWidget(
+		const goHomeButton = new ButtonWidget(
 			this,
 			this.scale.width * 0.9,
 			this.scale.height * 0.9,
-			'Home'
+			'Home',
+			() => this.switchScene('MainMenu'),
+			20,
+			'#dd0000'
 		)
-		.setInteractive()
-		.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
-		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
-		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 		this._widgets.push(goHomeButton);
 	}
 

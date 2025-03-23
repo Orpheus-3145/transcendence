@@ -34,4 +34,12 @@ export default class Ball implements Resizable{
     this._graphic.setPosition(this._graphic.x * w_ratio, this._graphic.y * h_ratio);
 		this._graphic.setRadius(this.radius);
   }
+
+  show(): void {
+    this._graphic.setVisible(true);
+  }
+
+  hide(): void {
+    this._graphic.setVisible(false);
+	}
 }

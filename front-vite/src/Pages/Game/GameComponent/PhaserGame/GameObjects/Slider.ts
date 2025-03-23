@@ -73,7 +73,6 @@ export default class ToggleWidget implements Resizable{
 
 	updateToggle(): void {
 		this.isActive = !this.isActive;
-		console.log('pressed');
 
 		this.callback(this.isActive);
 
@@ -111,4 +110,14 @@ export default class ToggleWidget implements Resizable{
 		this.knob.setRadius(this.knobRadius)
 		this.knob.setDepth(1);
 	}
+
+  show(): void {
+    this.toggle.setVisible(true);
+    this.knob.setVisible(true);
+  }
+
+  hide(): void {
+    this.toggle.setVisible(false);
+    this.knob.setVisible(false);
+  }
 }

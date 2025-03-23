@@ -1,3 +1,4 @@
+import ButtonWidget from '../GameObjects/Button';
 import TextWidget from '../GameObjects/TextWidget';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 
@@ -26,17 +27,15 @@ export default class ErrorScene extends BaseScene {
 				18,
 		));
 
-		// button for going home
-		const goHomeButton = new TextWidget(
+		const goHomeButton = new ButtonWidget(
 			this,
 			this.scale.width * 0.9,
 			this.scale.height * 0.9,
-			'Home'
+			'Home',
+			() => this.switchScene('MainMenu'),
+			20,
+			'#dd0000'
 		)
-		.setInteractive()
-		.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
-		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
-		.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 		this._widgets.push(goHomeButton);
 	}
 }

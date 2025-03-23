@@ -76,4 +76,12 @@ export default class Paddle implements Resizable {
     this._graphic.setPosition(this._graphic.x * w_ratio, this._graphic.y * h_ratio);
     this._graphic.setDisplaySize(this._width, this._height);
   }
+
+  show(): void {
+    this._graphic.setVisible(true);
+  }
+
+  hide(): void {
+    this._graphic.setVisible(false);
+	}
 }

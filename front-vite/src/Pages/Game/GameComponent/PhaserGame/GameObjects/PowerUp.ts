@@ -56,4 +56,12 @@ export default class PowerUp extends Phaser.GameObjects.Graphics implements Resi
     this.setPosition(this.x * w_ratio, this.y * h_ratio);
     this.drawTriangle();
   }
+
+  show(): void {
+    this.setVisible(true);
+  }
+
+  hide(): void {
+    this.setVisible(false);
+	}
 }

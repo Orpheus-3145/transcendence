@@ -7,7 +7,7 @@ export default class PopupWidget extends Phaser.GameObjects.Container implements
   private readonly background: Phaser.GameObjects.Rectangle;
   private readonly title: TextWidget;
 
-  constructor(scene: Phaser.Scene, title: string) {
+  constructor(scene: Phaser.Scene, title: string = '') {
 
     super(scene, scene.scale.width / 4, scene.scale.height / 4);
 
@@ -16,7 +16,6 @@ export default class PopupWidget extends Phaser.GameObjects.Container implements
       scene.scale.width / 2,
       scene.scale.height / 2,
       0xfff,
-      1
     )
     .setStrokeStyle(2, 0xffffff)
     .setInteractive()
@@ -27,7 +26,8 @@ export default class PopupWidget extends Phaser.GameObjects.Container implements
       this.scene,
       this.background.width * 0.5,
       this.background.height * 0.1,
-      title
+      title,
+      -5
     );
     this.add(this.title);
   

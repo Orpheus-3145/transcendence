@@ -11,8 +11,8 @@ export default class Field extends TextWidget {
 			scene.scale.width * 0.5,
 			scene.scale.height * 0.1,
 			`0 : 0`,
-			0,
-			'#FFA500'
+			10,
+			'#00ff00'
 		)
 	}
 
@@ -21,5 +21,4 @@ export default class Field extends TextWidget {
 		this._rightScore = right;
 		this.text = `${this._leftScore} : ${this._rightScore}`;
 	}
-
 }
