@@ -552,32 +552,31 @@ useEffect(() => {
 	//-------------------------ERRORS HANDLER-------------------------//
 
 		useEffect(() => {
-			const handleErrors = (message: string) => {
-				console.log('Error received: ', message);
+			const handleErrors = (data: {operation: string, message: string}) => {
+				console.log('Error received: ', data.message);
 
-				if (message.includes('channel creation error')) {
-					alert('Failed to create channel.');
-				} else if (message.includes('message error')) {
-					alert('Failed to send message.');
-				} else if (message.includes('privacy error')) {
-					alert('Failed to change channel privacy.');
-				} else if (message.includes('ban user error')) {
-					alert('Failed to ban user.');
-				} else if (message.includes('unban user error')) {
-					alert('Failed to unban user.');
-				} else if (message.includes('kick user error')) {
-					alert('Failed to kick user.');
-				} else if (message.includes('mute user error')) {
-					alert('Failed to mute user.');
-				} else if (message.includes('unmute user error')) {
-					alert('Failed to unmute user.');
-				} else if (message.includes('role change error')) {
-					alert('Failed to change user role.');
-				} else if (message.includes('leave channel error')) {
-					alert('Failed to leave channel.');
-				} else if (message.includes('join channel error')) {
-					alert('Failed to join channel.');
-				}
+				if (data.operation === 'createChannel')
+					alert(`Failed to create channel: ${data.message}`);
+				else if (data.operation === 'sendMessage')
+					alert(`Failed to send message: ${data.message}`);
+				else if (data.operation === 'changePrivacy')
+					alert(`Failed to change channel privacy: ${data.message}`);
+				else if (data.operation === 'banUserFromChannel')
+					alert(`Failed to ban user: ${data.message}`);
+				else if (data.operation === 'unbanUserFromChannel')
+					alert(`Failed to unban user: ${data.message}`);
+				else if (data.operation === 'kickUserFromChannel')
+					alert(`Failed to kick user: ${data.message}`);
+				else if (data.operation === 'muteUserFromChannel')
+					alert(`Failed to mute user: ${data.message}`);
+				else if (data.operation === 'unmuteUserFromChannel')
+					alert(`Failed to unmute user: ${data.message}`);
+				else if (data.operation === 'changeUserRole')
+					alert(`Failed to change user role: ${data.message}`);
+				else if (data.operation === 'leaveChannel')
+					alert(`Failed to leave channel: ${data.message}`);
+				else if (data.operation === 'join channel error')
+					alert(`Failed to join channel: ${data.message}`);
 			};
 
 			socket.on('channelError', handleErrors);
