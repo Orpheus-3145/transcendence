@@ -1,7 +1,7 @@
-import BaseAnimation from './Animations/BaseAnimation';
-import MovingLines from './Animations/MovingLines';
-import ParticleEmitter from './Animations/ParticleEmitter';
-import ParticleSystem from './Animations/ParticleSystem';
+import BaseAnimation from '../Animations/BaseAnimation';
+import MovingLines from '../Animations/MovingLines';
+import ParticleEmitter from '../Animations/ParticleEmitter';
+import ParticleSystem from '../Animations/ParticleSystem';
 import { AnimationSelected } from '../../../../../Types/Game/Enum';
 
 

@@ -1,4 +1,4 @@
-import Ball from "../../GameObjects/Ball";
+import Ball from "../GameObjects/Ball";
 // Abstract class for background animations
 export default abstract class BaseAnimation {
 	protected scene: Phaser.Scene;

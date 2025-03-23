@@ -1,7 +1,7 @@
 import { AnimationSelected } from '../../../../../Types/Game/Enum';
-import MovingLines from './Animations/MovingLines';
-import ParticleEmitter from './Animations/ParticleEmitter';
-import ParticleSystem from './Animations/ParticleSystem';
+import MovingLines from '../Animations/MovingLines';
+import ParticleEmitter from '../Animations/ParticleEmitter';
+import ParticleSystem from '../Animations/ParticleSystem';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameMode } from '/app/src/Types/Game/Enum';
 

@@ -85,12 +85,15 @@ export default class ResultsScene extends BaseScene {
 
 		this._waitingPopup = this.createWaitingPopup();
 		this._waitingPopup.setVisible(false);
+		this._waitingPopup.setDepth(1);
 	
 		this._playAgainPopup = this.createPlayAgainPopup();
 		this._playAgainPopup.setVisible(false);
+		this._playAgainPopup.setDepth(1);
 
 		this._refusePopup = this.createRefusePopup();
 		this._refusePopup.setVisible(false);
+		this._refusePopup.setDepth(1);
 	}
 
 	setupSocket(): void {

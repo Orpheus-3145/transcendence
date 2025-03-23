@@ -1,10 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
-
-import BaseScene, { GlobalEvents } from './Base';
+import BaseScene from './Base';
 import { AnimationSelected } from '../../../../../Types/Game/Enum';
-import MovingLines from './Animations/MovingLines';
-import ParticleEmitter from './Animations/ParticleEmitter';
-import ParticleSystem from './Animations/ParticleSystem';
+import MovingLines from '../Animations/MovingLines';
+import ParticleEmitter from '../Animations/ParticleEmitter';
+import ParticleSystem from '../Animations/ParticleSystem';
 
 
 export default class BackgroundSelectionScene extends BaseScene {
