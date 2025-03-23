@@ -11,6 +11,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
 
 
 CREATE TYPE USER_STATUS AS ENUM ('online', 'offline', 'ingame');
+CREATE TYPE GAME_ANIMATION AS ENUM ('movingLines', 'particleSystem', 'particleSystem');
 CREATE TABLE IF NOT EXISTS Users (
 	user_id SERIAL PRIMARY KEY,
 	intra_id INTEGER UNIQUE NOT NULL,
@@ -19,7 +20,6 @@ CREATE TABLE IF NOT EXISTS Users (
 	first_name TEXT NOT NULL,
 	last_name TEXT NOT NULL,
 	nickname TEXT UNIQUE NOT NULL,
-	-- status ENUM ('online', 'offline', 'ingame') DEFAULT 'offline',		NB this should be used!
 	greeting TEXT DEFAULT 'Hello, I have just landed!',
 	status USER_STATUS DEFAULT 'offline',
 	profile_photo TEXT DEFAULT 'default_profile_photo.png',
@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS Users (
 	blocked ARRAY[] DEFAULT [],
 	token TEXT NOT NULL,
 	2fa_secret TEXT DEFAULT NULL,
+	game_animation GAME_ANIMATION DEFAULT 'movingLines',
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 );
 

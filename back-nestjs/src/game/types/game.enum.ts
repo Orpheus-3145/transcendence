@@ -21,6 +21,12 @@ export enum PaddleDirection {
 	down = 'down',
 }
 
+export enum AnimationSelected {
+	movingLines = 'movingLines',
+	particleEmitter = 'particleEmitter',
+	particleSystem = 'particleSystem'
+}
+
 export enum PowerUpType {
 	speedBall = 'speedBall',
 	speedPaddle = 'speedPaddle',

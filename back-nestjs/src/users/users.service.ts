@@ -11,6 +11,7 @@ import UserDTO, { UserStatus } from 'src/dto/user.dto'
 import MatchDataDTO from 'src/dto/matchData.dto';
 import LeaderboardDTO from 'src/dto/leaderboard.dto';
 import MatchRatioDTO from 'src/dto/matchRatio.dto';
+import { AnimationSelected } from 'src/game/types/game.enum';
 
 
 @Injectable()
@@ -375,5 +376,21 @@ export class UsersService {
 
 		this.logger.debug(`Creating global leaderboard`);
 		return (result);
+	}
+
+	async fetchGameAnimation(intraId: string): Promise<AnimationSelected> {
+
+		const user: User = await this.getUserIntraId(intraId);
+
+		this.logger.log(`fetching animation: ${user.gameAnimation} from ${user.nameNick}`);
+		return user.gameAnimation;
+	}
+
+	async setGameAnimation(intraId: string, newGameAnimation: AnimationSelected): Promise<void> {
+
+		const user: User = await this.getUserIntraId(intraId);
+		user.gameAnimation = newGameAnimation;
+		this.usersRepository.save(user);
+		this.logger.log(`${user.nameNick} set game animation: ${newGameAnimation}`);
 	}
 }

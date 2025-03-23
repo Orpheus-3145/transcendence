@@ -10,7 +10,7 @@ export default class MainMenuScene extends BaseScene {
 
 	create(): void {
 		super.create();
-		
+
 		if (this.registry.get('gameInvitationData')) {
 			this.switchScene('Game', this.registry.get('gameInvitationData'));
 			this.registry.remove('gameInvitationData');

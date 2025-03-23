@@ -34,7 +34,7 @@ export enum PowerUpSelected {
 }
 
 export enum AnimationSelected {
-	movingLines = 0,
-	particleEmitter = 1,
-	particleSystem = 2
+	movingLines = 'movingLines',
+	particleEmitter = 'particleEmitter',
+	particleSystem = 'particleSystem'
 }

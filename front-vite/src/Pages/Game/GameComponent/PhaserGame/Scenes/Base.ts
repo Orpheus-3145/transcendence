@@ -1,3 +1,4 @@
+import axios from 'axios';
 import BaseAnimation from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/BaseAnimation';
 import MovingLines from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/MovingLines';
 import ParticleEmitter from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/ParticleEmitter';
@@ -10,7 +11,7 @@ export default class BaseScene extends Phaser.Scene {
 	
 	protected _keyEsc: Phaser.Input.Keyboard.Key | null = null;	
 	protected _animation: BaseAnimation | null = null;
-	protected _animationSelected: number = AnimationSelected.movingLines; // Should retrieve this value from the BE based on saved preferences
+	protected _animationSelected: AnimationSelected | null = null; // Should retrieve this value from the BE based on saved preferences
 	protected _switchAnimation: boolean = false;
 
 	// all the objects are stored here to be properly resized
@@ -25,17 +26,37 @@ export default class BaseScene extends Phaser.Scene {
 
 	// run after preload(), creation of the entities of the scene
 	create(arg?: any): void {
+		// don't draw anything until the animation from db is fetched
+		if (this._animationSelected === null)
+			return ;
+	
 		this.buildGraphicObjects();
 		this.createAnimation();
 	}
 
+	async fetchUserAnimation(): Promise<void> {
+		if (this._animationSelected === null) {
+			const intraId = this.registry.get('user42data').intraId;
+			const url = `${import.meta.env.URL_BACKEND}/users/profile/fetchGameAntimation/${intraId}`;
+			try {
+				const response = await axios.get(url);
+				this._animationSelected = response.data;
+				this.switchScene(this.scene.key);			// reload the scene with the animation updated
+			} catch (error) {
+				this._animationSelected = AnimationSelected.movingLines;
+			}
+			if (this.scene.manager)
+				this.scene.manager.getScenes(false).forEach((scene: Phaser.Scene) => (scene as BaseScene).setAnimation(this._animationSelected!));
+		}
+	}
 	// function called by Phaser engine once every frame
 	// @param time: absolute time (in ms) since the start of the scene
 	// @param delta: amount of time (in ms) passed since last time time update() was called
 	update(time: number, delta: number): void {
 		if (this._keyEsc!.isDown)
 			this.switchScene('MainMenu');
-		this._animation!.update();
+		if (this._animation)
+			this._animation.update();
 	}
 
 	// method to call whenever the scene is switched
@@ -71,7 +92,9 @@ export default class BaseScene extends Phaser.Scene {
 	}
 
 	// loading graphic assets, fired after init()
-	preload(arg?: any): void {}
+	preload(arg?: any): void {
+		this.fetchUserAnimation();
+	}
 
 	// create graphical objects to show on scene
 	buildGraphicObjects(): void {}

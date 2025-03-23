@@ -16,9 +16,6 @@ export default class ParticleEmitter extends BaseAnimation {
 		const radius = this.scene.scale.width / this.scene.scale.height * 2;
         const circleTexture = this.createCircleTexture("circleParticle", radius);
 
-		console.log("Particle Emitter is created");
-
-		// return ;
 		this.emitter1 = this.createEmitter(circleTexture);
        
 		this.scene.time.delayedCall(Phaser.Math.Between(100, 500), () => {

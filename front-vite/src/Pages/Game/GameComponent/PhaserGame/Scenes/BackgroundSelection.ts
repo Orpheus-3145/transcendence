@@ -1,3 +1,4 @@
+import axios from 'axios';
 import ButtonWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Button';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { AnimationSelected } from '/app/src/Types/Game/Enum';
@@ -58,10 +59,18 @@ export default class BackgroundSelectionScene extends BaseScene {
 	}
 
 	// update the animation for all the other scenes
-	handleChange(animationSelected: AnimationSelected): void {
+	async handleChange(animationSelected: AnimationSelected): Promise<void> {
 		if (animationSelected === this._animationSelected)
 			return ;
 
+		const intraId = this.registry.get('user42data').intraId;
+
+		try {
+			const url = `${import.meta.env.URL_BACKEND}/users/profile/setGameAntimation/${intraId}/${animationSelected}`;
+      await axios.post(url);
+    } catch (error) {
+			this.switchScene('Error', { trace: `failed to updated animation for user: ${error}`});
+    }
 		// updates all the other scenes with the change
 		this.scene.manager.getScenes(false).forEach((scene: Phaser.Scene) => (scene as BaseScene).setAnimation(animationSelected));
 
