@@ -557,24 +557,27 @@ useEffect(() => {
 
 				if (message.includes('channel creation error')) {
 					alert('Failed to create channel.');
-				} else if (message.includes('message creation error')) {
+				} else if (message.includes('message error')) {
 					alert('Failed to send message.');
 				} else if (message.includes('privacy error')) {
 					alert('Failed to change channel privacy.');
 				} else if (message.includes('ban user error')) {
 					alert('Failed to ban user.');
+				} else if (message.includes('unban user error')) {
+					alert('Failed to unban user.');
 				} else if (message.includes('kick user error')) {
 					alert('Failed to kick user.');
-				} else if (message.includes('kick user error')) {
-					alert('Failed to kick user.');
-				} else if (message.includes('kick user error')) {
-					alert('Failed to kick user.');
-				} else if (message.includes('kick user error')) {
-					alert('Failed to kick user.');
-				} else if (message.includes('kick user error')) {
-					alert('Failed to kick user.');
+				} else if (message.includes('mute user error')) {
+					alert('Failed to mute user.');
+				} else if (message.includes('unmute user error')) {
+					alert('Failed to unmute user.');
+				} else if (message.includes('role change error')) {
+					alert('Failed to change user role.');
+				} else if (message.includes('leave channel error')) {
+					alert('Failed to leave channel.');
+				} else if (message.includes('join channel error')) {
+					alert('Failed to join channel.');
 				}
-
 			};
 
 			socket.on('channelError', handleErrors);
