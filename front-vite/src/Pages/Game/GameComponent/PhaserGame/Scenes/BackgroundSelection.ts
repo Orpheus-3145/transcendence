@@ -70,13 +70,11 @@ export default class BackgroundSelectionScene extends BaseScene {
 	}
 
 	handleChange(animationSelected: AnimationSelected): void {
-		if (animationSelected === this._animationSelected){
+		if (animationSelected === this._animationSelected)
 			return ;
-		}
 
 		this._animationSelected = animationSelected;
 		this.createAnimation();
 	}
-
 
 }

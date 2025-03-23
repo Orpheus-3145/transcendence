@@ -1,6 +1,8 @@
-export default class PowerUp extends Phaser.GameObjects.Graphics {
+import Resizable from "./Resizable";
+
+export default class PowerUp extends Phaser.GameObjects.Graphics implements Resizable {
   private readonly sizeRatio: number;
-  private readonly size: number;
+  private size: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene);
@@ -43,4 +45,22 @@ export default class PowerUp extends Phaser.GameObjects.Graphics {
     this.clear(); // Clear graphics
     super.destroy(); // Call parent destroy method
   }
+  
+  resize(old_width: number, old_height: number): void {
+    
+    const w_ratio = this.scene.scale.width / old_width;
+    const h_ratio = this.scene.scale.height / old_height;
+    
+    this.size *= w_ratio;
+    this.setPosition(this.x * w_ratio, this.y * h_ratio);
+    this.drawTriangle();
+  }
+
+  show(): void {
+    this.setVisible(true);
+  }
+
+  hide(): void {
+    this.setVisible(false);
+	}
 }

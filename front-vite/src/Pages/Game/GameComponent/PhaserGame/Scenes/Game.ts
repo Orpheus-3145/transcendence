@@ -98,7 +98,6 @@ export default class GameScene extends BaseScene {
 	// Create game objects and establish WebSocket connection
 	create(): void {
 		super.create()
-		// this.createListener();
 
 		if (this._mode === GameMode.single) {
 			const initData: GameData = {
@@ -153,20 +152,27 @@ export default class GameScene extends BaseScene {
 			return ;
 
 		this._ball = new Ball(this, this._gameState.ball.x, this._gameState.ball.y); // Initialize ball with no movement initially
+		this._widgets.push(this._ball);
 
 		if (this._animation) {
 			this._animation.setBall(this._ball); // Pass the ball to the animation
 		}
 		// Create bars
-		const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
 		this._leftPaddle = new Paddle(this, 0, this._gameState.p1.y);
+		this._widgets.push(this._leftPaddle);
+	
+		const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
 		this._rightPaddle = new Paddle(this, this.scale.width - (this.scale.width / paddleWidthRatio), this._gameState.p2.y);
+		this._widgets.push(this._rightPaddle);
 
 		// Create field (handles borders, scoring, etc.)
 		this._field = new Field(this);
+		this._widgets.push(this._field);
 
-		if (this._powerUpState)
+		if (this._powerUpState) {
 			this._powerUp = new PowerUp(this, this._powerUpState.x, this._powerUpState.y);
+			this._widgets.push(this._powerUp);
+		}
 	}
 
 	setupSocket(): void {
@@ -307,10 +313,5 @@ export default class GameScene extends BaseScene {
 	disconnect(): void {
 		if (this._keepConnectionOpen === false)
 			this._socketIO.disconnect();
-	}
-
-	destory():  void {
-		super.destroy();
-		// this.destoryListerner();
 	}
 }
