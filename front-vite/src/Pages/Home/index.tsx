@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Stack, Box, Container, Typography, useTheme } from '@mui/material';
+import React from 'react';
+import { Box, Container, Typography, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
-import axios from 'axios';
-import { useCookies } from 'react-cookie';
 
 const ContentBox = styled(Box)(({ theme }) => ({
 	backgroundColor: theme.palette.primary.dark,
@@ -12,239 +10,150 @@ const ContentBox = styled(Box)(({ theme }) => ({
 	marginTop: theme.spacing(2),
 }));
 
-type SectionTitleProps = {
-	children: React.ReactNode;
-	width: string;
-};
-
-const SectionTitle: React.FC<SectionTitleProps> = ({ children, width }) => {
+const Title = () => {
 	const theme = useTheme();
 	return (
 		<Typography
-			variant='h4'
+			variant="h2"
 			sx={{
 				textAlign: 'center',
-				width,
 				color: theme.palette.secondary.main,
-				bgcolor: theme.palette.primary.main,
-				borderTopLeftRadius: '0.5em',
-				borderTopRightRadius: '0.5em',
 			}}
 		>
-			{children}
+			Transcendence
 		</Typography>
 	);
 };
 
-type SectionContentProps = {
-	children: React.ReactNode;
-};
-
-const SectionContent: React.FC<SectionContentProps> = ({ children }) => {
+const Footer = () => {
 	const theme = useTheme();
 	return (
 		<Typography
-			component={'div'}
+			variant="h5"
 			sx={{
-				marginBottom: '1em',
-				fontVariant: 'body1',
-				padding: '0.5em',
-				textAlign: 'justify',
-				color: theme.palette.secondary.main,
-				bgcolor: theme.palette.primary.main,
-				borderBottomLeftRadius: '1em',
-				borderBottomRightRadius: '1em',
-				borderTopRightRadius: '1em',
+				textAlign: 'center',
+				color: theme.palette.secondary.light,
 			}}
 		>
-			<Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
-				{children}
-			</Box>
+			developed by:
+		</Typography>
+	)
+}
+
+const WelcomeMessage: React.FC = () => {
+	const theme = useTheme();
+	return (
+		<Typography
+			variant="body1"
+			sx={{
+				textAlign: 'center',
+				color: theme.palette.text.primary,
+				padding: '1em 25%'
+			}}
+		>
+			Welcome to our project, here you can challenge your friends at a Pong game with superpowers, or start your channel to stay in contact with all of them at once!
 		</Typography>
 	);
 };
 
-type ListContentProps = {
-	items: string[];
-};
-
-const ListContent: React.FC<ListContentProps> = ({ items }) => (
-	<Box>
-		{items.map((item, index) => (
-			<Box
-				key={index}
-				component='div'
-				sx={{ marginBottom: index !== items.length - 1 ? '0.5em' : '0' }}
-			>
-				{item}
-			</Box>
-		))}
-	</Box>
-);
-
-const objectives = [
-	'Develop a single-page application for playing Pong online.',
-	'Implement real-time multiplayer functionality.',
-	'Create a comprehensive user account system with OAuth, two-factor authentication, and user profiles.',
-	'Integrate a chat system with features like public and private channels, direct messaging, and user blocking.',
-	'Ensure the application adheres to high security standards.',
-];
-
-const requirements = [
-	'Backend: The backend must be developed using NestJS.',
-	'Frontend: The frontend must be created using a TypeScript framework of choice.',
-	'Database: PostgreSQL is required as the database management system.',
-	'Compatibility: The application must be compatible with the latest stable versions of Google Chrome and one other web browser.',
-	'Deployment: The entire application must be deployable via a single docker-compose up --build command, utilizing Docker in rootless mode for security.',
-];
-
-const security = [
-	'Passwords must be hashed before storing.',
-	'Protection against SQL injection attacks.',
-	'Server-side validation of all forms and user inputs.',
-	'Secure storage of credentials, API keys, and environment variables in a .env file, excluded from version control.',
-];
-
-const chat = [
-	'Creation of public, private, and password-protected channels.',
-	'Direct messaging between users.',
-	'Blocking functionality.',
-	'Channel administration capabilities including setting passwords, kicking, banning, and muting users.',
-	'Integration with the game invitation system.',
-];
-
-const pong = [
-	'Real-time Pong gameplay between users.',
-	'Matchmaking system for automatic player pairing.',
-	'Options for game customization (e.g., power-ups, different maps) while retaining a classic mode.',
-	'Responsiveness to network issues to ensure a smooth user experience.',
-];
-
-const Home: React.FC = () => {
+const UserList: React.FC<{ users: DevData[] }> = ({ users }) => {
 	const theme = useTheme();
 	return (
-		<Container>
-			<ContentBox>
-				<SectionTitle width='16ch'>ft_transcendence</SectionTitle>
-				<SectionContent>
-					<Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
-						A modern web application to play Pong online with real-time multiplayer capabilities.
-					</Box>
-				</SectionContent>
-
-				<SectionTitle width='15ch'>Project Overview</SectionTitle>
-				<SectionContent>
-					<Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
-						A web development project centered on creating a single-page application (SPA) that
-						allows users to play the classic game Pong against each other. The project emphasizes
-						modern web development practices, utilizing NestJS for the backend, a TypeScript
-						framework for the frontend, and PostgreSQL for the database. The application will
-						feature a user-friendly interface, real-time multiplayer capabilities, a chat system,
-						and robust security measures.
-					</Box>
-				</SectionContent>
-
-				<SectionTitle width='10ch'>Objectives</SectionTitle>
-				<SectionContent>
-					<ListContent items={objectives} />
-				</SectionContent>
-
-				<SectionTitle width='13ch'>Technical Requirements</SectionTitle>
-				<SectionContent>
-					<ListContent items={requirements} />
-				</SectionContent>
-
-				<SectionTitle width='13ch'>Core Features</SectionTitle>
-				<Stack
-					spacing={'0.5em'}
+		<Box sx={{ padding: '0 30px', display: 'flex', justifyContent: 'center', gap: '1.5em', marginTop: '2em' }}>
+			{users.map((user, index) => (
+				<a href={user.link} style={{ textDecoration: 'none' }}>
+				<Box
+					key={index}
 					sx={{
-						direction: 'column',
+						borderRadius: '1em',
+						padding: '1em',
+						textAlign: 'center',
 						display: 'flex',
-						marginBottom: '1em',
-						fontVariant: 'body1',
-						padding: '0.5em',
-						textAlign: 'justify',
-						color: 'secondary.main',
-						bgcolor: 'primary.main',
-						borderBottomLeftRadius: '1em',
-						borderBottomRightRadius: '1em',
-						borderTopRightRadius: '1em',
+						flexDirection: 'column',
+						color: theme.palette.text.primary,
+						justifyContent: 'center',
+						gap: '15px',
+						transition: 'all 0.3s',
+						'&:hover': {
+							transform: 'scale(1.1)',
+							boxShadow: '0 1em 15px rgba(0, 0, 0, 0.3)',
+							color: theme.palette.secondary.main,
+						},
+						marginBottom: '3em'
 					}}
 				>
-					<Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
-						<Typography
-							variant='h5'
-							sx={{
-								textAlign: 'center',
-								color: theme.palette.background.default,
-								bgcolor: theme.palette.secondary.main,
-								borderTopLeftRadius: '0.5em',
-								borderTopRightRadius: '0.5em',
-							}}
-						>
-							User Account Management
-						</Typography>
-						<Box
-							borderRadius={'1em'}
-							bgcolor={'background.default'}
-							padding={'1em'}
-							color={'secondary.main'}
-						>
-							<ListContent items={requirements} />
-						</Box>
-					</Box>
-					<Stack direction={'row'}>
-						<Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
-							<Typography
-								variant='h5'
-								sx={{
-									textAlign: 'center',
-									color: theme.palette.background.default,
-									bgcolor: theme.palette.secondary.main,
-									borderTopLeftRadius: '0.5em',
-									borderTopRightRadius: '0.5em',
-								}}
-							>
-								Chat System
-							</Typography>
-							<Box
-								borderRadius={'1em'}
-								bgcolor={'background.default'}
-								padding={'1em'}
-								color={'secondary.main'}
-							>
-								<ListContent items={chat} />
-							</Box>
-						</Box>
-						<Box bgcolor={'background.default'} borderRadius={'1em'} sx={{ marginX: '0.3em' }}>
-							<Typography
-								variant='h5'
-								sx={{
-									textAlign: 'center',
-									color: theme.palette.background.default,
-									bgcolor: theme.palette.secondary.main,
-									borderTopLeftRadius: '0.5em',
-									borderTopRightRadius: '0.5em',
-								}}
-							>
-								Pong Game
-							</Typography>
-							<Box
-								borderRadius={'1em'}
-								bgcolor={'background.default'}
-								padding={'1em'}
-								color={'secondary.main'}
-							>
-								<ListContent items={pong} />
-							</Box>
-						</Box>
-					</Stack>
-				</Stack>
+					<img
+						src={user.image}
+						alt={user.name}
+						style={{
+							borderRadius: '50%',
+							width: '120px',
+							height: '120px',
+							objectFit: 'cover',
+							cursor: 'pointer',
+						}}
+					/>
+					<Typography
+						variant="body2"
+						sx={{
+							color: 'inherit',
+							fontSize: '1.2em',
+						}}
+					>
+						{user.name}
+					</Typography>
+				</Box>
+				</a>
+			))}
+		</Box>
+	);
+};
 
-				<SectionTitle width='13ch'>Security Considerations</SectionTitle>
-				<SectionContent>
-					<ListContent items={security} />
-				</SectionContent>
+interface DevData {
+	name: string;
+	image: string;
+	link?: string;
+}
+
+const Home: React.FC = () => {
+	let devs: DevData[] = [
+		{
+			name: 'yzaim',
+			image: 'https://cdn.intra.42.fr/users/a36f361af8cf1e698cc99cbc3d2db280/yzaim.jpg'
+		},
+		{
+			name: 'dhussain',
+			image: 'https://cdn.intra.42.fr/users/a94aedb528f8f7e32827922b9e8165c6/dhussain.jpg'
+		},
+		{
+			name: 'faru',
+			image: 'https://cdn.intra.42.fr/users/aa36efc4c23571115933ac7aa4960a18/faru.jpg'
+		},
+		{
+			name: 'raanghel',
+			image: 'https://cdn.intra.42.fr/users/0d691e68fa643262d098d061ce3201a2/raanghel.jpg'
+		},
+		{
+			name: 'lmuzio',
+			image: 'https://cdn.intra.42.fr/users/40e671a678dd9c83196e7e66f2965c5c/lmuzio.jpg'
+		},
+	]
+
+	devs = devs.map((dev) => {
+		return {...dev, link:'https://profile.intra.42.fr/users/' + dev.name};
+	})
+
+	return (
+		<Container sx={{
+			display: 'flex',
+			justifyContent: 'center'
+		}}>
+			<ContentBox>
+				<Title />
+				<WelcomeMessage />
+
+				<Footer />
+				<UserList users={devs} />
 			</ContentBox>
 		</Container>
 	);
