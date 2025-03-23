@@ -59,7 +59,7 @@ export default class MatchmakingScene extends BaseScene {
 			if (this._gameInitData) {
 
 				this._gameInitData.sessionToken = sessionId;
-				this.switchScene('Game', this._gameInitData);
+				this.switchScene('Game', {gameData: this._gameInitData, animationSelected: this._animationSelected});
 			}
 		});
 
