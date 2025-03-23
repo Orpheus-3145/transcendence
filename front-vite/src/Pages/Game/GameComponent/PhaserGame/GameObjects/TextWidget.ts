@@ -1,4 +1,5 @@
-import Resizable from "./Resizable";
+import { Resizable } from "/app/src/Types/Game/Interfaces";
+
 
 export default class TextWidget extends Phaser.GameObjects.Text implements Resizable{
   

@@ -1,4 +1,4 @@
-import Ball from "../GameObjects/Ball";
+import Ball from "/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Ball";
 // Abstract class for background animations
 export default abstract class BaseAnimation {
 	protected scene: Phaser.Scene;
@@ -19,8 +19,6 @@ export default abstract class BaseAnimation {
 
 
 	protected createCircleTexture(key: string, radius: number): string {
-		if (this.scene)
-			console.log("The scene is set")
 		const graphics = this.scene.add.graphics();
 		graphics.fillStyle(0xffffff, 1); // White color
 		graphics.fillCircle(radius, radius, radius);
@@ -30,8 +28,7 @@ export default abstract class BaseAnimation {
 		return key;
     }
 
-	protected setBall(ball: Ball): void {
-		console.log("Ball is set in Base Animation");
+	setBall(ball: Ball): void {
 		this._ball = ball;
 	}
 }

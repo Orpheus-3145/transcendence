@@ -1,11 +1,11 @@
 import { Socket } from 'socket.io-client';
 
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
-import { GameData } from '/app/src/Types/Game/Interfaces';
-import { GameResults } from '../../../../../Types/Game/Interfaces';
-import TextWidget from '../GameObjects/TextWidget';
-import PopupWidget from '../GameObjects/Popup';
-import ButtonWidget from '../GameObjects/Button';
+import TextWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/TextWidget';
+import PopupWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Popup';
+import ButtonWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Button';
+import { GameData, GameResults } from '/app/src/Types/Game/Interfaces';
+import { AnimationSelected } from '/app/src/Types/Game/Enum';
 
 
 export default class ResultsScene extends BaseScene {
@@ -20,6 +20,7 @@ export default class ResultsScene extends BaseScene {
 	private _refusePopup!: PopupWidget;
 	private _socketIO!: Socket;
 
+	// for the animated text while waiting
 	private _lastUpdate: number = 1;
 	private readonly _bufferChars: Array<string> = ["-", "\\", "|", "/", "-", "\\", "|", "/"];
 	private _frontIndexBuffer: number = 0;
@@ -29,15 +30,13 @@ export default class ResultsScene extends BaseScene {
 		super({ key: 'Results' });
 	}
 
-	init(data: {gameResults: GameResults, animationSelected: AnimationSelected}): void {
+	init(gameResults: GameResults): void {
 		super.init();
-		this._winner = data.gameResults.winner;
-		this._score = data.gameResults.score;
-		this._sessionToken = data.gameResults.sessionToken;
-		this._socketIO = data.gameResults.socket;
-		if (data.animationSelected !== undefined) {
-			this._animationSelected = data.animationSelected;
-		}
+
+		this._winner = gameResults.winner;
+		this._score = gameResults.score;
+		this._sessionToken = gameResults.sessionToken;
+		this._socketIO = gameResults.socket;
 		this.setupSocket();
 	}
 
@@ -79,16 +78,16 @@ export default class ResultsScene extends BaseScene {
 		)
 		this._widgets.push(this._playAgainBtn!);
 		
-		const goHomeButton = new ButtonWidget(
+		// go back home btn
+		this._widgets.push(new ButtonWidget(
 			this,
 			this.scale.width * 0.9,
 			this.scale.height * 0.9,
 			'Home',
-			() => this.switchScene('MainMenu', {animationSelected: this._animationSelected}),
+			() => this.switchScene('MainMenu'),
 			20,
 			'#dd0000'
-		)
-		this._widgets.push(goHomeButton);
+		));
 		
 		this.createWaitingPopup();
 		this.createPlayAgainPopup();
@@ -103,7 +102,7 @@ export default class ResultsScene extends BaseScene {
 				this._waitingPopup.hide();
 			if (this._playAgainPopup.visible === true)
 				this._playAgainPopup.hide();
-			this.switchScene('Game', {gameData: data, animationSelected: this._animationSelected});
+			this.switchScene('Game', data);
 		});
 
 		this._socketIO.on('abortRematch', (info: string) => {
@@ -125,7 +124,7 @@ export default class ResultsScene extends BaseScene {
 			this._playAgainPopup.show();
 		});
 
-		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace: trace , animationSelected: this._animationSelected}));
+		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace: trace }));
 
 		this.events.on('shutdown', () => this.disconnect(), this);
 	}
@@ -137,23 +136,27 @@ export default class ResultsScene extends BaseScene {
 	createWaitingPopup(): void {
 
 		this._waitingPopup = new PopupWidget(this, 'waiting for confirmation');
-		const closeBtn = new ButtonWidget(
+		this._waitingPopup.setDepth(1);
+		this._widgets.push(this._waitingPopup);
+
+		// btn to close the popup
+		this._waitingPopup.add(new ButtonWidget(
 			this,
 			this.scale.width / 2 * 0.5,
 			this.scale.height / 2 * 0.75,
 			'close',
-			() => this.switchScene('MainMenu', {animationSelected: this._animationSelected}),
-		);
-		this._waitingPopup.add(closeBtn);
-		this._widgets.push(this._waitingPopup);
+			() => this.switchScene('MainMenu'),
+		));
 	}
 
 	createPlayAgainPopup(): void {
 
 		this._playAgainPopup = new PopupWidget(this);
+		this._playAgainPopup.setDepth(1);
 		this._widgets.push(this._playAgainPopup);
 
-		const yesBtn = new ButtonWidget(
+		// btn to accept the rematch
+		this._playAgainPopup.add(new ButtonWidget(
 			this,
 			this.scale.width / 2 * 0.2,
 			this.scale.height / 2 * 0.75,
@@ -166,10 +169,10 @@ export default class ResultsScene extends BaseScene {
 			0,
 			'#ffffff',
 			'left'
-		);
-		this._playAgainPopup.add(yesBtn);
+		));
 
-		const noBtn = new ButtonWidget(
+		// btn to refuse the rematch
+		this._playAgainPopup.add(new ButtonWidget(
 			this,
 			this.scale.width / 2 * 0.8,
 			this.scale.height / 2 * 0.75,
@@ -177,27 +180,27 @@ export default class ResultsScene extends BaseScene {
 			() => {
 				this.sendMsgToServer('abortRematch', {sessionToken: this._sessionToken});
 				this._playAgainPopup.hide();
-				this.switchScene('MainMenu', {animationSelected: this._animationSelected});
+				this.switchScene('MainMenu');
 			},
 			0,
 			'#ffffff',
 			'right'
-		);
-		this._playAgainPopup.add(noBtn);
+		));
 	}
 
 	createRefusePopup(): void {
 		this._refusePopup = new PopupWidget(this);
+		this._refusePopup.setDepth(1);
 		this._widgets.push(this._refusePopup);
 	
-		const closeBtn = new ButtonWidget(
+		// btn to close the popup
+		this._refusePopup.add(new ButtonWidget(
 			this,
 			this.scale.width / 2 * 0.5,
 			this.scale.height / 2 * 0.75,
 			'close',
-			() => this.switchScene('MainMenu', {animationSelected: this._animationSelected}),
-		);
-		this._refusePopup.add(closeBtn);
+			() => this.switchScene('MainMenu'),
+		));
 	}
 
 	update(time: number, delta: number) {

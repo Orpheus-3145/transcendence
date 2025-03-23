@@ -1,7 +1,7 @@
 import BaseAnimation from "./BaseAnimation";
 
 export default class ParticleEmitter extends BaseAnimation {
-    private emitter1!: Phaser.GameObjects.Particles.ParticleEmitter;
+  private emitter1!: Phaser.GameObjects.Particles.ParticleEmitter;
 	private emitter2!: Phaser.GameObjects.Particles.ParticleEmitter;
 	private emitter3!: Phaser.GameObjects.Particles.ParticleEmitter;
 	private emitter4!: Phaser.GameObjects.Particles.ParticleEmitter;

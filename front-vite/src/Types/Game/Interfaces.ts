@@ -58,3 +58,12 @@ export interface GameResults {
 	sessionToken: string;
 	socket: Socket;
 }
+
+export interface Resizable {
+
+  resize(old_width: number, old_height: number): void;
+
+  show(): void;
+
+  hide(): void;
+}

@@ -1,11 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import TextWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/TextWidget';
+import ToggleWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Slider';
+import ButtonWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Button';
 import { GameMode, GameDifficulty, PowerUpType, PowerUpSelected } from '/app/src/Types/Game/Enum';
-import { AnimationSelected } from '../../../../../Types/Game/Enum';
-import TextWidget from '../GameObjects/TextWidget';
-import ToggleWidget from '../GameObjects/Slider';
-import ButtonWidget from '../GameObjects/Button';
 
 
 export default class SettingsScene extends BaseScene {
@@ -17,17 +16,15 @@ export default class SettingsScene extends BaseScene {
 
 	constructor() {
 		super({ key: 'Settings' });
-	
 	}
 
-	init(data: { mode: GameMode, animationSelected: AnimationSelected}): void {
+	init(data: { mode: GameMode }): void {
 		super.init()
 
 		this.powerUpSelection = PowerUpSelected.noPowerUp;
 		this.mode = data.mode;
-		if (data && data.animationSelected !== undefined) {
-			this._animationSelected = data.animationSelected;
-		}
+
+		this.difficulty = GameDifficulty.medium;
 	}
 
 	buildGraphicObjects(): void {
@@ -42,7 +39,8 @@ export default class SettingsScene extends BaseScene {
 				50,
 		));
 		
-		this._widgets.push(new TextWidget(
+		this._widgets.push(
+			new TextWidget(
 				this,
 				this.scale.width * 0.3,
 				this.scale.height * 0.29,
@@ -63,7 +61,8 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 
-		this._widgets.push(new TextWidget(
+		this._widgets.push(
+			new TextWidget(
 				this,
 				this.scale.width * 0.3,
 				this.scale.height * 0.36,
@@ -84,14 +83,15 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 
-		this._widgets.push(new TextWidget(
-			this,
-			this.scale.width * 0.3,
-			this.scale.height * 0.43,
-			`${PowerUpType.slowPaddle}`,
-			2,
-			'#fff',
-			'left'
+		this._widgets.push(
+			new TextWidget(
+				this,
+				this.scale.width * 0.3,
+				this.scale.height * 0.43,
+				`${PowerUpType.slowPaddle}`,
+				2,
+				'#fff',
+				'left'
 		));
 		this._widgets.push(
 			new ToggleWidget(
@@ -105,13 +105,15 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 		
-		this._widgets.push(new TextWidget(this,
-			this.scale.width * 0.3,
-			this.scale.height * 0.50,
-			`${PowerUpType.shrinkPaddle}`,
-			2,
-			'#fff',
-			'left'
+		this._widgets.push(
+			new TextWidget(
+				this,
+				this.scale.width * 0.3,
+				this.scale.height * 0.50,
+				`${PowerUpType.shrinkPaddle}`,
+				2,
+				'#fff',
+				'left'
 		));
 		this._widgets.push(
 			new ToggleWidget(
@@ -125,13 +127,15 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 
-		this._widgets.push(new TextWidget(this,
-			this.scale.width * 0.3,
-			this.scale.height * 0.57,
-			`${PowerUpType.stretchPaddle}`,
-			2,
-			'#fff',
-			'left'
+		this._widgets.push(
+			new TextWidget(
+				this,
+				this.scale.width * 0.3,
+				this.scale.height * 0.57,
+				`${PowerUpType.stretchPaddle}`,
+				2,
+				'#fff',
+				'left'
 		));
 		this._widgets.push(
 			new ToggleWidget(
@@ -145,19 +149,19 @@ export default class SettingsScene extends BaseScene {
 				}
 		));
 
-		const startBtn = new ButtonWidget(
-			this,
-			this.scale.width * 0.5,
-			this.scale.height * 0.85,
-			this.mode === GameMode.single ? 'PLAY!' : 'JOIN QUEUE',
-			() => this.startGame(),
-			45,
-			'#00ff00'
-		)
-		this._widgets.push(startBtn);
+		// start game / join matchmaking list
+		this._widgets.push(
+			new ButtonWidget(
+				this,
+				this.scale.width * 0.5,
+				this.scale.height * 0.85,
+				this.mode === GameMode.single ? 'PLAY!' : 'JOIN QUEUE',
+				() => this.startGame(),
+				45,
+				'#00ff00'
+		));
 	
 		if (this.mode === GameMode.single) {
-			this.difficulty = GameDifficulty.medium;
 			
 			const easyModeToggle = new TextWidget(
 				this,
@@ -209,42 +213,32 @@ export default class SettingsScene extends BaseScene {
 			this._widgets.push(hardModeToggle);
 		}
 
-		const goHomeButton = new ButtonWidget(
+		// go back home btn
+		this._widgets.push(new ButtonWidget(
 			this,
 			this.scale.width * 0.9,
 			this.scale.height * 0.9,
 			'Home',
-			() => this.switchScene('MainMenu', {animationSelected: this._animationSelected}),
+			() => this.switchScene('MainMenu'),
 			20,
 			'#dd0000'
-		)
-		this._widgets.push(goHomeButton);
+		));
 	}
 
 	startGame(): void {
 		if (this.mode === GameMode.single)
-			this.switchScene('Game',
-				{
-					gameData: {
-					sessionToken: uuidv4(),
-					mode: this.mode,
-					difficulty: this.difficulty,
-					extras: this.powerUpSelection,
-					}, 
-					animationSelected: this._animationSelected
-				}
-			);
+			this.switchScene('Game', {
+				sessionToken: uuidv4(),
+				mode: this.mode,
+				difficulty: this.difficulty,
+				extras: this.powerUpSelection,
+			});
 		else
-			this.switchScene('Matchmaking', 
-				{
-					gameData: {
-					sessionToken: '',
-					mode: this.mode,
-					difficulty: GameDifficulty.unset,
-					extras: this.powerUpSelection,
-					}, 
-					animationSelected: this._animationSelected
-				}
-			);
+			this.switchScene('Matchmaking', {
+				sessionToken: '',
+				mode: this.mode,
+				difficulty: GameDifficulty.unset,
+				extras: this.powerUpSelection,
+			});
 	}
 }

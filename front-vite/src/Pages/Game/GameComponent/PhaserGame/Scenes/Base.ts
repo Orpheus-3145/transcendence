@@ -1,21 +1,19 @@
-import BaseAnimation from '../Animations/BaseAnimation';
-import MovingLines from '../Animations/MovingLines';
-import ParticleEmitter from '../Animations/ParticleEmitter';
-import ParticleSystem from '../Animations/ParticleSystem';
-import { AnimationSelected } from '../../../../../Types/Game/Enum';
-import Resizable from "../GameObjects/Resizable";
+import BaseAnimation from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/BaseAnimation';
+import MovingLines from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/MovingLines';
+import ParticleEmitter from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/ParticleEmitter';
+import ParticleSystem from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/ParticleSystem';
+import { AnimationSelected } from '/app/src/Types/Game/Enum';
+import { Resizable } from '/app/src/Types/Game/Interfaces';
 
 
-// check for nulls!
 export default class BaseScene extends Phaser.Scene {
 	
-	// background image
-	protected _backgroundPath: string = import.meta.env.GAME_PATH_BACKGROUND;
-	protected _background: Phaser.GameObjects.Image | null = null;
 	protected _keyEsc: Phaser.Input.Keyboard.Key | null = null;	
 	protected _animation: BaseAnimation | null = null;
 	protected _animationSelected: number = AnimationSelected.movingLines; // Should retrieve this value from the BE based on saved preferences
 	protected _switchAnimation: boolean = false;
+
+	// all the objects are stored here to be properly resized
 	protected _widgets: Array<Resizable> = [];
 
 	// method called when scene.start(nameScene, args) is run
@@ -24,9 +22,6 @@ export default class BaseScene extends Phaser.Scene {
 			Phaser.Input.Keyboard.KeyCodes.ESC,
 		) as Phaser.Input.Keyboard.Key;
 	}
-
-	// loading graphic assets, fired after init()
-	preload(arg?: any): void {}
 
 	// run after preload(), creation of the entities of the scene
 	create(arg?: any): void {
@@ -39,17 +34,19 @@ export default class BaseScene extends Phaser.Scene {
 	// @param delta: amount of time (in ms) passed since last time time update() was called
 	update(time: number, delta: number): void {
 		if (this._keyEsc!.isDown)
-			this.switchScene('MainMenu', {animationSelected: this._animationSelected});
+			this.switchScene('MainMenu');
 		this._animation!.update();
 	}
 
 	// method to call whenever the scene is switched
 	switchScene(sceneName: string, initSceneData?: any): void {
-			this._widgets = [];
-			this.scene.start(sceneName, initSceneData);
+		this._widgets = [];
+		this.scene.start(sceneName, initSceneData);
 	}
 
-	buildGraphicObjects(): void {}
+	setAnimation(newAnimation: AnimationSelected): void {
+		this._animationSelected = newAnimation;
+	}
 	
 	createAnimation(): void {
 		if (this._animation) {
@@ -66,11 +63,18 @@ export default class BaseScene extends Phaser.Scene {
 		this._animation?.create();
 	}
 
+	// when scene's size change, update (resize) all the object inside
+	// the array this._widgets
 	resizeObects(old_width: number, old_height: number): void {
-
 		for (const widget of this._widgets)
 			widget.resize(old_width, old_height);
 	}
+
+	// loading graphic assets, fired after init()
+	preload(arg?: any): void {}
+
+	// create graphical objects to show on scene
+	buildGraphicObjects(): void {}
 
 	disconnect(): void {}
 };

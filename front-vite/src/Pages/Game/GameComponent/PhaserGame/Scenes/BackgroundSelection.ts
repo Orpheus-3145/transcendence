@@ -1,8 +1,6 @@
-import BaseScene from './Base';
-import { AnimationSelected } from '../../../../../Types/Game/Enum';
-import MovingLines from '../Animations/MovingLines';
-import ParticleEmitter from '../Animations/ParticleEmitter';
-import ParticleSystem from '../Animations/ParticleSystem';
+import ButtonWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Button';
+import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
+import { AnimationSelected } from '/app/src/Types/Game/Enum';
 
 
 export default class BackgroundSelectionScene extends BaseScene {
@@ -14,67 +12,60 @@ export default class BackgroundSelectionScene extends BaseScene {
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
-		const movingLines = this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.2, 'Moving Lines', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
-		.setInteractive()
-		.on('pointerover', () => movingLines.setStyle({ fill: '#FFA500' }))	// Change color on hover
-		.on('pointerout', () => movingLines.setStyle({ fill: '#fff' }))
-		.on('pointerup', () =>
-			this.handleChange(AnimationSelected.movingLines)
-		);
-	
-		const particlesEmitter = this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.3, 'Particle Emitters', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
-		.setInteractive()
-		.on('pointerover', () => particlesEmitter.setStyle({ fill: '#FFA500' }))	// Change color on hover
-		.on('pointerout', () => particlesEmitter.setStyle({ fill: '#fff' }))
-		.on('pointerup', () =>
-			this.handleChange(AnimationSelected.particleEmitter)
-		);
+		// select animation 'Moving Lines'
+		this._widgets.push(new ButtonWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.25,
+			'Moving Lines',
+			() => this.handleChange(AnimationSelected.movingLines),
+			10,
+			"#00ff00"
+		));
+		
+		// select animation 'Particle Emitters'
+		this._widgets.push(new ButtonWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.45,
+			'Particle Emitters',
+			() => this.handleChange(AnimationSelected.particleEmitter),
+			10,
+			"#ff0000"
+		));
 
-		const particleSystem = this.add
-		.text(this.scale.width * 0.5, this.scale.height * 0.4, 'Particle System', {
-			fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-			align: 'center',
-			color: '#fff',
-		})
-		.setOrigin(0.5, 0.5)
-		.setInteractive()
-		.on('pointerover', () => particleSystem.setStyle({ fill: '#FFA500' }))	// Change color on hover
-		.on('pointerout', () => particleSystem.setStyle({ fill: '#fff' }))
-		.on('pointerup', () =>
-			this.handleChange(AnimationSelected.particleSystem)
-		);
+		// select animation 'Particle System'
+		this._widgets.push(new ButtonWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.65,
+			'Particle System',
+			() => this.handleChange(AnimationSelected.particleSystem),
+			10,
+			"#0000ff"
+		));
 
-		const goHomeButton = this.add
-			.text(this.scale.width * 0.9, this.scale.height * 0.9, 'Home', {
-				fontSize: `${Math.round(this._textFontRatio * this.scale.width)}px`,
-				align: 'center',
-				color: '#fff'}
-			)
-			.setOrigin(0.5, 0.5)
-			.setInteractive()
-			.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
-			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
-			.on('pointerup', () => this.switchScene('MainMenu', {animationSelected: this._animationSelected})); 
+		// go back home btn
+		this._widgets.push(new ButtonWidget(
+			this,
+			this.scale.width * 0.9,
+			this.scale.height * 0.9,
+			'Home',
+			() => this.switchScene('MainMenu'),
+			20,
+			'#dd0000'
+		));
 	}
 
+	// update the animation for all the other scenes
 	handleChange(animationSelected: AnimationSelected): void {
 		if (animationSelected === this._animationSelected)
 			return ;
 
+		// updates all the other scenes with the change
+		this.scene.manager.getScenes(false).forEach((scene: Phaser.Scene) => (scene as BaseScene).setAnimation(animationSelected));
+
 		this._animationSelected = animationSelected;
 		this.createAnimation();
 	}
-
 }
