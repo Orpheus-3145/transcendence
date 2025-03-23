@@ -47,9 +47,6 @@ export default class BaseScene extends Phaser.Scene {
 	create(arg?: any): void {
 
 		this.buildGraphicObjects();
-		// if (this._animation === null) {
-		// 	this.createAnimation();
-		// }
 		this.createAnimation();
 
 	}
@@ -59,7 +56,7 @@ export default class BaseScene extends Phaser.Scene {
 	// @param delta: amount of time (in ms) passed since last time time update() was called
 	update(time: number, delta: number): void {
 		if (this._keyEsc!.isDown)
-			this.switchScene('MainMenu');
+			this.switchScene('MainMenu', {animationSelected: this._animationSelected});
 
 		this.updateAnimation();
 	}
