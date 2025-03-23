@@ -98,8 +98,7 @@ export default class BaseScene extends Phaser.Scene {
 			this._animation.destroy();
 			this._animation = null;
 		}
-		console.log("destroyed animation and will set it to:");
-		console.log(`${this._animationSelected}`);
+
 		if (this._animationSelected === AnimationSelected.movingLines)
 			this._animation = new MovingLines(this);
 		else if (this._animationSelected === AnimationSelected.particleEmitter)

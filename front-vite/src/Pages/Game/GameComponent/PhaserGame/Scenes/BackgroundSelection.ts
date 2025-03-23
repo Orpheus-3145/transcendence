@@ -73,11 +73,9 @@ export default class BackgroundSelectionScene extends BaseScene {
 		if (animationSelected === this._animationSelected){
 			return ;
 		}
-		console.log(`Handling change to: ${animationSelected}`);
-		console.log(`from ${this._animationSelected}`);
+
 		this._animationSelected = animationSelected;
 		this.createAnimation();
-		// GlobalEvents.emit('animationChanged', this._animationSelected);
 	}
 
 

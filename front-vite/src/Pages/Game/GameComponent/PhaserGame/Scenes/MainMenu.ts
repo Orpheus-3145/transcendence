@@ -14,8 +14,8 @@ export default class MainMenuScene extends BaseScene {
 
     init(data?: any): void {
 		super.init()
-		console.log("Mainmenu init called");
-		if (data && data.animationSelected !== undefined) {
+
+		if (data.animationSelected !== undefined) {
 			this._animationSelected = data.animationSelected;
 		}
 	}
@@ -23,7 +23,6 @@ export default class MainMenuScene extends BaseScene {
 	create(): void {
 		super.create();
 		
-		console.log("create function of mainmenu");
 		if (this.registry.get('gameInvitationData')) {
 			this.switchScene('Game', this.registry.get('gameInvitationData'));
 			this.registry.remove('gameInvitationData');

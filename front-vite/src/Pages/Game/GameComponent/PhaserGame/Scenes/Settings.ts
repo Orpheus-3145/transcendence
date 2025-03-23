@@ -19,7 +19,7 @@ export default class SettingsScene extends BaseScene {
 
 	init(data: { mode: GameMode, animationSelected: AnimationSelected}): void {
 		super.init()
-		console.log("Settings init is called");
+
 		this.powerUpSelection = PowerUpSelected.noPowerUp;
 		this.mode = data.mode;
 		if (data && data.animationSelected !== undefined) {

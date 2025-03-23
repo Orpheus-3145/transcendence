@@ -56,7 +56,7 @@ export default class GameScene extends BaseScene {
 		super.init();
 		this._id = this.registry.get('user42data').intraId;
 		this._nameNick = this.registry.get('user42data').nameNick;
-		console.log(`Init data: ${JSON.stringify(data)}`);
+
 		this._sessionToken = data.gameData.sessionToken;
 		this._mode = data.gameData.mode;
 		this._difficulty = data.gameData.difficulty;
