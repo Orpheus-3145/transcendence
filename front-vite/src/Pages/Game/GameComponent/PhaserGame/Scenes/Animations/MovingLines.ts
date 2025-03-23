@@ -1,7 +1,8 @@
 import BaseAnimation from "./BaseAnimation";
 
 export default class MovingLines extends BaseAnimation {
-    private _lines: Phaser.GameObjects.Group | null = null;
+    // private _lines: Phaser.GameObjects.Group | null = null;
+	private _lines: Array<Phaser.GameObjects.Rectangle> = [];
 	private _timer: Phaser.Time.TimerEvent | null = null;
     private readonly _spawningTime: number = 500;
     
@@ -10,7 +11,7 @@ export default class MovingLines extends BaseAnimation {
     }
 
     create(): void {
-        this._lines = this.scene.add.group();
+        // this._lines = this.scene.add.group();
 		console.log("Moving Lines animation is created");
         this._timer = this.scene.time.addEvent({
             delay: this._spawningTime,
@@ -37,7 +38,7 @@ export default class MovingLines extends BaseAnimation {
                 const line = this.scene.add.rectangle(0, randomY + offsetY, width, height, 0xD3D3D3);
                 line.setDepth(0);
                 (line as any).speed = speed;
-                this._lines.add(line);
+                this._lines.push(line);
             });
         }
     }
@@ -45,7 +46,7 @@ export default class MovingLines extends BaseAnimation {
     update(): void {
         if (!this._lines) return;
 
-        this._lines.getChildren().forEach((line: Phaser.GameObjects.Rectangle) => {
+        this._lines.forEach((line: Phaser.GameObjects.Rectangle) => {
             (line as any).x += (line as any).speed;
             if ((line as any).x > this.scene.scale.width) {
                 line.destroy();
@@ -53,17 +54,29 @@ export default class MovingLines extends BaseAnimation {
         });
     }
 
+	clearLines(): void {
+        this._lines.forEach((line: Phaser.GameObjects.Rectangle) => {
+            if (line) {
+                line.destroy();
+            }
+        });
+	}
     destroy(): void {
         if (this._lines) {
-            this._lines.clear(true, true);
+            // this._lines.clear(true, true);
+			this.clearLines();
+			this._lines = [];
         }
 		if (this._timer)
 			this.scene.time.removeEvent(this._timer);
         // this is because the timer could still spawn
         // particles between now and now + 500 ms after this method is run
         setTimeout(() => {
-            if (this._lines)
-                this._lines.clear(true, true);
+            if (this._lines) {
+                // this._lines.clear(true, true);
+				this.clearLines();
+				this._lines = [];
+			}
         }, this._spawningTime);
     }
 }

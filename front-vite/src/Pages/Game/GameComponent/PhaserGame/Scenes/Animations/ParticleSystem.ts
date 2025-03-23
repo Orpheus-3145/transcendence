@@ -28,6 +28,7 @@ export default class ParticleSystem extends BaseAnimation {
 		// const circleTexture = this.createCircleTexture("", radius);
 
 		const particle = this.scene.physics.add.sprite(x, y, this._textureName);
+	
 		particle.setVelocity(Phaser.Math.Between(-20, 20), Phaser.Math.Between(-20, 20));
 		particle.setBounce(1); // Full bounce effect
 		particle.setCollideWorldBounds(true); // Bounce off walls

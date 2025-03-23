@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameMode, GameDifficulty, PowerUpType, PowerUpSelected } from '/app/src/Types/Game/Enum';
+import { AnimationSelected } from '../../../../../Types/Game/Enum';
 
 
 export default class SettingsScene extends BaseScene {
@@ -16,17 +17,14 @@ export default class SettingsScene extends BaseScene {
 	
 	}
 
-	init(data: { mode: GameMode }): void {
+	init(data: { mode: GameMode, animationSelected: AnimationSelected}): void {
 		super.init()
-
+		console.log("Settings init is called");
 		this.powerUpSelection = PowerUpSelected.noPowerUp;
 		this.mode = data.mode;
-
-	}
-
-	create(): void {
-		super.create();
-		this.createListener();
+		if (data && data.animationSelected !== undefined) {
+			this._animationSelected = data.animationSelected;
+		}
 	}
 
 	buildGraphicObjects(): void {
@@ -205,23 +203,32 @@ export default class SettingsScene extends BaseScene {
 
 	startGame(): void {
 		if (this.mode === GameMode.single)
-			this.switchScene('Game', {
-				sessionToken: uuidv4(),
-				mode: this.mode,
-				difficulty: this.difficulty,
-				extras: this.powerUpSelection,
-			});
+			this.switchScene('Game',
+				{
+					gameData: {
+					sessionToken: uuidv4(),
+					mode: this.mode,
+					difficulty: this.difficulty,
+					extras: this.powerUpSelection,
+					}, 
+					animationSelected: this._animationSelected
+				}
+			);
 		else
-			this.switchScene('Matchmaking', {
-				sessionToken: '',
-				mode: this.mode,
-				difficulty: GameDifficulty.unset,
-				extras: this.powerUpSelection,
-			});
+			this.switchScene('Matchmaking', 
+				{
+					gameData: {
+					sessionToken: '',
+					mode: this.mode,
+					difficulty: GameDifficulty.unset,
+					extras: this.powerUpSelection,
+					}, 
+					animationSelected: this._animationSelected
+				}
+			);
 	}
 
 	destroy(): void {
 		super.destroy();
-		this.destroyListener();
 	}
 }

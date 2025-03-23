@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameData } from '/app/src/Types/Game/Interfaces';
-
+import { GameResults } from '../../../../../Types/Game/Interfaces';
 
 export default class ResultsScene extends BaseScene {
 
@@ -19,22 +19,17 @@ export default class ResultsScene extends BaseScene {
 		super({ key: 'Results' });
 	}
 
-	init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string, socket: Socket }): void {
+	init(data: {gameResults: GameResults, animationSelected: AnimationSelected}): void {
 		super.init();
-
-		this._winner = data.winner;
-		this._score = data.score;
-		this._sessionToken = data.sessionToken;
-		this._socketIO = data.socket;
-
+		this._winner = data.gameResults.winner;
+		this._score = data.gameResults.score;
+		this._sessionToken = data.gameResults.sessionToken;
+		this._socketIO = data.gameResults.socket;
+		if (data.animationSelected !== undefined) {
+			this._animationSelected = data.animationSelected;
+		}
 		this.setupSocket();
 	}
-
-	create(): void {
-		super.create();
-		this.createListener();
-	}
-
 
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
@@ -86,7 +81,7 @@ export default class ResultsScene extends BaseScene {
 		.setInteractive()
 		.on('pointerover', () => goHomeButton.setStyle({ fill: '#d7263d' })) 	// Change color on hover
 		.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) 	// Change color back when not hovered
-		.on('pointerup', () => this.switchScene('MainMenu')); 				// Start the main game
+		.on('pointerup', () => this.switchScene('MainMenu' , {animationSelected: this._animationSelected})); 				// Start the main game
 
 		this._waitingPopup = this.createWaitingPopup();
 		this._waitingPopup.setVisible(false);
@@ -106,7 +101,7 @@ export default class ResultsScene extends BaseScene {
 				this._waitingPopup.setVisible(false);
 			if (this._playAgainPopup.visible === true)
 				this._playAgainPopup.setVisible(false);
-			this.switchScene('Game', data);
+			this.switchScene('Game', {gameData: data, animationSelected: this._animationSelected});
 		});
 
 		this._socketIO.on('abortRematch', (info: string) => {
@@ -130,7 +125,7 @@ export default class ResultsScene extends BaseScene {
 		
 		});
 
-		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
+		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace: trace , animationSelected: this._animationSelected}));
 
 		this.events.on('shutdown', () => this.disconnect(), this);
 	}
@@ -219,7 +214,7 @@ export default class ResultsScene extends BaseScene {
 
 			this.sendMsgToServer('abortRematch', {sessionToken: this._sessionToken});
 			this._playAgainPopup.setVisible(false);
-			this.switchScene('MainMenu');
+			this.switchScene('MainMenu', {animationSelected: this._animationSelected});
 		});
 
 		rematchPopup.add([background, textTitle, yesButton, noButton]);
@@ -287,6 +282,6 @@ export default class ResultsScene extends BaseScene {
 
 	destroy(): void {
 		super.destroy();
-		this.destroyListener();
+		// this.destroyListener();
 	}
 }

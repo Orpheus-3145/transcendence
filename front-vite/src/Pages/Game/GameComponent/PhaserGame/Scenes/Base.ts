@@ -3,11 +3,7 @@ import MovingLines from './Animations/MovingLines';
 import ParticleEmitter from './Animations/ParticleEmitter';
 import ParticleSystem from './Animations/ParticleSystem';
 import { AnimationSelected } from '../../../../../Types/Game/Enum';
-import EventEmitter from 'eventemitter3';
 
-
-// Create a shared event emitter (Singleton)
-export const GlobalEvents = new EventEmitter();
 
 // check for nulls!
 export default class BaseScene extends Phaser.Scene {
@@ -36,6 +32,8 @@ export default class BaseScene extends Phaser.Scene {
 		this._keyEsc = this.input.keyboard!.addKey(
 			Phaser.Input.Keyboard.KeyCodes.ESC,
 		) as Phaser.Input.Keyboard.Key;
+
+
 	}
 
 	// loading graphic assets, fired after init()
@@ -49,9 +47,10 @@ export default class BaseScene extends Phaser.Scene {
 	create(arg?: any): void {
 
 		this.buildGraphicObjects();
-		if (this._animation === null) {
-			this.createAnimation();
-		}
+		// if (this._animation === null) {
+		// 	this.createAnimation();
+		// }
+		this.createAnimation();
 
 	}
 
@@ -61,16 +60,26 @@ export default class BaseScene extends Phaser.Scene {
 	update(time: number, delta: number): void {
 		if (this._keyEsc!.isDown)
 			this.switchScene('MainMenu');
-		if (this._switchAnimation === true) {
-			this._switchAnimation = false;
-			this.createAnimation();
-		}
+
 		this.updateAnimation();
 	}
 
 	// method to call whenever the scene is switched
 	switchScene(sceneName: string, initSceneData?: any): void {
-		this.scene.switch(sceneName, initSceneData);
+		const targetScene = this.scene.get(sceneName) as BaseScene;
+		
+		if (targetScene) {
+			// targetScene.receiveSceneData(initSceneData); // Custom function to handle new data
+			this.scene.start(sceneName, initSceneData);
+		}
+	}
+
+	receiveSceneData(data?: any): void {
+
+		if (data && data.animationSelected !== undefined) {
+			this._animationSelected = data.animationSelected;
+			// this.createAnimation();
+		}
 	}
 
 	// the phaser objects will have to be definied
@@ -87,11 +96,6 @@ export default class BaseScene extends Phaser.Scene {
 		return this._animation;
 	}
 	
-	changeAnimation(animationType: AnimationSelected): void {
-		this._animationSelected = animationType;
-		this._switchAnimation = true;
-	}
-
 	createAnimation(): void {
 		if (this._animation) {
 			this._animation.destroy();
@@ -109,10 +113,6 @@ export default class BaseScene extends Phaser.Scene {
 	}
 
 	updateAnimation(): void {
-		if (this._switchAnimation === true) {
-			this._switchAnimation = false;
-			this.createAnimation();
-		}
 		this._animation!.update();
 	}
 
@@ -121,16 +121,6 @@ export default class BaseScene extends Phaser.Scene {
 	}
 
 	disconnect(): void {}
-
-	createListener(): void {
-		GlobalEvents.on('animationChanged', (data: any) => {
-			this.changeAnimation(data);
-		}, this);
-	}
-
-	destroyListener(): void {
-		GlobalEvents.off('animationChanged', this.changeAnimation, this);
-	}
 
 	destroy(): void {
 		this.killChildren();

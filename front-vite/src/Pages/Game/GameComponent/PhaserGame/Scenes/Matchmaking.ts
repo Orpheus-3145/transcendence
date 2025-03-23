@@ -12,20 +12,17 @@ export default class MatchmakingScene extends BaseScene {
 		super({ key: 'Matchmaking' });
 	}
 
-	init(data: GameData): void {
+	init(data: {gameData: GameData, animationSelected: AnimationSelected}): void {
 		super.init()
 
-		this._gameInitData = data;
-
+		this._gameInitData = data.gameData;
+		if (data && data.animationSelected !== undefined) {
+			this._animationSelected = data.animationSelected;
+		}
 		this.setupSocket();
 		this._socketIO.emit('waiting', this._gameInitData);
 	}
 
-
-	create(): void {
-		super.create();
-		this.createListener();
-	}
   	
 
 	buildGraphicObjects(): void {
@@ -73,10 +70,5 @@ export default class MatchmakingScene extends BaseScene {
 
 	disconnect(): void {
 		this._socketIO.disconnect();
-	}
-
-	destroy(): void {
-		super.destroy();
-		this.destroyListener();
 	}
 }

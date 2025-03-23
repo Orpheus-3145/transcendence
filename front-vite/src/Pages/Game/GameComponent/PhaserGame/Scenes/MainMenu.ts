@@ -12,14 +12,17 @@ export default class MainMenuScene extends BaseScene {
 		super({ key: 'MainMenu' });
 	}
 
-    init(): void {
+    init(data?: any): void {
 		super.init()
-		console.log("Init is called!");
-    }
+		console.log("Mainmenu init called");
+		if (data && data.animationSelected !== undefined) {
+			this._animationSelected = data.animationSelected;
+		}
+	}
 
 	create(): void {
-		super.create()
-		this.createListener();
+		super.create();
+		
 		console.log("create function of mainmenu");
 		if (this.registry.get('gameInvitationData')) {
 			this.switchScene('Game', this.registry.get('gameInvitationData'));
@@ -40,7 +43,7 @@ export default class MainMenuScene extends BaseScene {
 		.on('pointerover', () => singleGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => singleGameBtn.setStyle({ fill: '#fff' }))
 		.on('pointerup', () =>
-			this.switchScene('Settings', { mode: GameMode.single}),
+			this.switchScene('Settings', { mode: GameMode.single, animationSelected: this._animationSelected}),
 		);
 
 		const multiGameBtn = this.add
@@ -54,7 +57,7 @@ export default class MainMenuScene extends BaseScene {
 		.on('pointerover', () => multiGameBtn.setStyle({ fill: '#FFA500' }))	// Change color on hover
 		.on('pointerout', () => multiGameBtn.setStyle({ fill: '#fff' }))
 		.on('pointerup', () =>
-			this.switchScene('Settings', { mode: GameMode.multi }),
+			this.switchScene('Settings', { mode: GameMode.multi, animationSelected: this._animationSelected}),
 		);
 
 		// const changeBkBtn = this.add
@@ -121,8 +124,9 @@ export default class MainMenuScene extends BaseScene {
 		.addBase64("background", base64);
 	}
 
+
 	destroy(): void {
 		super.destroy();
-		this.destroyListener();
+		// this.destroyListener();
 	}
 }

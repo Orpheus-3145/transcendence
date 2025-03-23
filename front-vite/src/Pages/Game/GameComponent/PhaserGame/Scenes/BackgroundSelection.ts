@@ -68,7 +68,7 @@ export default class BackgroundSelectionScene extends BaseScene {
 			.setInteractive()
 			.on('pointerover', () => goHomeButton.setStyle({ fill: '#FFA500' })) // Change color on hover
 			.on('pointerout', () => goHomeButton.setStyle({ fill: '#fff' })) // Change color back when not hovered
-			.on('pointerup', () => this.switchScene('MainMenu')); 
+			.on('pointerup', () => this.switchScene('MainMenu', {animationSelected: this._animationSelected})); 
 	}
 
 	handleChange(animationSelected: AnimationSelected): void {
@@ -79,7 +79,7 @@ export default class BackgroundSelectionScene extends BaseScene {
 		console.log(`from ${this._animationSelected}`);
 		this._animationSelected = animationSelected;
 		this.createAnimation();
-		GlobalEvents.emit('animationChanged', this._animationSelected);
+		// GlobalEvents.emit('animationChanged', this._animationSelected);
 	}
 
 

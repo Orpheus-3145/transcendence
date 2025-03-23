@@ -52,16 +52,19 @@ export default class GameScene extends BaseScene {
 	}
 
 	// Initialize players and key bindings
-	init(data: GameData): void {
+	init(data: {gameData: GameData, animationSelected: AnimationSelected}): void {
 		super.init();
 		this._id = this.registry.get('user42data').intraId;
 		this._nameNick = this.registry.get('user42data').nameNick;
 
-		this._sessionToken = data.sessionToken;
-		this._mode = data.mode;
-		this._difficulty = data.difficulty;
-		this._powerUpSelection = data.extras;
+		this._sessionToken = data.gameData.sessionToken;
+		this._mode = data.gameData.mode;
+		this._difficulty = data.gameData.difficulty;
+		this._powerUpSelection = data.gameData.extras;
 
+		if (data.animationSelected !== undefined) {
+			this._animationSelected = data.animationSelected;
+		}
 		this._gameState = {
 			ball: { x: 0, y: 0 },
 			p1: { y: 0 },
@@ -92,11 +95,25 @@ export default class GameScene extends BaseScene {
 		this.setupSocket();
 	}
 
+	// receiveSceneData(data: {gameData: GameData, animationSelected: AnimationSelected}): void {
+	// 	console.log("Recieve Scene data is being called in the game scene!");
+	// 	console.log(`Data: ${JSON.stringify(data)}`);
+	// 	this._sessionToken = data.gameData.sessionToken;
+	// 	this._mode = data.gameData.mode;
+	// 	this._difficulty = data.gameData.difficulty;
+	// 	this._powerUpSelection = data.gameData.extras;
+	// 	if (data.animationSelected !== undefined) {
+
+	// 		this._animationSelected = data.animationSelected;
+	// 		this.createAnimation();
+	// 	}
+	// }
+
 
 	// Create game objects and establish WebSocket connection
 	create(): void {
 		super.create()
-		this.createListener();
+		// this.createListener();
 
 		if (this._mode === GameMode.single) {
 			const initData: GameData = {
@@ -195,7 +212,7 @@ export default class GameScene extends BaseScene {
 
 		this._socketIO.on('endGame', (winner: string) => this.endGame(winner));
 
-		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
+		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace: trace, animationSelected: this._animationSelected }));
 
 		// power ups handling
 		this._socketIO.on('powerUpUpdate', (state: PowerUpPosition) => {
@@ -254,7 +271,7 @@ export default class GameScene extends BaseScene {
 		else if (this._powerUpType === PowerUpType.stretchPaddle)
 			colour = 0xcc0000;  // Deep red for stretchPaddle
 		else
-			this.switchScene('Error', {trace: `Error with power up type: ${this._powerUpType} not existing`});
+			this.switchScene('Error', {trace: `Error with power up type: ${this._powerUpType} not existing`, animationSelected: this._animationSelected});
 		return colour;
 	}
 
@@ -276,9 +293,9 @@ export default class GameScene extends BaseScene {
 	resetWindowRatio(): void {
 
 		if (this._gameSizeBackEnd.width * this._gameSizeBackEnd.height === 0)
-			this.switchScene('Error', {trace: `Invalid resize ratio, got zero value(s) w:${this._gameSizeBackEnd.width}, h: ${this._gameSizeBackEnd.height}`});
+			this.switchScene('Error', {trace: `Invalid resize ratio, got zero value(s) w:${this._gameSizeBackEnd.width}, h: ${this._gameSizeBackEnd.height}`, animationSelected: this._animationSelected});
 		else if (this.scale.width * this.scale.height === 0)
-			this.switchScene('Error', {trace: `Invalid window size, got zero value(s) w: ${this.scale.width}, h: ${this.scale.height}`});
+			this.switchScene('Error', {trace: `Invalid window size, got zero value(s) w: ${this.scale.width}, h: ${this.scale.height}`, animationSelected: this._animationSelected});
 		
 		this._widthRatio = this._gameSizeBackEnd.width / this.scale.width;
 		this._heightRatio = this._gameSizeBackEnd.height / this.scale.height;
@@ -291,10 +308,13 @@ export default class GameScene extends BaseScene {
 		this.switchScene(
 			'Results', 
 			{
+				gameResults: {
 				winner: winner,
 				score: this._gameState.score,
 				sessionToken: this._sessionToken,
 				socket: this._socketIO
+				},
+				animationSelected: this._animationSelected
 			}
 		);
 	}
@@ -306,6 +326,6 @@ export default class GameScene extends BaseScene {
 
 	destory():  void {
 		super.destroy();
-		this.destoryListerner();
+		// this.destoryListerner();
 	}
 }

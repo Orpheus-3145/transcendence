@@ -7,18 +7,12 @@ export default class ErrorScene extends BaseScene {
 		super({ key: 'Error' });
 	}
 
-	init(data: { trace: string }): void {
+	init(data: {trace: string, animationSelected: AnimationSelected}): void {
 		super.init()
 		this._errorTrace = data.trace;
-	}
-
-	create(): void {
-		super.create()
-		this.createListener();
-	}
-
-	update(): void {
-		this.updateAnimation();
+		if (data.animationSelected !== undefined) {
+			this._animationSelected = data.animationSelected;
+		}
 	}
 
   	buildGraphicObjects(): void {
@@ -49,8 +43,4 @@ export default class ErrorScene extends BaseScene {
 			.on('pointerup', () => this.switchScene('MainMenu')); // Start the main game
 	}
 
-	destory():  void {
-		super.destroy();
-		this.destoryListerner();
-	}
 }

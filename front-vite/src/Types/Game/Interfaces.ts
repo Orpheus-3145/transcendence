@@ -1,5 +1,5 @@
 import { GameDifficulty, GameMode, PowerUpSelected, PowerUpType } from "./Enum";
-
+import { Socket } from 'socket.io-client';
 
 export interface PlayerData {
 	playerId: number;
@@ -50,4 +50,11 @@ export interface PowerUpStatus {
 export interface GameContextType {
   gameData: GameData;
   setGameData: (value: GameData) => void;
+}
+
+export interface GameResults {
+	winner: string;
+	score: {p1: number, p2: number};
+	sessionToken: string;
+	socket: Socket;
 }
