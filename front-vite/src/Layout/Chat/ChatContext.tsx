@@ -500,7 +500,7 @@ useEffect(() => {
 
 
 		useEffect(() => {
-			// socket.on('errorMessage', (message: string) => {
+			// socket.on('channelError', (message: string) => {
 
 			// })
 				socket.on('newMessage', (message: ChatMessage) => {
@@ -545,9 +545,45 @@ useEffect(() => {
 				});
 				return () => {
 				  socket.off('newMessage');
-				  // socket.off('errorMessage');
+				  // socket.off('channelError');
 				};
 			}, [selectedChannel]);
+
+	//-------------------------ERRORS HANDLER-------------------------//
+
+		useEffect(() => {
+			const handleErrors = (message: string) => {
+				console.log('Error received: ', message);
+
+				if (message.includes('channel creation error')) {
+					alert('Failed to create channel.');
+				} else if (message.includes('message creation error')) {
+					alert('Failed to send message.');
+				} else if (message.includes('privacy error')) {
+					alert('Failed to change channel privacy.');
+				} else if (message.includes('ban user error')) {
+					alert('Failed to ban user.');
+				} else if (message.includes('kick user error')) {
+					alert('Failed to kick user.');
+				} else if (message.includes('kick user error')) {
+					alert('Failed to kick user.');
+				} else if (message.includes('kick user error')) {
+					alert('Failed to kick user.');
+				} else if (message.includes('kick user error')) {
+					alert('Failed to kick user.');
+				} else if (message.includes('kick user error')) {
+					alert('Failed to kick user.');
+				}
+
+			};
+
+			socket.on('channelError', handleErrors);
+
+			return () => {
+				socket.off('channelError', handleErrors);
+			};
+
+		}, []);
 
 	////////////////////////////////////////////////////////////////////////
 
