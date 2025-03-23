@@ -56,7 +56,7 @@ export default class GameScene extends BaseScene {
 		super.init();
 		this._id = this.registry.get('user42data').intraId;
 		this._nameNick = this.registry.get('user42data').nameNick;
-
+		console.log(`Init data: ${JSON.stringify(data)}`);
 		this._sessionToken = data.gameData.sessionToken;
 		this._mode = data.gameData.mode;
 		this._difficulty = data.gameData.difficulty;
@@ -94,21 +94,6 @@ export default class GameScene extends BaseScene {
 
 		this.setupSocket();
 	}
-
-	// receiveSceneData(data: {gameData: GameData, animationSelected: AnimationSelected}): void {
-	// 	console.log("Recieve Scene data is being called in the game scene!");
-	// 	console.log(`Data: ${JSON.stringify(data)}`);
-	// 	this._sessionToken = data.gameData.sessionToken;
-	// 	this._mode = data.gameData.mode;
-	// 	this._difficulty = data.gameData.difficulty;
-	// 	this._powerUpSelection = data.gameData.extras;
-	// 	if (data.animationSelected !== undefined) {
-
-	// 		this._animationSelected = data.animationSelected;
-	// 		this.createAnimation();
-	// 	}
-	// }
-
 
 	// Create game objects and establish WebSocket connection
 	create(): void {

@@ -16,7 +16,7 @@ export default class MatchmakingScene extends BaseScene {
 		super.init()
 
 		this._gameInitData = data.gameData;
-		if (data && data.animationSelected !== undefined) {
+		if (data.animationSelected !== undefined) {
 			this._animationSelected = data.animationSelected;
 		}
 		this.setupSocket();
@@ -63,7 +63,7 @@ export default class MatchmakingScene extends BaseScene {
 			}
 		});
 
-		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
+		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace: trace, animationSelected: this._animationSelected}));
 
 		this.events.on('shutdown', () => this.disconnect(), this);
 	}
