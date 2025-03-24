@@ -35,13 +35,6 @@ const Game: React.FC = () => {
 	return (
 		<MainContainer>
 			<Stack direction='column' spacing={2}>
-				{/* <Box
-					sx={{
-						backgroundColor: theme.palette.primary.main,
-						padding: theme.spacing(2),
-						borderRadius: theme.shape.borderRadius,
-					}}
-				> */}
 				<Typography
 					variant='h3'
 					component='div'
@@ -53,7 +46,7 @@ const Game: React.FC = () => {
 				>
 					Pong
 				</Typography>
-				{/* </Box> */}
+				<GameComponent />
 				<ContentBox>
 					<Typography
 						variant='h5'
@@ -63,9 +56,6 @@ const Game: React.FC = () => {
 							width: '20ch',
 							fontWeight: 'bold',
 							color: theme.palette.secondary.main,
-							// bgcolor: theme.palette.primary.main,
-							// borderTopLeftRadius: '0.5em',
-							// borderTopRightRadius: '0.5em',
 						}}
 					>
 						Development & Impact
@@ -74,11 +64,8 @@ const Game: React.FC = () => {
 						variant='body'
 						sx={{
 							marginBottom: '2em',
-							// padding: '0.5em',
 							paddingBottom: '1em',
 							textAlign: 'justify',
-							// color: theme.palette.secondary.main,
-							// bgcolor: theme.palette.primary.main,
 							borderBottomLeftRadius: '0.5em',
 							borderBottomRightRadius: '0.5em',
 							borderTopRightRadius: '0.5em',
@@ -106,9 +93,6 @@ const Game: React.FC = () => {
 							width: '9ch',
 							color: theme.palette.secondary.main,
 							fontWeight: 'bold'
-							// bgcolor: theme.palette.primary.main,
-							// borderTopLeftRadius: '0.5em',
-							// borderTopRightRadius: '0.5em',
 						}}
 					>
 						Gameplay
@@ -117,13 +101,7 @@ const Game: React.FC = () => {
 						variant='body'
 						sx={{
 							marginBottom: '2em',
-							// padding: '0.5em',
 							textAlign: 'justify',
-							// color: theme.palette.secondary.main,
-							// bgcolor: theme.palette.primary.main,
-							// borderBottomLeftRadius: '1em',
-							// borderBottomRightRadius: '1em',
-							// borderTopRightRadius: '1em',
 						}}
 					>
 						<Stack
@@ -191,7 +169,6 @@ const Game: React.FC = () => {
 						</List>
 					</Box>
 				</ContentBox>
-				<GameComponent />
 			</Stack>
 		</MainContainer>
 	);
