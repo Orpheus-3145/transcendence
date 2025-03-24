@@ -168,21 +168,10 @@ export class UsersService {
 			return ("name already in use");
 		user.nameNick = newUsername;
 		this.usersRepository.save(user);
-		//try
-		//{
-		//	if (await this.findOneNick(newUsername))
-		//		return ("name already in use");
-		//}
-		//catch
-		//{
-		//	console.log("succes");
-		//	oldUserName = user.nameNick;
-		//	user.nameNick = newUsername;
-		//	this.usersRepository.save(user);
-		//}
-
 		this.notificationGateway.sendUpdatedNickname(user, newUsername);
-		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
+    
+		this.logger.log(`Successfully changed namenick from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
+
 		return ("");
 	}
   
@@ -218,6 +207,7 @@ export class UsersService {
 		
 		let newlistOther: string[] = other.friends.filter((afriend: string) => afriend !== user.id.toString());
 		other.friends = newlistOther;
+
 		this.usersRepository.save(other);
 
 		this.logger.log(`Removed friendship between ${user.nameNick} and ${other.nameNick}`);
