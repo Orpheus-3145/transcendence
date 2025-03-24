@@ -293,7 +293,7 @@ const ProfilePageOther: React.FC = () => {
 		var color: string;
 		var idOther: number;
 		var ttMessage: string;
-		if (data.player1 === userProfile?.nameNick)
+		if (data.player1 === userProfile?.nameIntra)
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
@@ -323,7 +323,7 @@ const ProfilePageOther: React.FC = () => {
 			return <Stack>Loading...</Stack>;
 		}
 
-		if (data.winner === userProfile?.nameNick)
+		if (data.winner === userProfile?.nameIntra)
 		{
 			color = '#1da517'
 			ttMessage = "Won";

@@ -5,9 +5,9 @@ import Game from 'src/entities/game.entity';
 export default class MatchDataDTO {
   constructor (game: Game) {
 
-    this.player1 = game.player1.nameNick;
-    this.player2 = game.player2.nameNick;
-    this.winner = game.winner.nameNick;
+    this.player1 = game.player1.nameIntra;
+    this.player2 = game.player2.nameIntra;
+    this.winner = game.winner.nameIntra;
     this.player1Score = game.player1Score;
     this.player2Score = game.player2Score;
     this.type = (game.powerups === 0) ? 'No powerups' : 'With powerups';
