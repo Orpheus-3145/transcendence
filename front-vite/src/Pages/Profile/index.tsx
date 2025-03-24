@@ -268,13 +268,13 @@ const ProfilePage: React.FC = () => {
 					marginY={theme.spacing(.5)}
 				>
 					<Avatar
-					sx={{
-						width: '40px',
-						height: '40px',
-						left: '-5px',
-						bgcolor: theme.palette.primary.light,
-					}}
-					src={friend.image}
+						sx={{
+							width: '40px',
+							height: '40px',
+							left: '-5px',
+							bgcolor: theme.palette.primary.light,
+						}}
+						src={friend.image}
 					>
 					</Avatar>
 					<Typography 
@@ -972,6 +972,11 @@ const ProfilePage: React.FC = () => {
 			setFriendsList(newlist);
 		});
 
+		socket.on('statusChanged', (tmp: User, status: UserStatus) =>
+		{
+			setWhichStatus(status);
+		});
+
 		const fetch2FAStatus = async () => {
 			try {
 				const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`);
@@ -980,7 +985,7 @@ const ProfilePage: React.FC = () => {
 		};
 		fetch2FAStatus();
 
-	}, [lastSegment, intraId]);
+	}, [lastSegment, intraId, whichStatus]);
 
 	let whichPage = () =>
 	{

@@ -1071,7 +1071,7 @@ const ProfilePageOther: React.FC = () => {
 			setProfileImage(newImage);
 		});
 
-	}, [lastSegment]);
+	}, [lastSegment, whichStatus]);
 
 	let PageWrapper = () =>
 	{		
