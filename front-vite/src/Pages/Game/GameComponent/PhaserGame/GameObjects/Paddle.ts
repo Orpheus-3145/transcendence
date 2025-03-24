@@ -24,6 +24,7 @@ export default class Paddle implements Resizable {
 
 		// Create a graphical rectangle to represent the player bar
 		this._graphic = this.scene.add.rectangle(x, y, this._width, this._height, 0xD3D3D3).setOrigin(0, 0.5);
+		this._graphic.setDepth(1);
 	}
 
 	// Update the position of the bar based on backend data

@@ -13,6 +13,7 @@ export default class Ball implements Resizable{
 		this.radius = this.scene.scale.width / this.radiusRatio;
 
 		this._graphic = this.scene.add.circle(x, y, this.radius, 0xffffff);
+		this._graphic.setDepth(1);
 	}
 
 	updatePosition(x: number, y: number): void {

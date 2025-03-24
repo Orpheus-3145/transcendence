@@ -32,7 +32,7 @@ export default class BackgroundSelectionScene extends BaseScene {
 			'Particle Emitters',
 			() => this.handleChange(AnimationSelected.particleEmitter),
 			10,
-			"#ff0000"
+			"#00ff00"
 		));
 
 		// select animation 'Particle System'
@@ -43,7 +43,7 @@ export default class BackgroundSelectionScene extends BaseScene {
 			'Particle System',
 			() => this.handleChange(AnimationSelected.particleSystem),
 			10,
-			"#0000ff"
+			"#00ff00"
 		));
 
 		// go back home btn
@@ -54,7 +54,7 @@ export default class BackgroundSelectionScene extends BaseScene {
 			'Home',
 			() => this.switchScene('MainMenu'),
 			20,
-			'#dd0000'
+			'#00ff00'
 		));
 	}
 

@@ -62,7 +62,7 @@ export default class SimulationService {
 	// Power-up state
 	private powerUpStatus: boolean[] = [false, false]; // Power up status for players
 	private powerUpDuration: number = Number(this.config.get<number>('GAME_POWERUP_DURATION', 8000)); // Duration for power-up
-	private powerUpActive: boolean = false; // Is powerUp active or not? Maybe we can remove this.
+	private powerUpSpawned: boolean = false; // Is powerUp active or not? Maybe we can remove this.
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
 	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight];
 	private powerUpType: PowerUpType;
@@ -219,7 +219,7 @@ export default class SimulationService {
 			this.updateBall();
 			this.sendUpdateToPlayers('gameState');
 
-			if (this.powerUpActive === true)
+			if (this.powerUpSpawned === true)
 				this.sendPowerUpUpdate();
 
 			if (this.gameOver) {
@@ -603,7 +603,9 @@ export default class SimulationService {
 			this.idlePlayer2Interval = setTimeout(() => this.interruptGame(`${this.player2.nameNick} disconnected`), this.idleTime);
 		}
 
-		this.addPowerUp(playerIndex);
+		this.handlePowerUp(playerIndex);
+		console.log(`Paddle heights: P1 ${this.paddleHeights[0]}, P2 ${this.paddleHeights[1]}`);
+		console.log(`PAddle Speeds: P1 ${this.paddleSpeed[0]}, P2 ${this.paddleSpeed[1]}`);
 		const delta = (direction === PaddleDirection.up) ? this.paddleSpeed[playerIndex] * -1 : this.paddleSpeed[playerIndex];
 		
 		player.posY = Math.max(
@@ -667,14 +669,13 @@ export default class SimulationService {
 		}
 	}
 
-	addPowerUp(player_no: number): void {
+	handlePowerUp(player_no: number): void {
 		if (this.powerUpType === PowerUpType.shrinkPaddle) {
 			this.paddleHeights[player_no] =
 				this.powerUpStatus[player_no] === true
 					? this._defaultPaddleHeight / 2
 					: this._defaultPaddleHeight;
 		} else if (this.powerUpType === PowerUpType.stretchPaddle) {
-			// powerUpType === "stretchPaddle"
 			this.paddleHeights[player_no] =
 				this.powerUpStatus[player_no] === true
 					? this._defaultPaddleHeight * 2
@@ -713,7 +714,7 @@ export default class SimulationService {
 	}
 
 	spawnPowerUp(): void {
-		if (this.powerUpActive)
+		if (this.powerUpSpawned)
 			return; // If speed ball is already active, do nothing
 
 		this.setRandomPowerUp(); // Deactivate all, then turn on a random power up
@@ -723,11 +724,11 @@ export default class SimulationService {
 
 		// if randomDirX == 1 towards player2, else towards player1
 		this.powerUpPosition = { x: spawnX, y: spawnY, dx: randomDirX, dy: 0 };
-		this.powerUpActive = true;
+		this.powerUpSpawned = true;
 	}
 
 	deactivatePowerUp(): void {
-		this.powerUpActive = false;
+		this.powerUpSpawned = false;
 		this.logger.debug(`session [${this.sessionToken}] - power up ${PowerUpType[this.powerUpType]} lost`);
 
 		// Notify players that the speed ball has been deactivated
@@ -773,8 +774,9 @@ export default class SimulationService {
 	removePowerUp(player_no: number): void {
 		// Remove the power-up status
 		this.powerUpStatus[player_no] = false;
+		this.handlePowerUp(player_no);
 		const playerIdentity1 =
-			player_no === 0 ? PlayerIdentity.self : PlayerIdentity.opponent;
+		player_no === 0 ? PlayerIdentity.self : PlayerIdentity.opponent;
 		this.sendPowerUpData(this.player1, playerIdentity1, false);
 		if (this.mode === GameMode.multi) {
 			const playerIdentity2 =
