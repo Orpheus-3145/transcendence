@@ -1,11 +1,11 @@
-import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, Body, UseFilters } from '@nestjs/common';
+import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, Body, UseFilters, FileTypeValidator } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-
 import User from '../entities/user.entity';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import { AnimationSelected } from 'src/game/types/game.enum';
 import { UserStatus } from 'src/dto/user.dto';
+import { Express } from 'express';
 
 @Controller('users')
 @UseFilters(SessionExceptionFilter)
@@ -107,8 +107,8 @@ export class UsersController {
 	}
 
 	@Post('profile/:username/changepfp')
-	@UseInterceptors(FileInterceptor('file')) //instead of any the file should be Express.Multer.File,
-	async changePFP(@Param('username') username:string,  @UploadedFile() file: any): Promise<string>
+	@UseInterceptors(FileInterceptor('file'))
+	async changePFP(@Param('username') username:string,  @UploadedFile() file: Express.Multer.File): Promise<string>
 	{
 		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 		const user = await this.UserService.getUserId(username);
