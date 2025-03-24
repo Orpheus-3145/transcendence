@@ -577,6 +577,8 @@ useEffect(() => {
 					alert(`Failed to leave channel: ${data.message}`);
 				else if (data.operation === 'join channel error')
 					alert(`Failed to join channel: ${data.message}`);
+				
+				window.location.reload();
 			};
 
 			socket.on('channelError', handleErrors);
