@@ -50,17 +50,11 @@ export const userBanned = (userName: string, channel: ChatRoom): boolean =>
 }
 
 export const joinRoom = (roomId) => {
-	// Check if the client has already joined this room
 	if (!joinedRooms.includes(roomId)) {
-	  // Join the room and add it to the joinedRooms list
 	  socket.emit('joinRoom', roomId);
 	  joinedRooms.push(roomId);
-	  console.log(`Joined room: ${roomId}`);
+	//   console.log(`Joined room: ${roomId}`);
 	} 
-	// else {
-	//   console.log(`Already in room: ${roomId}`);
-	// }
-
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -69,24 +63,18 @@ export let joinedRooms: number[] = [];
 
 const ChannelsPage: React.FC = () => {
 	const { user } = useUser();
-	// console.log(user.id);
-	
 	let passwordOk = false;
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const location = useLocation();
-	// const [channelName, setChannelName] = useState('');
-	// const [isAddingChannel, setIsAddingChannel] = useState(false);
 	const [isSettingsView, setIsSettingsView] = useState(false);
 	const [isPasswordModal, setIsPasswordModal] = useState(false);
 	const [enteredChannelPass, setEnteredChannelPass] = useState('');
 	const [users, setUsers] = useState<UserProps>([]);
 	const [newMessage, setNewMessage] = useState('');
-	// const {chatProps, setChatProps} = useChatContext();
 	const [availableChannels, setAvailableChannels] = useState<ChatRoom[]>([]);
 	const [directMessages, setDirectMessages] = useState<ChatRoom[]>([]);
 	const [joinedChannels, setJoinedChannels] = useState<ChatRoom[]>([]);
-	// const [selectedChannel, setSelectedChannel] = useState<ChatRoom | null>(null);
 	const [selectedAvailableChannel, setSelectedAvailableChannel] = useState<ChatRoom | null>(null);
 	const [powerupValue, setPowerupValue] = useState<PowerUpSelected>(0);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
@@ -184,7 +172,7 @@ const ChannelsPage: React.FC = () => {
 				userInChannel(user.id, channel)
 			);
 		// console.log("Available (useEffect):", available);
-		console.log("Joined (useEffect):", joined);
+		// console.log("Joined (useEffect):", joined);
 		
 		setJoinedChannels(joined);
 		setAvailableChannels(available);
@@ -224,7 +212,6 @@ const ChannelsPage: React.FC = () => {
 
 	const handleSendDirectMessageClick = (event: React.MouseEvent, otherUser: User ) => {
 		event.stopPropagation();
-		console.log("'Send Direct Message' clicked!");
 		if (!directMessageExists(otherUser)) {
 			if (otherUser.id !== user.id) {
 				const channelDTO = {
@@ -241,12 +228,7 @@ const ChannelsPage: React.FC = () => {
 					isDirectMessage: true,
 				};
 				socket.emit('createChannel', channelDTO);
-				
-			// 	socket.once('errorCreatingChannel', (error) => {
-			// 			console.error(error.message);
-			// 			alert(`Error creating channel: ${error.message}`);
-			// });
-		}
+			}
 		}
 	};
 
@@ -262,28 +244,16 @@ const ChannelsPage: React.FC = () => {
 			if (!joinedRooms.includes(room.id) && userInChannel(user.id, room)) {
 			  socket.emit('joinRoom', room.id);
 			  joinedRooms.push(room.id);
-			  console.log(`Client socket joined room: ${room.id}`);
+			//   console.log(`Client socket joined room: ${room.id}`);
 			}
-			// else {
-			//   console.log(`Already in room: ${room.id}`);
-			// }
 		})
 	};
 
-	// useEffect(() => {
-
-	// }, [])
-
-	// User socket joins the channels 
-	// joinRooms();
-
 	const joinRoom = (roomId) => {
-		// Check if the client has already joined this room
 		if (!joinedRooms.includes(roomId)) {
-		  // Join the room and add it to the joinedRooms list
 		  socket.emit('joinRoom', roomId);
 		  joinedRooms.push(roomId);
-		  console.log(`Joined room: ${roomId}`);
+		//   console.log(`Joined room: ${roomId}`);
 		} 
 	}
 
@@ -299,7 +269,7 @@ const ChannelsPage: React.FC = () => {
 	const handleAvailableChannelPasswordSubmit = (event: React.MouseEvent) => {
 		event.preventDefault();
 		if (selectedChannel) {
-			console.log(enteredChannelPass, selectedChannel.settings.password);
+			// console.log(enteredChannelPass, selectedChannel.settings.password);
 
 			const data = {
 				channelId: selectedChannel.id,
@@ -308,7 +278,7 @@ const ChannelsPage: React.FC = () => {
 			socket.emit('checkPasswordChannel', data);
 
 			socket.once('verifyPassword', (status: boolean) => {
-				console.log(status);
+				// console.log(status);
 				if (!status) {
 					alert("Incorrect password!");
 					setEnteredChannelPass('');
@@ -325,7 +295,6 @@ const ChannelsPage: React.FC = () => {
 
 	const handleAvailableChannelClick = (event: React.MouseEvent, channel: ChatRoom) => {
 		event.stopPropagation();
-		console.log('Available channel clicked!');
 		if (!passwordOk && channel.settings.type === ChannelType.protected ) {
 			setSelectedChannel(channel);
 			setIsPasswordModal(true);
@@ -808,7 +777,6 @@ const ChannelsPage: React.FC = () => {
 					}
 					}     
 				  >
-					{/* {console.log(selectedChannel.messages)}; */}
 					{selectedChannel?.messages?.map((msg: ChatMessage, index: number) => (
 						<React.Fragment key={index}>
 							{showMessages(msg, index)}

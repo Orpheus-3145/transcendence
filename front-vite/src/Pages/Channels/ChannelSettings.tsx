@@ -52,7 +52,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleAddFriend = async () => 
 	{
-		console.log('"Add Friend" clicked!');
 		if (friendName.length > 0) {
 			var tmp: User | null = await fetchUser(friendName);
 			if (tmp === null)
@@ -76,9 +75,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				email: tmp.email,
 			};
 
-			// joinRoom(selectedChannel.id);
-			
-			// Emit the user to the backend
 			socket.emit('joinChannel', data);
 			
 			setFriendName('');
@@ -93,7 +89,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			} 
 
 			if (userInChannel(user.id, selectedChannel)){
-				console.log('User added to channel (settings) ');
 				const newUser: UserProps = {
 					id: response.user_id,
 					name: response.name,
@@ -101,7 +96,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					email: response.email,
 					password: '',
 					// icon: <Avatar src={tmp.image}/> 
-					icon: <PersonAddIcon /> //!!
+					icon: <PersonAddIcon />
 				};
 				
 				setSettings({ ...settings, users: [...settings.users, newUser] });
@@ -154,7 +149,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	const handleBanFriend = (user: UserProps) => 
 	{
-		console.log(`channel id check: ${selectedChannel.id} - ${JSON.stringify(selectedChannel)}`)
+		// console.log(`channel id check: ${selectedChannel.id} - ${JSON.stringify(selectedChannel)}`)
 		socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
 		const updateSettings = (data) =>
@@ -225,8 +220,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	};
 
 	const handleRoleChange = (userId: number, role: string) => {
-		console.log('"Change Role" clicked!');
-
 		const data = {
 			user_id: userId,
 			channel_id: selectedChannel.id,
@@ -242,7 +235,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	
 	useEffect(() => {
 		const handleRoleChanged = (response) => {
-			console.log('User role changed (settings) to ', response.new_role);
+			// console.log('User role changed (settings) to ', response.new_role);
 			const updatedUsers = settings.users.map(user => user.id === response.userId ? { ...user, role: response.new_role } : user);
 			setSettings({ ...settings, users: updatedUsers });
 		};
@@ -257,7 +250,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
-			console.log('Channel privacy updated to (settings):', updatedChannel.settings.type);
+			// console.log('Channel privacy updated to (settings):', updatedChannel.settings.type);
 			setSettings({ ...settings, type: updatedChannel.settings.type, password: updatedChannel.settings.password})
 		};
 
@@ -270,8 +263,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 
 	const handleChangePrivacy = (type: ChannelType, password: string | null) => {
-		console.log('"Change Privacy" clicked!');
-
 		socket.emit('changePrivacy', { channel_type: type, channel_id: selectedChannel.id, password });
 
 		socket.once('error', (error) => {
@@ -281,8 +272,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	}
 	
 	const handleDeleteChannel = (channel_id: number) => {
-		console.log("'Delete Channel' clicked!");
-		
 		socket.emit('deleteChannel', channel_id);
 	
 		socket.once('error', (error) => {
@@ -318,8 +307,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	useEffect(() => {
 		const handleUserLeftChannel = (response: {channelDto: ChatRoom, userId: number}) => {
 			if (userInChannel(user.id, selectedChannel)) {
-				console.log(`User left channel (settings): ${JSON.stringify(response)}`);
-				// console.log(`New owner (settings): ${ response.new_owner}`);
+				// console.log(`User left channel (settings): ${JSON.stringify(response)}`);
 				if (!response.channelDto) {
 					return;
 				}
@@ -377,7 +365,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		return (false);
 	}
 
-	// console.log(selectedChannel.settings.owner, user.nameIntra);
 	return (
 		<Modal open={open} onClose={onClose}>
 			{!selectedChannel.isDirectMessage ? (
@@ -388,8 +375,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					<Divider sx={{ my: 2 }} />
 					</>
 				)}
-				{/* {console.log(user)} */}
-				{/* {console.log(selectedChannel.settings.owner, user.nameIntra)} */}
 				{selectedChannel.settings.owner === user.nameNick && (
 				<>
 					{/* Privacy Options */}
@@ -491,7 +476,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 										' '} */}
 								{`\n(${_user.role})`}
 						</Typography>
-						{/* {console.log(user.nameIntra)} */}
 						{(selectedChannel.settings.owner === user.nameNick ||
 							(userIsAdmin(user.nameNick, selectedChannel) && _user.role === 'member')) &&
 							(user.nameNick !== _user.name) &&
