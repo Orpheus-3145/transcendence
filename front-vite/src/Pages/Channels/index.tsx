@@ -7,7 +7,6 @@ import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Close as CloseIco
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tooltip, Box, InputBase, Divider, Typography, Button, IconButton, Container, useTheme, Stack, Modal, TextField, Avatar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import SportsEsportsRoundedIcon from '@mui/icons-material/SportsEsportsRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import MessageIcon from '@mui/icons-material/Message';
 import { styled } from '@mui/system';
@@ -23,7 +22,6 @@ import { copyFileSync } from 'fs';
 import { GameInviteModal } from '../Game/inviteModal';
 import { PowerUpSelected } from '../../Types/Game/Enum';
 import { inviteToGame } from '../../Providers/NotificationContext/Notification';
-// import { Socket } from 'socket.io-client';
 
 interface ChannelTypeEvent {
 	component: React.ReactNode;
@@ -49,7 +47,7 @@ export const userBanned = (userName: string, channel: ChatRoom): boolean =>
 	return (false);
 }
 
-export const joinRoom = (roomId) => {
+export const joinRoom = (roomId: number) => {
 	if (!joinedRooms.includes(roomId)) {
 	  socket.emit('joinRoom', roomId);
 	  joinedRooms.push(roomId);
@@ -249,7 +247,7 @@ const ChannelsPage: React.FC = () => {
 		})
 	};
 
-	const joinRoom = (roomId) => {
+	const joinRoom = (roomId: number) => {
 		if (!joinedRooms.includes(roomId)) {
 		  socket.emit('joinRoom', roomId);
 		  joinedRooms.push(roomId);
@@ -541,11 +539,6 @@ const ChannelsPage: React.FC = () => {
 
 	//---Function to render the list of channels---//
 	const renderJoinedChannels = (channels: ChatRoom[]) => {
-		// const filteredChannels = channels.filter(channel => userInChannel(user.nameIntra, channel));
-		// if (filteredChannels.length === 0) {
-		// 	return null;
-		// }
-
 		return (
 			<Stack gap={1}>
 			{channels.map(channel => (
@@ -567,10 +560,6 @@ const ChannelsPage: React.FC = () => {
 				!userBanned(user.id.toString(), channel) 
 				// && channel.settings.type !== 'private'
 		);
-		// if (filteredChannels.length === 0) {
-		// 	return null;
-		// }
-
 		return (
 			<Stack gap={1}>
 			{filteredChannels.map((channel) => ( 
@@ -665,8 +654,6 @@ const ChannelsPage: React.FC = () => {
 				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
 					Available Channels
 				</Typography>
-				{/* {renderAvailableChannels(availableChannels)}  */}
-				{/* {renderAvailableChannels(chatProps.chatRooms)}  */}
 				{renderAvailableChannels(availableChannels)} 
 			</Box>
 			<Divider/>
@@ -675,8 +662,6 @@ const ChannelsPage: React.FC = () => {
 				<Typography variant="h6" sx={{ textAlign: 'center', marginBottom: 1}}>
 					Direct Messages
 				</Typography>
-				{/* {renderAvailableChannels(availableChannels)}  */}
-				{/* {renderAvailableChannels(chatProps.chatRooms)}  */}
 				{renderDirectMessages(availableChannels)} 
 			</Box>
 			<Divider/>

@@ -14,10 +14,6 @@ import { PowerUpSelected } from '../../Types/Game/Enum';
 import { User } from '../../Types/User/Interfaces';
 import { ChatMessage } from './InterfaceChat';
 
-// export const socket = io('https://localhost:3000/chat', {
-// 	withCredentials: true,
-// });
-
 export interface ConnectedUser {
 	clientSocket: Socket,
 	intraId: number,
