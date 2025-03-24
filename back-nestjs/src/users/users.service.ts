@@ -108,7 +108,8 @@ export class UsersService {
 			{ where : [
 					{ player1 : {id: user.id} },
 					{ player2 : {id: user.id} },
-				]
+				],
+			relations: ['player1', 'player2', 'winner'],
 			}
 		);
 		if (!gamesPlayedbyId)
@@ -252,28 +253,11 @@ export class UsersService {
 
 	async fetchMatches(user: User) : Promise<MatchDataDTO[] | undefined> {
 
-		const gamesDB : Game[] = await this.gamesRepository.find({
-			where : [
-				{ player1 : {id: user.id} },
-				{ player2 : {id: user.id} },
-			],
-			relations: ['player1', 'player2'],
-		});
+		const gamesDB : Game[] = await this.findGamesByUser(user);
 
 		let matchData: MatchDataDTO[] = [];
-		for (const game of gamesDB) {
-
-			const winner: string = (game.player1Score > game.player2Score) ? game.player1.nameIntra : game.player2.nameIntra;
-			const type: string = (game.powerups === 0) ? 'No powerups' : 'With powerups';
-			matchData.push({
-				player1: game.player1.nameIntra,
-				player2: game.player2.nameIntra,
-				player1Score: game.player1Score,
-				player2Score: game.player2Score,
-				whoWon: winner,
-				type: type,
-			});
-		}
+		for (const game of gamesDB)
+			matchData.push(new MatchDataDTO(game));
 
 		this.logger.debug(`Fetching matches for user ${user.nameNick}`);
 		return (matchData);
@@ -282,7 +266,7 @@ export class UsersService {
 	async calculateRatio(user: User): Promise<MatchRatioDTO[]>
 	{
 		const games: Game[] = await this.findGamesByUser(user);
-		
+	
 		const totMatches = games.length;
 		let powerUpMatches = 0;
 		let nonPowerUpMatches = 0;
@@ -293,15 +277,13 @@ export class UsersService {
 		for ( const game of games ) {
 			if (game.powerups === 0) {
 				nonPowerUpMatches += 1;
-				if ((game.player1Score > game.player2Score && game.player1.intraId === user.intraId) ||
-						(game.player2Score > game.player1Score && game.player2.intraId === user.intraId)) {
+				if (game.winner.id === user.id) {
 					totMatchesWon += 1;
 					nonPowerUpMatchesWon += 1;
 				}
 			} else {
 				powerUpMatches += 1;
-				if ((game.player1Score > game.player2Score && game.player1.intraId === user.intraId) ||
-						(game.player2Score > game.player1Score && game.player2.intraId === user.intraId)) {
+				if (game.winner.id === user.id) {
 					totMatchesWon += 1;
 					powerUpMatchesWon += 1;
 				}
@@ -387,9 +369,6 @@ export class UsersService {
 		var allData: LeaderboardDTO[] = [];
 
 		allData = await this.initLeaderboardArr(allUser);
-		// var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
-		// var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
-		// var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
 
 		const [normalArr, powerArr, allArr] = await Promise.all([
 			this.fillArray(allData, "Normal"),

@@ -105,6 +105,12 @@ export default class User {
 	player2Game: Game[];
 
 	@OneToMany(
+		() => Game,
+		(game) => game.winner
+	)
+	winnerGame: Game[];
+
+	@OneToMany(
 		() => FriendRequest,
 		(friendRequest: FriendRequest) => friendRequest.sender
 	)
