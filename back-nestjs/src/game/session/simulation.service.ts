@@ -674,7 +674,6 @@ export default class SimulationService {
 					? this._defaultPaddleHeight / 2
 					: this._defaultPaddleHeight;
 		} else if (this.powerUpType === PowerUpType.stretchPaddle) {
-			// powerUpType === "stretchPaddle"
 			this.paddleHeights[player_no] =
 				this.powerUpStatus[player_no] === true
 					? this._defaultPaddleHeight * 2
@@ -773,8 +772,14 @@ export default class SimulationService {
 	removePowerUp(player_no: number): void {
 		// Remove the power-up status
 		this.powerUpStatus[player_no] = false;
+		// Restore default paddle speed
+		if (this.paddleSpeed[PlayerIdentity.self] !== this._defaultPaddleSpeed)
+			this.paddleSpeed[PlayerIdentity.self] = this._defaultPaddleSpeed;
+		if (this.paddleSpeed[PlayerIdentity.opponent] !== this._defaultPaddleSpeed)
+			this.paddleSpeed[PlayerIdentity.opponent] = this._defaultPaddleSpeed;
+		
 		const playerIdentity1 =
-			player_no === 0 ? PlayerIdentity.self : PlayerIdentity.opponent;
+		player_no === 0 ? PlayerIdentity.self : PlayerIdentity.opponent;
 		this.sendPowerUpData(this.player1, playerIdentity1, false);
 		if (this.mode === GameMode.multi) {
 			const playerIdentity2 =

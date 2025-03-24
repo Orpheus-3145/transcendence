@@ -10,7 +10,7 @@ export default class ParticleSystem extends BaseAnimation {
 	}
 
 	create(): void {
-		const n_particles = this.scene.scale.width / 3;
+		const n_particles = this.scene.scale.width / 1.5;
 		const radius = this.scene.scale.width / this.scene.scale.height * 2;
 		this.createCircleTexture(this._textureName, radius);
 		for (let i = 0; i < n_particles; i++) {
@@ -21,10 +21,6 @@ export default class ParticleSystem extends BaseAnimation {
 	createBouncingParticle(): void {
 		const x = Phaser.Math.Between(0, this.scene.scale.width);
 		const y = Phaser.Math.Between(0, this.scene.scale.height);
-		
-		// Create a small circle texture dynamically
-		// const radius = this.scene.scale.width / this.scene.scale.height * 2;
-		// const circleTexture = this.createCircleTexture("", radius);
 
 		const particle = this.scene.physics.add.sprite(x, y, this._textureName);
 	
@@ -34,14 +30,6 @@ export default class ParticleSystem extends BaseAnimation {
 		particle.setScale(Phaser.Math.FloatBetween(0.5, 1));
 
 		this.particles.push(particle);
-		// // Optional: Fade out over time
-		// this.scene.tweens.add({
-		// 	targets: particle,
-		// 	alpha: 0,
-		// 	duration: 50000,
-		// 	onComplete: () => particle.destroy(),
-		// });
-
 	}
 
 	// Remove the ball stuff the the disconneted error persists
@@ -61,8 +49,8 @@ export default class ParticleSystem extends BaseAnimation {
 			const dy = particle.y - ballPos.y;
 			const distance = Math.sqrt(dx * dx + dy * dy);
 
-			const repelRadius = 50; // Area where particles get pushed
-			const repelForce = 300; // Strength of push
+			const repelRadius = 80; // Area where particles get pushed
+			const repelForce = 320; // Strength of push
 			const damping = 0.98; // How much speed is reduced (closer to 1 = less slowdown)
 			const minSpeed = 50; // Minimum movement speed to keep floating
 			const maxSpeed = 80; // Cap speed to avoid infinite acceleration
@@ -72,7 +60,7 @@ export default class ParticleSystem extends BaseAnimation {
 				const forceY = (dy / distance) * repelForce;
 				particle.setAcceleration(forceX, forceY);
 			} else {
-				particle.setAcceleration(0, 0);
+				particle.setAcceleration(10, 10);
 			}
 
 			// Apply damping, but ensure it keeps moving

@@ -247,19 +247,15 @@ export default class GameScene extends BaseScene {
 	getColour(): number {
 		let colour: number = 0xD3D3D3;
 		if (this._powerUpType === PowerUpType.speedBall)
-			// colour = 0xff6600;  // Bright orange for speedBall
-			colour = 0xe4ff1a;
+			colour = 0xff6600;  // Bright orange
 		else if (this._powerUpType === PowerUpType.speedPaddle)
-			// colour = 0x66ff33;  // Vibrant green for speedPaddle
-			colour = 0xff5714;
+			colour = 0x66ff33;  // Green
 		else if (this._powerUpType === PowerUpType.slowPaddle)
-			// colour = 0x9900cc;  // Calming purple for slowPaddle
-			colour = 0xdc0073;
+			colour = 0x9900cc;  // Purple
 		else if (this._powerUpType === PowerUpType.shrinkPaddle)
-			// colour = 0xff66cc;  // Light pink for shrinkPaddle
-			colour = 0x1be7ff;
+			colour = 0xff66cc;  // Light pink
 		else if (this._powerUpType === PowerUpType.stretchPaddle)
-			colour = 0xcc0000;  // Deep red for stretchPaddle
+			colour = 0xcc0000;  // Deep red
 		else
 			this.switchScene('Error', {trace: `Error with power up type: ${this._powerUpType} not existing` });
 		return colour;

@@ -169,7 +169,7 @@ export default class SettingsScene extends BaseScene {
 				this.scale.height * 0.7,
 				'EASY',
 				20
-			).setStroke("#ffff00", 2)
+			)
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.easy;
@@ -186,7 +186,7 @@ export default class SettingsScene extends BaseScene {
 				'MEDIUM',
 				20,
 				"#ffa500"
-			).setStroke("#ffa500", 2)
+			)
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.medium;
@@ -202,7 +202,7 @@ export default class SettingsScene extends BaseScene {
 				this.scale.height * 0.7,
 				'HARD',
 				20,
-			).setStroke("#ff0000", 2)
+			)
 			.setInteractive()
 			.on('pointerup', () => {
 				this.difficulty = GameDifficulty.hard;
@@ -221,7 +221,7 @@ export default class SettingsScene extends BaseScene {
 			'Home',
 			() => this.switchScene('MainMenu'),
 			20,
-			'#dd0000'
+			'#00ff00'
 		));
 	}
 
