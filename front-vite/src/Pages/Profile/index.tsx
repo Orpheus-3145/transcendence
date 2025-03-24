@@ -32,7 +32,7 @@ import '../../Styles/profile.css'
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
-	const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+	const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 	const { user } = useUser();
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
@@ -660,24 +660,11 @@ const ProfilePage: React.FC = () => {
 					onChange={(e) => setInputValue(e.target.value)}
 					onKeyDown={handleNicknameUpdate}
 					placeholder="Type new nickname..."
-					sx={{
-						top: '-180px',
-						left: '470px',
-						width: '200px',
-						height: '40px',
-					}}
+					className="nicknameInput"
 					/>
 				)}
 				{showMessage && (	
-					<Stack
-					sx={{
-						alignItems: "center",
-						position: 'relative',
-						color: 'red',
-						fontSize: '18px',
-						top: '-163px',
-					}}
-					>
+					<Stack className="showErrorMessage">
 						{messageErrorNickname}
 					</Stack>
 				)}
@@ -726,6 +713,7 @@ const ProfilePage: React.FC = () => {
 					overflow={'hidden'}
 				>
 					{userInfo()}
+					{isSmallScreen && <br />}
 					<Stack
 						direction={isSmallScreen ? 'column' : 'row'}
 						bgcolor={theme.palette.primary.dark}

@@ -1,0 +1,333 @@
+.baseOther {
+	justify-content: space-between;
+	margin: 1em;
+}
+
+.imageBaseOther {
+	position: relative;
+}
+
+.imageSizeOther {
+	width: 200px !important;
+	height: 200px !important;
+}
+
+.userStatusOther {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: relative;
+}
+.userStatusOther.offline {
+    background-color: #df310e;
+}
+.userStatusOther.online {
+    background-color: #0fc00c;
+}
+.userStatusOther.inGame {
+    background-color: #0dddc4;
+}
+
+.nicknameBaseOther {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+}
+.nicknameStyleOther {
+	font-family: Georgia, serif !important;
+	font-weight: bold;
+	font-style: italic;
+	line-height: 5rem;
+	height: 5rem;
+	overflow: hidden;
+	white-space: nowrap;
+	transition: font-size 0.3s ease;
+}
+.nicknameStyleOther.small {
+	font-size: 4rem;
+}
+.nicknameStyleOther.medium {
+	font-size: 3rem;
+}
+.nicknameStyleOther.big {
+	font-size: 2rem;
+}
+.nicknameStyleOther.large {
+	font-size: 1rem;
+}
+
+.addingFriendIcon {
+	font-size: 30px;
+	width: 50px;
+}
+.addingFriendIcon:hover svg {
+    fill: #0c31df;
+}
+
+.showMessageFR {
+	position: relative;
+	color: green;
+	font-size: 18px;
+}
+
+.showMessageUserBlocked {
+	position: relative;
+	color: red;
+	font-size: 18px;
+}
+
+.inviteToGameIcon {
+	font-size: 30px;
+	width: 50px;
+}
+.inviteToGameIcon:hover svg {
+    fill: #BF77F6;
+}
+
+.inviteToGameMessage {
+	position: relative;
+	color: green;
+	font-size: 18px;
+}
+
+.sendMessageIcon {
+	font-size: 30px;
+	width: 50px;
+}
+.sendMessageIcon:hover svg {
+    fill: #09af07;
+}
+
+.blockUserIcon {
+	font-size: 30px;
+	width: 50px;
+}
+.blockUserIcon:hover svg {
+    fill: #df310e;
+}
+
+.unBlockUserIcon {
+	position: relative;
+	font-size: 30px;;
+	width: 50px;
+}
+.unBlockUserIcon:hover svg {
+    fill: #0c31df;
+}
+
+.otherInfoOther {
+	width: 100%;
+	height: 10px;
+	position: relative;
+}
+
+@media (min-width: 1275px) {
+	.baseOther {
+		width: 1120px;
+		height: 300px;
+	}
+	
+	.imageBaseOther {
+		top: 40px;
+		left: 50px;
+	}
+
+	.userStatusOther {
+		left: 190px !important;
+ 	}
+
+	.nicknameBaseOther {
+		top: -200px;
+		left: 10px;
+	}
+
+	.addingFriendIcon {
+		top: -130px;
+		left: 435px;
+	}
+
+	.showMessageFR {
+		top: -60px;
+		left: 440px;
+	}
+
+	.showMessageUserBlocked {
+		top: -64px;
+		left: 430px;
+	}
+
+	.inviteToGameIcon {
+		left: 505px;
+	}
+	.inviteToGameIcon.normal {
+		top: -171px;
+	}
+	.inviteToGameIcon.isFriend {
+		top: -130px;
+	}
+	.inviteToGameIcon.showMessage {
+		top: -198px;
+	}
+
+	.inviteToGameMessage {
+		left: 445px;
+	}
+	.inviteToGameMessage.normal {
+		top: -98px;
+	}
+	.inviteToGameMessage.isFriend {
+		top: -58px;
+	}
+
+	.sendMessageIcon {
+		left: 590px;
+	}
+	.sendMessageIcon.normal {
+		top: -210px;
+	}
+	.sendMessageIcon.isFriend {
+		top: -169px;
+	}
+	.sendMessageIcon.showMessage {
+		top: -237px;
+	}
+	.sendMessageIcon.showMessageFriend {
+		top: -196px;
+	}
+
+	.blockUserIcon {
+		left: 658px;
+	}
+	.blockUserIcon.normal {
+		top: -252px;
+	}
+	.blockUserIcon.showMessage {
+		top: -279px;
+	}
+
+	.unBlockUserIcon {
+		left: 550px;
+		top: -100px;
+	}
+
+	.nicknameBaseOther {
+		top: -170px;
+	}
+
+	.otherInfoOther {
+		left: 860px;
+	}
+	.otherInfoOther.normal {
+		top: -345px;
+	}
+	.otherInfoOther.friend {
+		top: -270px;
+	}
+	.otherInfoOther.showMessage {
+		top: -372px;
+	}
+	.otherInfoOther.showMessageFriend {
+		top: -305px;
+	}
+	.otherInfoOther.blocked {
+		top: -225px;
+	}
+}
+
+@media (max-width: 1275px) {
+	.baseOther {
+		min-width: 390px;
+		height: 680px;
+	}
+
+	.showMessageFR {
+		position: absolute !important;
+		top: clamp(800px, 50vh, 800px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.inviteToGameMessage {
+		position: absolute !important;
+		top: clamp(800px, 50vh, 800px);
+		left: 50%;
+		transform: translateX(-50%);		
+	}
+
+	.showMessageUserBlocked {
+		position: absolute !important;
+		top: clamp(800px, 50vh, 800px);
+		left: 50%;
+		transform: translateX(-50%);			
+	}
+
+	.imageBaseOther {
+		position: absolute !important;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		top: clamp(80px, 20vh, 130px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.userStatusOther {
+		position: absolute !important;
+		top: clamp(220px, 45vh, 290px);
+		left: 50%;
+		transform: translateX(100%);
+	}
+
+	.nicknameBaseOther {
+		position: absolute !important;
+		top: clamp(300px, 50vh, 380px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.addingFriendIcon {
+		position: absolute !important;
+		top: clamp(490px, 50vh, 490px);
+		left: 50%;
+		transform: translateX(-150%);
+	}
+
+	.inviteToGameIcon {
+		position: absolute !important;
+		top: clamp(490px, 50vh, 490px);
+		left: 50%;
+		transform: translateX(50%);
+	}
+
+	.sendMessageIcon {
+		position: absolute !important;
+		top: clamp(540px, 50vh, 540px);
+		left: 50%;
+		transform: translateX(-150%);
+	}
+
+	.blockUserIcon {
+		position: absolute !important;
+		top: clamp(538px, 50vh, 540px);
+		left: 50%;
+		transform: translateX(50%);
+	}
+
+	.unBlockUserIcon {
+		position: absolute !important;
+		top: clamp(510px, 50vh, 510px);
+		left: 50%;
+		transform: translateX(-50%);	
+	}
+
+	.otherInfoOther {
+		position: absolute !important;
+		justify-content: center;
+		align-items: center;
+		top: clamp(650px, 75vh, 690px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+}

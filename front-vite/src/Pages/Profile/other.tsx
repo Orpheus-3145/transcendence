@@ -30,12 +30,13 @@ import {	User,
 import {UserStatus} from '../../Types/User/Enum';
 import { GameInviteModal } from '../Game/inviteModal';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import '../../Styles/other.css'
 
 const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const {user} = useUser();
-	const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+	const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
@@ -453,13 +454,8 @@ const ProfilePageOther: React.FC = () => {
 		{
 			return (
 				<Stack
-					justifyContent={'space-between'}
-					margin={'1em'}
+					className="baseOther"
 					bgcolor={theme.palette.primary.dark}
-					sx={{
-						maxWidth: '1200px',
-						maxHeight: '300px',
-					}}
 				>
 					{GetProfilePic()}
 					{GetUserStatus()}
@@ -478,24 +474,12 @@ const ProfilePageOther: React.FC = () => {
 	{
 		return (
 			<Stack
-				sx={{
-					position: 'relative',
-					top: '40px',
-					left: '50px',
-				}}
+				className="imageBaseOther"
 			>
 				<Avatar
-					sx={{
-						alignItems: 'center',
-						justifyContent: 'center',
-						display: 'flex',
-						width: '200px',
-						height: '200px',
-						bgcolor: theme.palette.primary.light,
-					}}
+					className="imageSizeOther"
 					src={profileImage}
 				>
-					<AccountCircleIcon sx={{ width: '100%', height: 'auto' }} />
 				</Avatar>
 			</Stack>
 		);
@@ -503,76 +487,37 @@ const ProfilePageOther: React.FC = () => {
 
 	let GetUserStatus = () =>
 	{		
-		let color: string = "";
-		let message: string = "";
+		let status;
 		if (whichStatus == UserStatus.Offline)
-		{
-			message = "Offline";
-			color = '#df310e';
-		}
-		else if (whichStatus == UserStatus.Online)
-		{
-			color = '#0fc00c';
-			message = "Online";
-		}
-		if (whichStatus == UserStatus.InGame)
-		{
-			color = '#0fc00c';
-			message = "In Game";
-		}
+			status = 'offline';
+		else if (whichStatus ==  UserStatus.Online)
+			status = 'online';
+		else if (whichStatus ==  UserStatus.InGame)
+			status = 'inGame';
 		
 		return (
 			<Stack>
-				<Tooltip title={message} arrow >
-					<Box
-					sx={{
-						width: 40,
-						height: 40,
-						backgroundColor: color,
-						borderRadius: '50%',
-						position: 'relative',
-						top: '0px',
-						left: '190px',
-					}}/>
-				</Tooltip>
+				<Box className={`userStatusOther ${status}`} />
 			</Stack>
 		);
 	}
 
 	let GetNickName = () => 
 	{
-		let size = '4rem';
+		let size = 'small';
 		if (userProfile.nameNick.length > 10)
-			size = '3rem';
-		if (userProfile.nameNick.length > 20)
-			size = '2rem';
+			size = 'medium';
+		if (userProfile.nameNick.length > 18)
+			size = 'big';
 		if (userProfile.nameNick.length > 25)
-			size = '1rem';
-
+			size = 'large';
+				
 		return (
 			<Stack
-				sx={{
-					width: '100%',
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center',
-					position: 'relative',
-					top: '-150px',
-					left:'10px',
-				}}
+				className="nicknameBaseOther"
 			>
 				<Typography variant={'h2'}
-					sx={{
-						fontFamily: 'Georgia, serif',
-						fontWeight: 'bold',
-						fontStyle: 'italic',
-						fontSize: size,
-						lineHeight: '5rem',
-						height: '5rem',
-						overflow: 'hidden',
-						whiteSpace: 'nowrap',
-						transition: 'font-size 0.3s ease',
-					}}
+					className={`nicknameStyleOther ${size}`}  
 				>
 					{profileNickname}
 				</Typography>
@@ -643,41 +588,21 @@ const ProfilePageOther: React.FC = () => {
 					<IconButton
 						variant="contained"
 						onClick={() => AddingFriend()}
-						sx={{
-							fontSize: '30px',
-							top: '-130px',
-							left: '435px',
-							width: '50px',
-							'&:hover': {
-								color: '#0c31df',
-							},
-						}}
+						className="addingFriendIcon"
 					>
 						<AddIcon fontSize="inherit"/>
 					</IconButton>
 				</Tooltip>
 				{showMessageFR && (	
 					<Stack
-					sx={{
-						position: 'relative',
-						color: 'green',
-						fontSize: '18px',
-						top: '-64px',
-						left: '440px',
-					}}
+						className="showMessageFR"
 					>
 						{messageHandeler("FR")}
 					</Stack>
 				)}
 				{showMessageUserBlocked && (	
 					<Stack
-					sx={{
-						position: 'relative',
-						color: 'red',
-						fontSize: '18px',
-						top: '-64px',
-						left: '430px',
-					}}
+						className="showMessageUserBlocked"
 					>
 						{messageUserBlocked}
 					</Stack>
@@ -698,26 +623,26 @@ const ProfilePageOther: React.FC = () => {
 	}
 
 	const handleModalClose = () => {
-			setModalOpen(false);
+		setModalOpen(false);
 	};
 
 	const handleModalOpen = () => {
-			setModalOpen(true);
+		setModalOpen(true);
 	};
 
 	let InviteToGameIcon = () => 
 	{
-		var topIcon = '-175px';
-		var topMessage = '-110px';
+		var topIcon = 'normal';
+		var topMessage = 'normal';
 		if (isFriend)
 		{
-			topIcon = '-130px';
+			topIcon = 'isFriend';
 			if (showMessageGR)
-				topMessage = '-67px';
+				topMessage = 'isFriend';
 		}
 		if (showMessageFR || showMessageUserBlocked)
 		{
-			topIcon = '-202px';
+			topIcon = 'showMessage';
 		}
 
 		return (
@@ -725,15 +650,7 @@ const ProfilePageOther: React.FC = () => {
 			<Tooltip title="Invite to Game!" arrow>
 				<IconButton
 					onClick={handleModalOpen}
-					sx={{
-						fontSize: '30px',
-						top: topIcon,
-						left: '505px',
-						width: '50px',
-						'&:hover': {
-							color: '#BF77F6',
-						},
-					}}
+					className={`inviteToGameIcon ${topIcon}`}
 				>
 					<GameIcon fontSize="inherit"/>
 				</IconButton>
@@ -746,13 +663,7 @@ const ProfilePageOther: React.FC = () => {
 			}
 			{showMessageGR && (	
 				<Stack
-				sx={{
-					position: 'relative',
-					color: 'green',
-					fontSize: '18px',
-					top: topMessage,
-					left: '445px',
-				}}
+					className={`inviteToGameMessage ${topMessage}`}
 				>
 					{messageHandeler("GR")}
 				</Stack>
@@ -782,19 +693,19 @@ const ProfilePageOther: React.FC = () => {
 	
 	let SendMessageIcon = () => 
 	{
-		var top = '-220px';
+		var top = 'normal';
 		
 		if (isFriend)
 		{
-			top = '-175px';
+			top = 'isFriend';
 		}
 
 		if (showMessageGR || showMessageFR || showMessageUserBlocked)
 		{
-			top = '-247px';
+			top = 'showMessage';
 			if (isFriend)
 			{
-				top = '-202px';
+				top = 'showMessageFriend';
 			}
 		}
 
@@ -804,15 +715,7 @@ const ProfilePageOther: React.FC = () => {
 					<IconButton
 						variant="contained"
 						onClick={() => redirectToChat()}
-						sx={{
-								fontSize: '30px',
-								top: top,
-								left: '590px',
-								width: '50px',
-								'&:hover': {
-									color: '#09af07',
-								},
-						}}
+						className={`sendMessageIcon ${top}`}
 					>
 						<MessageIcon fontSize="inherit"/>
 					</IconButton>
@@ -829,10 +732,10 @@ const ProfilePageOther: React.FC = () => {
 
 	let BlockUserIcon = () =>
 	{
-		let top = '-268px';
+		let top = 'normal';
 		if ((showMessageFR) || (showMessageGR) || (showMessageUserBlocked))
 		{
-			top = '-295px';
+			top = 'showMessage';
 		}
 	
 		return (
@@ -840,15 +743,7 @@ const ProfilePageOther: React.FC = () => {
 				<Tooltip title="Block user!" arrow>
 					<IconButton 
 						onClick={() => BlockUser()}
-						sx={{
-							fontSize: '30px',
-							top: top,
-							left: '658px',
-							width: '50px',
-							'&:hover': {
-								color: '#df310e',
-							},
-						}}
+						className={`blockUserIcon ${top}`}
 					>
 						<BlockIcon fontSize="inherit"/>	
 					</IconButton>
@@ -875,16 +770,7 @@ const ProfilePageOther: React.FC = () => {
 					<IconButton
 						variant="contained"
 						onClick={() => handleUnblock()}
-						sx={{ 
-							position: 'relative',
-							top: '-100px',
-							fontSize: '30px',
-							left: '550px',
-							width: '50px',
-							'&:hover': {
-								color: '#0c31df',
-							},
-						}}
+						className="unBlockUserIcon"
 					>
 						<LockOpenIcon fontSize="inherit"/>
 					</IconButton>
@@ -895,24 +781,24 @@ const ProfilePageOther: React.FC = () => {
 
 	let OtherInfo = () =>
 	{
-		let top = '-368px';
+		let top: string = 'normal'; //-368px
 
 		if (isFriend)
-			top = '-278px';
+			top = 'friend'; //-278px
 	
 		if ((showMessageFR) || (showMessageGR) || (showMessageUserBlocked))
 		{
-			top = '-395px';
+			top = 'showMessage'; //-395px
 			if (isFriend)
 			{
-				top = '-305px';
+				top = 'showMessageFriend'; //-305px
 			}
 
 		}
 
 		if (isBlocked)
 		{
-			top = '-230px';
+			top = 'blocked'; //-230px
 		}
 
 		return (
@@ -920,13 +806,7 @@ const ProfilePageOther: React.FC = () => {
 				direction={'column'}
 				justifyContent={'center'}
 				padding={'1em'}
-				sx={{
-					width: '100%',
-					height: '10px',
-					position: 'relative',
-					top: top,
-					left: '860px',
-				}}
+				className={`otherInfoOther ${top}`}
 			>
 				<Typography>
 					<b>Intra name: </b>
@@ -952,6 +832,7 @@ const ProfilePageOther: React.FC = () => {
 						overflow={'hidden'}
 				>
 					{userInfo()}
+					{isSmallScreen && <br />}
 					<Stack
 						direction={isSmallScreen ? 'column' : 'row'}
 						bgcolor={theme.palette.primary.dark}
