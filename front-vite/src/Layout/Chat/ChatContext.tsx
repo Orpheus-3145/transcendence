@@ -14,10 +14,6 @@ import { PowerUpSelected } from '../../Types/Game/Enum';
 import { User } from '../../Types/User/Interfaces';
 import { ChatMessage } from './InterfaceChat';
 
-// export const socket = io('https://localhost:3000/chat', {
-// 	withCredentials: true,
-// });
-
 export interface ConnectedUser {
 	clientSocket: Socket,
 	intraId: number,
@@ -32,7 +28,7 @@ export const socket = io(`${import.meta.env.URL_WEBSOCKET}${import.meta.env.WS_N
 });
 
 socket.on('connect', () => {
-	console.log('Socket connected:', socket.id);
+	// console.log('Socket connected:', socket.id);
 });
 
 socket.on('connect_error', (error) => {
@@ -100,7 +96,6 @@ export const ChatProvider: React.FC = ({ children }) => {
 	// const [waiting, setWaiting] = useState<Boolean>(false);
 
 
-	// console.log(user.nameIntra);
     const [chatProps, setChatProps] = useState<ChatProps>({
         chatRooms: [],
         chatStatus: ChatStatus.ChannelsPage,
@@ -113,7 +108,7 @@ export const ChatProvider: React.FC = ({ children }) => {
 			if (!joinedRooms.includes(room.id) && userInChannel(user.id, room)) {
 			  socket.emit('joinRoom', room.id);
 			  joinedRooms.push(room.id);
-			  console.log(`Client socket joined room: ${room.id}`);
+			//   console.log(`Client socket joined room: ${room.id}`);
 			}
 		})
 	};
@@ -293,7 +288,7 @@ useEffect(() => {
 
 	useEffect(() => {
 			const handleChannelDeleted = (response) => {
-				console.log('Channel deleted', response.channel_id);
+				// console.log('Channel deleted', response.channel_id);
 				setChatProps((prevState) => ({
 					...prevState,
 					chatRooms: prevState.chatRooms.filter(chat => chat.id !== response.channel_id),
@@ -314,7 +309,7 @@ useEffect(() => {
 
 	useEffect(() => {
 		const handleRoleChanged = (response) => {
-			console.log('User role changed (index) to ', response.new_role);
+			// console.log('User role changed (index) to ', response.new_role);
 
 			const selectedChannel = chatProps.chatRooms.find(channel => channel.id === response.channelId);
 
@@ -347,7 +342,7 @@ useEffect(() => {
 	useEffect(() => {
 	const handleUserLeftChannel = (response: {channelDto: ChatRoom, userId: number}) => {
 		if (userInChannel(user.id, response.channelDto)) {
-			console.log(`User left channel (index): ${JSON.stringify(response)}`);
+			// console.log(`User left channel (index): ${JSON.stringify(response)}`);
 			if (!response.channelDto) { 
 				return;
 			}
@@ -359,7 +354,6 @@ useEffect(() => {
 					}
 					const updatedUsers = channel.settings.users.filter((usr) => usr.id !== response.userId);
 					const newOwner = response.channelDto.settings.owner;
-					// console.log('New owner (index) :', newOwner);
 					return {
 						...channel,
 						settings: {
@@ -374,7 +368,6 @@ useEffect(() => {
 				}),
 			}));
 		}
-		// console.log('channel after user left (index)', selectedChannel);
 	};
 
 	socket.on('leftChannel', handleUserLeftChannel);
@@ -391,7 +384,7 @@ useEffect(() => {
 			const handleUserJoinedChannel = (response) => {
 				// console.log(response.channelDto);
 				if (userInChannel(user.id, response.channelDto)) {
-					console.log('User added to channel (index) ');
+					// console.log('User added to channel (index) ');
 					const newUser: UserProps = {
 						id: response.user_id,
 						name: response.name,
@@ -432,7 +425,7 @@ useEffect(() => {
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
 			// console.log('Channel privacy updated:', updatedChannel);
-			console.log('Channel privacy updated to (index):', updatedChannel.settings.type);
+			// console.log('Channel privacy updated to (index):', updatedChannel.settings.type);
 			// console.log('Channel from backend (index):', updatedChannel);
 			
 			setChatProps((prevState) => ({
@@ -463,7 +456,7 @@ useEffect(() => {
 
 	useEffect(() => {
 			const handleUserJoinedAvailableChannel = (response) => {
-				console.log('User joined available channel (index)');
+				// console.log('User joined available channel (index)');
 				const newUser: UserProps = {
 					id: response.user_id,
 					name: response.name,
@@ -500,10 +493,13 @@ useEffect(() => {
 
 
 		useEffect(() => {
+			// socket.on('channelError', (message: string) => {
+
+			// })
 				socket.on('newMessage', (message: ChatMessage) => {
-				  console.log('Received new message (React):', message);
-					//   console.log('Receiver id:', message.channel.channel_id);
-					console.log('Before update:', chatProps.chatRooms);
+					// console.log('Received new message (React):', message);
+					// console.log('Receiver id:', message.channel.channel_id);
+					// console.log('Before update:', chatProps.chatRooms);
 		
 					const newMessage: ChatMessage = {
 						id: message.id,
@@ -519,7 +515,7 @@ useEffect(() => {
 					  ...prevProps,
 					  chatRooms: prevProps.chatRooms.map((room) => {
 						// console.log('Checking room.id:', room.id);
-					  if (room.id === message.receiver_id) {			// NB shall ChatMessage be modified to receive the receiver_id as well
+					  if (room.id === message.receiver_id) {
 						  return {
 								...room,
 								messages: [
@@ -542,8 +538,53 @@ useEffect(() => {
 				});
 				return () => {
 				  socket.off('newMessage');
+				  // socket.off('channelError');
 				};
 			}, [selectedChannel]);
+
+	//-------------------------ERRORS HANDLER-------------------------//
+
+		useEffect(() => {
+			const handleErrors = (data: {operation: string, message: string}) => {
+				// console.log('Error received: ', data.message);
+
+				if (data.operation === 'createChannel')
+					alert(`Failed to create channel: ${data.message}`);
+				else if (data.operation === 'sendMessage')
+					alert(`Failed to send message: ${data.message}`);
+				else if (data.operation === 'changePrivacy')
+					alert(`Failed to change channel privacy: ${data.message}`);
+				else if (data.operation === 'banUserFromChannel')
+					alert(`Failed to ban user: ${data.message}`);
+				else if (data.operation === 'unbanUserFromChannel')
+					alert(`Failed to unban user: ${data.message}`);
+				else if (data.operation === 'kickUserFromChannel')
+					alert(`Failed to kick user: ${data.message}`);
+				else if (data.operation === 'muteUserFromChannel')
+					alert(`Failed to mute user: ${data.message}`);
+				else if (data.operation === 'unmuteUserFromChannel')
+					alert(`Failed to unmute user: ${data.message}`);
+				else if (data.operation === 'changeUserRole')
+					alert(`Failed to change user role: ${data.message}`);
+				else if (data.operation === 'leaveChannel')
+					alert(`Failed to leave channel: ${data.message}`);
+				else if (data.operation === 'joinChannel')
+					alert(`Failed to join channel: ${data.message}`);
+				else if (data.operation === 'joinAvailableChannel')
+					alert(`Failed to join available channel: ${data.message}`);
+				else if (data.operation === 'deleteChannel')
+					alert(`Failed to delete channel: ${data.message}`);
+				
+				// window.location.reload();
+			};
+
+			socket.on('channelError', handleErrors);
+
+			return () => {
+				socket.off('channelError', handleErrors);
+			};
+
+		}, []);
 
 	////////////////////////////////////////////////////////////////////////
 
