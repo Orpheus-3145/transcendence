@@ -154,6 +154,7 @@ export class UsersService {
 
 	async setNameNick(userId: string, newUsername: string): Promise<string>
 	{
+		console.log("aa");
 		if (newUsername.length > 27)
 			return ("lenght is bigger then 27 chars, make it shorter!");
 
@@ -162,19 +163,11 @@ export class UsersService {
 			return (`'${newUsername}': invalid input, only letters, numbers, - and _ are allowed`);
 
 		const user = await this.getUserId(userId);
-		let oldUserName: string = "";
-		try
-		{
-			if (await this.findOneNick(newUsername))
-				return ("name already in use");
-		}
-		catch
-		{
-			oldUserName = user.nameNick;
-			user.nameNick = newUsername;
-			this.usersRepository.save(user);
-		}
-		
+		let oldUserName: string = user.nameNick;
+		if (await this.findOneNick(newUsername))
+			return ("name already in use");
+		user.nameNick = newUsername;
+		this.usersRepository.save(user);
 		this.notificationGateway.sendUpdatedNickname(user, newUsername);
     
 		this.logger.log(`Successfully changed namenick from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);

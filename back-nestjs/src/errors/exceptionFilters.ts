@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { GameException, SessionException, ChatException } from 'src/errors/exceptions';
 import RoomManagerService from 'src/game/session/roomManager.service';
 import AppLoggerService from 'src/log/log.service';
+import { createGzip } from 'zlib';
 
 @Catch(GameException)
 export class GameExceptionFilter implements ExceptionFilter {
@@ -87,8 +88,7 @@ export class ChatExceptionFilter implements ExceptionFilter {
 
 		const ctx = host.switchToWs();
 		const client = ctx.getClient();
-		// const data = ctx.getData();
 
-		client.emit('channelError', { message: `Internal error: ${exception.message}` });
+		client.emit('channelError', { operation: ctx.getPattern(), message: exception.message});
 	}
 }
