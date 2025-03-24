@@ -51,7 +51,7 @@ const WelcomeMessage: React.FC = () => {
 				padding: '1em 25%'
 			}}
 		>
-			Welcome to our project, here you can challenge your friends at a Pong game with superpowers, or start your channel to stay in contact with all of them at once!
+			Welcome to our project! Here, you can challenge your friends to a Pong game with superpowers or start your own channel to stay in touch with all of them at once!
 		</Typography>
 	);
 };

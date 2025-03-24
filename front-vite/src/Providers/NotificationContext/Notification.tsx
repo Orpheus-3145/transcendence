@@ -15,7 +15,7 @@ socket.on('connect_error', (error) => {
 });
 
 export enum NotificationType {
-  gameInvite = 'Game Invite',
+  	gameInvite = 'Game Invite',
 	friendRequest = 'Friend Request',
 	message = 'message',
 	groupChat = 'groupChat',
@@ -45,7 +45,7 @@ export async function addFriend(senderId:string, receiverId:string): Promise<voi
 }
 
 // NB change string into number
-export async function inviteToGame(senderId:string, receiverId:string, powerups: PowerUpSelected): Promise<void> 
+export async function inviteToGame(senderId:string, receiverId:string, powerups: number): Promise<void> 
 {
 	socket.emit('sendGameInvite', {senderId: senderId, receiverId: receiverId, powerUps: powerups});
 }

@@ -7,6 +7,7 @@ import {
 	JoinColumn
 } from 'typeorm';
 import User from './user.entity';
+import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
 
 @Entity('Games')
@@ -36,6 +37,17 @@ export default class Game {
 	@JoinColumn({ name: 'player2_id' })
 	player2: User;
 
+	@ManyToOne(
+		() => User,
+		(user) => user.winnerGame,
+		{
+			eager: true,
+			onDelete: "CASCADE"
+		}
+	)
+	@JoinColumn({ name: 'winner_id' })
+	winner: User;
+
 	@Column({
 		type: 'int',
 		default: 0
@@ -60,4 +72,11 @@ export default class Game {
 		default: 0
 	})
 	powerups: number;
+
+	@Column({
+		name: 'forfait',
+		type: 'boolean',
+		default: false
+	})
+	forfait: boolean;
 }

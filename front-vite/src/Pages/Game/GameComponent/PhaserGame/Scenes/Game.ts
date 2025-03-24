@@ -200,6 +200,7 @@ export default class GameScene extends BaseScene {
 		});
 
 		this._socketIO.on('endGame', (winner: string) => this.endGame(winner));
+		this._socketIO.on('endGameByForfeit', (winner: string) => this.endGame(winner, true));
 
 		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace: trace }));
 
@@ -290,19 +291,21 @@ export default class GameScene extends BaseScene {
 		this._heightRatio = this._gameSizeBackEnd.height / this.scale.height;
 	}
 
-	endGame(winner: string): void {
+	endGame(winner: string, winByForfeit= false): void {
 
-		// stay connected to websocket, because the next scene needs it
-		this._keepConnectionOpen = true;
+		// stay connected to websocket if the win was not caused by forfeit, because the next scene needs it
+		this._keepConnectionOpen = !winByForfeit;
 		this.switchScene('Results', {
 			winner: winner,
 			score: this._gameState.score,
-			sessionToken: this._sessionToken,
-			socket: this._socketIO
+			sessionToken: (winByForfeit === false) ? this._sessionToken : null,
+			socket: (winByForfeit === false) ? this._socketIO : null,
+			winByForfeit: winByForfeit
 		});
 	}
 
 	disconnect(): void {
+		this.events.off('shutdown');
 		if (this._keepConnectionOpen === false)
 			this._socketIO.disconnect();
 	}

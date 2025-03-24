@@ -12,7 +12,8 @@ export default class ResultsScene extends BaseScene {
 
 	private _winner!: string;
 	private _score!: {p1: number, p2: number};
-	private _sessionToken!: string;
+	private _sessionToken!: string | null;
+	private _winByForfeit!: boolean;
 
 	private _playAgainBtn: ButtonWidget | null = null;
 	private _playAgainPopup!: PopupWidget;
@@ -30,25 +31,34 @@ export default class ResultsScene extends BaseScene {
 		super({ key: 'Results' });
 	}
 
-	init(gameResults: GameResults): void {
+		init(data: { winner: string, score: {p1: number, p2: number}, sessionToken: string | null, socket: Socket | null, winByForfeit: boolean }): void {
 		super.init();
 
-		this._winner = gameResults.winner;
-		this._score = gameResults.score;
-		this._sessionToken = gameResults.sessionToken;
-		this._socketIO = gameResults.socket;
+		this._winner = data.winner;
+		this._score = data.score;
+		this._winByForfeit = data.winByForfeit;
+		this._sessionToken = data.sessionToken;
+		this._socketIO = data.socket;
+
 		this.setupSocket();
 	}
 
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
-		
+		let winText: string = '';
+		if (this._winner === this.registry.get('user42data').nameNick) {
+			winText = `You won!`;
+			if (this._winByForfeit)
+				winText += '\n[opponent left the game]';
+		}
+		else
+			winText = `You lose!`;
 		this._widgets.push(
 			new TextWidget(
 				this,
 				this.scale.width * 0.5,
 				this.scale.height * 0.3,
-				`${this._winner} won!`,
+				winText,
 				30,
 				'#0f0'
 		));
@@ -92,11 +102,17 @@ export default class ResultsScene extends BaseScene {
 		this.createWaitingPopup();
 		this.createPlayAgainPopup();
 		this.createRefusePopup();
+
+		if (this._winByForfeit === true)
+			this._playAgainBtn.hide();
 	}
 
 	setupSocket(): void {
 
-		this._socketIO.on('acceptRematch', (data: GameData) => {
+		if (this._winByForfeit === true)		// other player left, no need for other connection with websocket
+			return;
+
+		this._socketIO!.on('acceptRematch', (data: GameData) => {
 
 			if (this._waitingPopup.visible === true)
 				this._waitingPopup.hide();
@@ -105,7 +121,7 @@ export default class ResultsScene extends BaseScene {
 			this.switchScene('Game', data);
 		});
 
-		this._socketIO.on('abortRematch', (info: string) => {
+		this._socketIO!.on('abortRematch', (info: string) => {
 
 			this._playAgainBtn!.hide();
 			if (this._waitingPopup.visible === true)
@@ -130,7 +146,7 @@ export default class ResultsScene extends BaseScene {
 	}
 
 	sendMsgToServer(msgType: string, content?: any): void {
-		this._socketIO.emit(msgType, content);
+		this._socketIO!.emit(msgType, content);
 	}
 
 	createWaitingPopup(): void {
@@ -215,6 +231,9 @@ export default class ResultsScene extends BaseScene {
 	}
 
 	disconnect(data?: any): void {
-		this._socketIO.disconnect();
+		if (this._winByForfeit === true)		// other player left, no need for other connection with websocket
+			return;
+		this._socketIO!.disconnect();
+		this.events.off('shutdown');
 	}
 }
