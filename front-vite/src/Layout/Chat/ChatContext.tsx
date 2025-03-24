@@ -575,10 +575,14 @@ useEffect(() => {
 					alert(`Failed to change user role: ${data.message}`);
 				else if (data.operation === 'leaveChannel')
 					alert(`Failed to leave channel: ${data.message}`);
-				else if (data.operation === 'join channel error')
+				else if (data.operation === 'joinChannel')
 					alert(`Failed to join channel: ${data.message}`);
+				else if (data.operation === 'joinAvailableChannel')
+					alert(`Failed to join available channel: ${data.message}`);
+				else if (data.operation === 'deleteChannel')
+					alert(`Failed to delete channel: ${data.message}`);
 				
-				window.location.reload();
+				// window.location.reload();
 			};
 
 			socket.on('channelError', handleErrors);
