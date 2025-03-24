@@ -103,7 +103,7 @@ export const Bar: React.FC = () => {
 
 	return (
 		pageWrapper()
-  	);
+	);
 };
 
 export default Bar;

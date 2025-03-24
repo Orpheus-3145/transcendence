@@ -4,6 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import User from '../entities/user.entity';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
+import { AnimationSelected } from 'src/game/types/game.enum';
 import { UserStatus } from 'src/dto/user.dto';
 
 @Controller('users')
@@ -134,5 +135,20 @@ export class UsersController {
 	@Get('/fetchLeaderboard')
 	async fetchLeaderboard() {
 		return (await this.UserService.leaderboardCalculator());
+	}
+
+	@Get('profile/fetchGameAntimation/:intraId')
+	async fetchGameAnimation(@Param('intraId') intraId:string) {
+
+		return (await this.UserService.fetchGameAnimation(intraId));
+	}
+
+	@Post('profile/setGameAntimation/:intraId/:newGameAnimation')
+	async setGameAnimation(
+		@Param('intraId') intraId: string,
+		@Param('newGameAnimation') newGameAnimation: AnimationSelected
+	) {
+
+		await this.UserService.setGameAnimation(intraId, newGameAnimation);
 	}
 }

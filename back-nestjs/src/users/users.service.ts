@@ -12,6 +12,7 @@ import UserDTO, { UserStatus } from 'src/dto/user.dto'
 import MatchDataDTO from 'src/dto/matchData.dto';
 import LeaderboardDTO from 'src/dto/leaderboard.dto';
 import MatchRatioDTO from 'src/dto/matchRatio.dto';
+import { AnimationSelected } from 'src/game/types/game.enum';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 
 
@@ -91,16 +92,16 @@ export class UsersService {
 		// 		`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
 		// 		HttpStatus.NOT_FOUND);
 		return (await this.usersRepository.findOne({ where: { nameNick: nameNick } }));
-  	}
-  
-  async findOneIntraName(intraName: string): Promise<User> {
-    const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
-    if (!user)
-      this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
-        `${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
-        HttpStatus.NOT_FOUND);
-    return user;
-  }
+	}
+
+	async findOneIntraName(intraName: string): Promise<User> {
+		const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
+		if (!user)
+		this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
+			`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+			HttpStatus.NOT_FOUND);
+		return user;
+	}
 
 	async findGamesByUser(user: User) : Promise<Game[]> {
 
@@ -231,7 +232,7 @@ export class UsersService {
 		this.notificationGateway.removeExistingNoti(user, other);
 		this.logger.log(`${user.nameNick} blocked ${other.nameNick}`);
 	}
-  
+
 	async unBlockUser(user: User, other: User)
 	{
 		const newlist = user.blocked.filter(blocked => blocked !== other.id.toString());
@@ -381,6 +382,22 @@ export class UsersService {
 
 		this.logger.debug(`Creating global leaderboard`);
 		return (result);
+	}
+
+	async fetchGameAnimation(intraId: string): Promise<AnimationSelected> {
+
+		const user: User = await this.getUserIntraId(intraId);
+
+		this.logger.log(`fetching animation: ${user.gameAnimation} from ${user.nameNick}`);
+		return user.gameAnimation;
+	}
+
+	async setGameAnimation(intraId: string, newGameAnimation: AnimationSelected): Promise<void> {
+
+		const user: User = await this.getUserIntraId(intraId);
+		user.gameAnimation = newGameAnimation;
+		this.usersRepository.save(user);
+		this.logger.log(`${user.nameNick} set game animation: ${newGameAnimation}`);
 	}
 }
 
