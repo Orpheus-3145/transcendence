@@ -31,6 +31,7 @@ export default class TextWidget extends Phaser.GameObjects.Text implements Resiz
     else
       this.setOrigin(0.5, 0.5);
     this.scene.add.existing(this);
+	this.setDepth(1);
   }
 
   resize(old_width: number, old_height: number): void {

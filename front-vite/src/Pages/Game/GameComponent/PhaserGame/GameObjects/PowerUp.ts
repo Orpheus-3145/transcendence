@@ -21,46 +21,46 @@ export default class PowerUp extends Phaser.GameObjects.Graphics implements Resi
     this.setRotation(randomAngle); // Apply random rotation    const randomAngle = Phaser.Math.FloatBetween(0, Math.PI * 2); // Random angle in radians (0° to 360°)
   }
 
-  // Draw a triangle
-  private drawTriangle() {
-    this.clear();
-	// Also nice: d80032, e70e02
-    this.fillStyle(0xef233c, 1); // Yellow fill color
+	// Draw a triangle
+	private drawTriangle() {
+		this.clear();
+		// Also nice: d80032, e70e02
+		this.fillStyle(0xef233c, 1); // Yellow fill color
 
-    // Triangle vertices (centered at 0,0 for easier positioning)
-    const halfSize = this.size / 2;
-    this.fillTriangle(
-      0, -halfSize,  // Top vertex
-      -halfSize, halfSize,  // Bottom-left vertex
-      halfSize, halfSize  // Bottom-right vertex
-    );
-  }
+		// Triangle vertices (centered at 0,0 for easier positioning)
+		const halfSize = this.size / 2;
+		this.fillTriangle(
+		0, -halfSize,  // Top vertex
+		-halfSize, halfSize,  // Bottom-left vertex
+		halfSize, halfSize  // Bottom-right vertex
+		);
+	}
 
-  // Update position and redraw triangle with new coordinates
-  updatePosition(x: number, y: number) {
-    this.setPosition(x, y);
-  }
+	// Update position and redraw triangle with new coordinates
+	updatePosition(x: number, y: number) {
+		this.setPosition(x, y);
+	}
 
-  destroy(): void {
-    this.clear(); // Clear graphics
-    super.destroy(); // Call parent destroy method
-  }
-  
-  resize(old_width: number, old_height: number): void {
-    
-    const w_ratio = this.scene.scale.width / old_width;
-    const h_ratio = this.scene.scale.height / old_height;
-    
-    this.size *= w_ratio;
-    this.setPosition(this.x * w_ratio, this.y * h_ratio);
-    this.drawTriangle();
-  }
+	destroy(): void {
+		this.clear(); // Clear graphics
+		super.destroy(); // Call parent destroy method
+	}
 
-  show(): void {
-    this.setVisible(true);
-  }
+	resize(old_width: number, old_height: number): void {
+		
+		const w_ratio = this.scene.scale.width / old_width;
+		const h_ratio = this.scene.scale.height / old_height;
+		
+		this.size *= w_ratio;
+		this.setPosition(this.x * w_ratio, this.y * h_ratio);
+		this.drawTriangle();
+	}
 
-  hide(): void {
-    this.setVisible(false);
+	show(): void {
+		this.setVisible(true);
+	}
+
+	hide(): void {
+		this.setVisible(false);
 	}
 }
