@@ -167,9 +167,8 @@ export class UsersService {
 			user.nameNick = newUsername;
 			this.usersRepository.save(user);
 		}
-
 		
-		this.logger.log(`Successfully changed username from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
+		this.logger.log(`Successfully changed namenick from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
 		return ("");
 	}
   
@@ -196,7 +195,7 @@ export class UsersService {
 		let newlist = user.friends.filter(friend => friend !== other.id.toString());
 		user.friends = newlist;
 		this.usersRepository.save(user);
-		
+
 		newlist = other.friends.filter(afriend => afriend !== user.id.toString());
 		other.friends = newlist;
 		this.usersRepository.save(other);
