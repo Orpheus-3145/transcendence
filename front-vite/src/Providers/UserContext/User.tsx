@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, UserContextType, MatchData, MatchRatio, LeaderboardData } from '../../Types/User/Interfaces';
+import { UserStatus } from '../../Types/User/Enum';
 
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -64,7 +65,7 @@ export async function getAll(): Promise<User[]> {
 	}
 }
 
-export async function getUserFromDatabase(username: string, navigate: (path: string) => void): Promise<User>
+export async function getUserFromDatabase(username: string, navigate: (path: string) => void): Promise<User|void>
 {
 	const request = new Request(BACKEND_URL + '/users/profile/' + username, {
 		method: "GET",
@@ -170,7 +171,7 @@ export async function blockFriend(username:string, friend:string): Promise<void>
 		method: "GET",
 	});
 
-	const response = await fetch(request)
+	const response = await fetch(request);
 	if (response.status == 404)
 		console.log("ERROR: FAILED TO BLOCK USER!");
 }
@@ -180,7 +181,7 @@ export async function unBlockFriend(username:string, friend:string): Promise<voi
 		method: "GET",
 	});
 
-	const response = await fetch(request)
+	const response = await fetch(request);
 	if (response.status == 404)
 		console.log("ERROR: FAILED TO BLOCK USER!");
 }
@@ -224,7 +225,6 @@ export async function fetchLeaderboard(): Promise<LeaderboardData[][]>
 			withCredentials: true,
 		});
 		const leaderBoard: LeaderboardData[][] = response.data;
-		console.log(response.data);
 		return leaderBoard;
 	} catch (error) {
 		console.error("ERROR: Leaderboard[] not found!" + error);
@@ -242,4 +242,24 @@ export async function fetchMatchData(user: User): Promise<MatchData[]> {
 	} catch (error) {
 		console.error("ERROR: fetchMatchData failed!");
 	}
+}
+
+export async function setUserStatus(id: string): Promise<void> {
+	const request = new Request(BACKEND_URL + '/users/profile/logout', {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ id }),
+		});
+	
+		try
+		{
+			await fetch(request);
+	
+		}
+		catch (error)
+		{
+			console.error("ERROR: changin user status failed!" + error);
+		}
 }

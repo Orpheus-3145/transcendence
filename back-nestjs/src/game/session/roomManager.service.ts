@@ -20,7 +20,8 @@ export default class RoomManagerService {
 	constructor(
 		private readonly config: ConfigService,
 		private readonly logger: AppLoggerService,
-		private readonly userService: UsersService,
+		@Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
+		// private readonly userService: UsersService,
 		@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
 		@Inject('GAME_SPAWN') private readonly gameRoomFactory: (data: GameDataDTO) => SimulationService,
 	) {
@@ -55,7 +56,7 @@ export default class RoomManagerService {
 		gameRoom.addPlayer(data, client);
 	}
 
-	movePaddle(data: PaddleDirectionDTO, client: Socket) {
+	movePaddle(data: PaddleDirectionDTO, client: Socket): void {
 		
 		const gameRoom = this.getRoom(data.sessionToken);
 		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);

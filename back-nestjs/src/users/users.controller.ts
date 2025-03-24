@@ -4,6 +4,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import User from '../entities/user.entity';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
+import { AnimationSelected } from 'src/game/types/game.enum';
+import { UserStatus } from 'src/dto/user.dto';
 
 @Controller('users')
 @UseFilters(SessionExceptionFilter)
@@ -18,7 +20,10 @@ export class UsersController {
 
 	@Get('/profile/:username')
 	async getUserfromdb(@Param('username') username: string) {
-		var user = this.UserService.findOneId(Number(username));
+		const userId = Number(username);
+		if (isNaN(userId))
+			throw new HttpException('Not Found', 400);
+		var user = this.UserService.findOneId(userId);
 		if (!user)
 			throw new HttpException('Not Found', 404);
 		return (user);
@@ -32,6 +37,11 @@ export class UsersController {
 	@Post('/profile/:username/newnick')
 	async setNewNickname(@Param('username') username: string, @Body('newname') newname:string) : Promise<string> {
 		return (this.UserService.setNameNick(username, newname));
+	}
+
+	@Post('/profile/logout')
+	async changeStatus(@Body('id') id:string) : Promise<void> {
+		this.UserService.setStatusId(id, UserStatus.Offline);
 	}
 
 // fra changed the end-point, check it in main, remove if not necessary
@@ -71,7 +81,7 @@ export class UsersController {
 			this.UserService.getUserId(id),
 		]);
 
-		return (this.UserService.removeFriend(user, other));
+		this.UserService.removeFriend(user, other);
 	}
 
 	@Get('profile/:username/friend/block/:id')
@@ -98,12 +108,12 @@ export class UsersController {
 
 	@Post('profile/:username/changepfp')
 	@UseInterceptors(FileInterceptor('file')) //instead of any the file should be Express.Multer.File,
-	async changePFP(@Param('username') username:string,  @UploadedFile() file: any) 
+	async changePFP(@Param('username') username:string,  @UploadedFile() file: any): Promise<string>
 	{
 		const image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 		const user = await this.UserService.getUserId(username);
-
-    return (this.UserService.changeProfilePic(user, image));
+		await this.UserService.changeProfilePic(user, image)
+    	return (image);
 	}
 
 	@Get('profile/:intraId/matches')
@@ -125,5 +135,20 @@ export class UsersController {
 	@Get('/fetchLeaderboard')
 	async fetchLeaderboard() {
 		return (await this.UserService.leaderboardCalculator());
+	}
+
+	@Get('profile/fetchGameAntimation/:intraId')
+	async fetchGameAnimation(@Param('intraId') intraId:string) {
+
+		return (await this.UserService.fetchGameAnimation(intraId));
+	}
+
+	@Post('profile/setGameAntimation/:intraId/:newGameAnimation')
+	async setGameAnimation(
+		@Param('intraId') intraId: string,
+		@Param('newGameAnimation') newGameAnimation: AnimationSelected
+	) {
+
+		await this.UserService.setGameAnimation(intraId, newGameAnimation);
 	}
 }

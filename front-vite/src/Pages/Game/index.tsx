@@ -1,22 +1,31 @@
 import React from 'react';
 import { Container, Stack, Box, Typography, useTheme, useMediaQuery } from '@mui/material';
-import { styled } from '@mui/system';
+import { margin, styled } from '@mui/system';
 
 import GameComponent from '/app/src/Pages/Game/GameComponent';
+import { List, ListItem, ListItemText } from '@mui/material';
 
 
-const HistoryBox = styled(Box)(({ theme }) => ({
-	backgroundColor: theme.palette.background.default,
-	color: theme.palette.text.primary,
-	padding: theme.spacing(2),
-	marginTop: theme.spacing(2),
-	borderRadius: '1em',
-}));
+// const HistoryBox = styled(Box)(({ theme }) => ({
+// 	backgroundColor: theme.palette.background.default,
+// 	color: theme.palette.text.primary,
+// 	padding: theme.spacing(2),
+// 	marginTop: theme.spacing(2),
+// 	borderRadius: '1em',
+// }));
 
 const MainContainer = styled(Container)(({ theme }) => ({
 	padding: theme.spacing(3),
 	marginBottom: theme.spacing(2),
 	backgroundColor: theme.palette.primary.dark,
+}));
+
+const ContentBox = styled(Box)(({ theme }) => ({
+	backgroundColor: theme.palette.primary.dark,
+	borderRadius: '1em',
+	color: theme.palette.text.primary,
+	padding: theme.spacing(2),
+	marginTop: theme.spacing(2),
 }));
 
 const Game: React.FC = () => {
@@ -26,51 +35,41 @@ const Game: React.FC = () => {
 	return (
 		<MainContainer>
 			<Stack direction='column' spacing={2}>
-				<Box
-					sx={{
-						backgroundColor: theme.palette.primary.main,
-						padding: theme.spacing(2),
-						borderRadius: theme.shape.borderRadius,
+				<Typography
+					variant='h3'
+					component='div'
+					style={{
+						color: theme.palette.secondary.main,
+						textAlign: 'center',
+						fontWeight: 'bold'
 					}}
 				>
-					<Typography
-						variant='h4'
-						component='div'
-						style={{
-							color: theme.palette.secondary.main,
-							textAlign: 'center',
-						}}
-					>
-						Pong Game
-					</Typography>
-				</Box>
+					Pong
+				</Typography>
 				<GameComponent />
-				<HistoryBox>
+				<ContentBox>
 					<Typography
-						variant='h4'
+						variant='h5'
 						sx={{
-							paddingTop: '0.2em',
+							paddingTop: '0.5em',
 							textAlign: 'center',
-							width: '11ch',
+							width: '20ch',
+							fontWeight: 'bold',
 							color: theme.palette.secondary.main,
-							bgcolor: theme.palette.primary.main,
-							borderTopLeftRadius: '0.5em',
-							borderTopRightRadius: '0.5em',
 						}}
 					>
-						Pong (1972)
+						Development & Impact
 					</Typography>
 					<Typography
-						variant='body2'
+						variant='body'
 						sx={{
-							marginBottom: '1em',
-							padding: '0.5em',
+							marginBottom: '2em',
+							paddingBottom: '1em',
 							textAlign: 'justify',
-							color: theme.palette.secondary.main,
-							bgcolor: theme.palette.primary.main,
-							borderBottomLeftRadius: '1em',
-							borderBottomRightRadius: '1em',
-							borderTopRightRadius: '1em',
+							borderBottomLeftRadius: '0.5em',
+							borderBottomRightRadius: '0.5em',
+							borderTopRightRadius: '0.5em',
+							borderTopLeftRadius: '0.5em',
 						}}
 					>
 						<Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
@@ -80,33 +79,29 @@ const Game: React.FC = () => {
 							Pong as a training exercise assigned to him by Atari co-founder Nolan Bushnell.
 							Bushnell based the idea on an electronic ping-pong game included in the Magnavox
 							Odyssey, which later resulted in a lawsuit against Atari.
+
+							Pong was one of the first video games to achieve widespread success, helping to establish 
+							the arcade gaming industry and home video game consoles. Its popularity secured Atari's place 
+							in gaming history and paved the way for future video games and systems.
 						</Box>
 					</Typography>
 					<Typography
 						variant='h5'
 						sx={{
-							paddingTop: '0.2em',
+							paddingTop: '0.5em',
 							textAlign: 'center',
 							width: '9ch',
 							color: theme.palette.secondary.main,
-							bgcolor: theme.palette.primary.main,
-							borderTopLeftRadius: '0.5em',
-							borderTopRightRadius: '0.5em',
+							fontWeight: 'bold'
 						}}
 					>
 						Gameplay
 					</Typography>
 					<Typography
-						variant='body2'
+						variant='body'
 						sx={{
-							marginBottom: '1em',
-							padding: '0.5em',
+							marginBottom: '2em',
 							textAlign: 'justify',
-							color: theme.palette.secondary.main,
-							bgcolor: theme.palette.primary.main,
-							borderBottomLeftRadius: '1em',
-							borderBottomRightRadius: '1em',
-							borderTopRightRadius: '1em',
 						}}
 					>
 						<Stack
@@ -117,12 +112,12 @@ const Game: React.FC = () => {
 							spacing={2}
 						>
 							<Box>
-								Pong is a two-player game that simulates table tennis. Players control the paddles
-								to hit the ball back and forth. The goal is to defeat the opponent by being the
-								first one to gain a high score. The paddles move vertically along the left or right
-								side of the screen. Players use the paddles to hit the ball back and forth. The game
-								can be played with two human players, or one player against a computer controlled
-								paddle.
+								Pong is a two-player game that simulates table tennis. 
+								Players control paddles that move vertically along the 
+								left and right sides of the screen to hit a bouncing ball. 
+								The goal is to outscore the opponent. The game can be 
+								played against another player or a computer-controlled paddle.
+
 							</Box>
 							<Box
 								component='img'
@@ -130,46 +125,50 @@ const Game: React.FC = () => {
 								alt='Pong Gameplay'
 								width={isSmallScreen ? '100%' : 'auto'}
 								height={'auto'}
-								borderRadius={'1em'}
+								borderRadius={'0.5em'}
 							/>
 						</Stack>
 					</Typography>
 					<Typography
-						variant='h5'
+						variant="h5"
 						sx={{
-							paddingTop: '0.2em',
-							textAlign: 'center',
-							width: '12ch',
+							paddingTop: '0.5em',
+							width: '20ch',
+							fontWeight: 'bold',
 							color: theme.palette.secondary.main,
-							bgcolor: theme.palette.primary.main,
-							borderTopLeftRadius: '0.5em',
-							borderTopRightRadius: '0.5em',
 						}}
 					>
-						Development
+						How to Play
 					</Typography>
-					<Typography
-						variant='body2'
-						sx={{
-							marginBottom: '1em',
-							padding: '0.5em',
-							textAlign: 'justify',
-							color: theme.palette.secondary.main,
-							bgcolor: theme.palette.primary.main,
-							borderBottomLeftRadius: '1em',
-							borderBottomRightRadius: '1em',
-							borderTopRightRadius: '1em',
-						}}
-					>
-						<Box bgcolor={theme.palette.background.default} borderRadius={'1em'} padding={'1em'}>
-							The development of Pong was significant as it was one of the first video games to gain
-							widespread popularity in both arcade and Game console formats. It led to the creation
-							of a new industry of arcade video games, video game arcades, and home video game
-							consoles. The success of Pong not only solidified Atari's position in the video game
-							industry but also led to the development of many other video games and systems.
-						</Box>
-					</Typography>
-				</HistoryBox>
+					<Box bgcolor={theme.palette.background.default} borderRadius="1em" padding="1em">
+						<Typography variant="h5" sx={{ fontWeight: 'bold', marginTop: '0.5em', marginBottom: '0.5em' }}>
+							Move your paddle
+						</Typography>
+						<Typography variant="body1" sx={{margin: '1em'}}>
+							⬆ / ⬇ keys <strong>OR</strong> W / S keys
+						</Typography>
+						<Typography variant="h5" sx={{ fontWeight: 'bold', marginTop: '1em' }}>
+							Choose Power Ups
+						</Typography>
+						<List sx={{ listStyleType: 'none', pl:0 }}>
+							<ListItem sx={{ display: 'list-item' }}>
+								<ListItemText primary={<><strong>speedBall:</strong> Hit the ball harder </>} />
+							</ListItem>
+							<ListItem sx={{ display: 'list-item' }}>
+								<ListItemText  primary={<><strong>speedPaddle:</strong> Your paddle moves faster</>} />
+							</ListItem>
+							<ListItem sx={{ display: 'list-item' }}>
+								<ListItemText primary={<><strong>slowPaddle:</strong> Your opponent's paddle moves slower</>} />
+							</ListItem>
+							<ListItem sx={{ display: 'list-item' }}>
+								<ListItemText primary={<><strong>shrinkPaddle:</strong> Shrink your opponent's paddle</>} />
+							</ListItem>
+							<ListItem sx={{ display: 'list-item' }}>
+								<ListItemText primary={<><strong>stretchPaddle:</strong> Stretch your paddle</>} />
+							</ListItem>
+						</List>
+					</Box>
+				</ContentBox>
 			</Stack>
 		</MainContainer>
 	);

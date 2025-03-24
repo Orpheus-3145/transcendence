@@ -1,12 +1,12 @@
 import { io, Socket } from 'socket.io-client';
 
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
-import { GameDifficulty, GameMode, PaddleDirection, PowerUpSelected, PowerUpType } from '/app/src/Types/Game/Enum';
-import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '/app/src/Types/Game/Interfaces';
 import Ball from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Ball';
-import PowerUpBall from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/PowerUpBall';
+import PowerUp from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/PowerUp';
 import Paddle from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Paddle';
 import Field from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Field';
+import { GameDifficulty, GameMode, PaddleDirection, PowerUpSelected, PowerUpType } from '/app/src/Types/Game/Enum';
+import { GameState, GameSize, GameData, PlayerData, PowerUpPosition, PowerUpStatus } from '/app/src/Types/Game/Interfaces';
 
 
 export default class GameScene extends BaseScene {
@@ -26,7 +26,6 @@ export default class GameScene extends BaseScene {
 	private _heightRatio!: number;
 
 	private _powerUpSelection!: PowerUpSelected;
-	// private _powerUpSelection!: Array<PowerUpType>;
 	private _powerUpType!: PowerUpType | null;
 	private _powerUpActive!: { [key: number]: boolean }; // Tracks if a player has the power-up
 
@@ -38,7 +37,7 @@ export default class GameScene extends BaseScene {
 	private _leftPaddle!: Paddle;
 	private _rightPaddle!: Paddle;
 	private _field!: Field;
-	private _powerUp!: PowerUpBall | null;
+	private _powerUp!: PowerUp | null;
 
 	// Key listeners
 	private _cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -47,21 +46,21 @@ export default class GameScene extends BaseScene {
 
 	constructor() {
 		super({ key: 'Game' });
-		
+
 		this._urlWebsocket = import.meta.env.URL_WEBSOCKET + import.meta.env.WS_NS_SIMULATION;
 	}
 
 	// Initialize players and key bindings
-	init(data: GameData): void {
+	init(gameData: GameData): void {
 		super.init();
 
 		this._id = this.registry.get('user42data').intraId;
 		this._nameNick = this.registry.get('user42data').nameNick;
 
-		this._sessionToken = data.sessionToken;
-		this._mode = data.mode;
-		this._difficulty = data.difficulty;
-		this._powerUpSelection = data.extras;
+		this._sessionToken = gameData.sessionToken;
+		this._mode = gameData.mode;
+		this._difficulty = gameData.difficulty;
+		this._powerUpSelection = gameData.extras;
 
 		this._gameState = {
 			ball: { x: 0, y: 0 },
@@ -149,18 +148,29 @@ export default class GameScene extends BaseScene {
 		if (this._gameStarted === false)
 			return ;
 
+		// Create ball
 		this._ball = new Ball(this, this._gameState.ball.x, this._gameState.ball.y); // Initialize ball with no movement initially
+		this._widgets.push(this._ball);
 
-		// Create bars
-		const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
+		if (this._animation)
+			this._animation.setBall(this._ball); // Pass the ball to the animation
+
+		// Create player and opponent's paddles
 		this._leftPaddle = new Paddle(this, 0, this._gameState.p1.y);
+		this._widgets.push(this._leftPaddle);
+	
+		const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
 		this._rightPaddle = new Paddle(this, this.scale.width - (this.scale.width / paddleWidthRatio), this._gameState.p2.y);
+		this._widgets.push(this._rightPaddle);
 
-		// Create field (handles borders, scoring, etc.)
+		// Create field (i.e. the score)
 		this._field = new Field(this);
+		this._widgets.push(this._field);
 
-		if (this._powerUpState)
-			this._powerUp = new PowerUpBall(this, this._powerUpState.x, this._powerUpState.y);
+		if (this._powerUpState) {
+			this._powerUp = new PowerUp(this, this._powerUpState.x, this._powerUpState.y);
+			this._widgets.push(this._powerUp);
+		}
 	}
 
 	setupSocket(): void {
@@ -190,8 +200,9 @@ export default class GameScene extends BaseScene {
 		});
 
 		this._socketIO.on('endGame', (winner: string) => this.endGame(winner));
+		this._socketIO.on('endGameByForfeit', (winner: string) => this.endGame(winner, true));
 
-		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace }));
+		this._socketIO.on('gameError', (trace: string) => this.switchScene('Error', { trace: trace }));
 
 		// power ups handling
 		this._socketIO.on('powerUpUpdate', (state: PowerUpPosition) => {
@@ -201,7 +212,7 @@ export default class GameScene extends BaseScene {
 			
 			this._powerUpState = state;
 			if (!this._powerUp)	// Create the powerUp object if it doesn't already exist
-				this._powerUp = new PowerUpBall(this, this._powerUpState.x, this._powerUpState.y);
+				this._powerUp = new PowerUp(this, this._powerUpState.x, this._powerUpState.y);
 			else	// update position
 				this._powerUp.updatePosition(this._powerUpState.x, this._powerUpState.y);
 		});
@@ -232,20 +243,21 @@ export default class GameScene extends BaseScene {
 		this._socketIO.emit(msgType, content);
 	}
 
+	// Change the colour of the paddke
 	getColour(): number {
-		let colour: number = 0;
+		let colour: number = 0xD3D3D3;
 		if (this._powerUpType === PowerUpType.speedBall)
-			colour = 0xff6600;  // Bright orange for speedBall
+			colour = 0xff6600;  // Bright orange
 		else if (this._powerUpType === PowerUpType.speedPaddle)
-			colour = 0x66ff33;  // Vibrant green for speedPaddle
+			colour = 0x66ff33;  // Green
 		else if (this._powerUpType === PowerUpType.slowPaddle)
-			colour = 0x9900cc;  // Calming purple for slowPaddle
+			colour = 0x9900cc;  // Purple
 		else if (this._powerUpType === PowerUpType.shrinkPaddle)
-			colour = 0xff66cc;  // Light pink for shrinkPaddle
+			colour = 0xff66cc;  // Light pink
 		else if (this._powerUpType === PowerUpType.stretchPaddle)
-			colour = 0xcc0000;  // Deep red for stretchPaddle
+			colour = 0xcc0000;  // Deep red
 		else
-			this.switchScene('Error', {trace: `Error with power up type: ${this._powerUpType} not existing`});
+			this.switchScene('Error', {trace: `Error with power up type: ${this._powerUpType} not existing` });
 		return colour;
 	}
 
@@ -258,7 +270,7 @@ export default class GameScene extends BaseScene {
 				paddle.resizeStretch();
 		}	
 		else if (paddle.getColor() != 0xffff00 && active === false) {
-			paddle.changeColor(0x0000ff);
+			paddle.changeColor(0xD3D3D3);
 			if (this._powerUpType === PowerUpType.shrinkPaddle || this._powerUpType === PowerUpType.stretchPaddle)
 				paddle.resizeOriginal();
 		}
@@ -267,30 +279,29 @@ export default class GameScene extends BaseScene {
 	resetWindowRatio(): void {
 
 		if (this._gameSizeBackEnd.width * this._gameSizeBackEnd.height === 0)
-			this.switchScene('Error', {trace: `Invalid resize ratio, got zero value(s) w:${this._gameSizeBackEnd.width}, h: ${this._gameSizeBackEnd.height}`});
+			this.switchScene('Error', {trace: `Invalid resize ratio, got zero value(s) w:${this._gameSizeBackEnd.width}, h: ${this._gameSizeBackEnd.height}` });
 		else if (this.scale.width * this.scale.height === 0)
-			this.switchScene('Error', {trace: `Invalid window size, got zero value(s) w: ${this.scale.width}, h: ${this.scale.height}`});
+			this.switchScene('Error', {trace: `Invalid window size, got zero value(s) w: ${this.scale.width}, h: ${this.scale.height}` });
 		
 		this._widthRatio = this._gameSizeBackEnd.width / this.scale.width;
 		this._heightRatio = this._gameSizeBackEnd.height / this.scale.height;
 	}
 
-	endGame(winner: string): void {
+	endGame(winner: string, winByForfeit= false): void {
 
-		// stay connected to websocket, because the next scene needs it
-		this._keepConnectionOpen = true;
-		this.switchScene(
-			'Results', 
-			{
-				winner: winner,
-				score: this._gameState.score,
-				sessionToken: this._sessionToken,
-				socket: this._socketIO
-			}
-		);
+		// stay connected to websocket if the win was not caused by forfeit, because the next scene needs it
+		this._keepConnectionOpen = !winByForfeit;
+		this.switchScene('Results', {
+			winner: winner,
+			score: this._gameState.score,
+			sessionToken: (winByForfeit === false) ? this._sessionToken : null,
+			socket: (winByForfeit === false) ? this._socketIO : null,
+			winByForfeit: winByForfeit
+		});
 	}
 
 	disconnect(): void {
+		this.events.off('shutdown');
 		if (this._keepConnectionOpen === false)
 			this._socketIO.disconnect();
 	}

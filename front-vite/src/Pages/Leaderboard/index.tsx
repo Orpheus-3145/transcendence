@@ -195,13 +195,13 @@ export const Leaderboard: React.FC = () => {
 				}}
 			>
 				{arr.map((item: LeaderboardData, index: number) => {
-					
 					let color =  "#4b4b4b";
 					if (index === 0) color = "#FFD700";
 					else if (index === 1) color = "#C0C0C0";
 					else if (index === 2) color = "#CD7F32";
 					return (
 						<Stack
+							key={index}
 							sx={{
 								backgroundColor: alpha(color, 0.8),
 								'&:hover': {

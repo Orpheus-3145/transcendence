@@ -2,6 +2,7 @@ import { ConsoleLogger, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import {  Socket } from 'socket.io';
 
 import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/channel.entity';
 import { NotificationService } from 'src/notification/notification.service';
@@ -11,6 +12,7 @@ import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import AppLoggerService from 'src/log/log.service';
 import { ConfigService } from '@nestjs/config';
 import { ChannelDTO } from 'src/dto/channel.dto';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 
 @Injectable()
@@ -29,6 +31,7 @@ export class ChatService {
 		private readonly userRepository: Repository<User>,
 
 		private readonly notificationService: NotificationService,
+		private readonly notificationGateway: NotificationGateway,
 		private readonly thrower: ExceptionFactory,
 		private readonly logger: AppLoggerService,
 		private readonly config: ConfigService,
@@ -51,7 +54,7 @@ export class ChatService {
 
 		const channel: Channel = await this.channelRepository.findOne({
 			where: { channel_id: channelId },
-			relations: ['members', 'messages']
+			relations: ['channel_owner', 'members', 'members.user', 'messages', 'messages.sender', 'messages.sender.user']
 		});
 		if (!channel && throwExcept === true)
 			this.thrower.throwChatExcp(`No channel found with id: ${channelId}`,
@@ -102,7 +105,6 @@ export class ChatService {
 			this.changeMemberRole(channelOwner, newChannel, ChannelMemberType.owner),
 			this.changeOwnershipChannel(channelOwner, newChannel),
 		])
-		// console.log(JSON.stringify(this.getAllChannels()));
 		return newChannel;
 	}
 
@@ -178,7 +180,7 @@ export class ChatService {
 		return channel;
 	}
 
-	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message> {
+	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message | null> {
 
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
@@ -186,8 +188,10 @@ export class ChatService {
 		if (typeof sender === 'number')
 			sender = await this.getUser(sender);
 		
+		if (channel.muted.find((user) => user === sender.id.toString()))
+			return null;
 		// fetching member from user
-		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id);
+		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id)
 		let newMessage: Message = this.messageRepository.create({
 			channel: channel,
 			sender: memberSender,
@@ -210,7 +214,7 @@ export class ChatService {
 				
 		// sending notification of the new message to all the channel members
 		for (const receiver of receivers)
-			await this.notificationService.createMessageNotification(newMessage, receiver);
+			this.notificationGateway.sendMessageNoti(await this.notificationService.createMessageNotification(newMessage, receiver), receiver.user.id.toString());
 
 		return newMessage;
 	}
@@ -236,18 +240,18 @@ export class ChatService {
 	async getAllChannels(): Promise<Channel[]> {
 
 		const channels: Channel[] = await this.channelRepository.find({
-			select: [
-				'channel_id',
-				'channel_type',
-				'title',
-				'channel_owner',
-				'password',
-				'isDirectMessage',
-				'banned',
-				'muted'
-			],
-			relations: ['members', 'messages'], // Ensure members and messages are included
-		});
+				select: [
+					'channel_id',
+					'channel_type',
+					'title',
+					'channel_owner',
+					'password',
+					'isDirectMessage',
+					'banned',
+					'muted'
+				],
+				relations: ['channel_owner', 'members', 'members.user', 'messages', 'messages.sender', 'messages.sender.user'], // Ensure members and messages are included
+			});
 
 		this.logger.log(`Fetching all chats`);
 		return channels;
@@ -284,14 +288,15 @@ export class ChatService {
 		]);
 		this.logger.log(`Unbanning ${userToUnban.nameNick} from channel id: ${channel.channel_id}`);
 	}
-	
+
 	async muteUserFromChannel(userToMute: number | User, channel: number | Channel): Promise<void> {
-	
+		
 		if (typeof userToMute === 'number')
 			userToMute = await this.getUser(userToMute);
-
+			
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
+
 
 		channel.muted.push(userToMute.id.toString());
 		await this.channelRepository.save(channel);
@@ -330,7 +335,7 @@ export class ChatService {
 		}
 		await this.channelRepository.save(channelToChange);
 
-		this.logger.log(`Changing privacy of channel id: ${channelToChange.channel_id}, new policy: ${newChannelPolicy}`);
+		this.logger.log(`Changing privacy of channel id: ${channelToChange.channel_id}, new policy: ${newChannelPolicy}, pass: ${password}`);
 	}
 
 	async changeOwnershipChannel(newOwner: number | User, channel: number | Channel): Promise<void> {

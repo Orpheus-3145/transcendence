@@ -30,7 +30,7 @@ export default class ExceptionFactory {
 		this.logger.setContext(functionContext);
 		this.logger.error(`Throwing SessionException - trace: ${trace}`);
 		this.logger.setContext(ExceptionFactory.name);
-
+		
 		throw new SessionException(trace, code);
 	}
 

@@ -5,6 +5,7 @@ import Game from './game.entity';
 import { FriendRequest } from './friendRequest.entity';
 import { GameInvitation } from './gameInvitation.entity';
 import { ChannelMember } from './channel.entity';
+import { AnimationSelected } from 'src/game/types/game.enum';
 
 
 @Entity('Users')
@@ -26,6 +27,7 @@ export default class User {
 		this.image = user.image;
 		this.friends = user.friends;
 		this.blocked = user.blocked;
+		this.gameAnimation = user.gameAnimation;
 	}
 
 	@PrimaryGeneratedColumn({ name: 'user_id' })
@@ -89,6 +91,14 @@ export default class User {
 	})
 	twoFactorSecret: string;
 
+	@Column({
+		name: 'game_animation',
+		type: 'enum',
+		enum: AnimationSelected,
+		default: AnimationSelected.movingLines,
+	})
+	gameAnimation: AnimationSelected
+
 	@CreateDateColumn({ name: 'created_at' })
 	created: Date;
 
@@ -103,6 +113,12 @@ export default class User {
 		(game) => game.player2
 	)
 	player2Game: Game[];
+
+	@OneToMany(
+		() => Game,
+		(game) => game.winner
+	)
+	winnerGame: Game[];
 
 	@OneToMany(
 		() => FriendRequest,

@@ -15,7 +15,7 @@ socket.on('connect_error', (error) => {
 });
 
 export enum NotificationType {
-  gameInvite = 'Game Invite',
+  	gameInvite = 'Game Invite',
 	friendRequest = 'Friend Request',
 	message = 'message',
 	groupChat = 'groupChat',

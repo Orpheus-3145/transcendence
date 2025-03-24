@@ -1,15 +1,9 @@
 import React from 'react';
-import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { useUser } from '../../../Providers/UserContext/User';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import {  Tooltip } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useState, useEffect, useContext } from 'react';
-import Drawer from '@mui/material/Drawer';
-import Divider from '@mui/material/Divider';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
 import ClearIcon from '@mui/icons-material/Clear';
 import {NotificationStruct, 
 		removeNotificationDb, 
@@ -21,7 +15,23 @@ import {NotificationStruct,
 		socket} from '../../../Providers/NotificationContext/Notification';
 import { GameData } from '/app/src/Types/Game/Interfaces';
 import { GameDataContext } from '/app/src/Providers/GameContext/Game';
-
+import {
+	StyledIconWrapper,
+	StyledListItemButton,
+	DrawerContainer,
+	Drawer,
+} from '../DrawerList/DrawerComponents';
+import {
+	IconButton,
+	Box,
+	List,
+	Stack,
+	Divider,
+	Typography,
+	Tooltip,
+	Button,
+	ButtonGroup
+} from '@mui/material';
 
 export const Notification: React.FC = () => {
 	const { user } = useUser();
@@ -33,15 +43,15 @@ export const Notification: React.FC = () => {
 	const [friendRequestArray, setFriendRequestArray] = useState<NotificationStruct[]>([]);
 	const [gameInviteArray, setGameInviteArray] = useState<NotificationStruct[]>([]);
 	const [isFirst, setIsFirst] = useState<Boolean>(true);
-  const { setGameData } = useContext(GameDataContext)!;
+	const { setGameData } = useContext(GameDataContext)!;
 
 	const toggleDrawer = (newOpen: boolean) => () => {setOpenDrawer(newOpen)};
 	const navToUser = (id:string) => {navigate('/profile/' + id)};
-	const navToChat = () => {navigate('/channels')};
 	const navToGame = (gameInfo: GameData) => {
 		setGameData(gameInfo);
 		navigate('/game');
 	}
+
 	let removeNotiFromArray = (noti: NotificationStruct, arr: NotificationStruct[], type: NotificationType) =>
 	{
 		var tmparr = arr.filter((tmp: NotificationStruct) => tmp !== noti);
@@ -66,43 +76,87 @@ export const Notification: React.FC = () => {
 		removeNotificationDb(noti.id);
 	}
 
+	const navToChatChannel = (noti: NotificationStruct) => {
+		removeNotification(noti);
+		navigate('/channels', {state: {channelId: noti.senderId.toString()}})
+	};
+	
+	const navToChatDM = (noti: NotificationStruct) => {
+		removeNotification(noti);
+		navigate('/channels', {state: {otherId: noti.senderId.toString()}})
+	};
+
 	let whichMessage = (noti: NotificationStruct) =>
 	{
 		if (noti.message == null)
 			return ;
-		var notiMessage = noti.message;
+		var notiMessage: string = noti.message;
+		var notiSenderName: string = noti.senderName;
 		if (noti.message?.length > 23)
 		{
 			notiMessage = noti.message?.slice(0, 23) + "...";
 		}
 
+		if (noti.senderName?.length > 10)
+		{
+			notiSenderName = noti.senderName?.slice(0, 10) + "...";
+		}
+		
 		if (noti.type === NotificationType.groupChat)
 		{
 			return (
-				<Typography variant={'h1'}
+				<Stack
 					sx={{
-						position: 'relative',
-						left: '0px',
-						fontSize: '0.9rem',
-					}}    
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
 				>
-					The message: "{notiMessage}" has been sent in <a href="" onClick={() => navToChat()} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-				</Typography>
+					<Typography variant={'h1'}
+						sx={{
+							fontSize: '0.8rem',
+						}}    
+					>
+						Message: " {notiMessage} " has been sent in
+					</Typography>
+					<IconButton 		
+						onClick={() => navToChatChannel(noti)}
+						sx={{
+							fontSize: '14px',
+							color: theme.palette.secondary.main,
+							width: '50px',
+						}}
+					>
+						{notiSenderName}					
+					</IconButton>	
+				</Stack>
 			);
 		}
 		return (
-			<Typography variant={'h1'}
+			<Stack
+				direction="row"
 				sx={{
-					position: 'relative',
-					left: '0px',
-					fontSize: '0.9rem',
-				}}    
+				justifyContent: 'center',
+				alignItems: 'center',
+				}}
 			>
-				<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-				sent a message:
-				<br />
-				{notiMessage}
-			</Typography>
+				<IconButton 		
+					onClick={() => navToChatDM(noti)}
+					sx={{
+						fontSize: '14px',
+						color: theme.palette.secondary.main,
+						width: '50px',
+					}}
+				>
+					{notiSenderName}					
+				</IconButton>	
+				<Typography variant={'h1'}
+					sx={{
+						fontSize: '0.9rem',
+					}}    
+				>
+					sent a message: {notiMessage}
+				</Typography>
+			</Stack>
 		);
 	}
 
@@ -118,14 +172,7 @@ export const Notification: React.FC = () => {
 				<Box 
 					component="section" 
 					sx={{
-						p: 5, 
-						border: 1, 
-						borderWidth: '4px', 
-						borderColor: theme.palette.secondary.dark, 
-						borderRadius: '16px',
-						backgroundColor: 'black',
-						width: '270px',
-						position: 'relative',
+						padding: '10px',
 						display: 'flex',
 						justifyContent: 'center',
 						alignItems: 'center',
@@ -134,13 +181,11 @@ export const Notification: React.FC = () => {
 				>
 					<Tooltip title="Clear Notification" arrow>
 						<IconButton 
-							variant="contained" 
 							component="label"
 							onClick={() => removeNotification(noti)}
 							sx={{
 								position: 'absolute',
-								left: '230px',
-								top: '5px',
+								left: '220px',
 								width: '20px',
 								height: '20px',
 								fontSize: '20px',
@@ -165,26 +210,14 @@ export const Notification: React.FC = () => {
 		{
 			return (
 				<Box
-					component="section"         
-					sx={{
-						position: 'relative',
-						left: '45px',
-						top :'5px',
-						width: 260,
-						height: 40,
-						borderRadius: 1,
-						bgcolor: 'black',
-					}}
+					component="section"
 				>
 					<Typography
 						sx={{
-							position: 'relative',
-							left: '10px',
-							top: '-15px',
-							color: 'green',
+							color: theme.palette.secondary.main,
+							padding: "5px",
 						}}
-					>	
-						<br />
+					>
 						You have no incoming messages!
 					</Typography>
 				</Box>
@@ -193,8 +226,12 @@ export const Notification: React.FC = () => {
 		
 		return (
 			<Stack>
-				<br />
-				{messageArray.slice().reverse().map((item: NotificationStruct) => initMessage(item))}
+				{messageArray.slice().reverse().map((item: NotificationStruct, index: number) => (
+					<React.Fragment key={index}>
+						{initMessage(item)}
+					</React.Fragment>
+				))}
+				<Divider />
 			</Stack>
 		);
 	}
@@ -247,14 +284,7 @@ export const Notification: React.FC = () => {
 				<Box 
 					component="section" 
 					sx={{
-						p: 5, 
-						border: 1, 
-						borderWidth: '4px', 
-						borderColor: theme.palette.secondary.dark, 
-						borderRadius: '16px',
-						backgroundColor: 'black',
-						width: '300px',
-						height: '150px',
+						padding: '10px',
 						display: 'flex',
 						flexDirection: 'column',
 						justifyContent: 'center',
@@ -264,19 +294,16 @@ export const Notification: React.FC = () => {
 				>
 					<Typography variant={'h1'}
 						sx={{
-							position: 'relative',
-							top: '-10px',
 							fontSize: '0.9rem',
 						}}    
 					>
-						<a href="" onClick={() => navToUser('/profile/' + noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
+						<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
 						{message}
 					</Typography>
 					<ButtonGroup 
 						variant="contained"
 						sx={{
-							position: 'relative',
-							top: '10px',
+							margin: '5px 0',
 						}}
 					>
 						<Button
@@ -313,26 +340,14 @@ export const Notification: React.FC = () => {
 		{
 			return (
 				<Box
-					component="section"         
-					sx={{
-						position: 'relative',
-						left: '23px',
-						top :'5px',
-						width: 300,
-						height: 40,
-						borderRadius: 1,
-						bgcolor: 'black',
-					}}
+					component="section"
 				>
 					<Typography
 						sx={{
-							position: 'relative',
-							left: '13px',
-							top: '-15px',
-							color: 'green',
+							color: theme.palette.secondary.main,
+							padding: "5px",
 						}}
 					>
-						<br />
 						You have no incoming friend requests!
 					</Typography>
 				</Box>
@@ -341,8 +356,12 @@ export const Notification: React.FC = () => {
 	
 		return (
 			<Stack>
-				<br />
-				{friendRequestArray.slice().reverse().map((item: NotificationStruct) => initRequest(item))}
+				{friendRequestArray.slice().reverse().map((item: NotificationStruct, index: number) => (
+					<React.Fragment key={index}>
+						{initRequest(item)}
+					</React.Fragment>
+				))}
+				<Divider />
 			</Stack>
 		);
 	}
@@ -354,25 +373,13 @@ export const Notification: React.FC = () => {
 				return (
 					<Box
 						component="section"         
-						sx={{
-							position: 'relative',
-							left: '33px',
-							top :'5px',
-							width: 280,
-							height: 40,
-							borderRadius: 1,
-							bgcolor: 'black',
-						}}
 					>
 						<Typography
 							sx={{
-								position: 'relative',
-								left: '10px',
-								top: '-15px',
-								color: 'green',
+								color: theme.palette.secondary.main,
+								padding: "5px",
 							}}
 						>
-							<br />
 							You have no incoming game invites!
 						</Typography>
 					</Box>
@@ -381,149 +388,14 @@ export const Notification: React.FC = () => {
 
 		return (
 			<Stack>
-				<br />
-				{gameInviteArray.slice().reverse().map((item: NotificationStruct) => initRequest(item))}
+				{gameInviteArray.slice().reverse().map((item: NotificationStruct, index: number) => (
+					<React.Fragment key={index}>
+						{initRequest(item)}
+					</React.Fragment>
+				))}
+				<Divider />
 			</Stack>
 		);		
-	}
-
-	let messageBox = () =>
-	{
-		return (
-			<Box
-				component="section"         
-				sx={{
-					position: 'relative',
-					left: '100px',
-					width: 140,
-					height: 40,
-					borderRadius: 1,
-					bgcolor: 'black',
-				}}
-			>
-				<Typography variant="h5"
-					sx={{	
-						position: 'relative',
-						left: '20px',
-						top: '2px',
-						fontFamily: 'Georgia, serif',
-						color: theme.palette.secondary.main,
-					}}
-				>
-					Messages:
-				</Typography>
-			</Box>
-		);
-	}
-
-	let friendReqBox = () =>
-	{
-		return (
-			<Box
-				component="section"
-				sx={{
-					position: 'relative',
-					left: '63px',
-					width: 220,
-					height: 40,
-					borderRadius: 1,
-					bgcolor: 'black',
-				}}
-			>	
-				<Typography variant="h5"
-					sx={{
-						position: 'relative',
-						left: '32px',
-						top: '2px',	
-						fontFamily: 'Georgia, serif',
-						color: theme.palette.secondary.main,
-					}}
-				>
-					Friend Requests:
-				</Typography>
-			</Box>
-		);
-	}
-
-	let gameReqBox = () =>
-	{
-		return (
-			<Box
-				component="section"         
-				sx={{
-					position: 'relative',
-					left: '73px',
-					width: 200,
-					height: 40,
-					borderRadius: 1,
-					bgcolor: 'black',
-				}}
-			>
-				<Typography variant="h5"
-					sx={{
-						position: 'relative',
-						left: '35px',
-						top: '2px',
-						fontFamily: 'Georgia, serif',
-						color: theme.palette.secondary.main,
-					}}
-				>
-					Game Invites:
-				</Typography>
-			</Box>
-		);
-	}
-
-	let DrawerList = () =>
-	{
-		return (
-			<Stack
-				style={{
-					overflowX: 'hidden',
-					overflowY: 'auto',
-				}}
-				width={'350px'}
-				minHeight={'1000px'}
-			>
-				<Box 
-					component="section"
-					sx={{
-						position: 'relative',
-						left: '56px',
-						top: '10px',
-						width: 220,
-						height: 50,
-						borderRadius: 1,
-						bgcolor: 'black',
-					}}
-				>
-					<Typography variant="h4"
-						sx={{	
-							color: theme.palette.secondary.main,
-							position: 'relative',
-							left: '22px',
-							top: '3px',
-							fontFamily: 'Georgia, serif',
-						}}
-					>
-						Notifications
-					</Typography>
-				</Box>
-				<br />
-				{messageBox()}
-				{putMessages()}
-				<br />
-				<Divider />
-				<br />
-				{friendReqBox()}
-				{putFiendRequests()}
-				<br />
-				<Divider />
-				<br />
-				{gameReqBox()}
-				{putGameInvites()}
-			</Stack>
-		);
 	}
 
 	let openBool = () =>
@@ -532,36 +404,53 @@ export const Notification: React.FC = () => {
 		setShowNotificationDot(false);
 	}
 
+	interface SectionHeaderProps {
+		text: string;
+		width: number;
+	}
+
+	let SectionHeader: React.FC<SectionHeaderProps> = ({ text, width }) =>
+	{
+		return (<Typography
+			variant='h4'
+			sx={{
+				textAlign: 'center',
+				width,
+				color: theme.palette.secondary.main,
+				bgcolor: theme.palette.primary.main,
+			}}
+		>{text}</Typography>)
+	}
+
 	let notificationBar = () =>
 	{
-		var color = 'white';
-		if (showNotificationDot)
-			color = 'orange';
 		return (
-			<Stack>
-				<Tooltip title="Notifications" arrow>
-					<IconButton
-						onClick={() => openBool()}
-						sx={{
-							color: color,
-							'&:hover': {
-								color: 'orange',
-							},
-						}}
-					>
-						<NotificationsIcon />
-					</IconButton>
-				</Tooltip>
-				<Drawer
-					anchor={'right'}
-					open={openDrawer} 
-					onClose={toggleDrawer(false)}
-					sx={{color: '#000000'}}
+			<Box alignContent={'center'}>
+				<IconButton
+					onClick={() => {
+						openBool();
+					}}
 				>
-					{DrawerList()}
+					<NotificationsIcon sx={{ color: theme.palette.secondary.main }} />
+				</IconButton>
+				<Drawer open={openDrawer} anchor="right" onClose={toggleDrawer(false)}>
+					<DrawerContainer
+						role='presentation'
+						onClick={toggleDrawer(false)}
+						onKeyDown={toggleDrawer(false)}
+					>
+						<List>
+							<SectionHeader text="Game invites" />
+							{putGameInvites()}
+							<SectionHeader text="Friend requests" />
+							{putFiendRequests()}
+							<SectionHeader text="Messages" />
+							{putMessages()}
+						</List>
+					</DrawerContainer>
 				</Drawer>
-			</Stack>
-		);
+			</Box>
+		)
 	}
 
 	let handleNotifications = (arr: NotificationStruct[]) => 
@@ -581,7 +470,7 @@ export const Notification: React.FC = () => {
 			var tmpgameArr: NotificationStruct[]  = [];
 			arr?.map((item: NotificationStruct) =>
 			{
-				if (item.type == NotificationType.Message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
+				if (item.type == NotificationType.message && !messageArray.find((n: NotificationStruct) => n.id === item.id))
 				{
 					tmpmessageArr.push(item);
 				}
@@ -615,7 +504,7 @@ export const Notification: React.FC = () => {
 		{
 			gameInviteArray.push(noti);
 		}
-		else if (noti.type == NotificationType.Message || noti.type == NotificationType.groupChat)
+		else if (noti.type == NotificationType.message || noti.type == NotificationType.groupChat)
 		{
 			var tmp = messageArray.find((n: NotificationStruct) => n.senderName === noti.senderName);
 			if (tmp != undefined)
@@ -645,7 +534,18 @@ export const Notification: React.FC = () => {
 			}
 		});
 
-	}, [friendRequestArray, messageArray, gameInviteArray]);
+		socket.on('removeNotis', (idOther: string) =>
+		{
+			let msg: NotificationStruct[] = messageArray.filter((noti: NotificationStruct) => noti.senderId.toString() !== idOther);
+			let frq: NotificationStruct[] = friendRequestArray.filter((noti: NotificationStruct) => noti.senderId.toString() !== idOther);
+			let gmi: NotificationStruct[] = gameInviteArray.filter((noti: NotificationStruct) => noti.senderId.toString() !== idOther);
+
+			setMessageArray(msg);
+			setFriendRequestArray(frq);
+			setGameInviteArray(gmi);
+		})
+
+	}, [messageArray, friendRequestArray, gameInviteArray]);
 
 	let notificationWrapper = () =>
 	{

@@ -42,13 +42,13 @@ const ProfilePageOther: React.FC = () => {
 	const [userProfile, setUserProfile] = useState<User | null>(null);
 	const [userProfileNumber, setUserProfileNumber] = useState<Number>(0);
 	const [isFriend, setIsFriend] = useState<Boolean>(false);
+	const [profileNickname, setProfileNickname] = useState<string>("");
 	const [friendsList, setFriendsList] = useState<string[]>([]);
+	const [blockedList, setBlockedList] = useState<string[]>([]);
 	const [friendDetails, setFriendDetails] = useState<Map<string, User>>(new Map());
 	const [opponentDetails, setOpponentDetails] = useState<Map<string, User>>(new Map());
-	const [profileIntraId, setProfileIntraId] = useState<Number>(0);
 	const [showMessageFR, setShowMessageFR] = useState<Boolean>(false);
 	const [showMessageGR, setShowMessageGR] = useState<Boolean>(false);
-	const [showMessageMS, setShowMessageMS] = useState<Boolean>(false);
 	const [showMessageUserBlocked, setShowMessageUserBlocked] = useState<Boolean>(false);
 	const messageFriendReqSend: string = "Friend request has been send!";
 	const messageGameReqSend: string = "Game Invite has been send!";
@@ -58,6 +58,7 @@ const ProfilePageOther: React.FC = () => {
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
 	const [modalOpen, setModalOpen] = useState<Boolean>(false);
 	const [isBlocked, setIsBlocked] = useState<Boolean>(false);
+	const [profileImage, setProfileImage] = useState<string>("");
 
 
 	let redirectFriend = (id:number) =>
@@ -158,7 +159,11 @@ const ProfilePageOther: React.FC = () => {
 					},
 				}}
 			>
-				{friendsList.map((friendId: string) => friendLine(friendId))}
+				{friendsList.map((friend: string, index: number) => (
+					<React.Fragment key={index}>
+						{friendLine(friend)}
+					</React.Fragment>
+				))}
 			</Stack>
 		);
 	};
@@ -264,7 +269,11 @@ const ProfilePageOther: React.FC = () => {
 					justifyContent="space-around"
 					divider={<Divider orientation="vertical" flexItem />}
 				>
-					{ratioArr.map((group: MatchRatio) => (gameStatsBox(group)))}
+					{ratioArr.map((group: MatchRatio, index: number) => (
+						<React.Fragment key={index}>
+							{gameStatsBox(group)}
+						</React.Fragment>
+					))}
 				</Stack>
 			</Box>
 		);
@@ -283,7 +292,7 @@ const ProfilePageOther: React.FC = () => {
 		var scoreOther: number;
 		var color: string;
 		var idOther: number;
-
+		var ttMessage: string;
 		if (data.player1 === userProfile?.nameNick)
 		{
 			scoreUser = data.player1Score;
@@ -314,65 +323,86 @@ const ProfilePageOther: React.FC = () => {
 			return <Stack>Loading...</Stack>;
 		}
 
-		if (data.whoWon === userProfile?.nameNick)
+		if (data.winner === userProfile?.nameNick)
+		{
 			color = '#1da517'
+			ttMessage = "Won";
+			if (data.forfeit)
+			{
+				color = '#889000';
+				ttMessage = "Won by Forfeit";
+			}
+		}
 		else
+		{
 			color = '#b01515';
+			ttMessage = "Lost";
+			if (data.forfeit)
+			{
+				color = '#ff7500';
+				ttMessage = "Lost by Forfeit";
+			}
+		}
+
+
+
 		return (
-			<Stack
-				direction="row"
-				justifyContent="space-around"
-				alignItems="center"
-				bgcolor={color}
-				borderRadius="2em"
-				padding="0.3em"
-			>
-				<Typography 
-					style={{ 
-						width: '150px', 
-						textAlign: 'center' 
-					}}
+			<Tooltip title={ttMessage} arrow>
+				<Stack
+					direction="row"
+					justifyContent="space-around"
+					alignItems="center"
+					bgcolor={color}
+					borderRadius="2em"
+					padding="0.3em"
 				>
-					Game Type: {data.type}
-				</Typography>
-				<Typography 
-					style={{ 
-						width: '100px', 
-						textAlign: 'center' 
-					}}
-				>
-					Score: {scoreUser} | {scoreOther}
-				</Typography>
-				<Typography 
-					sx={{
-						'& a': {
-							textDecoration: 'none',
-							color: 'blue',
-							'&:hover': { 
-								color: 'black'
-							}
-						},
-					}}
-					style={{ 
-						width: '0px',
-						position: 'relative', 
-						left: '10px',
-						textAlign: 'center' 
-					}}
-				>
-					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
-				</Typography>
-				<Avatar
-					sx={{
-						width: '40px',
-						height: '40px',
-						left: '-5px',
-						bgcolor: theme.palette.primary.light,
-					}}
-					src={opponent.image}
-				>
-				</Avatar>
-			</Stack>
+					<Typography 
+						style={{ 
+							width: '150px', 
+							textAlign: 'center' 
+						}}
+					>
+						{data.type}
+					</Typography>
+					<Typography 
+						style={{ 
+							width: '100px', 
+							textAlign: 'center' 
+						}}
+					>
+						{scoreUser} | {scoreOther}
+					</Typography>
+					<Typography 
+						sx={{
+							'& a': {
+								textDecoration: 'none',
+								color: 'blue',
+								'&:hover': { 
+									color: 'black'
+								}
+							},
+						}}
+						style={{ 
+							width: '0px',
+							position: 'relative', 
+							left: '10px',
+							textAlign: 'center' 
+						}}
+					>
+						<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
+					</Typography>
+					<Avatar
+						sx={{
+							width: '40px',
+							height: '40px',
+							left: '-5px',
+							bgcolor: theme.palette.primary.light,
+						}}
+						src={opponent.image}
+					>
+					</Avatar>
+				</Stack>
+			</Tooltip>
 		);
 	};
 
@@ -414,7 +444,11 @@ const ProfilePageOther: React.FC = () => {
 				}}
 			>
 				<Stack gap={1} direction="column" width="100%">
-					{matchHistory.slice().reverse().map((item: MatchData) => gameLine(item))}
+					{matchHistory.slice().reverse().map((item: MatchData, index: number) => (
+						<React.Fragment key={index}>
+							{gameLine(item)}
+						</React.Fragment>
+					))}
 				</Stack>
 			</Box>
 		);
@@ -478,9 +512,9 @@ const ProfilePageOther: React.FC = () => {
 						display: 'flex',
 						width: '200px',
 						height: '200px',
-						bgcolor: theme.palette.success.main,
+						bgcolor: theme.palette.primary.light,
 					}}
-					src={userProfile.image}
+					src={profileImage}
 				>
 					<AccountCircleIcon sx={{ width: '100%', height: 'auto' }} />
 				</Avatar>
@@ -490,28 +524,38 @@ const ProfilePageOther: React.FC = () => {
 
 	let GetUserStatus = () =>
 	{		
-		let color;
+		let color: string = "";
+		let message: string = "";
 		if (whichStatus == UserStatus.Offline)
+		{
+			message = "Offline";
 			color = '#df310e';
+		}
 		else if (whichStatus == UserStatus.Online)
+		{
 			color = '#0fc00c';
-		else if (whichStatus == UserStatus.InGame)
-			color = '#0dddc4';
+			message = "Online";
+		}
+		if (whichStatus == UserStatus.InGame)
+		{
+			color = '#0fc00c';
+			message = "In Game";
+		}
 		
 		return (
 			<Stack>
-				<Box
-				sx={{
-					width: 40,
-					height: 40,
-					backgroundColor: color,
-					borderRadius: '50%',
-					position: 'relative',
-					top: '0px',
-					left: '190px',
-				}}
-				>
-				</Box>
+				<Tooltip title={message} arrow >
+					<Box
+					sx={{
+						width: 40,
+						height: 40,
+						backgroundColor: color,
+						borderRadius: '50%',
+						position: 'relative',
+						top: '0px',
+						left: '190px',
+					}}/>
+				</Tooltip>
 			</Stack>
 		);
 	}
@@ -525,7 +569,7 @@ const ProfilePageOther: React.FC = () => {
 			size = '2rem';
 		if (userProfile.nameNick.length > 25)
 			size = '1rem';
-		
+
 		return (
 			<Stack
 				sx={{
@@ -541,17 +585,15 @@ const ProfilePageOther: React.FC = () => {
 				<Typography variant={'h2'}
 					sx={{
 						fontFamily: 'Georgia, serif',
-						fontWeight: 'bold',
-						fontStyle: 'italic',
 						fontSize: size,
 						lineHeight: '5rem',
 						height: '5rem',
 						overflow: 'hidden',
 						whiteSpace: 'nowrap',
 						transition: 'font-size 0.3s ease',
-					}}    
+					}}
 				>
-					{userProfile.nameNick}
+					{profileNickname.charAt(0).toUpperCase() + profileNickname.slice(1)}
 				</Typography>
 			</Stack>
 		);
@@ -567,6 +609,16 @@ const ProfilePageOther: React.FC = () => {
 				</Stack>
 			)
 		}
+
+		if (isFriend)
+		{
+			return (
+				<Stack>
+					{InviteToGameIcon()}
+					{SendMessageIcon()}	
+				</Stack>
+			)
+		}
 		return (
 			<Stack>
 				{AddingFriendIcon()}
@@ -579,10 +631,9 @@ const ProfilePageOther: React.FC = () => {
 
 	let checkIfBlocked = () =>
 	{
-		if (userProfile.blocked.find((blockedId:string) => blockedId === user.intraId.toString())) 
+		if (blockedList.find((blockedId:string) => blockedId === user.id.toString())) 
 		{
 			setShowMessageUserBlocked(true);
-			setShowMessageMS(false);
 			setShowMessageFR(false);
 			setShowMessageGR(false);
 			return (true);
@@ -605,11 +656,6 @@ const ProfilePageOther: React.FC = () => {
 
 	let AddingFriendIcon = () => 
 	{
-		if (isFriend)
-		{
-			return (<Stack></Stack>);
-		}
-
 		return (
 			<Stack>
 				<Tooltip title="Add Friend!" arrow >
@@ -663,6 +709,8 @@ const ProfilePageOther: React.FC = () => {
 	{
 		if (checkIfBlocked() == true)
 			return ;
+		if (showMessageUserBlocked)
+			setShowMessageUserBlocked(false);
 		setShowMessageFR(true);
 		setShowMessageGR(false);
 		addFriend(user.id.toString(), userProfile.id.toString());
@@ -678,28 +726,27 @@ const ProfilePageOther: React.FC = () => {
 
 	let InviteToGameIcon = () => 
 	{
-		var top = '-175px';
+		var topIcon = '-175px';
 		var topMessage = '-110px';
 		if (isFriend)
 		{
-			top = '-130px';
+			topIcon = '-130px';
 			if (showMessageGR)
 				topMessage = '-67px';
 		}
 		if (showMessageFR || showMessageUserBlocked)
 		{
-			top = '-202px';
+			topIcon = '-202px';
 		}
 
 		return (
 			<Stack>
 			<Tooltip title="Invite to Game!" arrow>
 				<IconButton
-					variant="contained"
 					onClick={handleModalOpen}
 					sx={{
 						fontSize: '30px',
-						top: top,
+						top: topIcon,
 						left: '505px',
 						width: '50px',
 						'&:hover': {
@@ -738,6 +785,8 @@ const ProfilePageOther: React.FC = () => {
 		handleModalClose();
 		if (checkIfBlocked() == true)
 			return ;
+		if (showMessageUserBlocked)
+			setShowMessageUserBlocked(false);
 		setShowMessageFR(false);
 		setShowMessageGR(true);
 		inviteToGame(user.id.toString(), userProfile.id.toString(), value);
@@ -745,6 +794,8 @@ const ProfilePageOther: React.FC = () => {
 
 	let redirectToChat = () =>
 	{
+		if (checkIfBlocked() == true)
+			return ;
 		navigate('/channels', {state: {otherId: userProfile.id.toString()}});
 	}
 	
@@ -790,19 +841,15 @@ const ProfilePageOther: React.FC = () => {
 	}
 
 	let BlockUser = () => {
-		user.blocked.push(profileIntraId.toString());
+		user.blocked.push(userProfile.id.toString());
 		setIsBlocked(true);
-		blockFriend(user.id.toString(), profileIntraId.toString());
+		blockFriend(user.id.toString(), userProfile.id.toString());
 	}
 
 	let BlockUserIcon = () =>
 	{
-		if (isFriend)
-		{
-			return (<Stack></Stack>);
-		}
 		let top = '-268px';
-		if ((showMessageFR) || (showMessageGR) || (showMessageMS) || (showMessageUserBlocked))
+		if ((showMessageFR) || (showMessageGR) || (showMessageUserBlocked))
 		{
 			top = '-295px';
 		}
@@ -831,9 +878,12 @@ const ProfilePageOther: React.FC = () => {
 
 	let handleUnblock = () =>
 	{
-		user.blocked.filter((item: string) => item !== profileIntraId.toString());
+		setShowMessageFR(false);
+		setShowMessageGR(false);
+		setShowMessageUserBlocked(false);
+		user.blocked.filter((item: string) => item !== userProfile.id.toString());
 		setIsBlocked(false);
-		unBlockFriend(user.id.toString(), profileIntraId.toString());
+		unBlockFriend(user.id.toString(), userProfile.id.toString());
 	}
 	
 	let UnblockButton = () =>
@@ -869,7 +919,7 @@ const ProfilePageOther: React.FC = () => {
 		if (isFriend)
 			top = '-278px';
 	
-		if ((showMessageFR) || (showMessageGR) || (showMessageMS) || (showMessageUserBlocked))
+		if ((showMessageFR) || (showMessageGR) || (showMessageUserBlocked))
 		{
 			top = '-395px';
 			if (isFriend)
@@ -938,15 +988,23 @@ const ProfilePageOther: React.FC = () => {
 	let getUserProfile = async () : Promise<void> =>
 	{
 		const tmp = await getUserFromDatabase(lastSegment, navigate);
-		setProfileIntraId(tmp.intraId);
+		if (!tmp) {
+			return
+		}
 		setUserProfile(tmp);
-		setIsFriend(tmp.friends.find((str:string) => str === user.intraId.toString()));
-		if (user.blocked.find((str: string) => str === tmp.intraId.toString()))
+		if (tmp.friends.find((str:string) => str === user.id.toString()))
+			setIsFriend(true);
+		else
+			setIsFriend(false);
+		if (user.blocked.find((str: string) => str === tmp.id.toString()))
 			setIsBlocked(true);
 		else
 			setIsBlocked(false);
 		setFriendsList(tmp.friends);
 		setWhichStatus(tmp.status);
+		setProfileImage(tmp.image);
+		setBlockedList(tmp.blocked);
+		setProfileNickname(tmp.nameNick);
 		setMatchHistory(await fetchMatchData(tmp));
 		setRatioArr(await fetchRatios(tmp));
 	}
@@ -958,15 +1016,61 @@ const ProfilePageOther: React.FC = () => {
 			setUserProfileNumber(number);
 		});
 
-		socket.on('friendAdded', (newFriend: string) => {
-			var newlist = friendsList;
-			if (!friendsList.includes(newFriend, 0))
+		socket.on('friendAddedOther', (newlist: string[]) => 
+		{
+			setFriendsList(newlist);
+			if (newlist.find((item: string) => item === user.id.toString()))
 			{
-				newlist.push(newFriend);
-				setFriendsList(newlist);
+				setShowMessageFR(false);
+				setIsFriend(true);
 			}
 		});
+
+		socket.on('friendRemoved', (newlist: string[]) => 
+		{
+			setFriendsList(newlist);
+			if (newlist.length === 0 || (newlist.find((item: string) => item !== user.id.toString())))
+			{
+				setIsFriend(false);
+			}
+		});
+
+		socket.on('statusChanged', (tmp: User, status: UserStatus) =>
+		{
+			setWhichStatus(status);
+		});
+
+		socket.on('updateBlocked', (id: string) =>
+		{
+			if (user.id.toString() === id)
+			{
+				var newlist = blockedList;
+				newlist.push(id);
+				setBlockedList(newlist);
+			}
+		});
+
+		socket.on('updateUnBlocked', (id: string) =>
+		{
+			if (user.id.toString() === id)
+			{
+				var newlist = blockedList.filter((item: string) => item != id);
+				setBlockedList(newlist);
+				if (showMessageUserBlocked)
+					setShowMessageUserBlocked(false);
+			}		
+		});
 		
+		socket.on('updateNickname', (newName: string) =>
+		{
+			setProfileNickname(newName);
+		});
+
+		socket.on('updateImage', (newImage: string) =>
+		{
+			setProfileImage(newImage);
+		});
+
 	}, [lastSegment]);
 
 	let PageWrapper = () =>

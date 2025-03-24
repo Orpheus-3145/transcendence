@@ -3,7 +3,6 @@ import { IsArray,
   IsEnum,
   IsOptional,
   IsString,
-  MaxLength,
   ValidateNested,
   IsBoolean, 
   IsEmail,
@@ -16,6 +15,7 @@ import { Message } from 'src/entities/message.entity';
 class UserPropsDTO {
 
   constructor( member: ChannelMember) {
+
     this.id = member.user.id;
     this.name = member.user.nameNick;
     this.role = member.memberRole;
@@ -33,40 +33,40 @@ class UserPropsDTO {
 
   @IsEmail()
   email: string
-
-  // @IsString()    // NB probabily not needed
-  // password: string;
 }
 
-export class ChatMessageDTO {
+export class MessageDTO {
 
-  constructor(message: Message) {
+	constructor( message: Message, channel_id: number ) {
+		this.id = message.msg_id;
+		this.message = message.content;
+		this.user = message.sender.user.nameNick;
+		this.userId = message.sender.user.id;
+		this.timestamp = message.created;
+		this.receiver_id = channel_id;
+		this.content = message.content;
+	}
 
-    this.id = message.msg_id;
-    this.receiver_id = message.channel.channel_id;
-    this.message = message.content;
-    this.user = message.sender.user.nameNick;
-    this.userId = message.sender.user.id;
-    this.timestamp = message.created;
-  }
+	@IsInt()
+	id: number;
 
-  @IsInt()
-  id: number;
+	@IsString()
+	message: string;
 
-  @IsInt()
-  receiver_id: number;
+	@IsString()
+	user: string;
 
-  @IsString()
-  message: string;
+	@IsInt()
+	userId: number;
 
-  @IsString()
-  user: string;
+	@IsTimeZone()
+	timestamp: Date;
 
-  @IsInt()
-  userId: number;
+	@IsInt()
+	receiver_id: number; // Channel ID
 
-  @IsTimeZone()
-  timestamp: Date;
+	@IsString()
+	content: string; // Message body
 }
 
 class ChatSettingsDTO {
@@ -75,9 +75,11 @@ class ChatSettingsDTO {
     
     this.type = channel.channel_type;
     this.password = channel.password;
+
     this.users = [];
     for (const member of channel.members)
       this.users.push(new UserPropsDTO(member));
+
     this.owner = channel.channel_owner.nameNick;
     this.banned = channel.banned;
     this.muted = channel.muted;
@@ -114,9 +116,11 @@ export class ChatRoomDTO {
   constructor(channel: Channel) {
     this.id = channel.channel_id;
     this.name = channel.title;
+
     this.messages = [];
     for (const message of channel.messages)
-      this.messages.push(new ChatMessageDTO(message));
+      this.messages.push(new MessageDTO(message, channel.channel_id));
+
     this.settings = new ChatSettingsDTO(channel);
     this.isDirectMessage = channel.isDirectMessage;
   }
@@ -129,8 +133,8 @@ export class ChatRoomDTO {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ChatMessageDTO)
-  messages: ChatMessageDTO[];
+  @Type(() => MessageDTO)
+  messages: MessageDTO[];
 
   @Type(() => ChatSettingsDTO)
   settings: ChatSettingsDTO;

@@ -1,6 +1,7 @@
 import { Injectable, HttpStatus, ConsoleLogger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Inject ,forwardRef } from '@nestjs/common';
 
 import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
@@ -11,6 +12,8 @@ import UserDTO, { UserStatus } from 'src/dto/user.dto'
 import MatchDataDTO from 'src/dto/matchData.dto';
 import LeaderboardDTO from 'src/dto/leaderboard.dto';
 import MatchRatioDTO from 'src/dto/matchRatio.dto';
+import { AnimationSelected } from 'src/game/types/game.enum';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 
 @Injectable()
@@ -20,6 +23,7 @@ export class UsersService {
 		@InjectRepository(Game) private gamesRepository: Repository<Game>,
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
+		@Inject(forwardRef(() => NotificationGateway)) private readonly notificationGateway: NotificationGateway,
  	) {
 		this.logger.setContext(UsersService.name);	
 	}
@@ -82,22 +86,22 @@ export class UsersService {
 	}
 
 	async findOneNick(nameNick: string): Promise<User> {
-		const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
+		// const user: User = await this.usersRepository.findOne({ where: { nameNick: nameNick } });
+		// if (!user)
+		// 	this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
+		// 		`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+		// 		HttpStatus.NOT_FOUND);
+		return (await this.usersRepository.findOne({ where: { nameNick: nameNick } }));
+	}
+
+	async findOneIntraName(intraName: string): Promise<User> {
+		const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
 		if (!user)
-			this.thrower.throwSessionExcp(`User with nameNick: ${nameNick} not found`,
-				`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
-				HttpStatus.NOT_FOUND);
+		this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
+			`${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
+			HttpStatus.NOT_FOUND);
 		return user;
-  	}
-  
-  async findOneIntraName(intraName: string): Promise<User> {
-    const user: User = await this.usersRepository.findOne({ where: { nameIntra: intraName } });
-    if (!user)
-      this.thrower.throwSessionExcp(`User with intraname: ${intraName} not found`,
-        `${UsersService.name}.${this.constructor.prototype.findOneNick.name}()`,
-        HttpStatus.NOT_FOUND);
-    return user;
-  }
+	}
 
 	async findGamesByUser(user: User) : Promise<Game[]> {
 
@@ -105,7 +109,8 @@ export class UsersService {
 			{ where : [
 					{ player1 : {id: user.id} },
 					{ player2 : {id: user.id} },
-				]
+				],
+			relations: ['player1', 'player2', 'winner'],
 			}
 		);
 		if (!gamesPlayedbyId)
@@ -136,6 +141,7 @@ export class UsersService {
 		const user = await this.getUserId(id);
 		user.status = status;
 		this.usersRepository.save(user);
+		this.notificationGateway.sendStatus(user, status);
 	}
 
 	async setStatusIntra(id: number, which: UserStatus)
@@ -143,6 +149,7 @@ export class UsersService {
 		const user = await this.findOneIntra(id);
 		user.status = which;
 		this.usersRepository.save(user);
+		this.notificationGateway.sendStatus(user, which);
 	}
 
 	async setNameNick(userId: string, newUsername: string): Promise<string>
@@ -168,7 +175,10 @@ export class UsersService {
 			this.usersRepository.save(user);
 		}
 		
+		this.notificationGateway.sendUpdatedNickname(user, newUsername);
+    
 		this.logger.log(`Successfully changed namenick from '${oldUserName}' to '${newUsername}' of user id: ${userId}`);
+
 		return ("");
 	}
   
@@ -177,51 +187,62 @@ export class UsersService {
 		return (this.findOneIntra(Number(code)));
 	}
 
+	async getFriendslistFromUser(id: string): Promise<string[]>
+	{
+		var user = await this.findOneId(Number(id));
+		return (user.friends);
+	}
+
 	async updateNewFriendship(iduser:string, idother:string)
 	{
 		const [user, otheruser] = await Promise.all([this.getUserId(iduser), this.getUserId(idother)]);
 
 		(user).friends.push((otheruser).id.toString());
-		this.usersRepository.save((user));
+		await this.usersRepository.save((user));
 
 		(otheruser).friends.push((user).id.toString());
-		this.usersRepository.save((otheruser));
+		await this.usersRepository.save((otheruser));
 
 		this.logger.log(`Created friendship between ${user.nameNick} and ${otheruser.nameNick}`);
 	}
 
 	async removeFriend(user: User, other: User)
 	{
-		let newlist = user.friends.filter(friend => friend !== other.id.toString());
-		user.friends = newlist;
+		let newlistUser: string[] = user.friends.filter((friend: string) => friend !== other.id.toString());
+		user.friends = newlistUser;
 		this.usersRepository.save(user);
+		
+		let newlistOther: string[] = other.friends.filter((afriend: string) => afriend !== user.id.toString());
+		other.friends = newlistOther;
 
-		newlist = other.friends.filter(afriend => afriend !== user.id.toString());
-		other.friends = newlist;
 		this.usersRepository.save(other);
 
 		this.logger.log(`Removed friendship between ${user.nameNick} and ${other.nameNick}`);
+		this.notificationGateway.removeFriend(user, newlistUser, other, newlistOther);
 	}
 
 	async blockUser(user: User, other: User)
 	{
 		// if it's already blocked ignore
-		if (user.blocked.find((blockedId) => blockedId === other.intraId.toString()))
+		if (user.blocked.find((blockedId) => blockedId === other.id.toString()))
 			return ;
 
 		this.removeFriend(user, other);
-		user.blocked.push(other.intraId.toString());
+		user.blocked.push(other.id.toString());
 		this.usersRepository.save(user);
-
+		
+		this.notificationGateway.sendBlocked(other);
+		this.notificationGateway.removeExistingNoti(user, other);
 		this.logger.log(`${user.nameNick} blocked ${other.nameNick}`);
 	}
-  
+
 	async unBlockUser(user: User, other: User)
 	{
-		const newlist = user.blocked.filter(blocked => blocked !== other.intraId.toString());
+		const newlist = user.blocked.filter(blocked => blocked !== other.id.toString());
 		user.blocked = newlist;
 		this.usersRepository.save(user);
-	
+		
+		this.notificationGateway.sendUnBlocked(other);
 		this.logger.log(`${user.nameNick} unblocked ${other.nameNick}`);
 	}
 
@@ -230,33 +251,17 @@ export class UsersService {
 		user.image = image;
 		this.usersRepository.save(user);
 		this.logger.log(`${user.nameNick} updated their profile picture`);
+		this.notificationGateway.sendUpdatedImage(user, image);
 		return (image);
 	}
 
 	async fetchMatches(user: User) : Promise<MatchDataDTO[] | undefined> {
 
-		const gamesDB : Game[] = await this.gamesRepository.find({
-			where : [
-				{ player1 : {id: user.id} },
-				{ player2 : {id: user.id} },
-			],
-			relations: ['player1', 'player2'],
-		});
+		const gamesDB : Game[] = await this.findGamesByUser(user);
 
 		let matchData: MatchDataDTO[] = [];
-		for (const game of gamesDB) {
-
-			const winner: string = (game.player1Score > game.player2Score) ? game.player1.nameIntra : game.player2.nameIntra;
-			const type: string = (game.powerups === 0) ? 'No powerups' : 'With powerups';
-			matchData.push({
-				player1: game.player1.nameIntra,
-				player2: game.player2.nameIntra,
-				player1Score: game.player1Score,
-				player2Score: game.player2Score,
-				whoWon: winner,
-				type: type,
-			});
-		}
+		for (const game of gamesDB)
+			matchData.push(new MatchDataDTO(game));
 
 		this.logger.debug(`Fetching matches for user ${user.nameNick}`);
 		return (matchData);
@@ -265,7 +270,7 @@ export class UsersService {
 	async calculateRatio(user: User): Promise<MatchRatioDTO[]>
 	{
 		const games: Game[] = await this.findGamesByUser(user);
-		
+	
 		const totMatches = games.length;
 		let powerUpMatches = 0;
 		let nonPowerUpMatches = 0;
@@ -276,15 +281,13 @@ export class UsersService {
 		for ( const game of games ) {
 			if (game.powerups === 0) {
 				nonPowerUpMatches += 1;
-				if ((game.player1Score > game.player2Score && game.player1.intraId === user.intraId) ||
-						(game.player2Score > game.player1Score && game.player2.intraId === user.intraId)) {
+				if (game.winner.id === user.id) {
 					totMatchesWon += 1;
 					nonPowerUpMatchesWon += 1;
 				}
 			} else {
 				powerUpMatches += 1;
-				if ((game.player1Score > game.player2Score && game.player1.intraId === user.intraId) ||
-						(game.player2Score > game.player1Score && game.player2.intraId === user.intraId)) {
+				if (game.winner.id === user.id) {
 					totMatchesWon += 1;
 					powerUpMatchesWon += 1;
 				}
@@ -370,9 +373,6 @@ export class UsersService {
 		var allData: LeaderboardDTO[] = [];
 
 		allData = await this.initLeaderboardArr(allUser);
-		// var normalArr: LeaderboardDTO[] = await this.fillArray(allData, "Normal");
-		// var powerArr: LeaderboardDTO[] = await this.fillArray(allData, "Power ups");
-		// var allArr: LeaderboardDTO[] = await this.fillArray(allData, "All");
 
 		const [normalArr, powerArr, allArr] = await Promise.all([
 			this.fillArray(allData, "Normal"),
@@ -386,4 +386,22 @@ export class UsersService {
 		this.logger.debug(`Creating global leaderboard`);
 		return (result);
 	}
+
+	async fetchGameAnimation(intraId: string): Promise<AnimationSelected> {
+
+		const user: User = await this.getUserIntraId(intraId);
+
+		this.logger.log(`fetching animation: ${user.gameAnimation} from ${user.nameNick}`);
+		return user.gameAnimation;
+	}
+
+	async setGameAnimation(intraId: string, newGameAnimation: AnimationSelected): Promise<void> {
+
+		const user: User = await this.getUserIntraId(intraId);
+		user.gameAnimation = newGameAnimation;
+		this.usersRepository.save(user);
+		this.logger.log(`${user.nameNick} set game animation: ${newGameAnimation}`);
+	}
 }
+
+

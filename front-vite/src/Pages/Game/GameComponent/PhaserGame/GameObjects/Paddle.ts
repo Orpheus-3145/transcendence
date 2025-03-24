@@ -1,26 +1,30 @@
+import Resizable from './Resizable';
 import GameScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Game';
 
-
-export default class Paddle {
+export default class Paddle implements Resizable {
 	private _startPos: Phaser.Math.Vector2;
 	private _graphic: Phaser.GameObjects.Rectangle;
+	private readonly scene: Phaser.Scene;
 	
-	private readonly _width: number;
-	private readonly _height: number;
+	private _width: number;
+	private _height: number;
 
 	// @param scene: Phaser.Scene that contains the bar
 	// @param x: x pos
 	// @param y: y pos
 	constructor(scene: GameScene, x: number, y: number) {
+		this.scene = scene;
 		this._startPos = new Phaser.Math.Vector2(x, y);
 
 		const paddleWidthRatio = parseInt(import.meta.env.GAME_WIDTH) / parseInt(import.meta.env.GAME_PADDLE_WIDTH);
 		const paddleHeightRatio = parseInt(import.meta.env.GAME_HEIGHT) / parseInt(import.meta.env.GAME_PADDLE_HEIGHT);	
-		this._width = scene.scale.width / paddleWidthRatio;
-		this._height = scene.scale.height / paddleHeightRatio;
+
+		this._width = this.scene.scale.width / paddleWidthRatio;
+		this._height = this.scene.scale.height / paddleHeightRatio;
 
 		// Create a graphical rectangle to represent the player bar
-		this._graphic = scene.add.rectangle(x, y, this._width, this._height, 0x0000ff).setOrigin(0, 0.5);
+		this._graphic = this.scene.add.rectangle(x, y, this._width, this._height, 0xD3D3D3).setOrigin(0, 0.5);
+		this._graphic.setDepth(1);
 	}
 
 	// Update the position of the bar based on backend data
@@ -60,5 +64,24 @@ export default class Paddle {
 	resizeOriginal(): void {
 		this._graphic.setSize(this._width, this._height); // Update the internal size of the rectangle
 		this._graphic.setDisplaySize(this._width, this._height); // Update the displayed size
+	}
+
+	resize(old_width: number, old_height: number): void {
+    
+    const w_ratio = this.scene.scale.width / old_width;
+    const h_ratio = this.scene.scale.height / old_height;
+		this._width *= w_ratio;
+		this._height *= h_ratio;
+		
+    this._graphic.setPosition(this._graphic.x * w_ratio, this._graphic.y * h_ratio);
+    this._graphic.setDisplaySize(this._width, this._height);
+  }
+
+  show(): void {
+    this._graphic.setVisible(true);
+  }
+
+  hide(): void {
+    this._graphic.setVisible(false);
 	}
 }
