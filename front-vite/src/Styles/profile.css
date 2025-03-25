@@ -1,0 +1,209 @@
+.base {
+	justify-content: space-between;
+	margin: 1em;
+}
+
+.imageBase {
+	position: relative;
+}
+
+.imageSize {
+	width: 200px !important;
+	height: 200px !important;
+}
+
+.pfpButton {
+    width: 60px;
+    height: 60px;
+    font-size: 40px !important;
+}
+.pfpButton:hover svg {
+    fill: #09af07;
+}
+
+.userStatus {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: relative;
+    top: -60px;
+    left: 190px;
+}
+.userStatus.offline {
+    background-color: #df310e;
+}
+.userStatus.online {
+    background-color: #0fc00c;
+}
+.userStatus.inGame {
+    background-color: #0dddc4;
+}
+
+.nicknameBase {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+}
+.nicknameStyle {
+	font-family: Georgia, serif !important;
+	font-weight: bold;
+	font-style: italic;
+	line-height: 5rem;
+	height: 5rem;
+	overflow: hidden;
+	white-space: nowrap;
+	transition: font-size 0.3s ease;
+}
+.nicknameStyle.small {
+	font-size: 4rem;
+}
+.nicknameStyle.medium {
+	font-size: 3rem;
+}
+.nicknameStyle.big {
+	font-size: 2rem;
+}
+.nicknameStyle.large {
+	font-size: 1rem;
+}
+
+.nicknameInput {
+	width: 200px;
+	height: 40px;
+}
+
+.showErrorMessage {
+	align-items: center;
+	position: relative;
+	color: red;
+	font-size: 18px;
+}
+
+.editNickname {
+	width: 50px;
+}
+.editNickname:hover svg {
+	color: #09af07;
+}
+
+.otherInfo {
+	width: 100%;
+	height: 10px;
+	position: relative;
+}
+
+@media (min-width: 1275px) {
+	.base {
+		width: 1120px;
+		height: 300px;
+	}
+	
+	.imageBase {
+		top: 40px;
+		left: 50px;
+	}
+
+	.pfpButton {
+		left: 60px;
+   		top: -10px;
+	}
+
+	.userStatus {
+		top: -60px;
+   		left: 190px;
+	}
+
+	.nicknameBase {
+		top: -210px;
+	}
+	
+	.nicknameInput {
+		top: -180px;
+		left: 470px;
+	}
+
+	.editNickname {
+		top: -190px;
+		left: 535px;
+	}
+
+	.showErrorMessage {
+		top: -163px;
+	}
+
+	.otherInfo {
+		left: 860px;
+	}
+	.otherInfo.normal {
+		top: -290px;
+	}
+	.otherInfo.showInput {
+		top: -330px;
+	}
+	.otherInfo.showMessage {
+		top: -357px;
+	}
+}
+
+@media (max-width: 1275px) {
+	.base {
+		min-width: 390px;
+		height: 680px;
+	}
+
+	.imageBase {
+		position: absolute !important;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		top: clamp(80px, 20vh, 130px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.pfpButton {
+		position: absolute !important;
+		top: clamp(200px, 40vh, 280px);
+		left: 50%;
+		transform: translateX(-150%);
+	}
+
+	.userStatus {
+		position: absolute !important;
+		top: clamp(220px, 45vh, 290px);
+		left: 50%;
+		transform: translateX(100%);
+	}
+
+	.nicknameBase {
+		position: absolute !important;
+		top: clamp(300px, 50vh, 380px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.editNickname {
+		position: absolute !important;
+		top: clamp(400px, 55vh, 480px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.nicknameInput {
+		position: absolute !important;
+		top: clamp(450px, 60vh, 550px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.otherInfo {
+		position: absolute !important;
+		justify-content: center;
+		align-items: center;
+		top: clamp(650px, 75vh, 690px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+}
