@@ -604,8 +604,6 @@ export default class SimulationService {
 		}
 
 		this.handlePowerUp(playerIndex);
-		console.log(`Paddle heights: P1 ${this.paddleHeights[0]}, P2 ${this.paddleHeights[1]}`);
-		console.log(`PAddle Speeds: P1 ${this.paddleSpeed[0]}, P2 ${this.paddleSpeed[1]}`);
 		const delta = (direction === PaddleDirection.up) ? this.paddleSpeed[playerIndex] * -1 : this.paddleSpeed[playerIndex];
 		
 		player.posY = Math.max(

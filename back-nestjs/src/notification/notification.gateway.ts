@@ -161,15 +161,11 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	{
 		var websockUser = this.getUser(user.id.toString());
 		var websockOther = this.getUser(other.id.toString());
-		
-		if (websockUser != undefined)
-		{
+
+		if (websockUser)
 			websockUser.client.emit('friendRemoved', newlistUser);
-		}
-		if (websockOther != undefined)
-		{
+		if (websockOther)
 			websockOther.client.emit('friendRemoved', newlistOther);
-		}
 	}
 
 	@SubscribeMessage('sendGameInvite')
@@ -227,30 +223,24 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	{
 		var websockUser = this.getUser(other.id.toString());
 
-		if (websockUser === undefined)
-			return ;
-
-		websockUser.client.emit('removeNotis', user.id.toString());
+		if (websockUser)
+			websockUser.client.emit('removeNotis', user.id.toString());
 	}
 
 	async sendBlocked(other: User)
 	{
 		var websockUser = this.getUser(other.id.toString());
 
-		if (websockUser === undefined)
-			return ;
-
-		websockUser.client.emit('updateBlocked', other.id.toString());
+		if (websockUser)
+			websockUser.client.emit('updateBlocked', other.id.toString());
 	}
 
 	async sendUnBlocked(other: User)
 	{
 		var websockUser = this.getUser(other.id.toString());
 
-		if (websockUser === undefined)
-			return ;
-
-		websockUser.client.emit('updateUnBlocked', other.id.toString());
+		if (websockUser)
+			websockUser.client.emit('updateUnBlocked', other.id.toString());
 	}
 
 	async sendStatus(user: User, status: UserStatus)
@@ -264,10 +254,9 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	async sendUpdatedImage(user: User, image: string)
 	{
 		var websockUser: Websock = this.getUser(user.id.toString());
-		if (websockUser !== undefined)
-		{
+		if (websockUser)
 			websockUser.client.emit('updateHeaderImage', image);
-		}
+
 		for (const tmp of this.sockets)
 		{
 			if (user.id.toString() !== tmp.userId)

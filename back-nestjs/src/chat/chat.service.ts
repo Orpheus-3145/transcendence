@@ -106,7 +106,6 @@ export class ChatService {
 		])
 		// re-doing the query because the relations are needed
 		newChannel = await this.getChannel(newChannel.channel_id);
-		// console.log(JSON.stringify(this.getAllChannels()));
 		return newChannel;
 	}
 

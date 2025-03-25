@@ -1,3 +1,4 @@
+import { GameData } from '/app/src/Types/Game/Interfaces';
 import ButtonWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Button';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { GameMode } from '/app/src/Types/Game/Enum';
@@ -12,8 +13,9 @@ export default class MainMenuScene extends BaseScene {
 		super.create();
 
 		if (this.registry.get('gameInvitationData')) {
-			this.switchScene('Game', this.registry.get('gameInvitationData'));
+			const gameData: GameData = this.registry.get('gameInvitationData');
 			this.registry.remove('gameInvitationData');
+			this.switchScene('Game', gameData);
 		}
 	}
 
