@@ -71,10 +71,10 @@ export default class BackgroundSelectionScene extends BaseScene {
     } catch (error) {
 			this.switchScene('Error', { trace: `failed to updated animation for user: ${error}`});
     }
-		// updates all the other scenes with the change
-		this.scene.manager.getScenes(false).forEach((scene: Phaser.Scene) => (scene as BaseScene).setAnimation(animationSelected));
-
-		this._animationSelected = animationSelected;
+		// update the registry with the new choice
+		this.registry.set('gameAnimation', animationSelected);
+		
+		this.setAnimation(animationSelected);
 		this.createAnimation();
 	}
 }

@@ -62,10 +62,6 @@ export default class RoomManagerService {
 		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
 
 		gameRoom.movePaddle(player, data.direction);
-
-		this.logger.debug(
-			`session [${data.sessionToken}] - update from ${player.nameNick}, move '${data.direction}'`,
-		);
 	}
 
 	askForRematch(sessionToken: string, client: Socket): void {

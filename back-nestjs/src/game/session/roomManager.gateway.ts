@@ -43,11 +43,6 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 		this.roomManager.createRoom(data);
 	}
 
-	// @SubscribeMessage('playerLeftGame')
-	// handlePlayerLeft(@ConnectedSocket() client: Socket): void {
-	// 	this.roomManager.handleDisconnect(client);
-	// }
-
 	@SubscribeMessage('playerData')
 	addPlayer(@MessageBody() data: PlayerDataDTO, @ConnectedSocket() client: Socket): void {
 		this.roomManager.addPlayer(data, client);

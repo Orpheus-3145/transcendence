@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useRef } from 'react';
-import { useLocation } from "react-router-dom";
 import { Box } from '@mui/material';
 import { styled } from '@mui/system';
 import Phaser, { Scene } from 'phaser';
+import axios from 'axios';
 
 import { useUser } from '/app/src/Providers/UserContext/User';
 import { GameDataContext } from '/app/src/Providers/GameContext/Game';
+import { AnimationSelected } from '/app/src/Types/Game/Enum';
 import GameScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Game';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import MainMenuScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/MainMenu';
@@ -53,6 +54,16 @@ const GameComponent: React.FC = () => {
 		}
 	}
 
+	const fetchUserAnimation = async ()=> {
+			const url = `${import.meta.env.URL_BACKEND}/users/profile/fetchGameAntimation/${playerData.intraId}`;
+			try {
+				const response = await axios.get(url);
+				gameInstance!.registry.set('gameAnimation', response.data);
+			} catch (error) {
+				gameInstance!.registry.set('gameAnimation', AnimationSelected.movingLines);
+			}
+	}
+
 	useEffect(() => {
 
 		if (gameInstance === null) {
@@ -98,6 +109,9 @@ const GameComponent: React.FC = () => {
 		// passign data in case a game invitation was accepted
 		if ( gameData )
 			gameInstance.registry.set('gameInvitationData', gameData);
+
+		// getting the user background from back-end
+		fetchUserAnimation();
 
 		// add hook the container of the game is resized
 		window.addEventListener('resize', handleResize);
