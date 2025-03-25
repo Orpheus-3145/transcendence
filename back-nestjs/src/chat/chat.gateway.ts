@@ -13,7 +13,7 @@ import { MessageDTO, ChatRoomDTO } from '../dto/chatRoom.dto'
 import { Channel, ChannelMemberType, ChannelType } from '../entities/channel.entity';
 import AppLoggerService from 'src/log/log.service';
 import { UseFilters } from '@nestjs/common';
-import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
+import { ChatExceptionFilter } from 'src/errors/exceptionFilters';
 import { ChannelDTO } from 'src/dto/channel.dto';
 
 
@@ -26,7 +26,7 @@ import { ChannelDTO } from 'src/dto/channel.dto';
 	},
 	transports: ['websocket'],				// Uses only WebSocket (no polling)
 })
-@UseFilters(SessionExceptionFilter)
+@UseFilters(ChatExceptionFilter)
 export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@WebSocketServer()
 	server: Server;
@@ -57,11 +57,9 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('createChannel')
 	async handleCreateChannel(@MessageBody() channelDTO: ChannelDTO, @ConnectedSocket() client: Socket): Promise<void> {
 		// Assuming channelDTO contains channel information like title, type, users, etc.
-		let newChannel = await this.chatService.createChannel(channelDTO);
+		const newChannel = await this.chatService.createChannel(channelDTO);
 		// Join the channel
 		client.join(newChannel.channel_id.toString());
-		// re-doing the query because the relations are needed
-		newChannel = await this.chatService.getChannel(newChannel.channel_id);
 		// Emit back the created channel to the client
 		this.server.emit('channelCreated', new ChatRoomDTO(newChannel));
 		// Send success message to the user who created the channel
@@ -76,21 +74,14 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id);
-		
+
 		const updatedChannel = await this.chatService.getChannel(channel_id);
-		
+
 		const channelDto = new ChatRoomDTO(updatedChannel);
 
 		client.join(channel_id.toString());
 
-		// NB: schould emit to all server of just to the room?
-		// const channel = await this.chatService.getChannel(channel_id);
-		// if (channel.members.some(usr => usr.user.id === user_id)) {
-		// this.server.emit('joinedChannel', { user_id, channel_id, name, email });
-		// }
-		
 		this.server.emit('joinedChannel', { channelDto, user_id, channel_id, name, email });
-		// this.server.to(channel_id.toString()).emit('joinedChannel', { user_id, channel_id, name, email });
 	}
 
 	@SubscribeMessage('joinAvailableChannel')
@@ -102,7 +93,6 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id );
 		client.join(channel_id.toString());
-// 		client.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
 		this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { user_id, channel_id, name, email });
 	}
 
@@ -115,11 +105,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
 
-		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, userId: user_id});
 		this.server.emit('leftChannel', {channelDto, userId: user_id});		
 		client.leave(channel_id.toString());
-		// console.log(JSON.stringify(channelDto));
-		// this.server.to(channel_id.toString()).emit('leftChannel', {channelDto, user_id});
 	}
 
 	@SubscribeMessage('kickUserFromChannel')
@@ -165,8 +152,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const { sender_id, receiver_id, content } = messageData;
 		const newMessage = await this.chatService.createMessage(receiver_id, sender_id, content);
 		// Emit the message to the specific channel
-		if (newMessage)			// if newMessage === null if user is muted
-			this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
+		this.server.to(receiver_id.toString()).emit('newMessage', new MessageDTO(newMessage, receiver_id));
 	}
 
 	@SubscribeMessage('getChannels')
@@ -181,10 +167,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	}
 
 	@SubscribeMessage('deleteChannel')
-	async handleDeleteChannel(
-		@MessageBody() channel_id: number,
-		@ConnectedSocket() client: Socket,
-	): Promise<void> {
+	async handleDeleteChannel(@MessageBody() channel_id: number): Promise<void> {
 
 		await this.chatService.deleteChannel(channel_id);
 		this.server.emit('channelDeleted', {channel_id});
@@ -196,10 +179,10 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	): Promise<void> {
 
 		const { channel_type, channel_id, password } = data;
-		const channelToUpdate: Channel = await this.chatService.getChannel(channel_id);
-		await this.chatService.changePrivacy(channelToUpdate, channel_type, password);
-
-		this.server.emit('privacyChanged', new ChatRoomDTO(channelToUpdate));
+		await this.chatService.changePrivacy(channel_id, channel_type, password);
+		const channelUpdated: Channel = await this.chatService.getChannel(channel_id);
+		
+		this.server.emit('privacyChanged', new ChatRoomDTO(channelUpdated));
 	}
 
 	@SubscribeMessage('changeUserRole')

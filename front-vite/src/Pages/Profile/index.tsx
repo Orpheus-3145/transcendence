@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Box, Stack, Typography, useTheme, Divider, Grid, IconButton, Container } from '@mui/material';
+import { Avatar, Box, Stack, Typography, useTheme, Divider, Grid, IconButton, Container, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, styled, FormControlLabel, Switch } from '@mui/material';
 import {Input} from '@mui/material'
 import { useMediaQuery, Tooltip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -28,12 +28,15 @@ import { socket } from '../../Providers/NotificationContext/Notification';
 import { User, MatchData, MatchRatio } from '../../Types/User/Interfaces';
 import { UserStatus } from '../../Types/User/Enum';
 import '../../Styles/profile.css'
+import axios from 'axios';
+
 
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const isSmallScreen = useMediaQuery('(max-width:1275px)');
-	const { user } = useUser();
+	const { user, setUser } = useUser();
+	const intraId = user.intraId;
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
@@ -52,7 +55,122 @@ const ProfilePage: React.FC = () => {
 	const [whichStatus, setWhichStatus] = useState<UserStatus>(UserStatus.Offline);
 	const [matchHistory, setMatchHistory] = useState<MatchData[]>([]);
 	const [ratioArr, setRatioArr] = useState<MatchRatio[]>([]);
+	// State
+    const [is2FAEnabled, setIs2FAEnabled] = useState(user?.twoFactorSecret || false);
+    const [qrCode, setQrCode] = useState<string | null>('');
+    const [secret, setSecret] = useState('');
+    // const [otp, setOtp] = useState('');
+    const [openQRDialog, setOpenQRDialog] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [error, setError] = useState(false);
+
+	const check2FAStatus = async () => {
+		try {
+			const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`);
+		} catch (error) {}
+	};
+
+	// Handle 2FA Toggle
+	const handle2FAToggle = async (event) => {
+		const enable2FA = event.target.checked;
+		
+		if (enable2FA) {
+			// User wants to enable 2FA → Generate QR Code
+			try {
+				const response = await axios.get(import.meta.env.URL_BACKEND_QR_GENERATE);
+				setQrCode(response.data.qrCode);
+				setSecret(response.data.secret)
+				setOpenQRDialog(true);
+			} catch (error) {
+				console.error('Error generating QR Code:', error);
+			}
+		} else {
+			// User wants to disable 2FA → Disable immediately
+			try {
+				const response = await axios.post(import.meta.env.URL_BACKEND_2FA_DELETE + `?intraId=${intraId}`);
+				setIs2FAEnabled(false);
+				check2FAStatus();
+			} catch (error) {}
+		}
+	};
 	
+	// Verify Code After Scanning QR
+	const handleVerifyQR = async () => {
+		try {
+			const response = await axios.post(import.meta.env.URL_BACKEND_QR_VERIFY, {
+				intraId,
+				secret,
+				token: verificationCode
+			});
+			check2FAStatus();
+			if (response.data.success) {
+				setIs2FAEnabled(true);
+				setUser({ ...user, twoFactorEnabled: true });
+				setOpenQRDialog(false);
+			} else {
+				setError(true);
+			}
+		} catch (error) {
+			console.error('Error verifying 2FA:', error);
+			setError(true);
+		}
+	}
+
+	const SettingsSection = styled(Box)(({ theme }) => ({
+		marginBottom: theme.spacing(4),
+	}));
+
+	const TwoFactorToggle = () => {
+		return (
+			<SettingsSection>
+				<br/>
+				<b>Two-Factor Authentication:</b>
+				<br/>
+				<FormControlLabel
+					control={<Switch checked={is2FAEnabled} onChange={handle2FAToggle} color='primary' />}
+				/>
+			</SettingsSection>
+		)
+	}
+	
+	const TwoFactorDialog = () => {
+		return (
+			<Dialog open={openQRDialog} onClose={() => setOpenQRDialog(false)}>
+				<DialogTitle>Scan QR Code</DialogTitle>
+				<DialogContent>
+					{qrCode ? <img src={qrCode} alt="2FA QR Code" style={{ width: '100%' }} /> : 'Loading QR Code...'}
+					<Typography variant="body2" style={{ marginTop: '1em' }}>
+						Enter the 6-digit code from your authentication app.
+					</Typography>
+					<TextField
+						fullWidth
+						error={error}
+						helperText={error ? 'Invalid verification code' : ''}
+						label="Verification Code"
+						variant="outlined"
+						margin="normal"
+						value={verificationCode}
+						onChange={(e) => {
+							setVerificationCode(e.target.value);
+							setError(false); // Reset error when new input comes in
+						}}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter') {
+								handleVerifyQR();
+							}
+						}}
+						selectTextOnFocus // Highlights text when focused
+					/>
+	
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setOpenQRDialog(false)} color="secondary">Cancel</Button>
+					<Button onClick={handleVerifyQR} color="primary" variant="contained">Verify</Button>
+				</DialogActions>
+			</Dialog>
+		)
+	}
+
 	let RemoveFriend = (id:string) => {
 		var newlist: string[] = friendsList.filter((friend: String) => friend !== id);
 		setFriendsList(newlist);
@@ -152,13 +270,13 @@ const ProfilePage: React.FC = () => {
 					marginY={theme.spacing(.5)}
 				>
 					<Avatar
-					sx={{
-						width: '40px',
-						height: '40px',
-						left: '-5px',
-						bgcolor: theme.palette.primary.light,
-					}}
-					src={friend.image}
+						sx={{
+							width: '40px',
+							height: '40px',
+							left: '-5px',
+							bgcolor: theme.palette.primary.light,
+						}}
+						src={friend.image}
 					>
 					</Avatar>
 					<Typography 
@@ -346,8 +464,8 @@ const ProfilePage: React.FC = () => {
 		var scoreOther: number;
 		var color: string;
 		var idOther: number;
-
-		if (data.player1 === userProfile?.nameNick)
+		var ttMessage: string;
+		if (data.player1 === userProfile?.nameIntra)
 		{
 			scoreUser = data.player1Score;
 			scoreOther = data.player2Score;
@@ -377,66 +495,84 @@ const ProfilePage: React.FC = () => {
 			return <Stack>Loading...</Stack>;
 		}
 
-		if (data.whoWon === userProfile?.nameNick)
+		if (data.winner === userProfile?.nameIntra)
+		{
 			color = '#1da517'
+			ttMessage = "Won";
+			if (data.forfeit)
+			{
+				color = '#889000';
+				ttMessage = "Won by Forfeit";
+			}
+		}
 		else
+		{
 			color = '#b01515';
+			ttMessage = "Lost";
+			if (data.forfeit)
+			{
+				color = '#ff7500';
+				ttMessage = "Lost by Forfeit";
+			}
+		}
 
 		return (
-			<Stack
-				direction="row"
-				justifyContent="space-around"
-				alignItems="center"
-				bgcolor={color}
-				borderRadius="2em"
-				padding="0.3em"
-			>
-				<Typography 
-					style={{ 
-						width: '150px', 
-						textAlign: 'center' 
-					}}
+			<Tooltip title={ttMessage} arrow>
+				<Stack
+					direction="row"
+					justifyContent="space-around"
+					alignItems="center"
+					bgcolor={color}
+					borderRadius="2em"
+					padding="0.3em"
 				>
-					Game Type: {data.type}
-				</Typography>
-				<Typography 
-					style={{ 
-						width: '100px', 
-						textAlign: 'center' 
-					}}
-				>
-					Score: {scoreUser} | {scoreOther}
-				</Typography>
-				<Typography 
-					sx={{
-						'& a': {
-							textDecoration: 'none',
-							color: 'blue',
-							'&:hover': { 
-								color: 'black'
-							}
-						},
-					}}
-					style={{ 
-						width: '0px',
-						position: 'relative', 
-						left: '10px',
-						textAlign: 'center' 
-					}}
-				>
-					<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
-				</Typography>
-				<Avatar
-					sx={{
-						width: '40px',
-						height: '40px',
-						left: '-5px',
-						bgcolor: theme.palette.primary.light,
-					}}
-					src={opponent.image}
-				>
-				</Avatar>
-			</Stack>
+					<Typography 
+						style={{ 
+							width: '150px', 
+							textAlign: 'center' 
+						}}
+					>
+						{data.type}
+					</Typography>
+					<Typography 
+						style={{ 
+							width: '100px', 
+							textAlign: 'center' 
+						}}
+					>
+						{scoreUser} | {scoreOther}
+					</Typography>
+					<Typography 
+						sx={{
+							'& a': {
+								textDecoration: 'none',
+								color: 'blue',
+								'&:hover': { 
+									color: 'black'
+								}
+							},
+						}}
+						style={{ 
+							width: '0px',
+							position: 'relative', 
+							left: '10px',
+							textAlign: 'center' 
+						}}
+					>
+						<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
+					</Typography>
+					<Avatar
+						sx={{
+							width: '40px',
+							height: '40px',
+							left: '-5px',
+							bgcolor: theme.palette.primary.light,
+						}}
+						src={opponent.image}
+					>
+					</Avatar>
+				</Stack>
+			</Tooltip>
 		);
 	};
 
@@ -599,7 +735,7 @@ const ProfilePage: React.FC = () => {
 				<Typography variant={'h2'}
 					className={`nicknameStyle ${size}`}  
 				>
-					{userProfile.nameNick}
+					{userProfile.nameNick.charAt(0).toUpperCase() + userProfile.nameNick.slice(1)}
 				</Typography>
 			</Stack>
 		);
@@ -700,6 +836,8 @@ const ProfilePage: React.FC = () => {
 					{userProfile.email}
 					<br />
 				</Typography>
+				{TwoFactorToggle()}
+				{TwoFactorDialog()}
 			</Stack>
 		);
 	}
@@ -732,6 +870,9 @@ const ProfilePage: React.FC = () => {
 	{
 		const tmp: User = await getUserFromDatabase(lastSegment, navigate);
 
+		if (!tmp)
+			return;
+
 		if (user.id == tmp.id)
 		{
 			showOwnPage(true);
@@ -761,7 +902,20 @@ const ProfilePage: React.FC = () => {
 			setFriendsList(newlist);
 		});
 
-	}, [lastSegment]);
+		socket.on('statusChanged', (tmp: User, status: UserStatus) =>
+		{
+			setWhichStatus(status);
+		});
+
+		const fetch2FAStatus = async () => {
+			try {
+				const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`);
+				setIs2FAEnabled(response.data.is2FAEnabled);
+			} catch (error) {}
+		};
+		fetch2FAStatus();
+
+	}, [lastSegment, intraId, whichStatus]);
 
 	let whichPage = () =>
 	{

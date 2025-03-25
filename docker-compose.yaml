@@ -3,8 +3,8 @@ services:
   database:
     build:
       context: ./postgresql
-    # volumes:
-      # - ./pgdata:/var/lib/postgresql/data
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
     restart: unless-stopped
     env_file: ./env/.env
     networks:
@@ -49,7 +49,7 @@ services:
       - internal
 
 volumes:
-  # pgdata:
+  pgdata:
   react_modules:
   nestjs_modules:
 

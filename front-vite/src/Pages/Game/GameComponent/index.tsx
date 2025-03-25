@@ -13,6 +13,7 @@ import MatchmakingScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scene
 import ResultsScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Results';
 import SettingsScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Settings';
 import ErrorScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Error';
+import BackgroundSelectionScene from './PhaserGame/Scenes/BackgroundSelection';
 
 
 const GameBox = styled(Box)(({ theme }) => ({
@@ -37,16 +38,16 @@ const GameComponent: React.FC = () => {
 
 			// resize game window keeping same ratio (16/9)
 			const { width, height } = containerRef.current.getBoundingClientRect();
+			const old_width = gameInstance.scale.width;
+			const old_height = gameInstance.scale.height;
 			gameInstance.scale.resize(width, width * 9 / 16);
 
 			gameInstance.scene.getScenes(true).forEach( (scene: Phaser.Scene) => {
 				// resize all the objects inside of every scene
 				if (scene instanceof BaseScene) {
-					scene.killChildren();
+					scene.resizeObects(old_width, old_height);
 					if (scene instanceof GameScene)
-						scene.resetWindowRatio()
-
-					scene.buildGraphicObjects();
+						scene.resetWindowRatio();
 				}
 			});
 		}
@@ -64,8 +65,9 @@ const GameComponent: React.FC = () => {
 					width: width,
 					height: width * 9 / 16,
 					parent: containerRef.current,
-					backgroundColor: 0xe0e0e0,
-					scene: [MainMenuScene, GameScene, MatchmakingScene, SettingsScene, ResultsScene, ErrorScene],
+					// backgroundColor: 0xe0e0e0,
+					backgroundColor: 0x000000,
+					scene: [MainMenuScene, GameScene, MatchmakingScene, SettingsScene, ResultsScene, ErrorScene, BackgroundSelectionScene],
 					physics: {
 						default: 'arcade',
 					},

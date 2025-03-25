@@ -1,8 +1,7 @@
-import { ConsoleLogger, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import {  Socket } from 'socket.io';
 
 import { Channel, ChannelMember, ChannelMemberType, ChannelType } from 'src/entities/channel.entity';
 import { NotificationService } from 'src/notification/notification.service';
@@ -54,7 +53,7 @@ export class ChatService {
 
 		const channel: Channel = await this.channelRepository.findOne({
 			where: { channel_id: channelId },
-			relations: ['members', 'messages']
+			relations: ['channel_owner', 'members', 'members.user', 'messages', 'messages.sender', 'messages.sender.user']
 		});
 		if (!channel && throwExcept === true)
 			this.thrower.throwChatExcp(`No channel found with id: ${channelId}`,
@@ -105,6 +104,8 @@ export class ChatService {
 			this.changeMemberRole(channelOwner, newChannel, ChannelMemberType.owner),
 			this.changeOwnershipChannel(channelOwner, newChannel),
 		])
+		// re-doing the query because the relations are needed
+		newChannel = await this.getChannel(newChannel.channel_id);
 		// console.log(JSON.stringify(this.getAllChannels()));
 		return newChannel;
 	}
@@ -155,8 +156,8 @@ export class ChatService {
 					user: { id: Not(userToRemove.id) }},
 				order: { memberRole: 'ASC' },
 			})
-		])
-		
+		]);
+
 		if (otherMembers.length === 0) {
 			// no other members, remove channel
 			this.logger.log(`${userToRemove.nameNick} was the last in the channel, removing it`);
@@ -168,7 +169,7 @@ export class ChatService {
 		if (memberToRemove.memberRole === ChannelMemberType.owner) {
 			const newOwner: ChannelMember = otherMembers[0];
 			this.logger.log(`${userToRemove.nameNick} was the owner of the channel, before removing, switching ownership to ${newOwner.user.nameNick}`);
-			
+
 			await Promise.all([
 					this.changeMemberRole(newOwner.user, newOwner.channel, ChannelMemberType.owner),
 					this.changeOwnershipChannel(newOwner.user, channel),
@@ -181,7 +182,7 @@ export class ChatService {
 		return channel;
 	}
 
-	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message | null> {
+	async createMessage(channel: number | Channel, sender: number | User, content: string): Promise<Message> {
 
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
@@ -190,9 +191,12 @@ export class ChatService {
 			sender = await this.getUser(sender);
 		
 		if (channel.muted.find((user) => user === sender.id.toString()))
-			return null;
+			this.thrower.throwChatExcp(`${sender.nameNick} has been muted!`,
+				`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
+				HttpStatus.OK);
+	
 		// fetching member from user
-		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id)
+		const memberSender: ChannelMember = await this.getMember(channel.channel_id, sender.id);
 		let newMessage: Message = this.messageRepository.create({
 			channel: channel,
 			sender: memberSender,
@@ -208,10 +212,10 @@ export class ChatService {
 				channelMemberId: Not(memberSender.channelMemberId)
 			}
 		});
-		if (receivers.length === 0)
-			this.thrower.throwChatExcp(`Channel id: ${channel.channel_id} has only one member`,
-				`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
-				HttpStatus.INTERNAL_SERVER_ERROR);
+		// if (receivers.length === 0)
+		// 	this.thrower.throwChatExcp(`Channel id: ${channel.channel_id} has only one member`,
+		// 		`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
+		// 		HttpStatus.INTERNAL_SERVER_ERROR);
 				
 		// sending notification of the new message to all the channel members
 		for (const receiver of receivers)
@@ -289,10 +293,9 @@ export class ChatService {
 		]);
 		this.logger.log(`Unbanning ${userToUnban.nameNick} from channel id: ${channel.channel_id}`);
 	}
-	
+
 	async muteUserFromChannel(userToMute: number | User, channel: number | Channel): Promise<void> {
 		
-		console.log(JSON.stringify(channel));
 		if (typeof userToMute === 'number')
 			userToMute = await this.getUser(userToMute);
 			
@@ -337,7 +340,7 @@ export class ChatService {
 		}
 		await this.channelRepository.save(channelToChange);
 
-		this.logger.log(`Changing privacy of channel id: ${channelToChange.channel_id}, new policy: ${newChannelPolicy}`);
+		this.logger.log(`Changing privacy of channel id: ${channelToChange.channel_id}, new policy: ${newChannelPolicy}, pass: ${password}`);
 	}
 
 	async changeOwnershipChannel(newOwner: number | User, channel: number | Channel): Promise<void> {

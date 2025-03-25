@@ -1,5 +1,6 @@
 import { IsEmail, IsEnum, IsNumber, IsString, Length, IsArray, ValidateNested } from 'class-validator';
 import User  from '../entities/user.entity'
+import { AnimationSelected } from 'src/game/types/game.enum';
 
 export enum UserStatus {
 	Online = 'online',
@@ -21,6 +22,7 @@ export default class UserDTO {
 		this.status = user.status;
 		this.friends = user.friends;
 		this.blocked = user.blocked;
+		this.gameAnimation = user.gameAnimation;
 	}
 
 	@IsNumber()
@@ -67,6 +69,9 @@ export default class UserDTO {
 
 	@IsString()
 	role: string;
+
+	@IsEnum(AnimationSelected)
+	gameAnimation: AnimationSelected;
 }
 
 

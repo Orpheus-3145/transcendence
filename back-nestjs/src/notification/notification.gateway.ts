@@ -256,8 +256,7 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 	{
 		for (const tmp of this.sockets)
 		{
-			if (user.id.toString() !== tmp.userId)
-				tmp.client.emit('statusChanged', user, status);
+			tmp.client.emit('statusChanged', user, status);
 		}
 	}
 

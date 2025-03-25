@@ -62,7 +62,7 @@ export default class SimulationService {
 	// Power-up state
 	private powerUpStatus: boolean[] = [false, false]; // Power up status for players
 	private powerUpDuration: number = Number(this.config.get<number>('GAME_POWERUP_DURATION', 8000)); // Duration for power-up
-	private powerUpActive: boolean = false; // Is powerUp active or not? Maybe we can remove this.
+	private powerUpSpawned: boolean = false; // Is powerUp active or not? Maybe we can remove this.
 	private powerUpPosition = { x: this.windowWidth / 2, y: this.windowHeight / 2, dx: 0, dy: 0 };
 	private paddleHeights: number[] = [this._defaultPaddleHeight, this._defaultPaddleHeight];
 	private powerUpType: PowerUpType;
@@ -101,10 +101,9 @@ export default class SimulationService {
 			this.powerUpSelected = fromMaskToArray(data.extras);
 			
 		this.logger.log(`session [${data.sessionToken}] - room created`);
-		this.logger.log(`session [${this.sessionToken}] - new game, mode: ${this.mode}`);
-		this.logger.log(`session [${this.sessionToken}] - new game, powerups: [${this.powerUpSelected.join(', ')}]`);
+		this.logger.log(`session [${this.sessionToken}] - new game, mode: ${this.mode}, powerups: [${this.powerUpSelected.join(', ')}]`);
 		if (this.mode === GameMode.single)
-			this.logger.log(`session [${this.sessionToken}] - new game, difficulty: ${this.difficulty}`);
+			this.logger.log(`session [${this.sessionToken}] - difficulty: ${this.difficulty}`);
 			
 			// add bot if single mode
 		if (this.mode === GameMode.single) {
@@ -182,7 +181,7 @@ export default class SimulationService {
 			this.logger.debug(`session [${this.sessionToken}] - ${data.nameNick} added to game`);
 	}
 
-	startEngine(): void {
+	startEngine(): Promise<void> {
 		if (this.engineRunning) return;
 
 		this.engineRunning = true;
@@ -220,7 +219,7 @@ export default class SimulationService {
 			this.updateBall();
 			this.sendUpdateToPlayers('gameState');
 
-			if (this.powerUpActive === true)
+			if (this.powerUpSpawned === true)
 				this.sendPowerUpUpdate();
 
 			if (this.gameOver) {
@@ -394,7 +393,7 @@ export default class SimulationService {
 	}
 
 	// if the game ends gracefully
-	async endGame(winner: PlayingPlayer): Promise<void> {
+	endGame(winner: PlayingPlayer): void {
 		if (this.engineRunning === false)
 			this.thrower.throwGameExcp(
 				`simulation is not running`,
@@ -410,24 +409,29 @@ export default class SimulationService {
 
 		this.stopEngine();
 		
-		if ( this.mode === GameMode.multi ) {
-			const [p1, p2] = await Promise.all([
-				this.userRepository.findOne({ where: {intraId : this.player1.intraId}}),
-				this.userRepository.findOne({ where: {intraId : this.player2.intraId}})
-			]);
-			const gamePlayed = this.gameRepository.create({
-				player1 : p1,
-				player2 : p2,
-				player1Score : this.player1.score,
-				player2Score : this.player2.score,
-				powerups : fromArrayToMask(this.powerUpSelected),
-				
-			});
-			this.gameRepository.save(gamePlayed);
-		}
+		if ( this.mode === GameMode.multi )
+			this.saveGameIntoDB(winner.intraId);
 
 		this.logger.debug(`session [${this.sessionToken}] - rematch phase`);
 		this.waitingForRematch = true;
+	}
+
+	async saveGameIntoDB(winnerIntraId: number, forfait=false): Promise<void> {
+		
+		const gamePlayed = this.gameRepository.create({
+			player1Score : this.player1.score,
+			player2Score : this.player2.score,
+			powerups : fromArrayToMask(this.powerUpSelected),
+			forfait : forfait,
+		});
+		const [p1, p2] = await Promise.all([
+			this.userRepository.findOne({ where: {intraId : this.player1.intraId}}),
+			this.userRepository.findOne({ where: {intraId : this.player2.intraId}})
+		]);
+		gamePlayed.player1 = p1;
+		gamePlayed.player2 = p2;
+		gamePlayed.winner = (winnerIntraId === p1.intraId) ? p1 : p2;
+		await this.gameRepository.save(gamePlayed);
 	}
 
 	// if a player disconnects unexpectedly
@@ -436,12 +440,18 @@ export default class SimulationService {
 		if (this.engineRunning === true) {
 			this.logger.log(`session [${this.sessionToken}] - game interrupted, ${leavingPlayer.nameNick} left the game`);
 			
-			if (this.mode === GameMode.multi) {
+			if (this.mode === GameMode.multi) {		// if it happens during a match the other player wins by forfait
+				let winnerByForfeit: PlayingPlayer;
 				if (this.player1.clientSocket.id === leavingPlayer.clientSocket.id)
-					this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game interrupted, ${leavingPlayer.nameNick} left the game`);
+					winnerByForfeit = this.player2;
 				else if (this.player2.clientSocket.id === leavingPlayer.clientSocket.id)
-					this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game interrupted, ${leavingPlayer.nameNick} left the game`);
+					winnerByForfeit = this.player1;
+
+				this.sendMsgToPlayer(winnerByForfeit.clientSocket, 'endGameByForfeit', winnerByForfeit.nameNick);
+				this.saveGameIntoDB(winnerByForfeit.intraId, true);
+				this.logger.log(`session [${this.sessionToken}] - ${winnerByForfeit.nameNick} wins by forfeit`);
 			}
+			this.stopEngine();
 
 		} else if (this.waitingForRematch === true) {
 			this.logger.log(`session [${this.sessionToken}] - rematch aborted, ${leavingPlayer.nameNick} left the game`);
@@ -455,8 +465,6 @@ export default class SimulationService {
 			}
 		}
 
-		if (this.engineRunning === true)
-			this.stopEngine();
 		this.terminateSimulation();
 	}
 
@@ -499,7 +507,7 @@ export default class SimulationService {
 			this.stopBotPaddleInterval();
 
 		if (this.powerUpSelected.length > 0)
-			this.stopPowerUpInterval()
+			this.stopPowerUpInterval();
 
 		this.engineRunning = false;
 		this.gameOver = false;
@@ -595,7 +603,9 @@ export default class SimulationService {
 			this.idlePlayer2Interval = setTimeout(() => this.interruptGame(`${this.player2.nameNick} disconnected`), this.idleTime);
 		}
 
-		this.addPowerUp(playerIndex);
+		this.handlePowerUp(playerIndex);
+		console.log(`Paddle heights: P1 ${this.paddleHeights[0]}, P2 ${this.paddleHeights[1]}`);
+		console.log(`PAddle Speeds: P1 ${this.paddleSpeed[0]}, P2 ${this.paddleSpeed[1]}`);
 		const delta = (direction === PaddleDirection.up) ? this.paddleSpeed[playerIndex] * -1 : this.paddleSpeed[playerIndex];
 		
 		player.posY = Math.max(
@@ -659,14 +669,13 @@ export default class SimulationService {
 		}
 	}
 
-	addPowerUp(player_no: number): void {
+	handlePowerUp(player_no: number): void {
 		if (this.powerUpType === PowerUpType.shrinkPaddle) {
 			this.paddleHeights[player_no] =
 				this.powerUpStatus[player_no] === true
 					? this._defaultPaddleHeight / 2
 					: this._defaultPaddleHeight;
 		} else if (this.powerUpType === PowerUpType.stretchPaddle) {
-			// powerUpType === "stretchPaddle"
 			this.paddleHeights[player_no] =
 				this.powerUpStatus[player_no] === true
 					? this._defaultPaddleHeight * 2
@@ -705,7 +714,7 @@ export default class SimulationService {
 	}
 
 	spawnPowerUp(): void {
-		if (this.powerUpActive)
+		if (this.powerUpSpawned)
 			return; // If speed ball is already active, do nothing
 
 		this.setRandomPowerUp(); // Deactivate all, then turn on a random power up
@@ -715,11 +724,11 @@ export default class SimulationService {
 
 		// if randomDirX == 1 towards player2, else towards player1
 		this.powerUpPosition = { x: spawnX, y: spawnY, dx: randomDirX, dy: 0 };
-		this.powerUpActive = true;
+		this.powerUpSpawned = true;
 	}
 
 	deactivatePowerUp(): void {
-		this.powerUpActive = false;
+		this.powerUpSpawned = false;
 		this.logger.debug(`session [${this.sessionToken}] - power up ${PowerUpType[this.powerUpType]} lost`);
 
 		// Notify players that the speed ball has been deactivated
@@ -765,8 +774,9 @@ export default class SimulationService {
 	removePowerUp(player_no: number): void {
 		// Remove the power-up status
 		this.powerUpStatus[player_no] = false;
+		this.handlePowerUp(player_no);
 		const playerIdentity1 =
-			player_no === 0 ? PlayerIdentity.self : PlayerIdentity.opponent;
+		player_no === 0 ? PlayerIdentity.self : PlayerIdentity.opponent;
 		this.sendPowerUpData(this.player1, playerIdentity1, false);
 		if (this.mode === GameMode.multi) {
 			const playerIdentity2 =

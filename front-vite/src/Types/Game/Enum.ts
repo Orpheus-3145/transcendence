@@ -25,10 +25,16 @@ export enum PowerUpType {
 }
 
 export enum PowerUpSelected {
-  noPowerUp = 0,        	// (00000)
-  speedBall = 1 << 0, 		// (00001)
-  speedPaddle = 1 << 1, 	// (00010)
-  slowPaddle = 1 << 2, 		// (00100)
-  shrinkPaddle = 1 << 3, 	// (01000)
-  stretchPaddle = 1 << 4  // (10000)
+	noPowerUp = 0,        	// (00000)
+	speedBall = 1 << 0, 		// (00001)
+	speedPaddle = 1 << 1, 	// (00010)
+	slowPaddle = 1 << 2, 		// (00100)
+	shrinkPaddle = 1 << 3, 	// (01000)
+	stretchPaddle = 1 << 4  // (10000)
+}
+
+export enum AnimationSelected {
+	movingLines = 'movingLines',
+	particleEmitter = 'particleEmitter',
+	particleSystem = 'particleSystem'
 }
