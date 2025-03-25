@@ -2,7 +2,7 @@ import React from 'react';
 import {useState, useEffect} from 'react';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
 import { Box, Stack, TextField, Button, Typography, Modal, Divider, useTheme, MenuItem, Select, FormControl, Avatar} from '@mui/material';
-import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps, ChannelType } from '../../Layout/Chat/InterfaceChat';
+import { ChatMessage, UserRoles, UserProps, ChatSettings, ChatRoom, ChatProps, ChannelType, dataAction } from '../../Layout/Chat/InterfaceChat';
 import { Add as AddIcon } from '@mui/icons-material';
 import { userInChannel, userIsAdmin } from '../Channels/index';
 import { fetchOpponent, fetchUser, fetchUserMessage, getUserFromDatabase, User, useUser } from '../../Providers/UserContext/User';
@@ -120,22 +120,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					icon: <PersonAddIcon />
 				};
 				setSettings({ ...settings, users: [...settings.users, newUser] });
-
+				
 			}
 			socket.on('joinedAvailableChannel', handleUserJoinedAvailableChannel);
-
+			
 			return () => {
 				socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
 			}
-	}, [settings]);
-
+		}, [settings]);
+		
 ////////////////////////////////////////////////////////////////////////////////////////
 
 	const handleKickFriend = (user: UserProps) => 
 	{
 		socket.emit('kickUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 		
-		const updateSettings = (data) =>
+		const updateSettings = (data: dataAction) =>
 		{
 			if (selectedChannel.id === data.id)
 			{
@@ -152,14 +152,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		// console.log(`channel id check: ${selectedChannel.id} - ${JSON.stringify(selectedChannel)}`)
 		socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
-		const updateSettings = (data) =>
+		const updateSettings = (data: dataAction) =>
 		{
 			if (selectedChannel.id === data.id)
 			{
 				const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
 				const tmp: string[] = settings.banned;
-				if (!settings.banned.find((item: string) => item === data.userId))
-					tmp.push(data.userId);
+				if (!settings.banned.find((item: string) => item === data.userId.toString()))
+					tmp.push(data.userId.toString());
 				setSettings({...settings, users: updatedUsers, banned: tmp});
 			}
 		}
@@ -171,11 +171,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	{
 		socket.emit('unbanUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
-		const updateSettings = (data) =>
+		const updateSettings = (data: dataAction) =>
 		{
 			if (selectedChannel.id === data.id)
 			{
-				const updatedUsers = settings.banned.filter((item: string) => item !== data.userId);
+				const updatedUsers = settings.banned.filter((item: string) => item !== data.userId.toString());
 				setSettings({...settings, banned: updatedUsers});
 			}
 		}
@@ -187,14 +187,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	{
 		socket.emit('muteUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
-		const updateSettings = (data) =>
+		const updateSettings = (data: dataAction) =>
 		{
 			if (selectedChannel.id === data.id)
 			{
 				const tmp: string[] = settings.muted;
-				if (!settings.muted.find((item: string) => item === data.userId))
+				if (!settings.muted.find((item: string) => item === data.userId.toString()))
 				{
-					tmp.push(data.userId);
+					tmp.push(data.userId.toString());
 				}
 				setSettings({ ...settings, muted: tmp });
 			}
@@ -207,11 +207,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	{
 		socket.emit('unmuteUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
-		const updateSettings = (data) =>
+		const updateSettings = (data: dataAction) =>
 		{
 			if (selectedChannel.id === data.id)
 			{
-				const tmp: string[] = settings.muted.filter((item: string) => item !== data.userId);
+				const tmp: string[] = settings.muted.filter((item: string) => item !== data.userId.toString());
 				setSettings({ ...settings, muted: tmp });
 			}
 		}

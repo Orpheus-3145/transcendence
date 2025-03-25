@@ -63,3 +63,8 @@ export interface ChatProps {
 	selected: ChatRoom | null;
 	searchPrompt: string | null;
 }
+
+export interface dataAction {
+  userId: number;
+  id: number;
+}

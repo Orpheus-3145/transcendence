@@ -12,7 +12,7 @@ import { userInChannel } from '../../Pages/Channels';
 import { joinedRooms } from '../../Pages/Channels';
 import { PowerUpSelected } from '../../Types/Game/Enum';
 import { User } from '../../Types/User/Interfaces';
-import { ChatMessage } from './InterfaceChat';
+import { ChatMessage, dataAction } from './InterfaceChat';
 
 export interface ConnectedUser {
 	clientSocket: Socket,
@@ -184,12 +184,11 @@ useEffect(() => {
 		return () => {
 			socket.off("userKicked", handleUserKickedChannel);
 		};
-	}, [chatProps, user]);
-	
+	}, [chatProps, user]);	
 
 	useEffect(() => 
 	{
-		const handleUserBannedChannel = (data) => 
+		const handleUserBannedChannel = (data: dataAction) => 
 		{
 			setChatProps((prevState: ChatProps) => {
 				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
@@ -198,7 +197,7 @@ useEffect(() => {
 				
 				const updatedUsers: UserProps[] = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
 				const updatedBanned: string[] = channel.settings.banned;
-				updatedBanned.push(data.userId);
+				updatedBanned.push(data.userId.toString());
 				if (user.id == data.userId && selectedChannel != null && selectedChannel.id === channel.id)
 				{
 					setSelectedChannel(null);
@@ -212,14 +211,14 @@ useEffect(() => {
 			});
 		};
 		
-		const handleUserUnbannedChannel = (data) => 
+		const handleUserUnbannedChannel = (data: dataAction) => 
 		{
 			setChatProps((prevState: ChatProps) => {
 				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
 				if (!channel)
 					return (prevState);
 				
-				const updatedBanned = channel.settings.banned.filter((item: string) => item !== data.userId);
+				const updatedBanned = channel.settings.banned.filter((item: string) => item !== data.userId.toString());
 
 				return {
 					...prevState,
@@ -238,10 +237,9 @@ useEffect(() => {
 		}
 	}, [chatProps, user]);
 
-
 	useEffect(() => 
 	{
-		const handleUserMutedChannel = (data) => 
+		const handleUserMutedChannel = (data: dataAction) => 
 		{
 			setChatProps((prevState: ChatProps) => {
 				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
@@ -249,7 +247,7 @@ useEffect(() => {
 					return (prevState);
 				
 				const updatedMuted: string[] = channel.settings.muted;
-				updatedMuted.push(data.userId);
+				updatedMuted.push(data.userId.toString());
 				return {
 					...prevState,
 					chatRooms: prevState.chatRooms.map((room) =>
@@ -259,14 +257,14 @@ useEffect(() => {
 			});
 		}
 
-		const handleUserUnmutedChannel = (data) => 
+		const handleUserUnmutedChannel = (data: dataAction) => 
 		{
 			setChatProps((prevState: ChatProps) => {
 				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
 				if (!channel)
 					return (prevState);
 				
-				const updatedMuted: string[] = channel.settings.muted.filter((item: string) => item !== data.userId);
+				const updatedMuted: string[] = channel.settings.muted.filter((item: string) => item !== data.userId.toString());
 				return {
 					...prevState,
 					chatRooms: prevState.chatRooms.map((room) =>
