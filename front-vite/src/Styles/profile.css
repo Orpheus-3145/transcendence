@@ -150,7 +150,7 @@
 @media (max-width: 1275px) {
 	.base {
 		min-width: 390px;
-		height: 680px;
+		height: 720px;
 	}
 
 	.imageBase {
@@ -202,7 +202,16 @@
 		position: absolute !important;
 		justify-content: center;
 		align-items: center;
-		top: clamp(650px, 75vh, 690px);
+		top: clamp(660px, 75vh, 660px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.twoFA {
+		position: absolute !important;
+		justify-content: center;
+		align-items: center;
+		top: clamp(70px, 75vh, 70px);
 		left: 50%;
 		transform: translateX(-50%);
 	}
