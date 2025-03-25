@@ -281,19 +281,20 @@ const ProfilePage: React.FC = () => {
 						src={friend.image}
 					>
 					</Avatar>
-					<Typography 
-						sx={{
-							'& a': {
+					<Button onClick={() => redirectFriend(friend.id)}> 
+						<Typography 
+							sx={{
 								textDecoration: 'none',
 								color: theme.palette.secondary.main,
 								'&:hover': { 
 									color: theme.palette.secondary.dark
-								}
-							},
-						}}
-					>
-						<a href="" onClick={() => redirectFriend(friend.id)}>{namenick}</a>
-					</Typography>
+								},
+								textTransform: 'none',
+							}}
+						>
+							{namenick}
+						</Typography>
+					</Button>
 				</Stack>
 				{friendLineButtons(intraid)}
 			</Stack>
@@ -549,24 +550,25 @@ const ProfilePage: React.FC = () => {
 					>
 						{scoreUser} | {scoreOther}
 					</Typography>
-					<Typography 
-						sx={{
-							'& a': {
+					<Button onClick={() => redirectFriend(idOther)}>
+						<Typography 
+							sx={{
 								textDecoration: 'none',
 								color: 'blue',
 								'&:hover': { 
 									color: 'black'
-								}
-							},
-						}}
-						style={{ 
-							position: 'relative', 
-							left: {leftName},
-							textAlign: 'center' 
-						}}
-					>
-						<a href="" onClick={() => redirectFriend(idOther)}>{nameOther}</a>
-					</Typography>
+								},
+								textTransform: 'none',
+							}}
+							style={{ 
+								position: 'relative', 
+								left: {leftName},
+								textAlign: 'center' 
+							}}
+						>
+							{nameOther}
+						</Typography>
+					</Button>
 					<Avatar
 						sx={{
 							width: '40px',

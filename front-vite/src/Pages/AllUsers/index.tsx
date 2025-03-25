@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Stack, Link, Typography, IconButton, Tooltip, Input, useTheme, useMediaQuery, Avatar } from '@mui/material';
+import { Stack, Link, Typography, IconButton, Tooltip, Input, useTheme, useMediaQuery, Avatar, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -326,17 +326,18 @@ const AllUsersPage: React.FC = () => {
 								}}
 								src={item.image}
 							/>
-							<Link 
-								href="" 
-								onClick={() => redirectToUser(item.id)} 
-								sx={{
-								color: statusToColor(item),
-								marginTop: '8px',
-								textAlign: 'center',
-								}}
-							>
-								{item.nameNick}
-							</Link>
+							<Button onClick={() => redirectToUser(item.id)}>
+								<Typography
+									sx={{
+										color: statusToColor(item),
+										marginTop: '8px',
+										textAlign: 'center',
+										textTransform: 'none',
+									}}
+								>
+									{item.nameNick}
+								</Typography>
+							</Button>
 							{item.status === UserStatus.InGame && (
 								<Typography
 								sx={{
