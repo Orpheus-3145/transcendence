@@ -300,12 +300,28 @@
 		left: 50%;
 		transform: translateX(50%);
 	}
+	.inviteToGameIcon.isFriend {
+		/* position: absolute !important;
+		top: clamp(530px, 50vh, 530px);
+		left: 50%;
+		transform: translateX(50%); */
+		position: absolute !important;
+		top: clamp(530px, 50vh, 530px);
+		left: 50%;
+		transform: translateX(-150%);	
+	}
 
 	.sendMessageIcon {
 		position: absolute !important;
 		top: clamp(540px, 50vh, 540px);
 		left: 50%;
 		transform: translateX(-150%);
+	}
+	.sendMessageIcon.isFriend {
+		position: absolute !important;
+		top: clamp(530px, 50vh, 530px);
+		left: 50%;
+		transform: translateX(50%);
 	}
 
 	.blockUserIcon {

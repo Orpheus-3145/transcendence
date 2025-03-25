@@ -36,7 +36,7 @@ const ProfilePageOther: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const {user} = useUser();
-	const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+	const isSmallScreen = useMediaQuery('(max-width:1275px)');
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
 	const lastSegment = pathSegments[pathSegments.length - 1]
@@ -675,6 +675,10 @@ const ProfilePageOther: React.FC = () => {
 	let InviteToGame = (value: number) => 
 	{
 		handleModalClose();
+		if (value?.nativeEvent)
+		{
+			return ;
+		}
 		if (checkIfBlocked() == true)
 			return ;
 		if (showMessageUserBlocked)

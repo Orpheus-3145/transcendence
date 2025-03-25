@@ -32,7 +32,7 @@ import '../../Styles/profile.css'
 const ProfilePage: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
-	const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+	const isSmallScreen = useMediaQuery('(max-width:1275px)');
 	const { user } = useUser();
 	const location = useLocation();
 	const pathSegments = location.pathname.split('/');
