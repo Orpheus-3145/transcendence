@@ -294,6 +294,7 @@ const ProfilePageOther: React.FC = () => {
 		var color: string;
 		var idOther: number;
 		var ttMessage: string;
+		
 		if (data.player1 === userProfile?.nameIntra)
 		{
 			scoreUser = data.player1Score;
@@ -345,12 +346,14 @@ const ProfilePageOther: React.FC = () => {
 			}
 		}
 
-
+		var leftName: string = "10px";
+		if (isSmallScreen)
+			leftName = "-30px";
 
 		return (
 			<Tooltip title={ttMessage} arrow>
 				<Stack
-					direction="row"
+					direction={isSmallScreen ? 'column' : 'row'}
 					justifyContent="space-around"
 					alignItems="center"
 					bgcolor={color}
@@ -367,7 +370,7 @@ const ProfilePageOther: React.FC = () => {
 					</Typography>
 					<Typography 
 						style={{ 
-							width: '100px', 
+							width: '40px', 
 							textAlign: 'center' 
 						}}
 					>
@@ -384,9 +387,8 @@ const ProfilePageOther: React.FC = () => {
 							},
 						}}
 						style={{ 
-							width: '0px',
 							position: 'relative', 
-							left: '10px',
+							left: {leftName},
 							textAlign: 'center' 
 						}}
 					>
@@ -396,7 +398,6 @@ const ProfilePageOther: React.FC = () => {
 						sx={{
 							width: '40px',
 							height: '40px',
-							left: '-5px',
 							bgcolor: theme.palette.primary.light,
 						}}
 						src={opponent.image}
