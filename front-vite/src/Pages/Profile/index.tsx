@@ -467,6 +467,7 @@ const ProfilePage: React.FC = () => {
 		var color: string;
 		var idOther: number;
 		var ttMessage: string;
+		
 		if (data.player1 === userProfile?.nameIntra)
 		{
 			scoreUser = data.player1Score;
@@ -518,10 +519,14 @@ const ProfilePage: React.FC = () => {
 			}
 		}
 
+		var leftName: string = "10px";
+		if (isSmallScreen)
+			leftName = "-30px";
+
 		return (
 			<Tooltip title={ttMessage} arrow>
 				<Stack
-					direction="row"
+					direction={isSmallScreen ? 'column' : 'row'}
 					justifyContent="space-around"
 					alignItems="center"
 					bgcolor={color}
@@ -555,9 +560,8 @@ const ProfilePage: React.FC = () => {
 							},
 						}}
 						style={{ 
-							width: '0px',
 							position: 'relative', 
-							left: '10px',
+							left: {leftName},
 							textAlign: 'center' 
 						}}
 					>
