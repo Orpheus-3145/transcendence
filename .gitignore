@@ -27,3 +27,5 @@ node_modules/*
 # Sensitive data
 **/.env
 **/ssl/*
+
+pgdata

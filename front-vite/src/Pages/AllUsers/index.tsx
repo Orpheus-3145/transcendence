@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Stack, Link, Typography, IconButton, Tooltip, Input, useTheme, Divider, Avatar } from '@mui/material';
+import { Stack, Link, Typography, IconButton, Tooltip, Input, useTheme, useMediaQuery, Avatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -14,6 +14,7 @@ const AllUsersPage: React.FC = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
 	const allUsers = getAll();
+	const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 	const [searchUsers, setSearchUsers] = useState<User[]>([]);
 	const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
 	const [offlineUsers, setOfflineUsers] = useState<User[]>([]);
@@ -295,9 +296,12 @@ const AllUsersPage: React.FC = () => {
 
 	let imageArr = (arr: User[]) => 
 	{
+		var columns: number = 4;
+		if (isSmallScreen)
+			columns = 1;
 		return (
 			<ImageList 
-				cols={4} 
+				cols={columns} 
 				sx={{
 					overflowX: 'hidden',
 					margin: 0,

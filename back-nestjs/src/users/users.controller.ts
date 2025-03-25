@@ -118,7 +118,6 @@ export class UsersController {
 
 	@Get('profile/:intraId/matches')
 	async fetchMatchData(@Param('intraId') intraId:string) {
-
 		const user: User = await this.UserService.getUserIntraId(intraId);
 	
 		return (await this.UserService.fetchMatches(user));
