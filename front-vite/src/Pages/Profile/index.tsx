@@ -741,7 +741,7 @@ const ProfilePage: React.FC = () => {
 				<Typography variant={'h2'}
 					className={`nicknameStyle ${size}`}  
 				>
-					{userProfile.nameNick.charAt(0).toUpperCase() + userProfile.nameNick.slice(1)}
+					{userProfile.nameNick.toString()}
 				</Typography>
 			</Stack>
 		);
