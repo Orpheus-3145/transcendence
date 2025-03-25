@@ -117,12 +117,14 @@ const ProfilePage: React.FC = () => {
 	}
 
 	const SettingsSection = styled(Box)(({ theme }) => ({
-		marginBottom: theme.spacing(4),
+		marginBottom: theme.spacing(0),
 	}));
 
 	const TwoFactorToggle = () => {
 		return (
-			<SettingsSection>
+			<SettingsSection
+				className="twoFA"
+			>
 				<br/>
 				<b>Two-Factor Authentication:</b>
 				<br/>
