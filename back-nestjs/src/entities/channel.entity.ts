@@ -16,8 +16,6 @@ export enum ChannelMemberType {
 	member = 'member',
 }
 
-// NB remove eager when not necessary
-
 @Entity('Channels')
 export class Channel {
 
@@ -76,14 +74,14 @@ export class Channel {
 		type: "text",
 		array: true,
 		default: '{}'
-	})		// NB should move this info into channel member?
+	})
 	banned: string[];
 
 	@Column({
 		type: "text",
 		array: true,
 		default: '{}'
-	})		// NB should move this info into channel member?
+	})
 	muted: string[];
 
 	@OneToMany(

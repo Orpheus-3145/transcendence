@@ -287,10 +287,7 @@ export class ChatService {
 			channel = await this.getChannel(channel);
 
 		channel.banned = channel.banned.filter((item: string) => item !== userToUnban.id.toString());
-		await Promise.all([
-			this.channelRepository.save(channel),
-			this.addUserToChannel(channel, userToUnban),
-		]);
+		await this.channelRepository.save(channel);
 		this.logger.log(`Unbanning ${userToUnban.nameNick} from channel id: ${channel.channel_id}`);
 	}
 
@@ -356,7 +353,7 @@ export class ChatService {
 
 		this.logger.log(`Changed ownership of channel id: ${channel.channel_id} to ${newOwner.nameNick}`);
 	}
-	
+
 	async changeMemberRole(userToChange: number | User, channel: number | Channel, newRole: ChannelMemberType): Promise<ChannelMember> {
 		
 		if (typeof userToChange === 'number')
