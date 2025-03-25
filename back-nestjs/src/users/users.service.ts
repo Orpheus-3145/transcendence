@@ -154,7 +154,6 @@ export class UsersService {
 
 	async setNameNick(userId: string, newUsername: string): Promise<string>
 	{
-		console.log("aa");
 		if (newUsername.length > 27)
 			return ("lenght is bigger then 27 chars, make it shorter!");
 
