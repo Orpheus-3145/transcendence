@@ -543,7 +543,7 @@ const ProfilePageOther: React.FC = () => {
 				<Typography variant={'h2'}
 					className={`nicknameStyleOther ${size}`}  
 				>
-					{profileNickname.charAt(0).toUpperCase() + profileNickname.slice(1)}
+					{profileNickname}
 				</Typography>
 			</Stack>
 		);
