@@ -292,14 +292,23 @@ export const Notification: React.FC = () => {
 						textAlign: 'center',
 					}}
 				>
+					<Button onClick={() => navToUser(noti.senderId.toString())}>
+						<Typography variant={'h1'}
+							sx={{
+								fontSize: '0.9rem',
+								textTransform: 'none',
+							}}    
+						>
+							{noti.senderName}
+						</Typography>
+					</Button>
 					<Typography variant={'h1'}
-						sx={{
-							fontSize: '0.9rem',
-						}}    
-					>
-						<a href="" onClick={() => navToUser(noti.senderId.toString())} style={{marginRight: '4px', color: theme.palette.secondary.main,}}>{noti.senderName}</a>
-						{message}
-					</Typography>
+							sx={{
+								fontSize: '0.9rem',
+							}}    
+						>
+							{message}
+						</Typography>
 					<ButtonGroup 
 						variant="contained"
 						sx={{

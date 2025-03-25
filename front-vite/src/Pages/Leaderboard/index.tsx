@@ -1,6 +1,6 @@
 import React from 'react';
 import { fetchLeaderboard } from '../../Providers/UserContext/User';
-import { Stack, Typography, Avatar, Grid } from '@mui/material';
+import { Stack, Typography, Avatar, Grid, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { LeaderboardData, MatchRatio } from '../../Types/User/Interfaces';
@@ -124,19 +124,15 @@ export const Leaderboard: React.FC = () => {
 						src={item.user.image}
 					>
 					</Avatar>
-					<Typography 
+					<Button onClick={() => redirectUser(item.user.id)}>
+						<Typography
 						sx={{
-							'& a': {
-								textDecoration: 'none',
-								color: 'white',
-								'&:hover': { 
-									color: 'grey'
-								}
-							},
+							textTransform: 'none',
 						}}
-					>
-						<a href="" onClick={() => redirectUser(item.user.id)}>{namenick}</a>
-					</Typography>
+						>
+							{namenick}
+						</Typography>
+					</Button>
 					<Typography
 						sx={{
 							color: 'white',
