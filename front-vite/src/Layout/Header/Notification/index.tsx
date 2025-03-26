@@ -453,8 +453,8 @@ export const Notification: React.FC = () => {
 							{putGameInvites()}
 							<SectionHeader text="Friend requests" />
 							{putFiendRequests()}
-							<SectionHeader text="Messages" />
-							{putMessages()}
+							{/* <SectionHeader text="Messages" /> */}
+							{/* {putMessages()} */}
 						</List>
 					</DrawerContainer>
 				</Drawer>
