@@ -147,25 +147,53 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		socket.on('userKicked', updateSettings)
 	};
 
-	const handleBanFriend = (user: UserProps) => 
-	{
-		// console.log(`channel id check: ${selectedChannel.id} - ${JSON.stringify(selectedChannel)}`)
+
+	// const handleBanFriend = (user: UserProps) => 
+	// {
+	// 	// console.log(`channel id check: ${selectedChannel.id} - ${JSON.stringify(selectedChannel)}`)
+	// 	socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
+	// 	const updateSettings = (data: dataAction) =>
+	// 	{
+	// 		if (selectedChannel.id === data.id)
+	// 		{
+	// 			const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
+	// 			const tmp: string[] = settings.banned;
+	// 			if (!settings.banned.find((item: string) => item === data.userId.toString()))
+	// 				tmp.push(data.userId.toString());
+	// 			setSettings({...settings, users: updatedUsers, banned: tmp});
+	// 		}
+	// 	}
+	// 	socket.on('userBanned', updateSettings)
+	// };
+
+
+	const handleBanFriend = (user: UserProps) => {
 		socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
-
-		const updateSettings = (data: dataAction) =>
-		{
-			if (selectedChannel.id === data.id)
-			{
-				const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
-				const tmp: string[] = settings.banned;
-				if (!settings.banned.find((item: string) => item === data.userId.toString()))
-					tmp.push(data.userId.toString());
-				setSettings({...settings, users: updatedUsers, banned: tmp});
-			}
-		}
-
-		socket.on('userBanned', updateSettings)
 	};
+
+
+	useEffect(() => {
+		const updateSettings = (data: dataAction) => {
+			if (selectedChannel.id === data.id) {
+				if (selectedChannel.id === data.id)
+				{
+					const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
+					const tmp: string[] = settings.banned;
+					if (!settings.banned.find((item: string) => item === data.userId.toString()))
+						tmp.push(data.userId.toString());
+					setSettings({...settings, users: updatedUsers, banned: tmp});
+					if (data.userId === user.id)
+					setSelectedChannel(null);
+				}
+			}
+		};
+
+		socket.on('userBanned', updateSettings);
+
+		return () => {
+			socket.off('userBanned', updateSettings);
+		};
+	}, [user]);	
 
 	const handleUnbanFriend = (user: User) => 
 	{
