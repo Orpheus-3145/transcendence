@@ -10,6 +10,8 @@ import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
+
+
 @Injectable()
 export class AuthService {
 	constructor(
