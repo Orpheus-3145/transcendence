@@ -61,9 +61,8 @@ const UserList: React.FC<{ users: DevData[] }> = ({ users }) => {
 	return (
 		<Box sx={{ padding: '0 30px', display: 'flex', justifyContent: 'center', gap: '1.5em', marginTop: '2em' }}>
 			{users.map((user, index) => (
-				<a href={user.link} style={{ textDecoration: 'none' }}>
+				<a key={index} href={user.link} style={{ textDecoration: 'none' }}>
 				<Box
-					key={index}
 					sx={{
 						borderRadius: '1em',
 						padding: '1em',
