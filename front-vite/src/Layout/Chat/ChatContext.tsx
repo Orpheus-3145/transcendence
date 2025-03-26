@@ -486,7 +486,7 @@ useEffect(() => {
 				socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
 			}
 	
-		}, [chatProps]);
+		}, []);
 
 
 
