@@ -10,6 +10,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('users')
 @UseFilters(SessionExceptionFilter)
+@UseGuards(AuthGuard)
 export class UsersController {
 
 	constructor( private readonly UserService: UsersService ) {}
@@ -35,7 +36,6 @@ export class UsersController {
 		return (this.UserService.findOneNick(username));
 	}
 
-	@UseGuards(AuthGuard)
 	@Post('/profile/:username/newnick')
 	async setNewNickname(@Param('username') username: string, @Body('newname') newname:string) : Promise<string> {
 		return (this.UserService.setNameNick(username, newname));

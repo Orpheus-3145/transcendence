@@ -25,8 +25,8 @@ export default class ParticleSystem extends BaseAnimation {
 	
 	createBouncingParticle(): void {
 		
-		console.log("Width: ", this.scene.scale.width);
-		console.log("Height: ", this.scene.scale.height);
+		// console.log("Width: ", this.scene.scale.width);
+		// console.log("Height: ", this.scene.scale.height);
 		const x = Phaser.Math.Between(0, this.scene.scale.width);
 		const y = Phaser.Math.Between(0, this.scene.scale.height);
 

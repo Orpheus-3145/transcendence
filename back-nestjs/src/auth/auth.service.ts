@@ -105,55 +105,6 @@ export class AuthService {
 		res.status(200).json({ user: new UserDTO(user) });
 	}
 
-	// async validateUser(req: Request, res: Response) {
-	// 	const twoFAToken = req.cookies['2fa-token'];
-	// 	if (twoFAToken) {
-	// 		return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
-	// 	}
-
-	// 	// Extract token
-	// 	const token = req.cookies['auth-token'];
-	// 	if (!token) {
-	// 		return res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
-	// 	}
-	// 	this.logger.log(`Validating token [${token}]`);
-
-	// 	// Verify token
-	// 	let decoded: string | JwtPayload;
-	// 	try {
-	// 		decoded = verify(token, this.config.get<string>('SECRET_KEY'));
-	// 	} catch (error) {
-	// 		this.thrower.throwSessionExcp(
-	// 			`Token validation error: ${error.message}`,
-	// 			`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
-	// 			HttpStatus.UNAUTHORIZED,
-	// 		);
-	// 	}
-
-	// 	// Check decoded type
-	// 	if (typeof decoded !== 'object' || isNaN(Number(decoded.intraId)))
-	// 		this.thrower.throwSessionExcp(
-	// 			`Invalid token payload`,
-	// 			`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
-	// 			HttpStatus.UNAUTHORIZED,
-	// 		);
-
-	// 	this.logger.log(`Token [${token}] validated`);
-
-	// 	// Find user
-	// 	const user = await this.userService.findOneIntra(Number(decoded.intraId));
-	// 	if (!user)
-	// 		this.thrower.throwSessionExcp(
-	// 			`User not found`,
-	// 			`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
-	// 			HttpStatus.NOT_FOUND,
-	// 		);
-
-	// 	// Success
-	// 	this.logger.log(`Token [${token}] validated`);
-	// 	res.status(200).json({ user: new UserDTO(user) });
-	// }
-
 	async logout(res: Response, redir?: string, mess?: string) {
 		res.clearCookie('auth-token');
 

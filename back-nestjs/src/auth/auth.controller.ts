@@ -5,7 +5,6 @@ import { AuthService } from 'src/auth/auth.service';
 import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import { AuthGuard } from './auth.guard';
 import UserDTO from 'src/dto/user.dto';
-import { CustomRequest } from './auth.guard';
 
 // Maybe add a guard like:
 // @UseGuards(AuthGuard)
@@ -22,12 +21,10 @@ export class AuthController {
 	// Token validation happens here. Part of this might make more sense as a guard middleware
 	@Get('validate')
 	@UseGuards(AuthGuard)
-	async validateUser(@Req() req: CustomRequest, @Res() res: Response) {
-		// await this.authService.validateUser(req, res);
-		// if (req.validatedUser) {
-		// 	// this.logger.log(`Token validated`);
-		// 	res.status(200).json({ user: new UserDTO(req.validatedUser) });
-		// }
+	async validateUser(@Req() req: Request, @Res() res: Response) {
+		if (req.validatedUser) {
+			res.status(200).json({ user: new UserDTO(req.validatedUser) });
+		}
 	}
 
 	@Get('logout')

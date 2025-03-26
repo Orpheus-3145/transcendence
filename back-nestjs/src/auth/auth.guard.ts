@@ -1,4 +1,4 @@
-import {CanActivate, ExecutionContext, HttpStatus, Injectable} from '@nestjs/common';
+import {CanActivate, ExecutionContext, HttpStatus, Injectable, Req, Res} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
@@ -9,9 +9,13 @@ import User from 'src/entities/user.entity';
 import UserDTO from 'src/dto/user.dto';
 
 
-// export class CustomRequest implements Request {
-// 	validatedUser?: User;
-// } 
+declare global {
+	namespace Express {
+		interface Request {
+			validatedUser?: User;
+		}
+	}
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -20,7 +24,10 @@ export class AuthGuard implements CanActivate {
 		private readonly userService: UsersService,
 		private readonly logger: AppLoggerService,
 		private readonly thrower: ExceptionFactory,
-	) {}
+	) 
+	{
+		this.logger.setContext(AuthGuard.name);
+	}
 
   async canActivate(
     context: ExecutionContext,
@@ -33,11 +40,13 @@ export class AuthGuard implements CanActivate {
 
 
 	// Maybe think about adding some of this inside a middleware guard
-	async validateUser(req: Request, res: Response) {
+	async validateUser(@Req() req: Request, @Res() res: Response) {
 		const twoFAToken = req.cookies['2fa-token'];
 		if (twoFAToken) {
 			return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
 		}
+
+		console.log(`In auth guard: `, req);
 
 		// Extract token
 		const token = req.cookies['auth-token'];
@@ -58,7 +67,7 @@ export class AuthGuard implements CanActivate {
 		try {
 			decoded = verify(token, this.config.get<string>('SECRET_KEY'));
 		} catch (error) {
-			res.clearCookie('auth_token');
+			res.clearCookie('auth-token');
 			res.status(401);
 			// res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
@@ -71,7 +80,7 @@ export class AuthGuard implements CanActivate {
 
 		// Check decoded type
 		if (typeof decoded !== 'object' || isNaN(Number(decoded.intraId))) {
-			res.clearCookie('auth_token');
+			res.clearCookie('auth-token');
 			res.status(401);
 			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
@@ -97,10 +106,9 @@ export class AuthGuard implements CanActivate {
 				HttpStatus.NOT_FOUND,
 			);
 		}
-		// req.validatedUser = user as User;
+		req.validatedUser = user as User;
 
 		// Success
-		// this.logger.log(`Token [${token}] validated`);
-		res.status(200).json({ user: new UserDTO(user) });
+		// res.status(200).json({ user: new UserDTO(user) });
 	}
 }
