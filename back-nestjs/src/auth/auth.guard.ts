@@ -46,8 +46,6 @@ export class AuthGuard implements CanActivate {
 			return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
 		}
 
-		console.log(`In auth guard: `, req);
-
 		// Extract token
 		const token = req.cookies['auth-token'];
 		if (!token) {

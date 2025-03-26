@@ -15,7 +15,7 @@ export default class ParticleSystem extends BaseAnimation {
 	}
 
 	createParticles(): void {
-		const n_particles = this.scene.scale.width;
+		const n_particles = this.scene.scale.width / 1.5;
 		const radius = this.scene.scale.width / this.scene.scale.height * 2;
 		this.createCircleTexture(this._textureName, radius);
 		for (let i = 0; i < n_particles; i++) {
@@ -24,9 +24,6 @@ export default class ParticleSystem extends BaseAnimation {
 	}
 	
 	createBouncingParticle(): void {
-		
-		// console.log("Width: ", this.scene.scale.width);
-		// console.log("Height: ", this.scene.scale.height);
 		const x = Phaser.Math.Between(0, this.scene.scale.width);
 		const y = Phaser.Math.Between(0, this.scene.scale.height);
 
@@ -42,34 +39,6 @@ export default class ParticleSystem extends BaseAnimation {
 	// Remove the ball stuff the the disconneted error persists
 	update(): void {
 		this.updateParticleInteractions();
-
-
-		// Custom boundary check for each particle
-		// this.particles.forEach(particle => {
-		// 	// Left boundary
-		// 	if (particle.x < 0) {
-		// 		particle.setX(0); // Prevent particle from going off the left side
-		// 		particle.setVelocityX(Math.abs(particle.body.velocity.x)); // Reverse direction to the right
-		// 	}
-
-		// 	// Right boundary
-		// 	if (particle.x > this.scene.scale.width) {
-		// 		particle.setX(this.scene.scale.width); // Prevent particle from going off the right side
-		// 		particle.setVelocityX(-Math.abs(particle.body.velocity.x)); // Reverse direction to the left
-		// 	}
-
-		// 	// Top boundary
-		// 	if (particle.y < 0) {
-		// 		particle.setY(0); // Prevent particle from going off the top
-		// 		particle.setVelocityY(Math.abs(particle.body.velocity.y)); // Reverse direction down
-		// 	}
-
-		// 	// Bottom boundary
-		// 	if (particle.y > this.scene.scale.height) {
-		// 		particle.setY(this.scene.scale.height); // Prevent particle from going off the bottom
-		// 		particle.setVelocityY(-Math.abs(particle.body.velocity.y)); // Reverse direction up
-		// 	}
-		// });
 	}
 
 	handleResize(): void {
@@ -110,11 +79,6 @@ export default class ParticleSystem extends BaseAnimation {
 			// Ensure minimum movement to keep floating
 			if (Math.abs(newVx) < minSpeed) newVx = Phaser.Math.FloatBetween(-minSpeed, minSpeed);
 			if (Math.abs(newVy) < minSpeed) newVy = Phaser.Math.FloatBetween(-minSpeed, minSpeed);
-
-			// Cap max speed
-			// newVx = Phaser.Math.Clamp(newVx, -maxSpeed, maxSpeed);
-			// newVy = Phaser.Math.Clamp(newVy, -maxSpeed, maxSpeed);
-
 			particle.setVelocity(newVx, newVy);
 		});
 	}
