@@ -205,20 +205,21 @@ export class ChatService {
 
 		this.logger.log(`New message from ${sender.nameNick} in channel id: ${channel.channel_id}, content: '${content}'`);
 
-		const receivers: ChannelMember[] = await this.channelMemberRepository.find({
-			where: {
-				channel: { channel_id: channel.channel_id },
-				channelMemberId: Not(memberSender.channelMemberId)
-			}
-		});
+		// const receivers: ChannelMember[] = await this.channelMemberRepository.find({
+		// 	where: {
+		// 		channel: { channel_id: channel.channel_id },
+		// 		channelMemberId: Not(memberSender.channelMemberId)
+		// 	}
+		// });
 		// if (receivers.length === 0)
 		// 	this.thrower.throwChatExcp(`Channel id: ${channel.channel_id} has only one member`,
 		// 		`${ChatService.name}.${this.constructor.prototype.createMessage.name}()`,
 		// 		HttpStatus.INTERNAL_SERVER_ERROR);
 				
 		// sending notification of the new message to all the channel members
-		for (const receiver of receivers)
-			this.notificationGateway.sendMessageNoti(await this.notificationService.createMessageNotification(newMessage, receiver), receiver.user.id.toString());
+
+		// for (const receiver of receivers)
+		// 	this.notificationGateway.sendMessageNoti(await this.notificationService.createMessageNotification(newMessage, receiver), receiver.user.id.toString());
 
 		return newMessage;
 	}
