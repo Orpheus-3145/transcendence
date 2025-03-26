@@ -1,19 +1,37 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {CanActivate, ExecutionContext, HttpStatus, Injectable} from '@nestjs/common';
+import { UsersService } from 'src/users/users.service';
+import { ConfigService } from '@nestjs/config';
+import { Request, Response } from 'express';
+import AppLoggerService from 'src/log/log.service';
+import ExceptionFactory from 'src/errors/exceptionFactory.service';
+import { verify, JwtPayload } from 'jsonwebtoken';
+import User from 'src/entities/user.entity';
+
+export interface CustomRequest extends Request {
+	validatedUser?: User;
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+ constructor(
+		private readonly config: ConfigService,
+		private readonly userService: UsersService,
+		private readonly logger: AppLoggerService,
+		private readonly thrower: ExceptionFactory,
+	) {}
+
   async canActivate(
     context: ExecutionContext,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 	const response = context.switchToHttp().getResponse();
     await this.validateUser(request, response);
-
+	return true;
   }
 
 
 	// Maybe think about adding some of this inside a middleware guard
-	async validateUser(req: Request, res: Response) {
+	async validateUser(req: CustomRequest, res: Response) {
 		const twoFAToken = req.cookies['2fa-token'];
 		if (twoFAToken) {
 			return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
@@ -25,8 +43,8 @@ export class AuthGuard implements CanActivate {
 			res.status(401);
 			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
-				`Token validation error: ${error.message}`,
-				`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
+				`Token validation error`,
+				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
 		}
@@ -42,7 +60,7 @@ export class AuthGuard implements CanActivate {
 			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
 				`Token validation error: ${error.message}`,
-				`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
+				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
 		}
@@ -54,7 +72,7 @@ export class AuthGuard implements CanActivate {
 			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
 				`Invalid token payload`,
-				`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
+				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
 		}
@@ -69,7 +87,7 @@ export class AuthGuard implements CanActivate {
 			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
 				`User not found`,
-				`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
+				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
 				HttpStatus.NOT_FOUND,
 			);
 		}
