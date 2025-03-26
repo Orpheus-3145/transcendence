@@ -1,4 +1,4 @@
-import { GameDifficulty, GameMode, PowerUpSelected, PowerUpType } from "./Enum";
+import { GameDifficulty, GameMode, PowerUpSelected, PowerUpType } from "/app/src/Types/Game/Enum";
 import { Socket } from 'socket.io-client';
 
 export interface PlayerData {
