@@ -1,4 +1,3 @@
-import axios from 'axios';
 import BaseAnimation from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/BaseAnimation';
 import MovingLines from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/MovingLines';
 import ParticleEmitter from '/app/src/Pages/Game/GameComponent/PhaserGame/Animations/ParticleEmitter';
@@ -23,7 +22,9 @@ export default class BaseScene extends Phaser.Scene {
 			Phaser.Input.Keyboard.KeyCodes.ESC,
 		) as Phaser.Input.Keyboard.Key;
 
-		this.setAnimation(this.registry.get('gameAnimation'));
+		// setting background animation
+		const animation: AnimationSelected = this.registry.get('user42data').gameAnimation;
+		this.setAnimation(animation);
 	}
 
 	// run after preload(), creation of the entities of the scene

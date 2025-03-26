@@ -2,6 +2,7 @@ import axios from 'axios';
 import ButtonWidget from '/app/src/Pages/Game/GameComponent/PhaserGame/GameObjects/Button';
 import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base';
 import { AnimationSelected } from '/app/src/Types/Game/Enum';
+import { User } from '/app/src/Types/User/Interfaces';
 
 
 export default class BackgroundSelectionScene extends BaseScene {
@@ -72,8 +73,11 @@ export default class BackgroundSelectionScene extends BaseScene {
 			this.switchScene('Error', { trace: `failed to updated animation for user: ${error}`});
     }
 		// update the registry with the new choice
-		this.registry.set('gameAnimation', animationSelected);
+		const user2update: User = this.registry.get('user42data');
+		user2update.gameAnimation = animationSelected;
+		this.registry.set('user42data', user2update);
 		
+		// set new animation
 		this.setAnimation(animationSelected);
 		this.createAnimation();
 	}

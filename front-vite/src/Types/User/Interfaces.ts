@@ -1,4 +1,6 @@
-import { UserStatus } from "./Enum";
+import { UserStatus } from "/app/src/Types/User/Enum";
+import { AnimationSelected } from "/app/src/Types/Game/Enum";
+
 
 export interface MatchRatio {
   title: string;
@@ -36,6 +38,7 @@ export interface User {
   friends: string[];
   blocked: string[];
   twoFactorSecret: string;
+  gameAnimation: AnimationSelected;
 }
 
 export interface UserContextType {
