@@ -6,10 +6,12 @@ import AppLoggerService from 'src/log/log.service';
 import ExceptionFactory from 'src/errors/exceptionFactory.service';
 import { verify, JwtPayload } from 'jsonwebtoken';
 import User from 'src/entities/user.entity';
+import UserDTO from 'src/dto/user.dto';
 
-export interface CustomRequest extends Request {
-	validatedUser?: User;
-}
+
+// export class CustomRequest implements Request {
+// 	validatedUser?: User;
+// } 
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -31,7 +33,7 @@ export class AuthGuard implements CanActivate {
 
 
 	// Maybe think about adding some of this inside a middleware guard
-	async validateUser(req: CustomRequest, res: Response) {
+	async validateUser(req: Request, res: Response) {
 		const twoFAToken = req.cookies['2fa-token'];
 		if (twoFAToken) {
 			return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
@@ -41,10 +43,11 @@ export class AuthGuard implements CanActivate {
 		const token = req.cookies['auth-token'];
 		if (!token) {
 			res.status(401);
-			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
+			// res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
 				`Token validation error`,
-				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				// `${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				"AuthGuard",
 				HttpStatus.UNAUTHORIZED,
 			);
 		}
@@ -57,10 +60,11 @@ export class AuthGuard implements CanActivate {
 		} catch (error) {
 			res.clearCookie('auth_token');
 			res.status(401);
-			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
+			// res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
 				`Token validation error: ${error.message}`,
-				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				// `${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				"AuthGuard",
 				HttpStatus.UNAUTHORIZED,
 			);
 		}
@@ -72,7 +76,8 @@ export class AuthGuard implements CanActivate {
 			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
 				`Invalid token payload`,
-				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				// `${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				"AuthGuard",
 				HttpStatus.UNAUTHORIZED,
 			);
 		}
@@ -82,20 +87,20 @@ export class AuthGuard implements CanActivate {
 		// Find user
 		const user = await this.userService.findOneIntra(Number(decoded.intraId));
 		if (!user) {
-			res.clearCookie('auth_token');
+			res.clearCookie('auth-token');
 			res.status(401);
-			res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
+			// res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
 				`User not found`,
-				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				// `${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				"AuthGuard",
 				HttpStatus.NOT_FOUND,
 			);
 		}
-		req.validatedUser = user as User;
+		// req.validatedUser = user as User;
+
 		// Success
 		// this.logger.log(`Token [${token}] validated`);
-		// res.status(200).json({ user: new UserDTO(user) });
+		res.status(200).json({ user: new UserDTO(user) });
 	}
-
-
 }

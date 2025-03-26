@@ -24,10 +24,10 @@ export class AuthController {
 	@UseGuards(AuthGuard)
 	async validateUser(@Req() req: CustomRequest, @Res() res: Response) {
 		// await this.authService.validateUser(req, res);
-		if (req.validatedUser) {
-			// this.logger.log(`Token validated`);
-			res.status(200).json({ user: new UserDTO(req.validatedUser) });
-		}
+		// if (req.validatedUser) {
+		// 	// this.logger.log(`Token validated`);
+		// 	res.status(200).json({ user: new UserDTO(req.validatedUser) });
+		// }
 	}
 
 	@Get('logout')
