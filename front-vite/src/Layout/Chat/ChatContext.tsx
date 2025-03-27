@@ -190,7 +190,6 @@ useEffect(() => {
 	{
 		const handleUserBannedChannel = (data: dataAction) => 
 		{
-			// console.log('Banned in context');
 			setChatProps((prevState: ChatProps) => {
 				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
 				if (!channel)
@@ -236,7 +235,7 @@ useEffect(() => {
 			socket.off('userBanned', handleUserBannedChannel);
 			socket.off('userUnbanned', handleUserUnbannedChannel);
 		}
-	}, [selectedChannel, user]);
+	}, [user]);
 
 	useEffect(() => 
 	{
@@ -258,7 +257,7 @@ useEffect(() => {
 			});
 		}
 
-		
+
 		const handleUserUnmutedChannel = (data: dataAction) => 
 		{
 			console.log('Unmuted in context')
