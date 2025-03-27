@@ -388,7 +388,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		}
 
 		return (
-			<Stack direction="row" spacing={40}>
+			<Stack  direction="row" justifyContent="space-between" spacing={2}>
 				<Typography sx={{whiteSpace: 'pre-line'}} >
 					{user.nameNick?.length > 10 ? user.nameNick.slice(0, 9) + '...' : user.nameNick}
 				</Typography>
