@@ -108,7 +108,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		return () => {
 			socket.off('joinedChannel', handleUserJoinedChannel);
 		}
-	}, [user]);
+	}, [user, settings, selectedChannel]);
 
 	useEffect(() => {
 		const handleUserJoinedAvailableChannel = (response) => {
@@ -132,7 +132,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		return () => {
 			socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
 		}
-	}, [settings, user]);
+	}, [user, settings, selectedChannel]);
 		
 ////////////////////////////////////////////////////////////////////////////////////////
 
