@@ -57,7 +57,7 @@ export class AuthGuard implements CanActivate {
 				HttpStatus.UNAUTHORIZED,
 			);
 		}
-		this.logger.log(`Validating token [${token}]`);
+		this.logger.debug(`Validating token [${token}]`);
 
 		// Verify token
 		let decoded: string | JwtPayload;
@@ -88,7 +88,7 @@ export class AuthGuard implements CanActivate {
 			);
 		}
 
-		this.logger.log(`Token [${token}] validated`);
+		this.logger.debug(`Token [${token}] validated`);
 
 		// Find user
 		const user = await this.userService.findOneIntra(Number(decoded.intraId));

@@ -162,6 +162,7 @@ export default class ResultsScene extends BaseScene {
 			this.scale.height / 2 * 0.75,
 			'close',
 			() => this.switchScene('MainMenu'),
+			0,
 		));
 	}
 

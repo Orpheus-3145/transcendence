@@ -108,6 +108,7 @@ export class NotificationService {
 				receiver: {id: receiver.id},
 			}
 		});
+		
 		if (existingFriendRequest !== null)
 			return existingFriendRequest;
 

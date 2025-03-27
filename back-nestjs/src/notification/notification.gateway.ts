@@ -112,13 +112,11 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.getUserId(data.receiverId)
 		]);
 
-		const friendRequestNoti: FriendRequest = await this.notificationService.createFriendRequest(user, other);
+		const friendRequestNoti: FriendRequest | null = await this.notificationService.createFriendRequest(user, other);
 
 		const socket: Socket = this.getUser(data.receiverId).client;
-		if (friendRequestNoti)
+		if (friendRequestNoti && socket)
 			socket.emit('sendNoti', new NotificationDTO(friendRequestNoti));
-		else
-			socket.emit('sendNoti', null);		// NB handle this on front-end
 	}
 
 	@SubscribeMessage('acceptNotiFr')
@@ -137,12 +135,12 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 		var frienlistSender = await this.userService.getFriendslistFromUser(senderId);
 		var frienlistReceiver = await this.userService.getFriendslistFromUser(receiverId);
 		
-		if (websockSender !== undefined)
+		if (websockSender)
 		{
 			websockSender.client.emit('friendAddedIndex', frienlistSender);
 			websockSender.client.emit('friendAddedOther', frienlistReceiver);
 		}
-		if (WebsockReceiver !== undefined)
+		if (WebsockReceiver)
 		{
 			WebsockReceiver.client.emit('friendAddedIndex', frienlistReceiver);
 			WebsockReceiver.client.emit('friendAddedOther', frienlistSender);
@@ -176,13 +174,11 @@ export class NotificationGateway implements OnGatewayDisconnect, OnGatewayConnec
 			this.userService.getUserId(data.receiverId)
 		]);
 
-		const gameInvitationNoti = await this.notificationService.createGameInvitation(user, other, data.powerUps);
+		const gameInvitationNoti: GameInvitation | null = await this.notificationService.createGameInvitation(user, other, data.powerUps);
 
 		const socket: Socket = this.getUser(data.receiverId).client;
-		if (gameInvitationNoti)
+		if (gameInvitationNoti && socket)
 			socket.emit('sendNoti', new NotificationDTO(gameInvitationNoti));
-		else
-			socket.emit('sendNoti', null);		// NB handle this on front-end
 	}
 
 	@SubscribeMessage('acceptNotiGI')
