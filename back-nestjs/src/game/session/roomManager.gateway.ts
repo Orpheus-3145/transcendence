@@ -67,4 +67,9 @@ export default class RoomManagerGateway implements OnGatewayConnection, OnGatewa
 	abortRematch(@MessageBody() data: {sessionToken: string}, @ConnectedSocket() client: Socket): void {
 		this.roomManager.abortRematch(data.sessionToken, client);
 	}
+
+	@SubscribeMessage('playerIsActive')
+	updateIdleInterval(@MessageBody() data: PlayerDataDTO) {
+		this.roomManager.updateIdleInterval(data);
+	}
 }
