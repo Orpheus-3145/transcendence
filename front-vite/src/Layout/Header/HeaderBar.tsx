@@ -26,19 +26,18 @@ export const Bar: React.FC = () => {
 					border: '1px solid transparent',
 					borderRadius: '50%',
 					overflow: 'hidden',
-					height: '100%',
-					width: 'auto',
+					width: '50%',
+					height: 'auto',
 					'&:hover': {
+						'& img': {
+							transform: 'scale(1.2)',
+							transition: 'transform 0.3s ease',
+						},
+					},
 					'& img': {
-						transform: 'scale(1.2)',
 						transition: 'transform 0.3s ease',
-					},
-					},
-					'& img': {
-					width: '100%',
-					height: '100%',
-					float: 'right',
-					transition: 'transform 0.3s ease',
+						borderRadius: '50%',
+						objectFit: 'cover'
 					},
 				}}
 			>
@@ -68,7 +67,7 @@ export const Bar: React.FC = () => {
 					alignContent='center'
 					position='fixed'
 					paddingY='0.1em'
-					paddingX='0.5em'
+					paddingLeft='0.5em'
 					direction='row'
 					width='100%'
 					height='3em'
