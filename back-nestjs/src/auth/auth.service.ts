@@ -101,6 +101,7 @@ export class AuthService {
 	}
 
 	// Maybe think about adding some of this inside a middleware guard
+
 	validateUser(user: User, req: Request, res: Response) {
 		res.status(200).json({ user: new UserDTO(user) });
 	}
