@@ -50,6 +50,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const [banned, setbanned] = useState<Map<string, User>>(new Map());
 	const [passwordInput, setPasswordInput] = useState('');
 
+////////////////////////////////////////////////////////////////////////////////////////
+
 	const handleAddFriend = async () => 
 	{
 		if (friendName.length > 0) {
@@ -137,37 +139,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	const handleKickFriend = (user: UserProps) => 
 	{
 		socket.emit('kickUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
-		
-		const updateSettings = (data: dataAction) =>
-		{
-			if (selectedChannel.id === data.id)
-			{
+	};
+
+	useEffect(() => {
+		const updateSettings = (data: dataAction) => {
+			if (selectedChannel.id === data.id) {
 				const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
 				setSettings({ ...settings, users: updatedUsers });
+				if (user.id === data.userId)
+					setSelectedChannel(null);
 			}
 		}
 
-		socket.on('userKicked', updateSettings)
-	};
+		socket.on('userKicked', updateSettings);
+
+		return () => {
+			socket.off('userKicked', updateSettings)
+		};
+	}, [settings, selectedChannel])
 
 
-	// const handleBanFriend = (user: UserProps) => 
-	// {
-	// 	socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
-	// 	const updateSettings = (data: dataAction) =>
-	// 	{
-	// 		if (selectedChannel.id === data.id)
-	// 		{
-	// 			const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
-	// 			const tmp: string[] = [...settings.banned];
-	// 			if (!settings.banned.find((item: string) => item === data.userId.toString()))
-	// 				tmp.push(data.userId.toString());
-	// 			setSettings({...settings, users: updatedUsers, banned: tmp});
-	// 		}
-	// 	}
-	// 	socket.on('userBanned', updateSettings)
-	// };
-
+////////////////////////////////////////////////////////////////////////////////////////
 
 	const handleBanFriend = (user: UserProps) => {
 		socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
@@ -194,6 +186,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		};
 	}, [selectedChannel, settings, user]);	
 
+////////////////////////////////////////////////////////////////////////////////////////
+
 	const handleUnbanFriend = (user: User) => 
 	{
 		socket.emit('unbanUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
@@ -209,6 +203,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		
 		socket.on('userUnbanned', updateSettings)
 	};
+
+////////////////////////////////////////////////////////////////////////////////////////
 
 	const handleMuteFriend = (user: UserProps) => 
 	{
@@ -230,6 +226,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		socket.on('userMuted', updateSettings)
 	};
 
+////////////////////////////////////////////////////////////////////////////////////////
+
 	const handleUnmuteFriend = (user: UserProps) => 
 	{
 		socket.emit('unmuteUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
@@ -245,6 +243,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				
 		socket.on('userUnmuted', updateSettings)
 	};
+
+////////////////////////////////////////////////////////////////////////////////////////
 
 	const handleRoleChange = (userId: number, role: string) => {
 		const data = {
@@ -274,6 +274,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		};
 	}, [settings]);
 
+////////////////////////////////////////////////////////////////////////////////////////
 
 	useEffect(() => {
 		const handlePrivacyChanged = (updatedChannel) => {
@@ -298,6 +299,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	}
 	
+////////////////////////////////////////////////////////////////////////////////////////
+
 	const handleDeleteChannel = (channel_id: number) => {
 		socket.emit('deleteChannel', channel_id);
 	
@@ -305,6 +308,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			console.error(error.message);
 		});
 	};
+
+////////////////////////////////////////////////////////////////////////////////////////
 
 	const handleLeaveChannel = () => {
 		if (selectedChannel.settings.type === ChannelType.protected
@@ -359,6 +364,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		};
 	}, [settings]);
 	
+////////////////////////////////////////////////////////////////////////////////////////
 	
 	const fetchbanned = async (bannedId: string) => {
 		const banned = await fetchUserMessage(bannedId);
