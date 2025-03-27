@@ -178,7 +178,7 @@ export default class ResultsScene extends BaseScene {
 			this.scale.height / 2 * 0.75,
 			'yes',
 			() => {
-			
+
 				this.sendMsgToServer('acceptRematch', {sessionToken: this._sessionToken});
 				this._playAgainPopup.hide();
 			},

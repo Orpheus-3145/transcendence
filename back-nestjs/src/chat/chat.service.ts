@@ -12,10 +12,12 @@ import AppLoggerService from 'src/log/log.service';
 import { ConfigService } from '@nestjs/config';
 import { ChannelDTO } from 'src/dto/channel.dto';
 import { NotificationGateway } from 'src/notification/notification.gateway';
+import { DurationDTO } from 'src/dto/mutingUser.dto';
 
 
 @Injectable()
 export class ChatService {
+
 	constructor(
 		@InjectRepository(Channel)
 		private readonly channelRepository: Repository<Channel>,
@@ -290,7 +292,8 @@ export class ChatService {
 		await this.channelRepository.save(channel);
 		this.logger.log(`Unbanning ${userToUnban.nameNick} from channel id: ${channel.channel_id}`);
 	}
-
+	
+	// async muteUserFromChannel(userToMute: number | User, channel: number | Channel): Promise<void> {
 	async muteUserFromChannel(userToMute: number | User, channel: number | Channel): Promise<void> {
 		
 		if (typeof userToMute === 'number')
@@ -299,12 +302,12 @@ export class ChatService {
 		if (typeof channel === 'number')
 			channel = await this.getChannel(channel);
 
-
 		channel.muted.push(userToMute.id.toString());
 		await this.channelRepository.save(channel);
-
+		
 		this.logger.log(`Muting ${userToMute.nameNick} from channel id: ${channel.channel_id}`);
 	}
+
 	
 	async unmuteUserFromChannel(userToUnmute: number | User, channel: number | Channel): Promise<void> {
 	

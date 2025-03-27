@@ -2,15 +2,15 @@ import React from 'react';
 import Typography from '@mui/material';
 
 export enum ChatStatus {
-  Chatbox = 'chatbox',
-  Settings = 'settings',
-  ChannelsPage = 'channelsPage',
+	Chatbox = 'chatbox',
+	Settings = 'settings',
+	ChannelsPage = 'channelsPage',
 }
 
 export enum UserRoles {
-  admin = 'admin',
-  member = 'member',
-  owner = 'owner',
+	admin = 'admin',
+	member = 'member',
+	owner = 'owner',
 }
 
 export enum ChannelType {
@@ -20,22 +20,22 @@ export enum ChannelType {
 }
 
 export interface ChatMessage {
-  id: number;
-  message: React.ReactElement<typeof Typography>;
-  user: string;
-  userId: number;
-  userPP: React.ReactElement;
-  timestamp: React.ReactElement;
-  receiver_id: number;
+	id: number;
+	message: React.ReactElement<typeof Typography>;
+	user: string;
+	userId: number;
+	userPP: React.ReactElement;
+	timestamp: React.ReactElement;
+	receiver_id: number;
 }
 
 export interface UserProps {
-  id: number;
-  name: string;
-  role: string;
-  email: string;
-  password: string;
-  icon: React.ReactElement;
+	id: number;
+	name: string;
+	role: string;
+	email: string;
+	password: string;
+	icon: React.ReactElement;
 }
 
 export interface ChatSettings {
@@ -44,17 +44,17 @@ export interface ChatSettings {
 	password: string | null;
 	users: UserProps[];
 	owner: string;
-  banned: string[];
-  muted: string[];
+	banned: string[];
+	muted: string[];
 }
 
 export interface ChatRoom {
-  id: number;
-  name: string;
-  icon: React.ReactElement;
-  messages: ChatMessage[];
-  settings: ChatSettings;
-  isDirectMessage: boolean;
+	id: number;
+	name: string;
+	icon: React.ReactElement;
+	messages: ChatMessage[];
+	settings: ChatSettings;
+	isDirectMessage: boolean;
 }
 
 export interface ChatProps {
@@ -65,6 +65,17 @@ export interface ChatProps {
 }
 
 export interface dataAction {
-  userId: number;
-  id: number;
+	userId: number;
+	id: number;
+}
+
+export interface MutingInterface {
+	userId: number;
+	channelId: number;
+	time: {
+		days: number;
+		hours: number;
+		minutes: number;
+		seconds: number;
+	}
 }

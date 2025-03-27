@@ -15,6 +15,8 @@ import AppLoggerService from 'src/log/log.service';
 import { UseFilters } from '@nestjs/common';
 import { ChatExceptionFilter } from 'src/errors/exceptionFilters';
 import { ChannelDTO } from 'src/dto/channel.dto';
+import { DurationDTO, MutingUserDTO } from 'src/dto/mutingUser.dto';
+import User from 'src/entities/user.entity';
 
 
 @WebSocketGateway( {
@@ -28,6 +30,9 @@ import { ChannelDTO } from 'src/dto/channel.dto';
 })
 @UseFilters(ChatExceptionFilter)
 export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
+
+	private _mutingTimeouts: Map<string, NodeJS.Timeout> = new Map();
+
 	@WebSocketServer()
 	server: Server;
 
@@ -106,6 +111,13 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const channel: Channel | null = await this.chatService.removeUserFromChannel(user_id, channel_id);
 		const channelDto: ChatRoomDTO | null = (channel !== null) ? new ChatRoomDTO(channel) : null;
 
+		const keyMap: string = `${channel_id}-${user_id}`;
+		// remove timeout for mute if it exists on that user
+		if (this._mutingTimeouts.get(keyMap)) {
+			clearTimeout(this._mutingTimeouts.get(keyMap));
+			this._mutingTimeouts.delete(keyMap);
+		}
+
 		this.server.emit('leftChannel', {channelDto, userId: user_id});		
 		client.leave(channel_id.toString());
 	}
@@ -114,6 +126,14 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	async kickUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
 		await this.chatService.removeUserFromChannel(data.userId, data.channelId);
+
+		const keyMap: string = `${data.channelId}-${data.userId}`;
+		// remove timeout for mute if it exists on that user
+		if (this._mutingTimeouts.get(keyMap)) {
+			clearTimeout(this._mutingTimeouts.get(keyMap));
+			this._mutingTimeouts.delete(keyMap);
+		}
+
 		this.server.emit('userKicked', {id: data.channelId, userId: data.userId});
 	}
 
@@ -121,6 +141,14 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	async banUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
 		await this.chatService.banUserFromChannel(data.userId, data.channelId);
+
+		const keyMap: string = `${data.channelId}-${data.userId}`;
+		// remove timeout for mute if it exists on that user
+		if (this._mutingTimeouts.get(keyMap)) {
+			clearTimeout(this._mutingTimeouts.get(keyMap));
+			this._mutingTimeouts.delete(keyMap);
+		}
+
 		this.server.emit('userBanned', {id: data.channelId, userId: data.userId});
 	}
 
@@ -132,16 +160,44 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	}
 
 	@SubscribeMessage('muteUserFromChannel')
-	async muteUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
+	async muteUserFromChannel(@MessageBody() data: MutingUserDTO): Promise<void> 
 	{
 		await this.chatService.muteUserFromChannel(data.userId, data.channelId);
-		this.server.emit('userMuted', {id: data.channelId, userId: data.userId});
+
+		const userToMute: User = await this.chatService.getUser(data.userId);
+		const channel: Channel = await this.chatService.getChannel(data.channelId);
+
+		this.startTimeoutForMuting(userToMute, channel, data.time);
+		this.server.emit('userMuted', {id: channel.channel_id, userId: userToMute.id});
+	}
+
+	startTimeoutForMuting(userToMute: User, channel: Channel, time: DurationDTO): void {
+
+		// in milliseconds
+		const expirationBanTime: number = (time.days * 86400 + time.hours * 3600 + time.minutes * 60 + time.seconds) * 1000;
+		// creating unique key: combination of userID (banned) and channelID
+		const keyMap: string = `${channel.channel_id}-${userToMute.id}`;
+
+		this._mutingTimeouts.set(keyMap, setTimeout(() => {
+			this.unmuteUserFromChannel({userId: userToMute.id, channelId: channel.channel_id});
+
+			const keyToRemove: string = `${channel.channel_id}-${userToMute.id}`;
+			this._mutingTimeouts.delete(keyToRemove);
+		}, expirationBanTime));
 	}
 
 	@SubscribeMessage('unmuteUserFromChannel')
 	async unmuteUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
 		await this.chatService.unmuteUserFromChannel(data.userId, data.channelId);
+
+		const keyMap: string = `${data.channelId}-${data.userId}`;
+		// remove timeout for mute if it exists on that user
+		if (this._mutingTimeouts.get(keyMap)) {
+			clearTimeout(this._mutingTimeouts.get(keyMap));
+			this._mutingTimeouts.delete(keyMap);
+		}
+
 		this.server.emit('userUnmuted', {id: data.channelId, userId: data.userId});
 	}
 
