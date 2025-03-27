@@ -64,7 +64,7 @@ export class AuthController {
 	}
 
 	@Post('verify-2fa')
-	@UseGuards(AuthGuard)
+	// @UseGuards(AuthGuard)
 	async validate2FA(@Body() body: { tempCode: string }, @Req() req, @Res() res: Response) {
 		await this.authService.validate2FA(body.tempCode, req, res);
 	}

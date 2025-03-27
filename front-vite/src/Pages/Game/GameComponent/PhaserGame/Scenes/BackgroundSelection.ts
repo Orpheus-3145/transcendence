@@ -68,10 +68,10 @@ export default class BackgroundSelectionScene extends BaseScene {
 
 		try {
 			const url = `${import.meta.env.URL_BACKEND}/users/profile/setGameAntimation/${intraId}/${animationSelected}`;
-      await axios.post(url);
-    } catch (error) {
-			this.switchScene('Error', { trace: `failed to updated animation for user: ${error}`});
-    }
+      		await axios.post(url, {}, {withCredentials: true});
+		} catch (error) {
+				this.switchScene('Error', { trace: `failed to updated animation for user: ${error}`});
+		}
 		// update the registry with the new choice
 		const user2update: User = this.registry.get('user42data');
 		user2update.gameAnimation = animationSelected;

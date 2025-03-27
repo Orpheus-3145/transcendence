@@ -19,30 +19,29 @@ declare global {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
- constructor(
-		private readonly config: ConfigService,
-		private readonly userService: UsersService,
-		private readonly logger: AppLoggerService,
-		private readonly thrower: ExceptionFactory,
-	) 
-	{
-		this.logger.setContext(AuthGuard.name);
+	constructor(
+			private readonly config: ConfigService,
+			private readonly userService: UsersService,
+			private readonly logger: AppLoggerService,
+			private readonly thrower: ExceptionFactory,
+		) 
+		{
+			this.logger.setContext(AuthGuard.name);
+		}
+
+	async canActivate(
+		context: ExecutionContext,
+	): Promise<boolean> {
+		const request = context.switchToHttp().getRequest();
+		const response = context.switchToHttp().getResponse();
+		await this.validateUser(request, response);
+		return true;
 	}
 
-  async canActivate(
-    context: ExecutionContext,
-  ): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-	const response = context.switchToHttp().getResponse();
-    await this.validateUser(request, response);
-	return true;
-  }
-
-
-	// Maybe think about adding some of this inside a middleware guard
 	async validateUser(@Req() req: Request, @Res() res: Response) {
 		const twoFAToken = req.cookies['2fa-token'];
 		if (twoFAToken) {
+			// This part is to tell the frontend to redirect to the 2fa page where the user can input code
 			return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
 		}
 
@@ -99,14 +98,11 @@ export class AuthGuard implements CanActivate {
 			// res.redirect(this.config.get<string>('URL_FRONTEND_LOGIN'));
 			this.thrower.throwSessionExcp(
 				`User not found`,
-				// `${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
-				"AuthGuard",
+				`${AuthGuard.name}.${this.constructor.prototype.validate.name}()`,
+				// "AuthGuard"
 				HttpStatus.NOT_FOUND,
 			);
 		}
 		req.validatedUser = user as User;
-
-		// Success
-		// res.status(200).json({ user: new UserDTO(user) });
 	}
 }
