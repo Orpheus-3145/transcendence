@@ -487,7 +487,7 @@ useEffect(() => {
 				socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
 			}
 	
-		}, [selectedChannel, user]);
+		}, []);
 
 
 

@@ -86,6 +86,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		const handleUserJoinedChannel = (response) => {
 			if (!selectedChannel)
 				return;
+
 			if (userInChannel(user.id, selectedChannel)){
 				const newUser: UserProps = {
 					id: response.user_id,
@@ -105,7 +106,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		return () => {
 			socket.off('joinedChannel', handleUserJoinedChannel);
 		}
-	}, [settings, user]);
+	}, [user]);
 
 	useEffect(() => {
 		const handleUserJoinedAvailableChannel = (response) => {
