@@ -7,9 +7,14 @@ export default class ParticleSystem extends BaseAnimation {
 
 	constructor(scene: Phaser.Scene) {
 		super(scene);
+		window.addEventListener("resize", this.handleResize.bind(this)); 
 	}
 
 	create(): void {
+		this.createParticles();
+	}
+
+	createParticles(): void {
 		const n_particles = this.scene.scale.width / 1.5;
 		const radius = this.scene.scale.width / this.scene.scale.height * 2;
 		this.createCircleTexture(this._textureName, radius);
@@ -17,7 +22,7 @@ export default class ParticleSystem extends BaseAnimation {
 			this.createBouncingParticle();
 		}
 	}
-
+	
 	createBouncingParticle(): void {
 		const x = Phaser.Math.Between(0, this.scene.scale.width);
 		const y = Phaser.Math.Between(0, this.scene.scale.height);
@@ -25,8 +30,7 @@ export default class ParticleSystem extends BaseAnimation {
 		const particle = this.scene.physics.add.sprite(x, y, this._textureName);
 	
 		particle.setVelocity(Phaser.Math.Between(-20, 20), Phaser.Math.Between(-20, 20));
-		particle.setBounce(1); // Full bounce effect
-		particle.setCollideWorldBounds(true); // Bounce off walls
+		particle.setBounce(1);
 		particle.setScale(Phaser.Math.FloatBetween(0.5, 1));
 
 		this.particles.push(particle);
@@ -35,6 +39,11 @@ export default class ParticleSystem extends BaseAnimation {
 	// Remove the ball stuff the the disconneted error persists
 	update(): void {
 		this.updateParticleInteractions();
+	}
+
+	handleResize(): void {
+		this.destroyParticles();
+		this.createParticles();
 	}
 
 	updateParticleInteractions(): void {
@@ -70,19 +79,20 @@ export default class ParticleSystem extends BaseAnimation {
 			// Ensure minimum movement to keep floating
 			if (Math.abs(newVx) < minSpeed) newVx = Phaser.Math.FloatBetween(-minSpeed, minSpeed);
 			if (Math.abs(newVy) < minSpeed) newVy = Phaser.Math.FloatBetween(-minSpeed, minSpeed);
-
-			// Cap max speed
-			// newVx = Phaser.Math.Clamp(newVx, -maxSpeed, maxSpeed);
-			// newVy = Phaser.Math.Clamp(newVy, -maxSpeed, maxSpeed);
-
 			particle.setVelocity(newVx, newVy);
 		});
 	}
 
-	destroy(): void {
+	destroyParticles(): void {
 		this.particles.forEach(
 			(particle: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => particle.destroy()
 		);
+		this.particles.length = 0;
+	}
+	
+	destroy(): void {
+		this.destroyParticles();
+		this.scene.scale.off('resize', this.handleResize, this);
 	}
 
 
