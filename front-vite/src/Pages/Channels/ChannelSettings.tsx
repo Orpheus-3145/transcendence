@@ -72,7 +72,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				setLabel("User already added!");
 				return ;
 			}
-			
+
 			const data = {
 				channel_id: selectedChannel.id,
 				user_id: tmp.id,
@@ -81,7 +81,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			};
 
 			socket.emit('joinChannel', data);
-			
+
 			setFriendName('');
 			setLabel("User added!");
 		}
@@ -90,6 +90,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	useEffect(() => {
 		const handleUserJoinedChannel = (response) => {
 			if (!selectedChannel)
+				return;
+
+			if (selectedChannel.id != response.channelDto.id)
 				return;
 
 			if (userInChannel(user.id, selectedChannel)){
@@ -102,7 +105,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					// icon: <Avatar src={tmp.image}/>
 					icon: <PersonAddIcon />
 				};
-				
+
 				setSettings({ ...settings, users: [...settings.users, newUser] });
 			}
 		}
@@ -117,6 +120,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		const handleUserJoinedAvailableChannel = (response) => {
 			if (!selectedChannel)
 				return;
+			if (selectedChannel.id != response.channel_id)
+				return;
 			if (userInChannel(user.id, selectedChannel)){
 				const newUser: UserProps = {
 					id: response.user_id,
@@ -128,16 +133,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				};
 				setSettings({ ...settings, users: [...settings.users, newUser] });
 			}
-			
+
 		}
 		socket.on('joinedAvailableChannel', handleUserJoinedAvailableChannel);
-		
+
 		return () => {
 			socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
 		}
 	}, [user, settings, selectedChannel]);
-		
-////////////////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////////////////
 
 	const handleKickFriend = (user: UserProps) =>
 	{
@@ -187,7 +192,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		return () => {
 			socket.off('userBanned', updateSettings);
 		};
-	}, [selectedChannel, settings, user]);	
+	}, [selectedChannel, settings, user]);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -203,7 +208,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				setSettings({...settings, banned: updatedUsers});
 			}
 		}
-		
+
 		socket.on('userUnbanned', updateSettings);
 
 		return () => {
@@ -228,9 +233,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				setSettings({ ...settings, muted: tmp });
 			}
 		}
-				
+
 		socket.on('userMuted', updateSettings)
-	
+
 		return () => {
 			socket.off('userKicked', updateSettings)
 		};
@@ -250,7 +255,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				setSettings({ ...settings, muted: tmp });
 			}
 		}
-					
+
 		socket.on('userUnmuted', updateSettings);
 
 		return () => {
@@ -266,14 +271,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 			channel_id: selectedChannel.id,
 			new_role: role === UserRoles.admin ? UserRoles.member : UserRoles.admin,
 		};
-		
+
 		socket.emit('changeUserRole', data);
 
 		socket.once('error', (error) => {
 			console.error(error.message);
 		});
 	};
-	
+
 	useEffect(() => {
 		const handleRoleChanged = (response) => {
 			// console.log('User role changed (settings) to ', response.new_role);
@@ -282,7 +287,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		};
 
 		socket.on('userRoleChanged', handleRoleChanged);
-		
+
 		return () => {
 			socket.off('userRoleChanged', handleRoleChanged);
 		};
@@ -297,7 +302,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		};
 
 		socket.on('privacyChanged', handlePrivacyChanged);
-		
+
 		return () => {
 			socket.off('privacyChanged', handlePrivacyChanged);
 		};
@@ -312,12 +317,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		});
 
 	}
-	
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 	const handleDeleteChannel = (channel_id: number) => {
 		socket.emit('deleteChannel', channel_id);
-	
+
 		socket.once('error', (error) => {
 			console.error(error.message);
 		});
@@ -333,13 +338,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		else {
 			setIsSettingsView(false);
 			setSelectedChannel(null);
-	
+
 			const data = {
 				user_id: user.id,
 				user_name: user.nameNick,
 				channel_id: selectedChannel.id,
 			};
-	
+
 			socket.emit('leaveChannel', data);
 
 			socket.once('leavingChannelError', (error) => {
@@ -353,11 +358,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 	useEffect(() => {
 		const handleUserLeftChannel = (response: {channelDto: ChatRoom, userId: number}) => {
 			if (userInChannel(user.id, selectedChannel)) {
-				// console.log(`User left channel (settings): ${JSON.stringify(response)}`);
 				if (!response.channelDto) {
 					return;
 				}
-				
+
+				if (selectedChannel.id != response.channelDto.id)
+					return;
+
 				setSettings({
 					...settings,
 					owner: response.channelDto.settings.owner || settings.owner,
@@ -370,16 +377,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				});
 			}
 		};
-	
+
 		socket.on('leftChannel', handleUserLeftChannel);
-	
+
 		return () => {
 			socket.off('leftChannel', handleUserLeftChannel);
 		};
 	}, [settings]);
-	
+
 ////////////////////////////////////////////////////////////////////////////////////////
-	
+
 	const fetchbanned = async (bannedId: string) => {
 		const banned = await fetchUserMessage(bannedId);
 		setbanned((prev) => new Map(prev).set(bannedId, banned));
@@ -430,7 +437,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					<Button variant={settings?.type === ChannelType.private ? 'contained' : 'outlined'} onClick={() => handleChangePrivacy(ChannelType.private, null)}>Private</Button>
 					<Button variant={settings?.type === ChannelType.protected ? 'contained' : 'outlined'} onClick={() => setSettings({ ...settings, type: ChannelType.protected, password: ''})}>Password Protected</Button>
 					</Stack>
-					
+
 
 					{/* Password field for password protected */}
 					{settings?.type === ChannelType.protected && (
@@ -593,7 +600,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							</Stack>
 						))}
 						</Stack>
-					</Box>	
+					</Box>
 				</Box>
 			)
 		}

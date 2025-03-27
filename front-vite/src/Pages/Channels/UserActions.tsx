@@ -118,7 +118,7 @@ const UserActions = ({
 
 		const ret: MutingInterface = {
 			userId: user.id,
-			channelId: selectedChannel,
+			channelId: selectedChannel.id,
 			time: duration
 		}
 		handleMuteFriend(ret);

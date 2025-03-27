@@ -162,7 +162,7 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	@SubscribeMessage('muteUserFromChannel')
 	async muteUserFromChannel(@MessageBody() data: MutingUserDTO): Promise<void> 
 	{
-		await this.chatService.muteUserFromChannel(data.channelId, data.userId);
+		await this.chatService.muteUserFromChannel(data.userId, data.channelId);
 
 		const userToMute: User = await this.chatService.getUser(data.userId);
 		const channel: Channel = await this.chatService.getChannel(data.channelId);
@@ -190,6 +190,14 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 	async unmuteUserFromChannel(@MessageBody() data: {userId: number, channelId: number}): Promise<void> 
 	{
 		await this.chatService.unmuteUserFromChannel(data.userId, data.channelId);
+
+		const keyMap: string = `${data.channelId}-${data.userId}`;
+		// remove timeout for mute if it exists on that user
+		if (this._mutingTimeouts.get(keyMap)) {
+			clearTimeout(this._mutingTimeouts.get(keyMap));
+			this._mutingTimeouts.delete(keyMap);
+		}
+
 		this.server.emit('userUnmuted', {id: data.channelId, userId: data.userId});
 	}
 
