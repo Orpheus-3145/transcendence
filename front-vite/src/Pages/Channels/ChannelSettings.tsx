@@ -156,7 +156,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		return () => {
 			socket.off('userKicked', updateSettings)
 		};
-	}, [settings, selectedChannel])
+	}, [settings, selectedChannel]);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -206,15 +206,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-	const handleMuteFriend = (user: UserProps) => 
-	{
+	const handleMuteFriend = (user: UserProps) => {
 		socket.emit('muteUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
+	};
 
-		const updateSettings = (data: dataAction) =>
-		{
-			if (selectedChannel.id === data.id)
-			{
-				const tmp: string[] = settings.muted;
+	useEffect(() => {
+		const updateSettings = (data: dataAction) => {
+			if (selectedChannel.id === data.id) {
+				const tmp: string[] = [...settings.muted];
 				if (!settings.muted.find((item: string) => item === data.userId.toString()))
 				{
 					tmp.push(data.userId.toString());
@@ -222,27 +221,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 				setSettings({ ...settings, muted: tmp });
 			}
 		}
-			
+				
 		socket.on('userMuted', updateSettings)
-	};
+	
+		return () => {
+			socket.off('userKicked', updateSettings)
+		};
+	}, [settings, selectedChannel]);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-	const handleUnmuteFriend = (user: UserProps) => 
-	{
+	const handleUnmuteFriend = (user: UserProps) => {
+		console.log('Unmuted in settings')
 		socket.emit('unmuteUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
+	};
 
-		const updateSettings = (data: dataAction) =>
-		{
-			if (selectedChannel.id === data.id)
-			{
+	useEffect(() => {
+		const updateSettings = (data: dataAction) => {
+			if (selectedChannel.id === data.id) {
 				const tmp: string[] = settings.muted.filter((item: string) => item !== data.userId.toString());
 				setSettings({ ...settings, muted: tmp });
 			}
 		}
-				
-		socket.on('userUnmuted', updateSettings)
-	};
+					
+		socket.on('userUnmuted', updateSettings);
+
+		return () => {
+			socket.off('userKicked', updateSettings)
+		};
+	}, [settings, selectedChannel])
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -524,7 +531,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						</Stack>
 						)}
 						{(selectedChannel.settings.owner === user.nameNick ||
-							userIsAdmin(user.nameNick, selectedChannel)) && isUserMuted(_user) === true && (
+							userIsAdmin(user.nameNick, selectedChannel)) && isUserMuted(_user) === true && !isUserMuted(user) && (
 							<Stack direction="row" spacing={0.3}>
 								<Button variant="contained" color="error" size="small" onClick={() => handleUnmuteFriend(_user)}>Unmute</Button>
 							</Stack>	

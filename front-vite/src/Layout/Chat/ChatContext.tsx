@@ -258,8 +258,11 @@ useEffect(() => {
 			});
 		}
 
+		
 		const handleUserUnmutedChannel = (data: dataAction) => 
 		{
+			console.log('Unmuted in context')
+
 			setChatProps((prevState: ChatProps) => {
 				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
 				if (!channel)
@@ -303,8 +306,6 @@ useEffect(() => {
 		}, []);
 
 //////////////////////////////////////////////////////////////////////
-
-
 
 	useEffect(() => {
 		const handleRoleChanged = (response) => {
