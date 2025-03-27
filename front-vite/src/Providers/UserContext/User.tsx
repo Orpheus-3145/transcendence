@@ -48,218 +48,143 @@ export const useUser = () => {
 };
 
 export async function getAll(): Promise<User[]> {
-	const request = new Request(BACKEND_URL + '/users/profile/getAll', {
-		method: "GET",
-	});
-
-	try
-	{
-		const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as User[]);
-		return response;
-	}
-	catch (error)
-	{
-		console.error("ERROR: User array in getAll() not found!");
-	}
+	const response = await axios.get(BACKEND_URL + '/users/profile/getAll', {withCredentials: true});
+	if (response.status != 200)
+		throw new Error("Error: User array in getAll() not found");
+	return response.data;
 }
 
 export async function getUserFromDatabase(username: string, navigate: (path: string) => void): Promise<User|void>
 {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username, {
-		method: "GET",
-	});
-
-	try
-	{
-		const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as User);
-		return response;
-	}
-	catch (error)
-	{
-		console.error("ERROR: User not found!", error);
+	const response = await axios.get(BACKEND_URL + '/users/profile/' + username, {withCredentials: true});
+	if (response.status != 200) {
+		throw new Error("Error:  User not found");
 		navigate('/404');
 	}
+	return response.data
 }
 
 export async function fetchUser(username: string): Promise<User | null>
 {
-	const request = new Request(BACKEND_URL + '/users/profile/fetchUser/' + username, {
-		method: "GET",
-	});
-	const response = await fetch(request);
+	const response = await axios.get(BACKEND_URL + '/users/profile/fetchUser/' + username, {withCredentials: true});
 
-	const text = await response.text();
-	if (!text) {
-		return null;
-	}
+	if (!response.data)
+		throw new Error('No found');
 
-	return JSON.parse(text) as User;
-
+	return response.data;
 }
 
 export async function setNewNickname(username:string, nickname:string): Promise<string> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/newnick', {
-		method: "POST",
-		headers: {
-		'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({ newname: nickname }),
+	const response = await axios.post(BACKEND_URL + '/users/profile/' + username + '/newnick', 
+			JSON.stringify({ newname: nickname }),  {
+			method: "POST",
+			headers: {
+			'Content-Type': 'application/json',
+			},
+			withCredentials: true,
 	});
-
-	const response = await fetch(request)
-		.then((x) => x.text())
 
 	var str: string = "";
 
-	if (response != "")
-		str = "Error: " + response;
+	if (response.status != 201)
+		str = "Error: " + response.statusText
 	return (str);
 }
 
-export async function fetchFriend(friend:string): Promise<User> {
-	const request = new Request(BACKEND_URL + '/users/profile/friend/' + friend, {
-		method: "GET",
-	});
+export async function fetchFriend(friend:string): Promise<User|null> {
+	const response = await axios.get(BACKEND_URL + '/users/profile/friend/' + friend, {withCredentials: true});
 
-	const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as User)
-
-	return response;
+	return response.data;
 }
 
 export async function fetchOpponent(intraName:string): Promise<User> {
-	const request = new Request(BACKEND_URL + '/users/profile/opponent/' + intraName, {
-		method: "GET",
-	});
+	const response = await axios.get(BACKEND_URL + '/users/profile/opponent/' + intraName, {withCredentials: true});
 
-	const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as User)
+	if (!response.data)
+		throw new Error('No opponent found');
 
-	return response;
+	return response.data;
 }
 
 export async function fetchUserMessage(id:string): Promise<User> {
-	const request = new Request(BACKEND_URL + '/users/profile/message/' + id, {
-		method: "GET",
-	});
+	const response = await axios.get(BACKEND_URL + '/users/profile/message/' + id, {withCredentials: true});
 
-	const response = await fetch(request)
-		.then((raw) => raw.json())
-		.then((json) => json as User)
+	if (!response.data)
+		throw new Error('No user message found');
 
-	return response;
+	return response.data;
 }
 
 export async function removeFriend(username:string, friend:string): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/remove/' + friend, {
-		method: "GET",
-	});
+	const response = await axios.get(BACKEND_URL + '/users/profile/' + username + '/friend/remove/' + friend, {withCredentials: true});
 
-	const response = await fetch(request)
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO REMOVE FRIEND!");
+	if (!response.data)
+		throw new Error('No friend found');
+
+	return response.data;
 }
 
 export async function blockFriend(username:string, friend:string): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/block/' + friend, {
-		method: "GET",
-	});
+	const response = await axios.get(BACKEND_URL + '/users/profile/' + username + '/friend/block/' + friend, {withCredentials: true});
 
-	const response = await fetch(request);
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO BLOCK USER!");
+	if (!response.data)
+		throw new Error('Error: failed to block user');
 }
 
 export async function unBlockFriend(username:string, friend:string): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/friend/unBlock/' + friend, {
-		method: "GET",
-	});
+	const response = await axios.get(BACKEND_URL + '/users/profile/' + username + '/friend/unBlock/' + friend, {withCredentials: true});
 
-	const response = await fetch(request);
-	if (response.status == 404)
-		console.log("ERROR: FAILED TO BLOCK USER!");
+	if (response.status === 404)
+		throw new Error('Error: failed to unblock user');
 }
 
 export async function changePFP(username:string, image:FormData): Promise<string> {
-	const request = new Request(BACKEND_URL + '/users/profile/' + username + '/changepfp', {
-		method: "POST",
-		body: image,
-	});
+	const response = await axios.post(BACKEND_URL + '/users/profile/' + username + '/changepfp', image, {withCredentials: true});
 
-	try
-	{
-		const response = await fetch(request)
-			.then((x) => x.text())
-		return (response);
-	}
-	catch (error)
-	{
-		console.error("ERROR: MatchRatio[] not found!" + error);
-	}
+	if (!response.data)
+		return 'Error setting profile picture'
+
+	return response.data
 }
 
 export async function fetchRatios(userProfile: User): Promise<MatchRatio[]>
 {
-	try {
-		const response = await axios.get<MatchRatio[]>(`${BACKEND_URL}/users/profile/fetchRatio/${userProfile.intraId.toString()}`, {
-			withCredentials: true,
-		});
-		const matches: MatchRatio[] = response.data;
-		return matches;
-	} catch (error)
-		{
-			console.error("ERROR: fetchRatios failed!");
-	}
+	const response = await axios.get<MatchRatio[]>(`${BACKEND_URL}/users/profile/fetchRatio/${userProfile.intraId.toString()}`, {
+		withCredentials: true,
+	});
+
+	if (response.status != 200)
+		throw new Error('Error: failed fetching ratios');	
+
+	return response.data;
 }
 
 export async function fetchLeaderboard(): Promise<LeaderboardData[][]>
 {
-	try {
-		const response = await axios.get<LeaderboardData[][]>(`${BACKEND_URL}/users/fetchLeaderboard`, {
-			withCredentials: true,
-		});
-		const leaderBoard: LeaderboardData[][] = response.data;
-		return leaderBoard;
-	} catch (error) {
-		console.error("ERROR: Leaderboard[] not found!" + error);
-	}	
+	const response = await axios.get(`${BACKEND_URL}/users/fetchLeaderboard`, {withCredentials: true});
+	if (response.status != 200)
+		throw new Error("Error: fetch leaderboard failed")
+	return response.data;
 }
 
 export async function fetchMatchData(user: User): Promise<MatchData[]> {
-
-	try {
-		const response = await axios.get<MatchData[]>(`${BACKEND_URL}/users/profile/${user.intraId.toString()}/matches`, {
-			withCredentials: true,
-		});
-		const matches: MatchData[] = response.data;
-		return matches;
-	} catch (error) {
-		console.error("ERROR: fetchMatchData failed!");
-	}
+	const response = await axios.get<MatchData[]>(`${BACKEND_URL}/users/profile/${user.intraId.toString()}/matches`, {withCredentials: true});
+	if (response.status != 200)
+		throw new Error('Error: failed fetching match data');	
+	return response.data;
 }
 
 export async function setUserStatus(id: string): Promise<void> {
-	const request = new Request(BACKEND_URL + '/users/profile/logout', {
+	const response = await axios.post(BACKEND_URL + '/users/profile/logout', 
+		JSON.stringify({ id }),  
+		{
 			method: "POST",
 			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ id }),
-		});
-	
-		try
-		{
-			await fetch(request);
-	
-		}
-		catch (error)
-		{
-			console.error("ERROR: changin user status failed!" + error);
-		}
+			'Content-Type': 'application/json',
+		},
+		withCredentials: true,
+	});
+	if (response.status != 201) {
+		throw new Error('Error: changing user status failed');
+	}
 }

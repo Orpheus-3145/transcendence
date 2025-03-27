@@ -32,7 +32,7 @@ export default class ErrorScene extends BaseScene {
 			'Home',
 			() => this.switchScene('MainMenu'),
 			20,
-			'#dd0000'
+			'#00ff00'
 		));
 	}
 

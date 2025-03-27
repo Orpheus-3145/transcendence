@@ -219,7 +219,7 @@ export default class ResultsScene extends BaseScene {
 		));
 	}
 
-	update(time: number, delta: number) {
+	update(time: number, delta: number): void {
 		super.update(time, delta);
 
 		if (time - this._lastUpdate >= 100) {

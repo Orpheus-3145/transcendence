@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, Body, UseFilters, FileTypeValidator } from '@nestjs/common';
+import { Controller, UseGuards, Get, Param, Post, HttpException, UploadedFile, UseInterceptors, Body, UseFilters, FileTypeValidator } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import User from '../entities/user.entity';
@@ -6,9 +6,11 @@ import { SessionExceptionFilter } from 'src/errors/exceptionFilters';
 import { AnimationSelected } from 'src/game/types/game.enum';
 import { UserStatus } from 'src/dto/user.dto';
 import { Express } from 'express';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('users')
 @UseFilters(SessionExceptionFilter)
+@UseGuards(AuthGuard)
 export class UsersController {
 
 	constructor( private readonly UserService: UsersService ) {}

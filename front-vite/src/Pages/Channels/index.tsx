@@ -473,7 +473,16 @@ const ChannelsPage: React.FC = () => {
 		inviteToGame(user.id.toString(), otherUser.id.toString(), value);
 	}
 
-	const UserLine: React.FC<{eveuser: User}> = ({user}) => {
+	const UserLine: React.FC<{eveuser: User}> = ({item}) => {
+		if (user.blocked.find((tmp: string) => tmp === item.id.toString()))
+		{
+			return (<Stack></Stack>);
+		}
+		if (item.blocked.find((tmp: string) => tmp === user.id.toString()))
+		{
+			return (<Stack></Stack>);
+		}
+
 		return (
 			<Stack
 				direction={'row'}
@@ -497,8 +506,8 @@ const ChannelsPage: React.FC = () => {
 				}}
 			>
 				<AccountCircleIcon sx={{ marginRight: 1}}/>
-				<Typography noWrap onClick={() => {(navigate(`/profile/` + user.id.toString()))}} sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-					{user.nameNick}
+				<Typography noWrap onClick={() => {(navigate(`/profile/` + item.id.toString()))}} sx={{ maxWidth: '78%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+					{item.nameNick}
 		 		 </Typography>
 				<Box sx={{ flexGrow: 1 }} /> 
 				<Tooltip title='Send game invite' arrow>
@@ -532,7 +541,7 @@ const ChannelsPage: React.FC = () => {
 		<Stack gap={1}>
 			{users
 				.filter((item: User) => item.intraId !== user.intraId)
-				.map((item: User) => <UserLine key={item.id} user={item} />)}
+				.map((item: User) => <UserLine key={item.id} item={item} />)}
 		</Stack>
 	);
 
@@ -586,21 +595,24 @@ const ChannelsPage: React.FC = () => {
 
 	const showMessages =  (msg: ChatMessage, index: number) =>
 	{
-		var user = userMessage.get(msg.userId.toString());
-		if (!user) {
+		var tmp = userMessage.get(msg.userId.toString());
+		if (!tmp) {
 			fetchUser(msg.userId.toString());
 			return <Stack>Loading...</Stack>;
 		}
 
+		if (user.blocked.find((item: string) => item === tmp.id.toString()))
+			return (<Stack></Stack>);
+	
 		return (
 				<Box
 					key={index}
 					sx={{display: "flex", alignItems: "center", mb: 3}}
 				>
 					<Avatar
-						onClick={()=> (navigate(`/profile/${user.id.toString()}`))}
+						onClick={()=> (navigate(`/profile/${tmp.id.toString()}`))}
 						sx={{cursor: 'pointer', mr: 2}}
-						src={user.image}
+						src={tmp.image}
 					/>
 					<Typography 
 						sx={{ whiteSpace: "normal",
@@ -609,7 +621,7 @@ const ChannelsPage: React.FC = () => {
 							maxWidth: "70%"}}
 						key={index}
 					>
-						{`(${user.nameNick}): `}
+						{`(${tmp.nameNick}): `}
 						{msg.message}
 					</Typography>
 				</Box>
