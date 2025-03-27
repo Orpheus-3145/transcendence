@@ -93,7 +93,8 @@ export class ChatGateway implements OnGatewayDisconnect, OnGatewayConnection {
 		const {channel_id, name, user_id, email} = data;
 		await this.chatService.addUserToChannel(channel_id, user_id );
 		client.join(channel_id.toString());
-		this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { user_id, channel_id, name, email });
+		this.server.emit('joinedAvailableChannel', { user_id, channel_id, name, email });
+		// this.server.to(channel_id.toString()).emit('joinedAvailableChannel', { user_id, channel_id, name, email });
 	}
 
 	@SubscribeMessage('leaveChannel')

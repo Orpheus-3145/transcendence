@@ -84,10 +84,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	useEffect(() => {
 		const handleUserJoinedChannel = (response) => {
-			if (!selectedChannel) {
+			if (!selectedChannel)
 				return;
-			} 
-
 			if (userInChannel(user.id, selectedChannel)){
 				const newUser: UserProps = {
 					id: response.user_id,
@@ -107,10 +105,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		return () => {
 			socket.off('joinedChannel', handleUserJoinedChannel);
 		}
-	}, [settings]);
+	}, [settings, user]);
 
 	useEffect(() => {
-			const handleUserJoinedAvailableChannel = (response) => {
+		const handleUserJoinedAvailableChannel = (response) => {
+			if (!selectedChannel)
+				return;
+			if (userInChannel(user.id, selectedChannel)){
 				const newUser: UserProps = {
 					id: response.user_id,
 					name: response.name,
@@ -120,14 +121,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					icon: <PersonAddIcon />
 				};
 				setSettings({ ...settings, users: [...settings.users, newUser] });
-				
 			}
-			socket.on('joinedAvailableChannel', handleUserJoinedAvailableChannel);
 			
-			return () => {
-				socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
-			}
-		}, [settings]);
+		}
+		socket.on('joinedAvailableChannel', handleUserJoinedAvailableChannel);
+		
+		return () => {
+			socket.off('joinedAvailableChannel', handleUserJoinedAvailableChannel);
+		}
+	}, [settings, user]);
 		
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -150,14 +152,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	// const handleBanFriend = (user: UserProps) => 
 	// {
-	// 	// console.log(`channel id check: ${selectedChannel.id} - ${JSON.stringify(selectedChannel)}`)
 	// 	socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 	// 	const updateSettings = (data: dataAction) =>
 	// 	{
 	// 		if (selectedChannel.id === data.id)
 	// 		{
 	// 			const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
-	// 			const tmp: string[] = settings.banned;
+	// 			const tmp: string[] = [...settings.banned];
 	// 			if (!settings.banned.find((item: string) => item === data.userId.toString()))
 	// 				tmp.push(data.userId.toString());
 	// 			setSettings({...settings, users: updatedUsers, banned: tmp});
@@ -171,20 +172,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		socket.emit('banUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 	};
 
-
 	useEffect(() => {
 		const updateSettings = (data: dataAction) => {
-			if (selectedChannel.id === data.id) {
-				if (selectedChannel.id === data.id)
-				{
+			// console.log('Banned in settings');
+			if (selectedChannel?.id === data.id) {
 					const updatedUsers = settings.users.filter((item: UserProps) => item.id !== data.userId);
-					const tmp: string[] = settings.banned;
+					const tmp: string[] = [...settings.banned];
 					if (!settings.banned.find((item: string) => item === data.userId.toString()))
 						tmp.push(data.userId.toString());
 					setSettings({...settings, users: updatedUsers, banned: tmp});
 					if (data.userId === user.id)
-					setSelectedChannel(null);
-				}
+						setSelectedChannel(null);
 			}
 		};
 
@@ -193,7 +191,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		return () => {
 			socket.off('userBanned', updateSettings);
 		};
-	}, [user]);	
+	}, [selectedChannel, settings, user]);	
 
 	const handleUnbanFriend = (user: User) => 
 	{
