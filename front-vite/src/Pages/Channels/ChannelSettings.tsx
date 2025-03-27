@@ -188,21 +188,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-	const handleUnbanFriend = (user: User) => 
-	{
+	const handleUnbanFriend = (user: User) => {
 		socket.emit('unbanUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 
-		const updateSettings = (data: dataAction) =>
-		{
-			if (selectedChannel.id === data.id)
-			{
+	};
+
+	useEffect(() => {
+		const updateSettings = (data: dataAction) => {
+			if (selectedChannel.id === data.id) {
 				const updatedUsers = settings.banned.filter((item: string) => item !== data.userId.toString());
 				setSettings({...settings, banned: updatedUsers});
 			}
 		}
 		
-		socket.on('userUnbanned', updateSettings)
-	};
+		socket.on('userUnbanned', updateSettings);
+
+		return () => {
+			socket.off('userUnbanned', updateSettings);
+		};
+	}, [settings]);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
