@@ -190,12 +190,11 @@ export default class SimulationService {
 		this.gameSetupInterval = null;
 
 		this.gameStateInterval = setInterval(() => this.gameIteration(), this.frameRateUpdate);
-
-		// setting timers for idle 
+	
 		this.idlePlayer1Interval = setTimeout(() => this.interruptGame(`${this.player1.nameNick} disconnected`), this.idleTime);
 		if (this.mode === GameMode.multi)
 			this.idlePlayer2Interval = setTimeout(() => this.interruptGame(`${this.player2.nameNick} disconnected`), this.idleTime);
-
+		
 		this.resetBall();
 
 		// if at least one powerup is selected start spawning timer
@@ -230,6 +229,16 @@ export default class SimulationService {
 			}
 		} catch (error) {
 			this.interruptGame(error.message);
+		}
+	}
+
+	updateIdleInterval(playerId: number): void {
+		if (this.player1.intraId === playerId) {
+			clearTimeout(this.idlePlayer1Interval);
+			this.idlePlayer1Interval = setTimeout(() => this.interruptGame(`${this.player1.nameNick} disconnected`), this.idleTime);
+		} else if (this.player2.intraId === playerId && this.mode === GameMode.multi) {
+			clearTimeout(this.idlePlayer2Interval);
+			this.idlePlayer2Interval = setTimeout(() => this.interruptGame(`${this.player2.nameNick} disconnected`), this.idleTime);
 		}
 	}
 
@@ -472,12 +481,12 @@ export default class SimulationService {
 	interruptGame(trace: string): void {
 
 		this.logger.error(`session [${this.sessionToken}] - interrupting simulation, error occurred: ${trace}`);
-		
+
 		if (this.player1)
-			this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game error - ${trace}`);
+			this.sendMsgToPlayer(this.player1.clientSocket, 'gameError', `Game error -\n${trace}`);
 
 		if (this.player2 && this.mode === GameMode.multi)
-			this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game error - ${trace}`);
+			this.sendMsgToPlayer(this.player2.clientSocket, 'gameError', `Game error -\n${trace}`);
 
 		this.stopEngine();
 		this.terminateSimulation();
@@ -593,15 +602,6 @@ export default class SimulationService {
 			playerIndex = (this.player1.nameNick === player.nameNick) ? 0 : 1;
 		else if (this.mode === GameMode.multi)		// for multiplayer check client.id, cause in development players can use the same intra42 user
 			playerIndex = (this.player1.clientSocket.id === player.clientSocket.id) ? 0 : 1;
-
-		// got new update, reset timer
-		if (playerIndex === 0) {
-			clearTimeout(this.idlePlayer1Interval);
-			this.idlePlayer1Interval = setTimeout(() => this.interruptGame(`${this.player1.nameNick} disconnected`), this.idleTime);
-		} else if (playerIndex === 1 && this.mode === GameMode.multi) {
-			clearTimeout(this.idlePlayer2Interval);
-			this.idlePlayer2Interval = setTimeout(() => this.interruptGame(`${this.player2.nameNick} disconnected`), this.idleTime);
-		}
 
 		this.handlePowerUp(playerIndex);
 		const delta = (direction === PaddleDirection.up) ? this.paddleSpeed[playerIndex] * -1 : this.paddleSpeed[playerIndex];

@@ -21,7 +21,6 @@ export default class RoomManagerService {
 		private readonly config: ConfigService,
 		private readonly logger: AppLoggerService,
 		@Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
-		// private readonly userService: UsersService,
 		@Inject(forwardRef(() => ExceptionFactory)) private readonly thrower: ExceptionFactory,
 		@Inject('GAME_SPAWN') private readonly gameRoomFactory: (data: GameDataDTO) => SimulationService,
 	) {
@@ -62,6 +61,12 @@ export default class RoomManagerService {
 		const player: PlayingPlayer = gameRoom.getPlayerFromClient(client);
 
 		gameRoom.movePaddle(player, data.direction);
+	}
+
+	updateIdleInterval(data: PlayerDataDTO): void {
+	
+		const gameRoom: SimulationService = this.getRoom(data.sessionToken);
+		gameRoom.updateIdleInterval(data.playerId);
 	}
 
 	askForRematch(sessionToken: string, client: Socket): void {

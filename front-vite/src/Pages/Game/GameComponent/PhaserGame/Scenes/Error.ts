@@ -4,7 +4,7 @@ import BaseScene from '/app/src/Pages/Game/GameComponent/PhaserGame/Scenes/Base'
 
 
 export default class ErrorScene extends BaseScene {
-	private _errorTrace: string = '';
+	private errorInfo: TextWidget | null = null;
 
 	constructor() {
 		super({ key: 'Error' });
@@ -13,15 +13,16 @@ export default class ErrorScene extends BaseScene {
 	buildGraphicObjects(): void {
 		super.buildGraphicObjects();
 
+		this.errorInfo = new TextWidget(
+			this,
+			this.scale.width * 0.5,
+			this.scale.height * 0.4,
+			'',
+			18,
+			'#ff0000',
+		)
 		// show error description
-		this._widgets.push(
-			new TextWidget(
-				this,
-				this.scale.width * 0.5,
-				this.scale.height * 0.4,
-				this._errorTrace,
-				18,
-		));
+		this._widgets.push(this.errorInfo);
 
 		// go back home btn
 		this._widgets.push(new ButtonWidget(
@@ -35,4 +36,8 @@ export default class ErrorScene extends BaseScene {
 		));
 	}
 
+	create(data: { trace: string }) {
+		super.create();
+		this.errorInfo?.setText(data.trace);
+	}
 }

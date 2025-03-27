@@ -20,6 +20,7 @@ export default class GameScene extends BaseScene {
 	private _powerUpState!: PowerUpPosition | null;
 	private _gameStarted!: boolean;
 	private _keepConnectionOpen!: boolean;
+	private _lastUpdate: number = 1;				// for idle time
 	
 	private _gameSizeBackEnd!: GameSize;
 	private _widthRatio!: number;
@@ -130,6 +131,16 @@ export default class GameScene extends BaseScene {
 				direction: PaddleDirection.down,
 				sessionToken: this._sessionToken,
 			});
+
+		if (time - this._lastUpdate >= 1000) {
+			this._lastUpdate = time;
+			const playerData: PlayerData = {
+				playerId: this._id,
+				nameNick: this._nameNick,
+				sessionToken: this._sessionToken,
+			};
+			this.sendMsgToServer('playerIsActive', playerData);
+		}
 
 		// Update score
 		this._field.updateScore(this._gameState.score.p1, this._gameState.score.p2);
