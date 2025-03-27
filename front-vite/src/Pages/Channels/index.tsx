@@ -51,7 +51,6 @@ export const joinRoom = (roomId: number) => {
 	if (!joinedRooms.includes(roomId)) {
 	  socket.emit('joinRoom', roomId);
 	  joinedRooms.push(roomId);
-	//   console.log(`Joined room: ${roomId}`);
 	} 
 }
 

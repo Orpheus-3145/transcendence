@@ -11,6 +11,9 @@ import { prev } from 'cheerio/dist/commonjs/api/traversing';
 import { useNavigate } from 'react-router-dom';
 import { channel } from 'diagnostics_channel';
 import { joinRoom } from '../Channels/index';
+import UserActions from './UserActions';
+import { MutingInterface } from "../../Layout/Chat/InterfaceChat";
+
 
 interface SettingsModalProps {
     open: boolean;
@@ -28,7 +31,7 @@ interface SettingsModalProps {
 	setIsSettingsView: boolean
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ 
+export const SettingsModal: React.FC<SettingsModalProps> = ({
 	open,
 	onClose,
 	settings,
@@ -52,7 +55,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-	const handleAddFriend = async () => 
+	const handleAddFriend = async () =>
 	{
 		if (friendName.length > 0) {
 			var tmp: User | null = await fetchUser(friendName);
@@ -96,7 +99,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					role: UserRoles.member,
 					email: response.email,
 					password: '',
-					// icon: <Avatar src={tmp.image}/> 
+					// icon: <Avatar src={tmp.image}/>
 					icon: <PersonAddIcon />
 				};
 				
@@ -136,7 +139,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 		
 ////////////////////////////////////////////////////////////////////////////////////////
 
-	const handleKickFriend = (user: UserProps) => 
+	const handleKickFriend = (user: UserProps) =>
 	{
 		socket.emit('kickUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
 	};
@@ -210,8 +213,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-	const handleMuteFriend = (user: UserProps) => {
-		socket.emit('muteUserFromChannel', {userId: user.id, channelId: selectedChannel.id});
+	const handleMuteFriend = (user: MutingInterface) => {
+		socket.emit('muteUserFromChannel', user);
 	};
 
 	useEffect(() => {
@@ -404,7 +407,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 	let isUserMuted = (user: UserProps) =>
 	{
-		if (settings.muted.find((item) => String(item) === String(user.id))) 
+		if (settings.muted.find((item) => String(item) === String(user.id)))
 			return (true);
 		return (false);
 	}
@@ -440,9 +443,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						fullWidth
 						sx={{ mt: 2 }}
 					/>
-					<Button 
-					    variant="contained" 
-						sx= {{ mt: 1 }} 
+					<Button
+					    variant="contained"
+						sx= {{ mt: 1 }}
 					    onClick={() => passwordInput && handleChangePrivacy(ChannelType.protected, passwordInput)}
 					>
 					    Set Password
@@ -484,7 +487,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 					</Box>
 				</>
 				)}
-				{selectedChannel.settings.users.length > 1 && 
+				{selectedChannel.settings.users.length > 1 &&
 				((selectedChannel.settings.owner === user.nameNick) ? (
 					<Box sx={{display: 'flex'}}>
 						<Button
@@ -493,7 +496,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							sx={{ mt: 1, marginLeft: 'auto', minWidth: '155px' }}
 							>
 							Leave Channel
-						</Button> 
+						</Button>
 					</Box>) : (
 					<Box sx={{display: 'flex'}}>
 						<Button
@@ -514,8 +517,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 						<Stack direction="row" justifyContent="space-between" alignItems="center" key={_user.id}>
 						<Typography sx={{whiteSpace: 'pre-line'}} >
 								{_user.name?.length > 10 ? _user.name.slice(0, 9) + '...' : _user.name}
-								{/* {(userIsAdmin(_user.name, selectedChannel) || 
-									selectedChannel.settings.owner === _user.name) ? 
+								{/* {(userIsAdmin(_user.name, selectedChannel) ||
+									selectedChannel.settings.owner === _user.name) ?
 										'\n' :
 										' '} */}
 								{`\n(${_user.role})`}
@@ -525,20 +528,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							(user.nameNick !== _user.name) &&
 							(_user.role !== 'owner') &&
 							(isUserMuted(_user) === false) && (
-						<Stack direction="row" spacing={0.3}>
-							<Button sx={{width: '120px'}} variant="outlined" color="secondary" size="small" onClick={() => handleRoleChange(_user.id, _user.role)}>
-								{_user.role === UserRoles.admin ? 'Make Member' : 'Make Admin' }
-							</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleKickFriend(_user)}>Kick</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleBanFriend(_user)}>Ban</Button>
-							<Button variant="outlined" color="error" size="small" onClick={() => handleMuteFriend(_user)}>Mute</Button>
-						</Stack>
+							<UserActions
+								user={_user}
+								selectedChannel={selectedChannel}
+								handleRoleChange={handleRoleChange}
+								handleKickFriend={handleKickFriend}
+								handleBanFriend={handleBanFriend}
+								handleMuteFriend={handleMuteFriend}>
+							</UserActions>
 						)}
 						{(selectedChannel.settings.owner === user.nameNick ||
 							userIsAdmin(user.nameNick, selectedChannel)) && isUserMuted(_user) === true && !isUserMuted(user) && (
 							<Stack direction="row" spacing={0.3}>
 								<Button variant="contained" color="error" size="small" onClick={() => handleUnmuteFriend(_user)}>Unmute</Button>
-							</Stack>	
+							</Stack>
 						)}
 						</Stack>
 					))}
@@ -581,8 +584,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 							<Stack direction="row" justifyContent="space-between" alignItems="center" key={_user.id}>
 							<Typography sx={{whiteSpace: 'pre-line'}} >
 									{_user.name?.length > 10 ? _user.name.slice(0, 9) + '...' : _user.name}
-									{/* {(userIsAdmin(_user.name, selectedChannel) || 
-										selectedChannel.settings.owner === _user.name) ? 
+									{/* {(userIsAdmin(_user.name, selectedChannel) ||
+										selectedChannel.settings.owner === _user.name) ?
 											'\n' :
 											' '} */}
 									{` (${_user.role})`}
