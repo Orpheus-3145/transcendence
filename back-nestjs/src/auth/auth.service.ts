@@ -100,6 +100,7 @@ export class AuthService {
 
 	// Maybe think about adding some of this inside a middleware guard
 	async validateUser(req: Request, res: Response) {
+
 		const twoFAToken = req.cookies['2fa-token'];
 		if (twoFAToken) {
 			return res.status(200).json({ user: { id: 0, twoFAEnabled: true } });
@@ -131,8 +132,6 @@ export class AuthService {
 				`${AuthService.name}.${this.constructor.prototype.validate.name}()`,
 				HttpStatus.UNAUTHORIZED,
 			);
-
-		this.logger.log(`Token [${token}] validated`);
 
 		// Find user
 		const user = await this.userService.findOneIntra(Number(decoded.intraId));

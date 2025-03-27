@@ -100,7 +100,7 @@ export default class SimulationService {
 			this.difficulty = data.difficulty;
 			this.powerUpSelected = fromMaskToArray(data.extras);
 			
-		this.logger.log(`session [${data.sessionToken}] - room created`);
+		this.logger.debug(`session [${data.sessionToken}] - room created`);
 		this.logger.log(`session [${this.sessionToken}] - new game, mode: ${this.mode}, powerups: [${this.powerUpSelected.join(', ')}]`);
 		if (this.mode === GameMode.single)
 			this.logger.log(`session [${this.sessionToken}] - difficulty: ${this.difficulty}`);
