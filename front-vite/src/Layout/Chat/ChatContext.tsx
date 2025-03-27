@@ -196,7 +196,7 @@ useEffect(() => {
 					return (prevState);
 				
 				const updatedUsers: UserProps[] = channel.settings.users.filter((item: UserProps) => item.id !== data.userId);
-				const updatedBanned: string[] = channel.settings.banned;
+				const updatedBanned: string[] = [...channel.settings.banned];
 				updatedBanned.push(data.userId.toString());
 				if (user.id == data.userId && selectedChannel != null && selectedChannel.id === channel.id)
 				{
@@ -235,7 +235,7 @@ useEffect(() => {
 			socket.off('userBanned', handleUserBannedChannel);
 			socket.off('userUnbanned', handleUserUnbannedChannel);
 		}
-	}, [chatProps, user]);
+	}, [user]);
 
 	useEffect(() => 
 	{
@@ -257,8 +257,11 @@ useEffect(() => {
 			});
 		}
 
+
 		const handleUserUnmutedChannel = (data: dataAction) => 
 		{
+			console.log('Unmuted in context')
+
 			setChatProps((prevState: ChatProps) => {
 				let channel = prevState.chatRooms.find((item: ChatRoom) => item.id === data.id);
 				if (!channel)
@@ -302,8 +305,6 @@ useEffect(() => {
 		}, []);
 
 //////////////////////////////////////////////////////////////////////
-
-
 
 	useEffect(() => {
 		const handleRoleChanged = (response) => {
