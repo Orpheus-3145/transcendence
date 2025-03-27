@@ -132,8 +132,7 @@ export async function blockFriend(username:string, friend:string): Promise<void>
 }
 
 export async function unBlockFriend(username:string, friend:string): Promise<void> {
-	const response = await axios.get(BACKEND_URL + '/users/profile/' + username + '/friend/unBlock/' + friend, 
-					{withCredentials: true});
+	const response = await axios.get(BACKEND_URL + '/users/profile/' + username + '/friend/unBlock/' + friend, {withCredentials: true});
 
 	if (response.status === 404)
 		throw new Error('Error: failed to unblock user');
@@ -162,18 +161,14 @@ export async function fetchRatios(userProfile: User): Promise<MatchRatio[]>
 
 export async function fetchLeaderboard(): Promise<LeaderboardData[][]>
 {
-	const response = await axios.get(`${BACKEND_URL}/users/fetchLeaderboard`, {
-		withCredentials: true,
-	});
+	const response = await axios.get(`${BACKEND_URL}/users/fetchLeaderboard`, {withCredentials: true});
 	if (response.status != 200)
 		throw new Error("Error: fetch leaderboard failed")
 	return response.data;
 }
 
 export async function fetchMatchData(user: User): Promise<MatchData[]> {
-	const response = await axios.get<MatchData[]>(`${BACKEND_URL}/users/profile/${user.intraId.toString()}/matches`, {
-		withCredentials: true,
-	});
+	const response = await axios.get<MatchData[]>(`${BACKEND_URL}/users/profile/${user.intraId.toString()}/matches`, {withCredentials: true});
 	if (response.status != 200)
 		throw new Error('Error: failed fetching match data');	
 	return response.data;

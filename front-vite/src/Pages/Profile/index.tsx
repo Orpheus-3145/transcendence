@@ -66,7 +66,7 @@ const ProfilePage: React.FC = () => {
 
 	const check2FAStatus = async () => {
 		try {
-			const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`);
+			await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`, {withCredentials: true});
 		} catch (error) {}
 	};
 
@@ -77,7 +77,7 @@ const ProfilePage: React.FC = () => {
 		if (enable2FA) {
 			// User wants to enable 2FA → Generate QR Code
 			try {
-				const response = await axios.get(import.meta.env.URL_BACKEND_QR_GENERATE);
+				const response = await axios.get(import.meta.env.URL_BACKEND_QR_GENERATE, {withCredentials: true});
 				setQrCode(response.data.qrCode);
 				setSecret(response.data.secret)
 				setOpenQRDialog(true);
@@ -87,7 +87,7 @@ const ProfilePage: React.FC = () => {
 		} else {
 			// User wants to disable 2FA → Disable immediately
 			try {
-				const response = await axios.post(import.meta.env.URL_BACKEND_2FA_DELETE + `?intraId=${intraId}`);
+				await axios.post(import.meta.env.URL_BACKEND_2FA_DELETE + `?intraId=${intraId}`, {}, {withCredentials: true});
 				setIs2FAEnabled(false);
 				check2FAStatus();
 			} catch (error) {}
@@ -100,12 +100,11 @@ const ProfilePage: React.FC = () => {
 			const response = await axios.post(import.meta.env.URL_BACKEND_QR_VERIFY, {
 				intraId,
 				secret,
-				token: verificationCode
-			});
+				token: verificationCode},
+				{withCredentials: true});
 			check2FAStatus();
 			if (response.data.success) {
 				setIs2FAEnabled(true);
-				setUser({ ...user, twoFactorEnabled: true });
 				setOpenQRDialog(false);
 			} else {
 				setError(true);
@@ -917,7 +916,7 @@ const ProfilePage: React.FC = () => {
 
 		const fetch2FAStatus = async () => {
 			try {
-				const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`);
+				const response = await axios.get(import.meta.env.URL_BACKEND_2FA_STATUS + `?intraId=${intraId}`, {withCredentials: true});
 				setIs2FAEnabled(response.data.is2FAEnabled);
 			} catch (error) {}
 		};
