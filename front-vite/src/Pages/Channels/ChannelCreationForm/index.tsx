@@ -24,8 +24,6 @@ const handleSubmit = (e) => {
 	setErrors({});
 	setSubmitMessage('Form submitted successfully!');
 
-	console.log('Form submitted with:', { name, privacy });
-
 	// Reset form fields
 	setUsername('');
 	setEmail('');

@@ -195,7 +195,7 @@ const ChannelsPage: React.FC = () => {
 			socket.emit('createChannel', channelDTO);
 		}
 	};	
-			
+
 //////////////////////////////////////////////////////////////////////
 
 	const directMessageExists = (otherUser: User): boolean => {
@@ -468,6 +468,7 @@ const ChannelsPage: React.FC = () => {
 		handleModalClose();
 		if (checkIfBlocked(otherUser) == true)
 				return ;
+		console.log(`check between ${otherUser.nameNick} - ${user.nameNick}`);
 
 		inviteToGame(user.id.toString(), otherUser.id.toString(), value);
 	}
@@ -520,12 +521,12 @@ const ChannelsPage: React.FC = () => {
 				{modalOpen && 
 					<GameInviteModal 
 						open={modalOpen} 
-						onClose={(Value: PowerUpSelected) => InviteGame(Value, user)} 
+						onClose={(Value: PowerUpSelected) => InviteGame(Value, item)} 
 					/>
 				}
 				<Tooltip title='Send a direct messsage' arrow>
 					<IconButton
-						onClick={(event: React.MouseEvent) => handleSendDirectMessageClick(event, user)}
+						onClick={(event: React.MouseEvent) => handleSendDirectMessageClick(event, item)}
 						sx={{  }}
 						>
 						<MessageIcon sx={{ }}/>
